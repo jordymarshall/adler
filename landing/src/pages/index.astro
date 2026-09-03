@@ -1,0 +1,339 @@
+---
+import { Picture } from "astro:assets";
+import Base from "../layouts/Base.astro";
+import Phone from "../components/Phone.astro";
+import heroWide from "../assets/hero-wide.jpg";
+import heroTall from "../assets/hero-tall.jpg";
+
+const title = "Adler — The coach that notices.";
+const description = "It notices when you slip, then changes the plan. One tap a day.";
+
+const barriers = ["No time", "No energy", "Forgot", "Didn't feel like it", "Too hard", "Something came up"];
+
+// One week, start to finish. `dots` is Mon..Sun: y = done, n = missed, p = partly, - = not yet.
+const week = [
+  {
+    day: "Monday", label: "Say the goal", dots: "-------",
+    action: "After I shut the laptop, jog to the end of the street and back.",
+    lead: "Ten minutes, out loud or typed. Adler asks, you answer. It writes the goal back in one sentence and the first step in another.",
+    chat: [
+      ["a", "What's one thing you'd like to be different in a couple of months?"],
+      ["y", "I want to actually run again. A 10k in May without walking."],
+      ["a", "What's the smallest bit of running you'd do even on a bad day?"],
+      ["y", "Shoes on, to the end of the street. After work."],
+      ["a", "Zero to ten, how sure are you that happens tomorrow?"],
+      ["y", "Eight."],
+      ["c", "After I shut the laptop, jog to the end of the street and back."],
+    ],
+    method: "An if-then plan tied to something you already do. The single best-evidenced move in the goal literature.",
+  },
+  {
+    day: "Tuesday", label: "One tap", dots: "-y-----", pick: "Yes",
+    lead: "One notification at eight. Three big buttons. Done in five seconds.",
+    chat: [["t", "Yes"], ["a", "Done. What made it easy today?"], ["y", "Sunny."]],
+    method: "Recording it is itself the intervention. People who track and report progress get there more often.",
+  },
+  {
+    day: "Wednesday", label: "A miss", dots: "-yn----", pick: "No",
+    lead: "No, then one more tap: what got in the way. That tap is the diagnosis.",
+    chat: [
+      ["t", "No"], ["t", "No time"],
+      ["a", "Okay. Wednesday's your long day, I'll remember that. Tomorrow: same, smaller, or a different time?"],
+      ["y", "Same."],
+    ],
+    method: "One miss does no harm to a forming habit. Nothing resets. The barrier is filed for Sunday.",
+  },
+  {
+    day: "Thursday", label: "One tap", dots: "-yny---", pick: "Yes",
+    lead: "Back to it. No streak to protect, nothing to make up.",
+    chat: [["t", "Yes"], ["a", "Done."]],
+    method: "No praise, no grade. Effort noted, plan unchanged.",
+  },
+  {
+    day: "Friday", label: "A second miss", dots: "-ynyn--", pick: "No",
+    lead: "Same barrier, twice. Adler notices, but doesn't change the plan mid-week.",
+    chat: [
+      ["t", "No"], ["t", "No time"],
+      ["a", "That's two 'no time' days, both your late ones. Let's look at it properly on Sunday."],
+    ],
+    method: "One change per week, checked before the next. Not a new tweak every day.",
+  },
+  {
+    day: "Saturday", label: "One tap", dots: "-ynyny-", pick: "Yes",
+    lead: "Weekend. Same street, same shoes.",
+    chat: [["t", "Yes"], ["a", "Done."]],
+    method: "Same cue, same place. Habits form on context, not on willpower.",
+  },
+  {
+    day: "Sunday", label: "Five minutes", dots: "-ynynyy", pick: "Yes",
+    lead: "The weekly review. Adler lays out the week, names the pattern, proposes one change. You say yes or no.",
+    chat: [
+      ["a", "Four of six. Both misses were 'no time', both on your late days."],
+      ["a", "Mornings on Wednesday and Friday instead, straight after coffee?"],
+      ["y", "Fine."],
+      ["a", "Done. I'll check next Sunday whether that worked. Four runs from a standing start of none. That's real."],
+      ["c", "After I shut the laptop, jog to the end of the street. Wed and Fri: after coffee."],
+    ],
+    method: "Every change is a hypothesis with a date. If next week's numbers move, it stays. If not, a different one.",
+  },
+];
+---
+<Base {title} {description}>
+  <div class="mx-auto max-w-[1120px] px-6">
+    <nav class="sticky top-4 z-10">
+      <div class="glass glass-text flex items-center justify-between !rounded-full py-2.5 pl-6 pr-2.5">
+        <a href="#" class="flex items-center gap-2.5 font-semibold text-ink no-underline">
+          <span class="inline-block h-3 w-3 rounded-full bg-gradient-to-br from-accent to-accent-2 shadow-[0_0_0_4px_rgba(255,122,69,.15)]"></span>
+          Adler
+        </a>
+        <div class="flex gap-2">
+          <a class="btn hidden !min-h-10 !px-4 text-[.9rem] sm:inline-flex" href="#week">How it works</a>
+          <a class="btn btn-primary !min-h-10 !px-4 text-[.9rem]" href="#join">Early access</a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 1. Hero: the one thing -->
+    <section class="relative isolate -mx-6 mt-4 overflow-hidden rounded-[40px] px-6 pb-16 pt-14 sm:pt-24 lg:pb-24">
+      <Picture
+        src={heroWide}
+        formats={["avif", "webp"]}
+        widths={[900, 1400, 2200]}
+        sizes="(max-width: 1120px) 100vw, 1120px"
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        class="pointer-events-none absolute inset-0 -z-10 hidden h-full w-full object-cover sm:block [mask-image:linear-gradient(180deg,#000_70%,transparent)]"
+      />
+      <Picture
+        src={heroTall}
+        formats={["avif", "webp"]}
+        widths={[600, 900]}
+        sizes="100vw"
+        alt=""
+        aria-hidden="true"
+        loading="eager"
+        class="pointer-events-none absolute inset-0 -z-10 h-full w-full object-cover sm:hidden [mask-image:linear-gradient(180deg,#000_70%,transparent)]"
+      />
+      <div class="grid items-center gap-10 lg:grid-cols-[1.05fr_.95fr]">
+        <div class="glass glass-text p-8 sm:p-10">
+          <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">AI goal coach for iPhone</p>
+          <h1 class="mt-4 text-[clamp(2.75rem,7vw,5.25rem)] tracking-[-.035em]">The coach that notices.</h1>
+          <p class="mt-6 max-w-[34ch] text-[clamp(1.15rem,2vw,1.5rem)] text-ink-2">It notices when you slip, then changes the plan. One tap a day.</p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a class="btn btn-primary" href="#join">Join early access</a>
+            <a class="btn" href="#week">See a week with Adler</a>
+          </div>
+          <p class="mt-6 text-[.95rem] text-ink-3">Three screens. No streaks. Never charges you for slipping.</p>
+        </div>
+        <Phone title="Today" sub="Tuesday. One thing." tab="Today">
+          <div class="glass glass-text p-5 !rounded-3xl">
+            <div class="text-[.7rem] font-semibold uppercase tracking-[.08em] text-ink-3">Run a 10k in May</div>
+            <div class="mt-1.5 text-[1.3rem] font-semibold leading-tight tracking-[-.02em]">After I shut the laptop, jog to the end of the street and back.</div>
+            <div class="mt-4 grid grid-cols-3 gap-2">
+              <div class="rounded-2xl bg-ink py-3.5 text-center font-semibold text-white">Yes</div>
+              <div class="rounded-2xl bg-ink/5 py-3.5 text-center font-semibold">Partly</div>
+              <div class="rounded-2xl bg-ink/5 py-3.5 text-center font-semibold">No</div>
+            </div>
+          </div>
+          <div class="glass glass-text !rounded-[22px] px-4 py-3.5 text-[.95rem] leading-snug text-ink-2">
+            <b class="text-ink">Done.</b> What made it easy today?
+          </div>
+        </Phone>
+      </div>
+    </section>
+
+    <!-- 2. Name the enemy -->
+    <section class="py-24 reveal">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">Why most apps stop working by week three</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">Trackers count. Chatbots forget. Stakes apps profit when you slip.</h2>
+      <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">Habit trackers</h3><p class="mt-2 text-ink-2">Beautiful grids. No idea why you missed. They never notice you left.</p></div>
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">AI chatbots</h3><p class="mt-2 text-ink-2">Good advice on Monday. By Thursday they've forgotten your name and your goal.</p></div>
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">Money-on-the-line apps</h3><p class="mt-2 text-ink-2">Their revenue is your failure. Guilt is the product.</p></div>
+        <div class="glass glass-ink p-7"><h3 class="text-[1.3rem]">Adler</h3><p class="mt-2 opacity-85">Remembers you. Asks what got in the way. Makes tomorrow fit. Like a good coach, minus the ninety a month.</p></div>
+      </div>
+    </section>
+
+    <!-- 3. A week with Adler -->
+    <section id="week" class="py-24">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">A week with Adler</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">Say the goal on Monday. Tap once a day. Sunday, it adjusts.</h2>
+      <p class="mt-6 max-w-[58ch] text-[1.15rem] text-ink-2">Every word below is what Adler actually says. Scroll through the week.</p>
+
+      <div class="mt-12 grid gap-8 lg:grid-cols-[1fr_360px] lg:gap-14">
+        <ol class="m-0 grid list-none gap-4 p-0">
+          {week.map((d) => (
+            <li class="glass glass-text reveal grid gap-5 p-7 sm:grid-cols-[130px_1fr]" data-day={d.day} data-dots={d.dots} data-pick={d.pick ?? ""} data-action={d.action ?? ""}>
+              <div>
+                <div class="text-[1.35rem] font-semibold tracking-[-.02em]">{d.day}</div>
+                <div class="text-[.8rem] font-semibold uppercase tracking-[.1em] text-ink-3">{d.label}</div>
+              </div>
+              <div>
+                <p class="text-ink-2">{d.lead}</p>
+                <div class="mt-4 flex flex-col">
+                  {d.chat.map(([who, text]) =>
+                    who === "a" ? <div class="bubble">{text}</div>
+                    : who === "y" ? <div class="bubble you">{text}</div>
+                    : who === "t" ? <div class="bubble tap">{text}</div>
+                    : <div class="bubble card"><div class="text-[.7rem] font-semibold uppercase tracking-[.08em] text-ink-3">Run a 10k in May</div><div class="mt-1 font-semibold">{text}</div></div>
+                  )}
+                </div>
+                <p class="mt-4 text-[.9rem] text-ink-3">{d.method}</p>
+              </div>
+            </li>
+          ))}
+          <li class="glass glass-ink reveal grid gap-5 p-7 sm:grid-cols-[130px_1fr]">
+            <div>
+              <div class="text-[1.35rem] font-semibold tracking-[-.02em]">Later</div>
+              <div class="text-[.8rem] font-semibold uppercase tracking-[.1em] opacity-70">It runs itself</div>
+            </div>
+            <div>
+              <p class="opacity-85">Most habits take six to ten weeks to feel automatic, not twenty-one days. When the run does, Adler offers two doors.</p>
+              <div class="mt-4 flex flex-col">
+                <div class="bubble !bg-white/15">Does the run feel automatic now? One to seven.</div>
+                <div class="bubble you !bg-white/90 !text-ink">Six.</div>
+                <div class="bubble !bg-white/15">Two options. Make it longer, or start on the next goal. Which?</div>
+              </div>
+              <p class="mt-4 text-[.9rem] opacity-70">One new thing at a time. That's how habits stick, and why people who start eight at once quit in three weeks.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="hidden lg:block">
+          <div class="sticky top-28" data-week-phone>
+            <Phone title="Today" tab="Today" height={560}>
+              <div class="px-1.5 text-[.85rem] text-ink-3" data-phone-day>Sunday</div>
+              <div class="glass glass-text p-5 !rounded-3xl">
+                <div class="text-[.7rem] font-semibold uppercase tracking-[.08em] text-ink-3">Run a 10k in May</div>
+                <div class="mt-1.5 text-[1.2rem] font-semibold leading-tight tracking-[-.02em]" data-phone-action>After I shut the laptop, jog to the end of the street and back.</div>
+                <div class="mt-4 grid grid-cols-3 gap-2">
+                  <div class="choice" data-phone-choice="Yes">Yes</div>
+                  <div class="choice" data-phone-choice="Partly">Partly</div>
+                  <div class="choice" data-phone-choice="No">No</div>
+                </div>
+              </div>
+              <div class="glass glass-text !rounded-[22px] px-4 py-3.5 text-[.9rem] text-ink-2">
+                This week <span class="dots ml-2" data-phone-dots><i class="none"></i><i></i><i class="miss"></i><i></i><i class="miss"></i><i></i><i></i></span>
+              </div>
+            </Phone>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. Three screens -->
+    <section class="py-24 reveal">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">The whole app</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">Three screens. No manual.</h2>
+      <p class="mt-6 max-w-[58ch] text-[1.15rem] text-ink-2">Big text, big buttons, plain words. If it needs a tutorial, it's too complicated. Talk to it out loud if you'd rather.</p>
+      <div class="mt-10 grid gap-4 md:grid-cols-3">
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">Today</h3><p class="mt-2 text-ink-2">Today's actions: a repeating habit, a one-off next step, or both. Tap Yes, Partly or No. Done.</p></div>
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">Goals</h3><p class="mt-2 text-ink-2">What you're working toward, in plain sentences. Habits and projects both. Add one yourself in ten seconds, or talk it through with Adler.</p></div>
+        <div class="glass glass-text p-7"><h3 class="text-[1.3rem]">Talk</h3><p class="mt-2 text-ink-2">One big microphone button. For setting goals, the Sunday review, and whenever you're stuck.</p></div>
+      </div>
+    </section>
+
+    <!-- 5. It remembers -->
+    <section class="py-24 reveal">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">It remembers</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">Every week teaches it something about you. Every goal starts smarter.</h2>
+      <div class="mt-10 grid gap-4 md:grid-cols-3">
+        <div class="glass glass-text p-7">
+          <div class="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-2 font-semibold text-white">1</div>
+          <h3 class="text-[1.3rem]">Your record</h3>
+          <p class="mt-2 text-ink-2">Every goal, every tap, every barrier, every change Adler made and what happened after.</p>
+        </div>
+        <div class="glass glass-text p-7">
+          <div class="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-2 font-semibold text-white">2</div>
+          <h3 class="text-[1.3rem]">Your patterns</h3>
+          <p class="mt-2 text-ink-2">Which days go well. Which barrier keeps showing up. Which changes actually moved the number.</p>
+        </div>
+        <div class="glass glass-text p-7">
+          <div class="mb-4 inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-accent to-accent-2 font-semibold text-white">3</div>
+          <h3 class="text-[1.3rem]">Your playbook</h3>
+          <p class="mt-2 text-ink-2">What works for you, in words you can read and correct. "Mornings. Smaller than feels sensible. Options, not orders."</p>
+        </div>
+      </div>
+      <div class="glass glass-text mt-4 p-7 md:flex md:items-center md:justify-between md:gap-8">
+        <div>
+          <h3 class="text-[1.3rem]">Many goals? Fine.</h3>
+          <p class="mt-2 max-w-[60ch] text-ink-2">Tell Adler everything you want. It'll suggest starting with one and say why. Add more anyway if you like. Your call, always. Goals sit under five kinds of wealth: time, social, mental, physical, financial, so you can see where your life is leaning.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. Built on the literature -->
+    <section id="science" class="py-24 reveal">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">The method</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">Built on the literature, not vibes.</h2>
+      <p class="mt-6 max-w-[58ch] text-[1.15rem] text-ink-2">Adler follows a written coaching protocol. Every question it asks and every change it makes traces to a named method with published evidence.</p>
+      <div class="mt-10 grid gap-4 md:grid-cols-3">
+        <div class="glass glass-text p-7">
+          <span class="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[.7rem] font-semibold uppercase tracking-[.1em] text-[#9a3a14]">Behavioural science</span>
+          <h3 class="mt-4 text-[1.3rem]">How change actually happens</h3>
+          <p class="mt-2 text-ink-2">If-then plans. Steps small enough to do on a bad day. Cues from your routine, not your phone. Progress you record. The moves with the strongest evidence for getting the thing done.</p>
+          <p class="mt-3 text-[.9rem] text-ink-3">Gollwitzer, Locke and Latham, Oettingen, Lally, Michie, Neff.</p>
+        </div>
+        <div class="glass glass-text p-7">
+          <span class="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[.7rem] font-semibold uppercase tracking-[.1em] text-[#9a3a14]">Coaching practice</span>
+          <h3 class="mt-4 text-[1.3rem]">How to talk to a person</h3>
+          <p class="mt-2 text-ink-2">Asks before it tells. Reflects back what you said. Never argues you into anything. Notices effort, doesn't hand out grades.</p>
+          <p class="mt-3 text-[.9rem] text-ink-3">Motivational interviewing, solution-focused questions, Adlerian encouragement.</p>
+        </div>
+        <div class="glass glass-text p-7">
+          <span class="inline-block rounded-full bg-accent/15 px-2.5 py-1 text-[.7rem] font-semibold uppercase tracking-[.1em] text-[#9a3a14]">Knows what it isn't</span>
+          <h3 class="mt-4 text-[1.3rem]">A coach, not a therapist</h3>
+          <p class="mt-2 text-ink-2">Says so on day one. No streaks, no guilt, no money on the line. If something sounds heavier than a habit, it tells you plainly and points you to a person.</p>
+          <p class="mt-3 text-[.9rem] text-ink-3">Crisis hand-off built in. Nothing sold, nothing shared.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. Objections -->
+    <section class="py-24 reveal">
+      <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">Questions</p>
+      <h2 class="mt-4 max-w-[22ch] text-[clamp(2rem,4.6vw,3.25rem)]">What if I miss a day?</h2>
+      <div class="mt-8 grid gap-3">
+        {[
+          ["What if I miss a day?", "Nothing resets. One miss doesn't dent a forming habit, the research is clear on that. Adler asks what got in the way and files it for Sunday."],
+          ["What got in the way? What are the choices?", barriers.join(" · ") + ". One tap. That's the whole diagnosis, and it maps to a known fix."],
+          ["Is it a chatbot?", "It can talk, but talking isn't the product. The daily tap is. Adler runs a written coaching protocol over your record and speaks up when the numbers say something."],
+          ["Can I have more than one goal?", "As many as you like. Adler will suggest starting with one and tell you why. You decide."],
+          ["Is this therapy?", "No. Adler coaches goals and habits. If it spots signs you need more than that, it says so plainly and points you to real help."],
+          ["Who sees my data?", "You and the coach. Nothing sold, nothing shared, no ads keyed to what you wrote. Export or delete everything from inside the app."],
+          ["Can I cancel?", "Any time, one tap, no email to anyone."],
+          ["What does it cost?", "One flat subscription, around the price of two coffees a month, with a free trial. The number goes on this page before launch. Adler is never paid more when you fail."],
+        ].map(([q, a], i) => (
+          <details class="glass glass-text px-6 py-5" open={i === 0}>
+            <summary class="flex cursor-pointer list-none items-center justify-between text-[1.1rem] font-semibold [&::-webkit-details-marker]:hidden">{q}<span class="ml-4 text-ink-3" aria-hidden="true">+</span></summary>
+            <p class="mt-3 text-ink-2">{a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <!-- 8. Close -->
+    <section id="join" class="py-24 reveal">
+      <div class="glass glass-text px-8 py-16 text-center sm:px-12">
+        <p class="text-[.8rem] font-semibold uppercase tracking-[.14em] text-ink-3">Early access</p>
+        <h2 class="mt-4 text-[clamp(2rem,4.6vw,3.25rem)]">Get a coach that notices.</h2>
+        <p class="mx-auto mt-4 max-w-[44ch] text-[1.15rem] text-ink-2">iPhone first. One flat price, printed here before launch. Free trial. No free tier with a paywall at goal four, no per-goal upsell. Cancel in one tap.</p>
+        <div class="mt-8 flex justify-center">
+          <a class="btn btn-primary" href="#">Join early access</a>
+        </div>
+      </div>
+      <footer class="flex flex-wrap justify-between gap-3 px-2 pt-12 text-[.9rem] text-ink-3">
+        <span>© 2026 Adler</span>
+        <span>Named after Alfred Adler, who argued that behaviour is purposeful and that encouragement beats praise.</span>
+      </footer>
+    </section>
+  </div>
+
+  <script src="../scripts/week.js"></script>
+</Base>
+
+<style>
+  .choice { border-radius: 16px; padding: .85rem 0; text-align: center; font-weight: 600; background: rgba(20,21,26,.05); border: 1px solid rgba(20,21,26,.08); transition: background .2s, color .2s; }
+  .choice.picked { background: var(--color-ink); color: #fff; border-color: var(--color-ink); }
+</style>

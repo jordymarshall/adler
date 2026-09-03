@@ -1,0 +1,45 @@
+---
+/** iPhone-shaped frame with a glass screen. Content goes in the slot; the tab bar shows which of the three screens is active. */
+interface Props {
+  title: string;
+  sub?: string;
+  tab: "Today" | "Goals" | "Talk";
+  class?: string;
+  height?: number;
+}
+const { title, sub, tab, class: cls = "", height = 640 } = Astro.props;
+const tabs = ["Today", "Goals", "Talk"] as const;
+---
+<div class={`phone ${cls}`} style={`height:${height}px`} role="img" aria-label={`${tab} screen: ${title}${sub ? ". " + sub : ""}`}>
+  <div class="screen">
+    <div class="status"><span>9:41</span><span aria-hidden="true">●●●</span></div>
+    <div class="ptitle">{title}</div>
+    {sub && <div class="psub">{sub}</div>}
+    <div class="body"><slot /></div>
+    <div class="tabs glass">
+      {tabs.map((t) => <span class={t === tab ? "on" : ""}>{t}</span>)}
+    </div>
+  </div>
+</div>
+
+<style>
+  .phone {
+    width: 320px; max-width: 100%; margin: 0 auto; border-radius: 52px; padding: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.62));
+    border: 1px solid rgba(255,255,255,.7);
+    box-shadow: 0 30px 80px rgba(20,21,26,.14), inset 0 1px 0 #fff;
+  }
+  .screen {
+    height: 100%; border-radius: 40px; overflow: hidden; display: flex; flex-direction: column;
+    padding: 22px 18px 18px;
+    background:
+      radial-gradient(400px 300px at 20% 0%, #ffe2d1 0%, transparent 60%),
+      radial-gradient(400px 300px at 100% 100%, #dbe7ff 0%, transparent 60%), #f7f6f3;
+  }
+  .status { display: flex; justify-content: space-between; font-size: .75rem; color: var(--color-ink-3); font-weight: 600; padding: 0 6px; }
+  .ptitle { font-size: 1.7rem; font-weight: 700; letter-spacing: -.03em; margin: 20px 6px 2px; }
+  .psub { font-size: .85rem; color: var(--color-ink-3); margin: 0 6px 14px; }
+  .body { display: flex; flex-direction: column; gap: 10px; }
+  .tabs { margin-top: auto; display: flex; justify-content: space-around; padding: 12px 8px; border-radius: 999px; font-size: .75rem; font-weight: 600; color: var(--color-ink-3); }
+  .tabs span.on { color: var(--color-ink); }
+</style>
