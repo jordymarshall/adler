@@ -23,26 +23,6 @@ export function CheckInPreview() {
         : "Work ran late again. I missed the run.";
   return (
     <div className="checkin-preview">
-      <div
-        className="checkin-surface-tabs"
-        role="group"
-        aria-label="Choose how to check in"
-      >
-        <button
-          aria-pressed={surface === "text"}
-          onClick={() => setSurface("text")}
-        >
-          <Smartphone size={15} />
-          Text your coach
-        </button>
-        <button
-          aria-pressed={surface === "app"}
-          onClick={() => setSurface("app")}
-        >
-          <LayoutDashboard size={15} />
-          Use the app
-        </button>
-      </div>
       <div className="checkin-surfaces">
         {surface === "text" ? (
           <div
@@ -130,6 +110,28 @@ export function CheckInPreview() {
           <div><b>{outcome} · Saved to My first 5 km</b><span>2 km recorded · 5 km goal</span></div>
         </div>
       </div>
+      <details className="checkin-options">
+        <summary>Try another check-in</summary>
+      <div
+        className="checkin-surface-tabs"
+        role="group"
+        aria-label="Choose how to check in"
+      >
+        <button
+          aria-pressed={surface === "text"}
+          onClick={() => setSurface("text")}
+        >
+          <Smartphone size={15} />
+          Text your coach
+        </button>
+        <button
+          aria-pressed={surface === "app"}
+          onClick={() => setSurface("app")}
+        >
+          <LayoutDashboard size={15} />
+          Use the app
+        </button>
+      </div>
       <div className="checkin-demo-controls">
         <div>
           <span>Try a different check-in</span>
@@ -163,6 +165,7 @@ export function CheckInPreview() {
           </div>
         )}
       </div>
+      </details>
     </div>
   );
 }

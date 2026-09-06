@@ -9,26 +9,20 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toContainText("Big goals.");
-  const chart = page.locator("#step-5 .progress-viz svg");
+  await page.locator(".adaptation-progress > summary").click();
+  const chart = page.locator("#step-4 .progress-viz svg");
   await expect(chart.locator(".chart-recorded-label")).toHaveText(
     "Recorded: 2 km",
   );
   await chart.focus();
   await page.keyboard.press("End");
-  await expect(page.locator("#step-5 .chart-tooltip")).toContainText(
+  await expect(page.locator("#step-4 .chart-tooltip")).toContainText(
     "Last recorded: 2 km",
   );
   const recordedPath = await chart.locator(".chart-actual").getAttribute("d");
-  await page
-    .getByText("Compare a proposed adjustment", { exact: true })
-    .click();
-  await page.getByRole("button", { name: "Show proposed dates" }).click();
-  await expect(chart.locator(".chart-proposed")).toBeVisible();
-  await expect(chart.locator(".chart-actual")).toHaveAttribute(
-    "d",
-    recordedPath!,
-  );
-  await page.getByRole("button", { name: "Show current dates" }).click();
+  await page.getByRole("button", { name: "Try the morning plan" }).click();
+  await expect(page.locator("#step-4 .week-visual")).toHaveClass(/adjusted/);
+  await expect(chart.locator(".chart-actual")).toHaveAttribute("d", recordedPath!);
   await expect(chart.locator(".chart-proposed")).toHaveCount(0);
   await page
     .getByRole("link", { name: "Explore the app", exact: true })

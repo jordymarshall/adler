@@ -50,13 +50,14 @@ test("texting and the app show the same check-in without changing measured dista
   page,
 }) => {
   await page.goto("/");
-  const step = page.locator("#step-4");
+  const step = page.locator("#step-3");
   await expect(
     step.getByLabel("iMessage conversation with Adler"),
   ).toBeVisible();
   await expect(step.locator(".phone-bubble.outgoing")).toContainText(
     "Work ran late",
   );
+  await step.getByText("Try another check-in", { exact: true }).click();
   await step.getByRole("button", { name: "Done", exact: true }).click();
   await expect(step.locator(".phone-bubble.outgoing")).toContainText(
     "still 2 km",
@@ -72,7 +73,7 @@ test("texting and the app show the same check-in without changing measured dista
   await expect(step.locator(".app-checkin-saved")).toHaveText("Saved: Done");
   await expect(step.locator(".checkin-linked-result")).toContainText("2 km");
   await expect(step.locator(".checkin-linked-result")).toContainText("5 km");
-  const scheduling = page.locator("#step-3");
+  const scheduling = page.locator("#step-2");
   await scheduling.getByText("Choose another time", { exact: true }).click();
   await scheduling
     .getByRole("button", { name: "Tuesday, 6:30 pm", exact: true })
@@ -109,12 +110,12 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.locator(".hero-sticky")).toHaveCSS("position", "relative");
+  await expect(page.locator(".journey-hero")).toHaveCSS("position", "relative");
   await expect(page.locator(".reveal").first()).toHaveCSS(
     "animation-name",
     "none",
   );
-  for (const selector of ["#step-4", ".connected-section"]) {
+  for (const selector of ["#step-3", "#step-4"]) {
     await page.locator(selector).scrollIntoViewIfNeeded();
     const result = await new AxeBuilder({ page }).include(selector).analyze();
     expect(result.violations).toEqual([]);

@@ -323,19 +323,16 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the landing uses Adler Warm and shows the detailed walkthrough below the core story", async ({
+test("the landing uses Adler Warm and one disclosed four-part journey", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(page.locator(".hero-intro-v2 h1")).toContainText("Big goals.");
   await expect(page.locator(".eyebrow")).toHaveCount(0);
-  await expect(page.locator(".walkthrough-intro h2")).toHaveText(
+  await expect(page.locator("#the-path .section-intro h2")).toHaveText(
     "Reach your goals with a planthat adapts to you.",
   );
-  await expect(page.locator(".hero-assembled-title h2")).toHaveText(
-    "Reach your goals with a planthat adapts to you.",
-  );
-  await expect(page.locator(".adapt-copy h2")).toHaveText(
+  await expect(page.locator(".adapt-copy h3")).toHaveText(
     /Life moves\.Your planshould, too\./,
   );
   expect(
@@ -347,19 +344,25 @@ test("the landing uses Adler Warm and shows the detailed walkthrough below the c
   expect(
     await page.evaluate(() => document.fonts.check('450 16px "Adler Warm"')),
   ).toBeTruthy();
-  await expect(page.locator(".walk-step")).toHaveCount(7);
-  await expect(page.locator("#step-2")).toContainText("Start plan");
-  expect(
-    await page
-      .locator(".landing-walkthrough")
-      .evaluate((el) =>
-        Boolean(
-          document
-            .querySelector(".adapt-section")!
-            .compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING,
-        ),
-      ),
-  ).toBeTruthy();
+  await expect(page.locator(".chapter-panel")).toHaveCount(4);
+  await expect(
+    page.locator(".walk-step, .floating-progress, .landing-walkthrough"),
+  ).toHaveCount(0);
+  const preview = page.locator(".landing-plan-preview");
+  await expect(preview.locator(".primary:visible")).toHaveCount(1);
+  await expect(preview.locator("details[open]")).toHaveCount(0);
+  await expect(preview.locator(".progress-viz")).not.toBeVisible();
+  await preview.getByRole("link", { name: "Start plan" }).click();
+  await expect(page.locator("#step-2")).toBeInViewport();
+  await page
+    .locator("#step-2")
+    .getByRole("button", { name: "Save time" })
+    .click();
+  await expect(page.locator("#step-2")).toContainText(
+    "Check in after the session",
+  );
+  await expect(page.locator(".chapter-connected .text-phone")).toHaveCount(1);
+  await expect(page.locator(".connection-brands img")).toHaveCount(3);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(
     await page.evaluate(
@@ -369,19 +372,55 @@ test("the landing uses Adler Warm and shows the detailed walkthrough below the c
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
+test("the disclosed graph fills its container and has readable labels on desktop and phone", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1050 });
+    await page.goto("/");
+    await page.evaluate(() => document.fonts.ready);
+    await page.locator(".preview-progress > summary").click();
+    const chart = page.locator(".preview-progress svg");
+    const size = await chart.evaluate((el) => {
+      const svg = el as unknown as SVGSVGElement;
+      const box = svg.getBoundingClientRect();
+      const plot = svg.querySelector(".chart-grid")!.getBoundingClientRect();
+      return {
+        coverage: plot.width / box.width,
+        labelPixels:
+          parseFloat(getComputedStyle(svg.querySelector("text")!).fontSize) *
+          svg.getScreenCTM()!.a,
+      };
+    });
+    expect(size.coverage).toBeGreaterThan(0.8);
+    expect(size.labelPixels).toBeGreaterThanOrEqual(8.5);
+    const graphBottom =
+      (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
+    const nextRow = await page
+      .locator(".preview-progress + details > summary")
+      .boundingBox();
+    expect(nextRow!.y).toBeGreaterThan(graphBottom);
+  }
+});
+
 test("landing chart details stay available while hovered or keyboard focused", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
-  const chart = page.locator(".evidence-card .graph-only");
+  await page.locator(".preview-progress > summary").click();
+  const chart = page.locator(".preview-progress .graph-only");
   const graph = chart.locator("svg");
   const details = chart.locator(".chart-tooltip");
   await graph.hover();
   await expect(details).toBeVisible();
   const bounds = (await details.boundingBox())!;
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await page.mouse.move(
+    bounds.x + bounds.width / 2,
+    bounds.y + bounds.height / 2,
+  );
   await expect(details).toBeVisible();
   await graph.focus();
   await page.mouse.move(0, 0);
@@ -717,13 +756,13 @@ test("latest action observations use the last check-in when records share a date
   );
 });
 
-test("the three-part story follows normal scrolling and uses the app chart throughout", async ({
+test("the four-part story follows normal scrolling and uses the app chart throughout", async ({
   page,
 }) => {
   await page.goto("/");
   const panels = page.locator(".chapter-flow .chapter-panel");
-  await expect(panels).toHaveCount(3);
-  for (let index = 0; index < 3; index++) {
+  await expect(panels).toHaveCount(4);
+  for (let index = 0; index < 4; index++) {
     const panel = panels.nth(index);
     await panel.evaluate((node) =>
       window.scrollTo({
@@ -735,15 +774,16 @@ test("the three-part story follows normal scrolling and uses the app chart throu
       "aria-current",
       "step",
     );
-    await expect(panel.locator(".chapter-visual")).toBeVisible();
+    await expect(panel.locator(".chapter-visual, .adapt-inner")).toBeVisible();
   }
   const paths = await page
     .locator(".v2-landing .chart-actual")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("d")));
-  expect(paths).toHaveLength(3);
+  expect(paths).toHaveLength(2);
   expect(new Set(paths).size).toBe(1);
-  await page.goto("/#step-7");
-  await expect(page.locator("#step-7")).toContainText("Adler remembers");
+  await page.goto("/#step-4");
+  await page.locator(".remembered-context > summary").click();
+  await expect(page.locator("#step-4")).toContainText("Adler remembers");
   await expect(page.locator(".remembered-context")).toBeInViewport();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(panels.nth(1).locator(".chapter-visual")).toHaveCSS(
