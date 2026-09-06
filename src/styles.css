@@ -1,5 +1,56 @@
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-400.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-450.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 450;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-500.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-550.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 550;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-600.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-650.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 650;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Adler Warm";
+  src: url("/fonts/adler-warm-700.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
 :root {
-  font-family: "DM Sans", sans-serif;
+  --body-font: "Adler Warm", ui-rounded, system-ui, sans-serif;
+  font-family: var(--body-font);
   color: #263d32;
   background: #faf9f6;
   font-synthesis: none;
@@ -13,7 +64,7 @@
   --green: #294b3a;
   --sage: #edf0e5;
   --lime: #d6e9a7;
-  --heading-font: "DM Sans", sans-serif;
+  --heading-font: var(--body-font);
   --shadow: 0 6px 25px #283c3206;
 }
 * {
@@ -1019,9 +1070,7 @@ details > summary:focus-visible {
   color: #646e4b;
 }
 .step-number > span {
-  font:
-    9px "DM Sans",
-    sans-serif;
+  font: 9px var(--body-font);
   letter-spacing: 0.1em;
   color: #676a5e;
   margin-left: 6px;
@@ -1876,7 +1925,7 @@ details > summary:focus-visible {
   margin-bottom: 17px;
 }
 .list-heading > h2 {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--body-font);
   letter-spacing: 0;
   font-size: 15px;
   font-weight: 500;
@@ -3040,7 +3089,7 @@ details > summary:focus-visible {
   display: flex;
   gap: 11px;
   align-items: center;
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--body-font);
   font-size: 15px;
   letter-spacing: 0;
   margin-bottom: 25px;
@@ -3537,7 +3586,7 @@ details > summary:focus-visible {
   padding: 28px;
 }
 .settings-section > h2 {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--body-font);
   font-size: 15px;
   letter-spacing: 0;
   margin-bottom: 25px;
@@ -6988,7 +7037,7 @@ details > summary:focus-visible {
   font-size: clamp(35px, 4.65vw, 62px);
   font-weight: 520;
   line-height: 1.12;
-  letter-spacing: -0.045em;
+  letter-spacing: -0.025em;
   margin: 0 auto 23px;
 }
 .concrete-hero h1 span {
