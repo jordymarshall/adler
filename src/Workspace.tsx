@@ -1257,6 +1257,20 @@ export function SettingsPage() {
         <h2>Your information</h2>
         <div className="settings-row">
           <div>
+            <h3>Integrations</h3>
+            <p>
+              Explore calendar, messaging, fitness, and learning connections.
+            </p>
+          </div>
+          <Link
+            className="button secondary small-button"
+            to="/app/integrations"
+          >
+            Browse integrations →
+          </Link>
+        </div>
+        <div className="settings-row">
+          <div>
             <h3>AI provider</h3>
             <p>Choose Gemini, GPT, or Claude and connect your API account.</p>
           </div>

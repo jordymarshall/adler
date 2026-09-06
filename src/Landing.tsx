@@ -1,3 +1,6 @@
+import { LandingAtmosphere } from "./LandingAtmosphere";
+import { IntegrationShowcase } from "./Integrations";
+import { CheckInPreview } from "./CheckInPreview";
 import { LandingInsights } from "./Insights";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -121,9 +124,9 @@ const steps = [
   {
     label: "Check in",
     cta: "Record what happened",
-    title: "Tell Adler how it went.",
+    title: "Text your coach. Or open the app.",
     problem: "A missed run doesn’t tell you why the plan failed.",
-    body: "Record what you did and what got in the way. Track your longest run separately, so completing a session doesn’t automatically count as reaching a distance milestone.",
+    body: "Send Adler a message after a session, or check in through the app. Your coach records what happened in the same plan. Use iMessage or SMS to create goals, update progress, and review changes wherever you are.",
     route: "/app/today",
   },
   {
@@ -154,7 +157,6 @@ const steps = [
   },
 ];
 function WalkScreen({ step }: { step: number }) {
-  const [outcome, setOutcome] = useState("Didn’t happen");
   const [time, setTime] = useState("6:30 pm");
   const [compare, setCompare] = useState(false);
   return (
@@ -225,12 +227,12 @@ function WalkScreen({ step }: { step: number }) {
               <div className="calendar-busy">Busy</div>
               <span>6:15</span>
               <div className="calendar-free">Available</div>
-              <span>6:30</span>
+              <span>{time === "7:00 pm" ? "7:00" : "6:30"}</span>
               <div className="calendar-focus">
                 <b>Go for a run</b>
                 <small>My first 5 km · 25 min</small>
               </div>
-              <span>6:55</span>
+              <span>{time === "7:00 pm" ? "7:25" : "6:55"}</span>
               <div className="calendar-checkin">
                 <Check size={13} /> Check in · 5 min
               </div>
@@ -243,9 +245,16 @@ function WalkScreen({ step }: { step: number }) {
                   key={t}
                   className={time === t ? "selected" : ""}
                   aria-pressed={time === t}
+                  disabled={t === "7:30 pm"}
+                  title={
+                    t === "7:30 pm"
+                      ? "Busy on your calendar"
+                      : "Available for a 25-minute run and 5-minute check-in"
+                  }
                   onClick={() => setTime(t)}
                 >
                   {t}
+                  {t === "7:30 pm" ? " · Busy" : ""}
                 </button>
               ))}
             </div>
@@ -254,46 +263,7 @@ function WalkScreen({ step }: { step: number }) {
             </p>
           </>
         )}
-        {step === 3 && (
-          <>
-            <span className="section-kicker">AFTER YOUR PLANNED RUN</span>
-            <h3>How did your run go?</h3>
-            <p>Planned: go for a run at 6:30 pm.</p>
-            <div className="demo-outcomes">
-              {["Done", "Partly", "Didn’t happen"].map((v) => (
-                <button
-                  key={v}
-                  className={outcome === v ? "selected" : ""}
-                  aria-pressed={outcome === v}
-                  onClick={() => setOutcome(v)}
-                >
-                  {v}
-                </button>
-              ))}
-            </div>
-            <div className="demo-record">
-              <span>
-                {outcome === "Done" ? "WHAT CHANGED" : "WHAT GOT IN THE WAY"}
-              </span>
-              <p>
-                {outcome === "Done"
-                  ? "Went for my run. My longest distance without stopping is still 2 km."
-                  : outcome === "Partly"
-                    ? "“Got outside for a walk, but didn’t start the run.”"
-                    : "“Work ran late again. By the time I got home, I missed the run.”"}
-              </p>
-            </div>
-            <div className="demo-result-separation">
-              <Check size={17} />
-              <span>
-                Action recorded: <b>{outcome}</b>
-              </span>
-              <span>
-                Longest run: <b>2 km</b>
-              </span>
-            </div>
-          </>
-        )}
+        {step === 3 && <CheckInPreview />}
         {step === 4 && (
           <>
             <h3>How close are you to 5 km?</h3>
@@ -335,11 +305,13 @@ function WalkScreen({ step }: { step: number }) {
 export function Landing() {
   return (
     <div className="concrete-landing">
+      <LandingAtmosphere />
       <header className="site-header">
         <Logo />
         <nav aria-label="Main navigation">
           <a href="#how-it-works">How it works</a>
           <Link to="/method">The method</Link>
+          <Link to="/integrations">Integrations</Link>
           <Link to="/sign-in">Log in</Link>
         </nav>
         <Link className="button primary" to="/app/today">
@@ -436,7 +408,7 @@ export function Landing() {
           </nav>
           {steps.map((s, i) => (
             <article
-              className={`walk-step ${i >= 5 ? "walk-step-wide" : i % 2 ? "reverse" : ""}`}
+              className={`walk-step ${i === 3 || i >= 5 ? "walk-step-wide" : i % 2 ? "reverse" : ""}`}
               id={`step-${i + 1}`}
               key={s.label}
             >
@@ -455,6 +427,8 @@ export function Landing() {
             </article>
           ))}
         </section>
+        <IntegrationShowcase />
+
         <section className="concrete-method">
           <div>
             <span className="section-kicker">

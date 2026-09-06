@@ -1,3 +1,4 @@
+import { Integrations } from "./Integrations";
 import { Insights } from "./Insights";
 import { useEffect } from "react";
 import {
@@ -21,6 +22,7 @@ import {
   Sun,
   Target,
   Lightbulb,
+  Cable,
 } from "lucide-react";
 import { Footer, Logo } from "./components";
 import { Landing, PublicPage } from "./Landing";
@@ -50,19 +52,21 @@ function ScrollReset() {
 function AppShell() {
   const location = useLocation();
   const { user, loading, saving, saveError } = useStore();
-  const label = location.pathname.includes("/insights")
-    ? "Insights"
-    : location.pathname.includes("/calendar")
-      ? "Calendar"
-      : location.pathname.includes("/goals")
-        ? "Goals"
-        : location.pathname.includes("/coach")
-          ? "Coach"
-          : location.pathname.includes("/settings")
-            ? "Settings"
-            : location.pathname.includes("/reviews")
-              ? "Your weekly review"
-              : "Today";
+  const label = location.pathname.includes("/integrations")
+    ? "Integrations"
+    : location.pathname.includes("/insights")
+      ? "Insights"
+      : location.pathname.includes("/calendar")
+        ? "Calendar"
+        : location.pathname.includes("/goals")
+          ? "Goals"
+          : location.pathname.includes("/coach")
+            ? "Coach"
+            : location.pathname.includes("/settings")
+              ? "Settings"
+              : location.pathname.includes("/reviews")
+                ? "Your weekly review"
+                : "Today";
   const nav = [
     { to: "/app/today", label: "Today", Icon: Sun },
     { to: "/app/goals", label: "Goals", Icon: Target },
@@ -91,6 +95,10 @@ function AppShell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
+          <NavLink to="/app/integrations" className="sidebar-setting">
+            <Cable size={19} />
+            Integrations
+          </NavLink>
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
             Settings
@@ -166,6 +174,7 @@ export function App() {
       <ScrollReset />
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/integrations" element={<Integrations />} />
         <Route path="/sign-in" element={<SignIn />} />
         {(["method", "privacy", "terms", "support"] as const).map((type) => (
           <Route
@@ -182,6 +191,7 @@ export function App() {
           <Route path="onboarding" element={<NewGoal />} />
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
+          <Route path="integrations" element={<Integrations inApp />} />
           <Route path="insights" element={<Insights />} />
           <Route path="coach" element={<Coach />} />
           <Route path="coach/program" element={<Program />} />

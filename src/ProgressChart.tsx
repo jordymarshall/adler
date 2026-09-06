@@ -64,7 +64,7 @@ export function ProgressChart({
     <div className={`progress-viz ${compact ? "compact" : ""}`}>
       <div className="viz-heading">
         <div>
-          <span className="section-kicker">RESULTS OVER TIME</span>
+          <span className="section-kicker">HOW WE MEASURE PROGRESS</span>
           <h3>{goal.measure?.label ?? goal.unit ?? "Verified milestones"}</h3>
         </div>
         <span className={`pace-badge ${status.tone}`}>{status.label}</span>
