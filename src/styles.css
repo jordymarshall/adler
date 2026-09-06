@@ -80,7 +80,9 @@ body {
 button,
 input,
 select,
-textarea {
+textarea,
+code,
+pre {
   font: inherit;
 }
 button,
