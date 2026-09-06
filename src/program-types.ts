@@ -1,4 +1,5 @@
-export type GoalArea = "Career" | "Learning" | "Personal";
+import type { ResearchSearch } from "../shared/planning";
+export type GoalArea = "Unassigned" | "Career" | "Learning" | "Personal";
 export interface Checkpoint {
   id: string;
   date: string;
@@ -51,6 +52,7 @@ export interface CoachInsight {
   changeIndexes: number[];
 }
 export interface CoachDecision {
+  research?: (Omit<ResearchSearch, "sources"> & { sourceCount: number })[];
   insights?: CoachInsight[];
   id: string;
   date: string;

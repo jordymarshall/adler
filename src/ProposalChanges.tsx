@@ -1,3 +1,5 @@
+import { PlanExplanation } from "./PlanExplanation";
+import type { PlanningBasis } from "../shared/planning";
 import { currentRecord } from "../shared/change-record";
 import { ChevronDown } from "lucide-react";
 import { formatDate, type Data } from "./store";
@@ -181,7 +183,7 @@ export function ProposalChanges({
         );
         const fields = Object.entries(values).filter(
           ([key, value]) =>
-            key !== "reason" &&
+            key !== "reason" && key !== "basis" &&
             !(
               change.entity === "goal" &&
               change.operation === "create" &&
@@ -276,6 +278,7 @@ export function ProposalChanges({
                 </dl>
               )}
               <ChangeReason>{reason}</ChangeReason>
+              {Boolean(values.basis) && <PlanExplanation basis={values.basis as PlanningBasis} />}
             </details>
           </li>
         );

@@ -1,3 +1,4 @@
+import { addDays, dateInZone, zonedTime } from "../shared/journey";
 import type { BusyInterval, ProgramVersion } from "./program-types";
 export const overlaps = (a: BusyInterval, b: BusyInterval) =>
   Date.parse(a.start) < Date.parse(b.end) &&
@@ -7,18 +8,16 @@ export function findSlots(
   busy: BusyInterval[],
   now = new Date(),
   checkIn = true,
+  timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  fromDate = dateInZone(timeZone, now),
 ) {
   const slots: BusyInterval[] = [];
   for (let offset = 0; offset < 7; offset++) {
-    const day = new Date(now);
-    day.setDate(day.getDate() + offset);
-    if (!program.workDays.includes(day.getDay())) continue;
-    const [sh, sm] = program.workStart.split(":").map(Number);
-    const [eh, em] = program.workEnd.split(":").map(Number);
-    const start = new Date(day);
-    start.setHours(sh, sm, 0, 0);
-    const end = new Date(day);
-    end.setHours(eh, em, 0, 0);
+    const day = addDays(fromDate, offset);
+    if (!program.workDays.includes(new Date(`${day}T12:00:00Z`).getUTCDay())) continue;
+    const start = zonedTime(day, program.workStart, timeZone);
+    const end = zonedTime(day, program.workEnd, timeZone);
+    if (!start || !end) continue;
     let offered = 0;
     for (
       let t = start.getTime();

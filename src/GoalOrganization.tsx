@@ -22,7 +22,7 @@ import type { GoalArea } from "./program-types";
 export function OrganizedGoals() {
   const { data } = useStore();
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("Active");
+  const [status, setStatus] = useState("All");
   const [area, setArea] = useState("All areas");
   const [tag, setTag] = useState("All tags");
   const [groupBy, setGroupBy] = useState("Area");
@@ -38,7 +38,7 @@ export function OrganizedGoals() {
   );
   const groups =
     groupBy === "Area"
-      ? ["Career", "Learning", "Personal"]
+      ? ["Unassigned", "Career", "Learning", "Personal"]
       : ["Focus", "Maintain", "Later"];
   return (
     <div className="organized-goals">
@@ -70,7 +70,7 @@ export function OrganizedGoals() {
           value={area}
           onChange={(e) => setArea(e.target.value)}
         >
-          {["All areas", "Career", "Learning", "Personal"].map((v) => (
+          {["All areas", "Unassigned", "Career", "Learning", "Personal"].map((v) => (
             <option key={v}>{v}</option>
           ))}
         </select>
@@ -96,7 +96,7 @@ export function OrganizedGoals() {
         </label>
       </div>
       <div className="filter-tabs" aria-label="Filter goals">
-        {["Active", "Paused", "Completed", "Set aside", "All"].map((v) => (
+        {["Active", "Draft", "Paused", "Completed", "Set aside", "All"].map((v) => (
           <button
             key={v}
             className={status === v ? "active" : ""}
@@ -114,7 +114,7 @@ export function OrganizedGoals() {
       <div className="goal-groups">
         {groups.map((group) => {
           const items = goals.filter(
-            (g) => (groupBy === "Area" ? g.area : g.priority) === group,
+            (g) => (groupBy === "Area" ? (g.area ?? "Unassigned") : g.priority) === group,
           );
           return items.length ? (
             <section className="goal-group" key={group}>
@@ -128,7 +128,7 @@ export function OrganizedGoals() {
                   return (
                     <Link
                       className="organized-card"
-                      to={`/app/goals/${goal.id}/progress`}
+                      to={`/app/goals/${goal.id}`}
                       key={goal.id}
                     >
                       <div className="goal-card-top">
@@ -179,7 +179,7 @@ export function OrganizedGoals() {
 export function GoalOrganization({ goal }: { goal: Goal }) {
   const { commit } = useStore();
   const [editing, setEditing] = useState(false);
-  const [area, setArea] = useState(goal.area ?? "Personal");
+  const [area, setArea] = useState(goal.area ?? "Unassigned");
   const [tags, setTags] = useState(goal.tags?.join(", ") ?? "");
   const [priority, setPriority] = useState(goal.priority ?? "Maintain");
   const [date, setDate] = useState(goal.targetDate ?? "");
@@ -259,7 +259,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
   return (
     <>
       <div className="goal-meta-row">
-        <span>{goal.area}</span>
+        <span>{goal.area ?? "Unassigned"}</span>
         {goal.tags?.map((t) => (
           <span key={t}>#{t}</span>
         ))}
@@ -268,7 +268,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
         <button
           className="text-link"
           onClick={() => {
-            setArea(goal.area ?? "Personal");
+            setArea(goal.area ?? "Unassigned");
             setTags(goal.tags?.join(", ") ?? "");
             setPriority(goal.priority ?? "Maintain");
             setDate(goal.targetDate ?? "");
@@ -279,7 +279,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
             setEditing(true);
           }}
         >
-          <SlidersHorizontal size={14} /> Organize & edit checkpoints
+          <SlidersHorizontal size={14} /> Edit area, tags & checkpoints
         </button>
       </div>
       {editing && (
@@ -290,6 +290,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
                 {error}
               </p>
             )}
+            <p className="field-hint">Areas group your goals. Tags are labels you create. Adler may suggest a grouping during setup; you can edit it here. Priority describes your focus now.</p>
             <div className="form-row">
               <label>
                 Area
@@ -297,7 +298,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
                   value={area}
                   onChange={(e) => setArea(e.target.value as GoalArea)}
                 >
-                  {["Career", "Learning", "Personal"].map((v) => (
+                  {["Unassigned", "Career", "Learning", "Personal"].map((v) => (
                     <option key={v}>{v}</option>
                   ))}
                 </select>

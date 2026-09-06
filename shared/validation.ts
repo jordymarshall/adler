@@ -1,3 +1,4 @@
+import { planningBasisSchema, researchSearchSchema } from "./planning.ts";
 import { z } from "zod";
 import type { Data, Goal, Action } from "./workspace.ts";
 import { reactionTypes } from "./workspace.ts";
@@ -32,6 +33,8 @@ export const resultSchema = z
 export const planSchema = z
   .object({
     version: z.number().int().positive(),
+    basis: planningBasisSchema.optional(),
+    durationMinutes: z.number().int().min(5).max(240).optional(),
     action: text,
     timing: text,
     criterion: text,
@@ -61,8 +64,8 @@ export const goalSchema = z
     kind: z.enum(["project", "learning", "practical"]),
     why: text,
     success: text,
-    status: z.enum(["Active", "Paused", "Completed", "Set aside"]),
-    area: z.enum(["Career", "Learning", "Personal"]).optional(),
+    status: z.enum(["Draft", "Active", "Paused", "Completed", "Set aside"]),
+    area: z.enum(["Unassigned", "Career", "Learning", "Personal"]).optional(),
     organizationVersion: z.number().int().optional(),
     tags: z.array(z.string().max(50)).max(8).optional(),
     priority: z.enum(["Focus", "Maintain", "Later"]).optional(),
@@ -71,6 +74,7 @@ export const goalSchema = z
     target: z.number().min(1).max(1000000).optional(),
     unit: z.string().max(150).optional(),
     measure: measureSchema.optional(),
+    measurementHistory: z.array(z.object({ date, label: text, unit: text, results: z.array(resultSchema).max(5000), reason: text }).strict()).max(100).optional(),
     checkpoints: z.array(checkpointSchema).max(100).optional(),
     outcomeUpdatedAt: date.optional(),
     checkpointHistory: z
@@ -105,12 +109,14 @@ export const actionSchema = z
     date: z.union([date, z.literal("")]),
     planVersion: z.number().int().positive(),
     outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
+    amount: z.number().min(0).max(1000000).optional(),
     note: text.optional(),
     unplanned: z.boolean().optional(),
     history: z
       .array(
         z.object({
           outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
+    amount: z.number().min(0).max(1000000).optional(),
           note: text.optional(),
           at: text,
         }),
@@ -147,6 +153,8 @@ export const programSchema = z
   .strict();
 export const reviewSchema = z
   .object({
+    periodStart: date.optional(),
+    periodEnd: date.optional(),
     step: z.number().int().min(0).max(5),
     note: text,
     decision: text,
@@ -167,6 +175,7 @@ const decisionSchema = z
     date: text,
     goalId: z.string(),
     insights: z.array(insightSchema).max(6).optional(),
+    research: z.array(researchSearchSchema.omit({ sources: true }).extend({ sourceCount: z.number().int().min(0).max(18) })).max(2).optional(),
     programVersion: z.number(),
     planVersion: z.number(),
     mode: z.enum(["live", "guided"]),
@@ -344,15 +353,18 @@ export function validateWorkspace(input: unknown): Data {
 }
 export const createGoalSchema = z
   .object({
+    status: z.enum(["Draft", "Active"]).optional(),
+    basis: planningBasisSchema.optional(),
+    durationMinutes: z.number().int().min(5).max(240).optional(),
     title: z.string().trim().min(1).max(300),
     kind: z.enum(["project", "learning", "practical"]),
     why: text,
     success: z.string().trim().min(1).max(1500),
-    area: z.enum(["Career", "Learning", "Personal"]),
+    area: z.enum(["Unassigned", "Career", "Learning", "Personal"]),
     tags: z.array(z.string().max(50)).max(8),
     targetDate: date,
     milestones: z
-      .array(z.object({ title: text, criterion: text }))
+      .array(z.object({ title: text, criterion: text, dueDate: date.optional() }))
       .min(1)
       .max(30),
     measure: measureSchema.optional(),
@@ -383,7 +395,7 @@ export function createGoal(
     success: input.success,
     area: input.area,
     tags: input.tags,
-    status: "Active",
+    status: input.status ?? "Active",
     priority: data.goals.length ? "Maintain" : "Focus",
     startDate: today,
     targetDate: input.targetDate,
@@ -409,6 +421,8 @@ export function createGoal(
         action: input.action,
         criterion: input.criterion,
         timing: input.timing,
+        ...(input.basis ? { basis: input.basis } : {}),
+        ...(input.durationMinutes ? { durationMinutes: input.durationMinutes } : {}),
       },
     ],
     results: [],

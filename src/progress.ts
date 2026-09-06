@@ -29,7 +29,7 @@ export function progressStatus(goal: Goal, date: string) {
       tone: "neutral",
       actual,
       planned: due?.value ?? null,
-      detail: "Future work is paused. Historical results are retained.",
+      detail: goal.status === "Draft" ? "Review this plan and select Start plan when you’re ready." : "Future work is paused. Historical results are retained.",
     };
   if (actual === null)
     return {

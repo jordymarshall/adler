@@ -336,7 +336,7 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
   );
   await page.getByRole("button", { name: "New chat", exact: true }).click();
   await expect(page.locator(".coach-context-strip")).toContainText(
-    "Across goals",
+    "Open plan",
   );
   await page
     .getByRole("button", {
@@ -439,7 +439,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
     "My meeting ran late.",
   );
   await page.locator(".message-record-links a").click();
-  await expect(page).toHaveURL(/\/app\/goals\/essays\/plan$/);
+  await expect(page).toHaveURL(/\/app\/goals\/essays$/);
   await page.goto("/app/goals/essays/learning");
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await page.getByRole("combobox").selectOption("all");

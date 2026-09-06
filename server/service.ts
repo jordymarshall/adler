@@ -11,6 +11,8 @@ import {
 import { configuration, generate } from "./providers.ts";
 import { coachingContext } from "../src/coach-context.ts";
 import { METHODS } from "../src/methods.ts";
+import { methodSources, planningInstructions, searchLiterature, researchReviewInstructions, researchReviewSchema } from "./research.ts";
+import { planningBasisSchema, type ResearchSearch } from "../shared/planning.ts";
 import {
   reactionTypes,
   type Data,
@@ -29,6 +31,7 @@ export const dayInZone = (data: Data, date = new Date()) =>
 const replySchema = z
   .object({
     reply: z.string().min(1).max(5000),
+    researchQueries: z.array(z.string().trim().min(1).max(300)).max(3).default([]),
     summary: z.string().max(1200),
     methods: z.array(z.enum(METHODS.map((m) => m.id))).max(7),
     changes: z
@@ -94,6 +97,7 @@ export class Service {
   constructor(
     db: Database,
     private runner = generate,
+    private research = searchLiterature,
   ) {
     this.db = db;
   }
@@ -521,21 +525,37 @@ export class Service {
         commandCatalog,
         evidenceCatalog: METHODS,
       };
+      const researchSearches: ResearchSearch[] = [];
+      const researchSources = methodSources().filter((source) => context.program.enabledMethods.includes(source.id.slice(7)));
       let result!: z.infer<typeof replySchema>;
       let validationError: string | undefined;
-      for (let attempt = 0; attempt < 2; attempt++) {
+      let repairs = 0;
+      let ready = false;
+      for (let attempt = 0; attempt < 5; attempt++) {
         result = await this.runner(
           config,
-          instructions,
+          instructions + planningInstructions,
           {
             ...turn,
+            researchSources,
+            researchSearches,
             ...(validationError
               ? { previousResponse: result, validationError }
               : {}),
           },
           replySchema,
+          8500,
         );
         try {
+          if (result.researchQueries.length) {
+            if (result.changes.length || result.confirmProposalId)
+              throw new Error("Request research without changes or confirmation. Review the search results before recommending a plan.");
+            if (researchSearches.length >= 2)
+              throw new Error("Research budget reached. Use the available sources, disclose limitations, and answer or ask a clarification.");
+            researchSearches.push(await this.research(result.researchQueries));
+            validationError = undefined;
+            continue;
+          }
           if (
             result.methods.some(
               (id) => !context.program.enabledMethods.includes(id),
@@ -546,6 +566,28 @@ export class Service {
             ...c,
             id: c.operation === "create" ? (c.id ?? randomUUID()) : c.id,
           }));
+          for (const command of result.changes) {
+            if (command.entity === "goal" && command.operation === "update" && JSON.parse(command.values).measure && result.execution === "propose" && !result.changes.some((change) => change.entity === "plan" && change.parentId === command.id && JSON.parse(change.values).basis))
+              throw new Error("A recommended measurement change needs a researched plan revision in the same bundle, explaining the measurement and alternatives.");
+            const creating = command.entity === "goal" && command.operation === "create";
+            const revising = command.entity === "plan";
+            if (!creating && !revising) continue;
+            const values = JSON.parse(command.values);
+            if (creating || result.execution === "propose" || values.basis) {
+              if (!researchSearches.length)
+                throw new Error("Investigate the recommendation first using researchQueries, then include basis in the goal or plan command.");
+              const basis = planningBasisSchema.parse(values.basis);
+              const available = [...researchSources, ...researchSearches.flatMap((search) => search.sources)];
+              const used = [...new Set(basis.evidence.map((e) => e.sourceId))];
+              if (used.some((id) => !available.some((source) => source.id === id)))
+                throw new Error("Every research citation must use a source ID retrieved in this turn. Do not invent citations.");
+              if (basis.review.date < dayInZone(snapshot.data))
+                throw new Error("Choose today or a future date for the plan review.");
+              values.basis = { ...basis, sources: used.map((id) => available.find((source) => source.id === id)!) };
+            }
+            if (creating) values.status = "Draft";
+            command.values = JSON.stringify(values);
+          }
           if (result.changes.length)
             applyChanges(
               snapshot.data,
@@ -562,17 +604,28 @@ export class Service {
             throw new Error(
               "Every insight must cite existing source IDs or currentMessageId, and valid zero-based changeIndexes.",
             );
+          if (result.changes.some((change) => JSON.parse(change.values).basis)) {
+            const review = await this.runner(config, researchReviewInstructions, {
+              task: "review-plan", message, conversation: context.conversation,
+              goals: context.activeGoals, program: context.program, reply: result.reply,
+              changes: result.changes, researchSearches, effectiveGoals: applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data)).goals,
+            }, researchReviewSchema, 2200);
+            if (review.issues.length)
+              throw new Error(`Correct the evidence or consistency issues before saving: ${JSON.stringify(review.issues)}`);
+          }
           validationError = undefined;
+          ready = true;
           break;
         } catch (error) {
           validationError =
             error instanceof Error ? error.message : "Invalid command.";
-          if (attempt === 1)
+          if (++repairs >= 2)
             throw new Error(
               `Adler could not save these changes: ${validationError}`,
             );
         }
       }
+      if (!ready) throw new Error("Adler could not finish researching this plan. Nothing was changed. Try a narrower question.");
       if (result.confirmProposalId) {
         const pending = pendingProposals.find(
           (p) => p.id === result.confirmProposalId,
@@ -671,6 +724,7 @@ export class Service {
         checks: context.checks,
         methods: result.methods,
         summary: result.summary,
+        ...(researchSearches.length ? { research: researchSearches.map(({ sources, ...search }) => ({ ...search, sourceCount: sources.length })) } : {}),
         status: applyNow
           ? "Accepted"
           : result.changes.length

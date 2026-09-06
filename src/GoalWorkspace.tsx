@@ -1,3 +1,5 @@
+import { GoalOverview } from "./GoalOverview";
+import { PlanExplanation } from "./PlanExplanation";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, NavLink, useParams } from "react-router-dom";
 import {
@@ -90,8 +92,7 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
             onChange={(e) => setTiming(e.target.value)}
           />
           <p className="field-hint">
-            The next occurrence starts tomorrow, or use “Unscheduled” to leave
-            it open.
+            Choose a cue, or use “Unscheduled”. Choose a calendar time after saving.
           </p>
         </div>
         <div className="modal-actions">
@@ -112,7 +113,7 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
 }
 
 export function GoalWorkspace() {
-  const { goalId, tab = "progress" } = useParams();
+  const { goalId, tab = "overview" } = useParams();
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
   const [editing, setEditing] = useState(false);
@@ -174,7 +175,7 @@ export function GoalWorkspace() {
   const statusOptions: GoalStatus[] =
     goal.status === "Active"
       ? ["Paused", "Completed", "Set aside"]
-      : ["Active"];
+      : goal.status === "Draft" ? ["Set aside"] : ["Active"];
   return (
     <>
       <Link className="back-link" to="/app/goals">
@@ -224,12 +225,15 @@ export function GoalWorkspace() {
           </div>
         </details>
       </div>
+      {goal.status === "Draft" && tab !== "overview" && <Link className="button primary" to={`/app/goals/${goal.id}`}>Review & start plan <ArrowRight size={16} /></Link>}
       <nav className="goal-tabs" aria-label="Goal views">
+        <NavLink to={`/app/goals/${goal.id}`} end>Overview</NavLink>
         <NavLink to={`/app/goals/${goal.id}/progress`}>Progress</NavLink>
         <NavLink to={`/app/goals/${goal.id}/plan`}>Plan</NavLink>
+        <Link to={`/app/coach?goal=${goal.id}`}>Chats</Link>
         <Link to={`/app/insights?goal=${goal.id}`}>Insights</Link>
       </nav>
-      {tab === "plan" ? (
+      {tab === "overview" ? <GoalOverview goal={goal} onRecord={setRecording} /> : tab === "plan" ? (
         <div className="goal-content">
           <section className="panel current-plan">
             <div className="list-heading">
@@ -261,7 +265,7 @@ export function GoalWorkspace() {
             <div className="plan-actions">
               <button
                 className="button primary small-button"
-                disabled={goal.status !== "Active"}
+                disabled={goal.status !== "Active" && goal.status !== "Draft"}
                 onClick={() => setEditing(true)}
               >
                 <Pencil size={15} />
@@ -275,6 +279,7 @@ export function GoalWorkspace() {
               </Link>
             </div>
           </section>
+          {plan.basis && <PlanExplanation basis={plan.basis} />}
           <section className="panel plan-history">
             <h2>
               <History size={20} /> How the plan has changed
@@ -293,6 +298,7 @@ export function GoalWorkspace() {
                   <span>
                     {p.timing} · {formatDate(p.date)}
                   </span>
+                  {p.basis && p.version !== plan.version && <details className="explanation-details"><summary>Why this version?</summary><PlanExplanation basis={p.basis} /></details>}
                 </div>
               </div>
             ))}
@@ -310,6 +316,7 @@ export function GoalWorkspace() {
             <section className="panel">
               <ProgressChart goal={goal} />
               <GoalOrganization goal={goal} />
+              {!!goal.measurementHistory?.length && <details className="chart-data"><summary>Previous measurements</summary>{goal.measurementHistory.map((history, i) => <article key={i}><b>{history.label} · {history.unit}</b><p>{history.reason}</p>{history.results.map((record) => <p key={record.id}>{formatDate(record.date)}: {record.value} {history.unit} · {record.source}</p>)}</article>)}</details>}
               {!!goal.checkpointHistory?.length && (
                 <details className="chart-data">
                   <summary>Previous checkpoint schedules</summary>
@@ -373,6 +380,7 @@ export function GoalWorkspace() {
                             : "Not started"}
                       </Tag>
                       <p>{m.criterion}</p>
+                      {m.dueDate && <p className="field-hint">Due {formatDate(m.dueDate)}</p>}
                     </div>
                     <button
                       className="button text-button small-button"

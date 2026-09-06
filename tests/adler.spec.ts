@@ -111,13 +111,13 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
     .getByLabel("Password", { exact: true })
     .fill("a-long-new-password");
   await page.getByRole("button", { name: "Create my workspace" }).click();
-  await expect(page.locator("h1")).toContainText("Your next actions");
+  await expect(page.locator("h1")).toContainText("A goal. A clear plan. Your next step.");
   expect((await snapshot(page)).data.goals).toHaveLength(0);
   await page
     .getByRole("navigation", { name: "App navigation", exact: true })
     .getByRole("link", { name: "Coach", exact: true })
     .click();
-  await expect(page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Weekly review" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Review & plan your week" })).toBeVisible();
   await page.reload();
   expect((await snapshot(page)).data.goals).toHaveLength(0);
 });
@@ -127,11 +127,11 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
 }) => {
   await register(page);
   await page.goto("/app/today");
-  await expect(page.getByRole("link", { name: /Review this week’s results/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: /Review & plan your week/ })).toHaveCount(0);
   await page.goto("/app/goals");
   await expect(page.getByRole("heading", { name: "What would you like to achieve?" })).toBeVisible();
   await expect(page.getByLabel("Search goals", { exact: true })).toHaveCount(0);
-  await page.goto("/app/goals/new");
+  await page.goto("/app/goals/new/manual");
   await page
     .getByLabel("What would you like to work toward?")
     .fill("Publish my first illustration");
@@ -153,7 +153,7 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
     .getByLabel("This action is finished when")
     .fill("Three thumbnails are on paper");
   await page.getByRole("button", { name: "Review my plan" }).click();
-  await page.getByRole("button", { name: "Use this plan" }).click();
+  await page.getByRole("button", { name: "Save plan", exact: true }).click();
   await synced(page);
   const { data } = await snapshot(page);
   expect(data.goals).toHaveLength(1);
@@ -161,7 +161,7 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   expect(data.actions[0].date).toBe("");
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
   await expect(page.getByTestId("recorded-line")).toBeVisible();
-  await expect(page.locator(".progress-viz .pace-badge")).toHaveText("On plan");
+  await expect(page.locator(".progress-viz .pace-badge")).toHaveText("Draft");
   await page.goto("/app/goals");
   await expect(page.getByLabel("Search goals", { exact: true })).toBeVisible();
   await page.getByLabel("Search goals", { exact: true }).fill("does not match");
@@ -259,8 +259,8 @@ test("weekly review is directly accessible and archives the decision", async ({
 }) => {
   await register(page, true);
   await page.goto("/app/today");
-  await page.getByRole("link", { name: /Review this week’s results/ }).click();
-  await expect(page.locator("h1")).toHaveText("Your weekly review");
+  await page.getByRole("link", { name: /Review & plan your week/ }).click();
+  await expect(page.locator("h1")).toHaveText("Review & plan your week");
   await expect(page.getByRole("link", { name: /Publish two essays/ })).toBeVisible();
   await page
     .getByLabel("What helped or got in the way?")
@@ -268,7 +268,7 @@ test("weekly review is directly accessible and archives the decision", async ({
   await page.getByRole("link", { name: "Review changes with Adler" }).click();
   await synced(page);
   expect((await snapshot(page)).data.review.note).toBe("Drafting worked best before opening email.");
-  await page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Weekly review" }).click();
+  await page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Review & plan your week" }).click();
   await expect(page.getByLabel("What helped or got in the way?")).toHaveValue("Drafting worked best before opening email.");
   await page.getByRole("button", { name: "Keep my current plans" }).click();
   await synced(page);

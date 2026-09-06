@@ -37,7 +37,7 @@ const rangeSchema = z
   );
 const bookingSchema = z
   .object({
-    id: z.uuid(),
+    id: z.string().min(1).max(100),
     provider: providerSchema,
     calendarId: z.string().min(1).max(2000),
     conflictIds: z.array(z.string().min(1).max(2000)).min(1).max(30),
@@ -369,6 +369,8 @@ export class CalendarAPI {
             goal = snapshot.data.goals.find((g) => g.id === goalId);
           if (!goal || goal.status !== "Active")
             throw new Error("Choose an active goal before booking.");
+          const original = snapshot.data.actions.find((a) => a.id === input.id);
+          if (original && (original.goalId !== goalId || original.outcome || original.title !== input.title)) throw new Error("Choose an unrecorded action belonging to this goal.");
           const result = await this.book(session, userId, input);
           if (result.workDone) {
             const existing = snapshot.data.workBlocks.find(
@@ -388,18 +390,12 @@ export class CalendarAPI {
                 eventId: result.workId,
                 ...(result.checkInDone ? { checkInId: result.checkInId } : {}),
               });
-              snapshot.data.actions = snapshot.data.actions.filter(
-                (a) =>
-                  a.goalId !== goalId ||
-                  a.date ||
-                  a.outcome ||
-                  a.title !== input.title,
-              );
+              snapshot.data.actions = snapshot.data.actions.filter((a) => a.id !== input.id);
               snapshot.data.actions.push({
                 id: input.id,
                 goalId,
                 title: input.title,
-                criterion: currentPlan(goal).criterion,
+                criterion: original?.criterion ?? currentPlan(goal).criterion,
                 timing: input.start,
                 date: new Intl.DateTimeFormat("en-CA", {
                   timeZone: snapshot.data.timeZone,
@@ -407,8 +403,8 @@ export class CalendarAPI {
                   month: "2-digit",
                   day: "2-digit",
                 }).format(new Date(input.start)),
-                planVersion: currentPlan(goal).version,
-                history: [],
+                planVersion: original?.planVersion ?? currentPlan(goal).version,
+                history: original?.history ?? [],
               });
             }
             this.db.transaction(() =>

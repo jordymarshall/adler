@@ -1,3 +1,4 @@
+import { reviewSchedule } from "../shared/journey.ts";
 import twilio from "twilio";
 import { randomBytes, randomUUID } from "node:crypto";
 import { digest, type Database } from "./database.ts";
@@ -96,13 +97,14 @@ const localParts = (timeZone: string, when = new Date()) => {
   };
 };
 export function nextReview(data: Data, now = Date.now()) {
+  const earliestDate = reviewSchedule(data, new Date(now)).nextDate;
   for (
     let t = Math.ceil((now + 1) / 60000) * 60000;
     t < now + 15 * 86400000;
     t += 60000
   ) {
     const p = localParts(data.timeZone, new Date(t));
-    if (p.day === data.reviewDay && p.time === data.automation.reviewTime)
+    if (p.date >= earliestDate && p.day === data.reviewDay && p.time === data.automation.reviewTime)
       return t;
   }
   throw new Error("Could not find the next review in this timezone.");
@@ -624,6 +626,7 @@ export class Channels {
       data.timeZone,
       data.reviewDay,
       data.automation.reviewTime,
+      reviewSchedule(data).nextDate,
     ]);
     let cached = this.reviewCache.get(userId);
     if (!cached || cached.rule !== rule || cached.due <= Date.now()) {

@@ -1,3 +1,4 @@
+import { Onboarding } from "./Onboarding";
 import { AppIntegrations, Integrations } from "./Integrations";
 import { Insights } from "./Insights";
 import { useEffect } from "react";
@@ -181,7 +182,7 @@ function CoachSection() {
         <NavLink
           to="/app/reviews/current"
           className={pathname.includes("/reviews/") ? "active" : ""}
-        >Weekly review</NavLink>
+        >Review & plan your week</NavLink>
         <NavLink to="/app/insights">Insights</NavLink>
         <NavLink to="/app/coach/program">Program</NavLink>
       </nav>
@@ -209,8 +210,9 @@ export function App() {
           <Route index element={<Navigate to="today" replace />} />
           <Route path="today" element={<Today />} />
           <Route path="goals" element={<OrganizedGoals />} />
-          <Route path="goals/new" element={<NewGoal />} />
-          <Route path="onboarding" element={<NewGoal />} />
+          <Route path="goals/new" element={<Onboarding />} />
+          <Route path="goals/new/manual" element={<NewGoal />} />
+          <Route path="onboarding" element={<Onboarding />} />
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />

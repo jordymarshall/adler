@@ -27,9 +27,11 @@ Before each coaching turn, `src/coach-context.ts` loads the current program, all
 
 The instructions ask the model to consider the goal's outcome and checkpoint, observed results, competing goals, time available, reported obstacles, enabled behavioural methods, and a concrete next step. The model returns structured changes and a short explanation. Source IDs and enabled method IDs are checked against the actual records and evidence catalog. Invalid edits get one repair attempt.
 
-`server/commands.ts` validates changes to goals, plans, milestones, dated checkpoints, actions, measured results, memories, the program, weekly reviews, preferences, work blocks, and conversations. Creating a goal also creates its first action. Action completion and measured goal progress remain separate. Explicit chat creation and edits can save immediately; recommendations, deletion, and external calendar bookings require confirmation. Calendar bookings recheck availability and use stable booking IDs. Text delivery and reactions run through the configured messaging adapter.
+`server/commands.ts` validates changes to goals, plans, milestones, dated checkpoints, actions, measured results, memories, the program, weekly reviews, preferences, work blocks, and conversations. Creating a goal also creates its first action. UI and coach creation save a Draft; Start plan activates it without duplicating that action. Action completion and measured goal progress remain separate. Explicit chat creation and edits can save immediately; recommendations, deletion, and external calendar bookings require confirmation. Calendar bookings recheck availability and use stable booking IDs. Text delivery and reactions run through the configured messaging adapter.
 
 MCP exposes workspace reading, the command catalog, coaching, proposing/applying/dismissing changes, message reactions, connected calendars, and calendar availability. The model is given a structured command catalog; it does not have unrestricted shell, browser, or arbitrary network access.
+
+For initial goals and recommended approaches, the coach now searches Europe PMC and Crossref, saves a structured rationale with validated source snapshots, and runs a separate evidence review before saving. See [Guided goals and research-backed planning](guided-goal-journey.md) for the research loop, goal lifecycle, calendar view, and verification.
 
 ## What happens when someone uses a form
 

@@ -1,3 +1,5 @@
+import { Onboarding } from "./Onboarding";
+import { addDays, dateInZone, reviewSchedule } from "../shared/journey";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -46,11 +48,13 @@ export function RecordAction({
   const { data, commit } = useStore();
   const [followup, setFollowup] = useState(false);
   const [note, setNote] = useState(action.note ?? "");
+  const [amount, setAmount] = useState(action.amount?.toString() ?? "");
+  const measure = data.goals.find((g) => g.id === action.goalId)?.plans.find((p) => p.version === action.planVersion)?.basis?.actionMeasure;
   const current = data.actions.find((a) => a.id === action.id)!;
   function select(outcome: Outcome) {
     if (
       commit(
-        (d) => recordAction(d, action.id, outcome),
+        (d) => recordAction(d, action.id, outcome, action.note, amount === "" ? undefined : Number(amount)),
         `${outcome} saved. Your goal result is unchanged.`,
       )
     ) {
@@ -93,12 +97,13 @@ export function RecordAction({
             A check-in is a short update about this action. Your goal’s result
             is recorded separately.
           </p>
+          {measure && <label className="form-field">{measure.label} ({measure.unit}) · optional<input type="number" min="0" max="1000000" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Leave blank if unknown" /><span className="field-hint">Record the actual amount for this action.</span></label>}
           <div className="outcome-buttons">
             {(["Done", "Partly", "Didn’t happen"] as Outcome[]).map((o, i) => (
               <button
                 key={o}
                 className={`outcome-option ${current.outcome === o ? "selected" : ""}`}
-                disabled={action.date > localDate()}
+                disabled={action.date > dateInZone(data.timeZone) || (amount !== "" && (!Number.isFinite(Number(amount)) || Number(amount) < 0 || Number(amount) > 1000000))}
                 onClick={() => select(o)}
               >
                 <span>
@@ -185,7 +190,7 @@ export function RecordAction({
               onClick={() => {
                 if (
                   commit(
-                    (d) => recordAction(d, action.id, current.outcome, note),
+                    (d) => recordAction(d, action.id, current.outcome, note, current.amount),
                     "Context saved.",
                   )
                 )
@@ -277,6 +282,9 @@ export function Today() {
     />
   );
   const hour = new Date().getHours();
+  const review = reviewSchedule(data);
+  const drafts = data.goals.filter((g) => g.status === "Draft");
+  if (!data.goals.length) return <Onboarding />;
   return (
     <>
       <div className="page-heading today-heading">
@@ -301,6 +309,7 @@ export function Today() {
           New goal
         </Link>
       </div>
+      {drafts.length > 0 && <section className="panel today-drafts"><span className="section-kicker">READY WHEN YOU ARE</span><h2>Review and start your plan.</h2>{drafts.map((goal) => <Link className="draft-goal-link" key={goal.id} to={`/app/goals/${goal.id}`}><b>{goal.title}</b><span>Review plan <ArrowRight size={16} /></span></Link>)}</section>}
       {active.length > 0 && <Link className="today-pace-banner" to="/app/goals">
         <Target size={18} />
         <div>
@@ -336,11 +345,10 @@ export function Today() {
           ) : (
             <EmptyState title="No actions scheduled today.">
               <p>
-                You have no more unrecorded actions for today. Your goals are
-                here whenever you’re ready.
+                Choose your next action and give it a place in your day.
               </p>
-              <Link to="/app/goals" className="button secondary">
-                See your goals <ArrowRight size={16} />
+              <Link to={secondary[0] ? `/app/goals/${secondary[0].goalId}` : "/app/goals"} className="button secondary">
+                Choose your next step <ArrowRight size={16} />
               </Link>
             </EmptyState>
           )}
@@ -354,20 +362,16 @@ export function Today() {
               <div>{completed.map(renderAction)}</div>
             </details>
           )}
-          {active.length > 0 && !data.review.completedAt && (
+          {active.length > 0 && (
             <Link className="review-banner" to="/app/reviews/weekly">
               <span className="review-icon">
                 <CalendarDays size={24} />
               </span>
               <div>
                 <span>A MOMENT TO LOOK BACK</span>
-                <h3>Review this week’s results.</h3>
+                <h3>Review & plan your week.</h3>
                 <p>
-                  {new Date().toLocaleDateString("en-US", {
-                    weekday: "long",
-                  }) === data.reviewDay
-                    ? "Your weekly review is ready."
-                    : `Your review day is ${data.reviewDay}. You can start early.`}
+                  {review.due ? "Your review is due today." : `Next review: ${formatDate(review.nextDate)} at ${data.automation.reviewTime}.`} Look at what happened and choose the next steps.
                 </p>
               </div>
               <ArrowUpRight size={23} />
@@ -468,7 +472,7 @@ const draftDefaults = {
   timing: "Unscheduled",
   kind: "project",
   why: "",
-  area: "Career",
+  area: "Unassigned",
   tags: "",
   targetDate: localDate(28),
   assessmentTarget: "8",
@@ -498,6 +502,7 @@ export function NewGoal() {
         createGoal(
           d,
           {
+            status: "Draft",
             title: draft.title.trim(),
             kind: draft.kind as GoalKind,
             why: draft.why.trim(),
@@ -537,6 +542,7 @@ export function NewGoal() {
             action: draft.action.trim(),
             criterion: draft.criterion.trim(),
             timing: draft.timing,
+            ...(draft.timing === "Today" ? { actionDate: dateInZone(d.timeZone) } : draft.timing === "Tomorrow" ? { actionDate: addDays(dateInZone(d.timeZone), 1) } : {}),
           },
           localDate(),
           id,
@@ -544,7 +550,7 @@ export function NewGoal() {
         d.goalDraft = {};
       }, "Your goal and first plan are saved.")
     )
-      navigate("/app/today");
+      navigate(`/app/goals/${id}`);
   }
   const fields: {
     key: keyof typeof draft;
@@ -666,13 +672,14 @@ export function NewGoal() {
             ))}
             <div className="form-row">
               <div className="form-field">
-                <label htmlFor="goal-area">Area</label>
+                <label htmlFor="goal-area">Area <span>optional</span></label>
+                <p className="field-hint">A broad grouping for your goals. You can change it later.</p>
                 <select
                   id="goal-area"
                   value={draft.area}
                   onChange={(e) => field("area", e.target.value)}
                 >
-                  {["Career", "Learning", "Personal"].map((v) => (
+                  {["Unassigned", "Career", "Learning", "Personal"].map((v) => (
                     <option key={v}>{v}</option>
                   ))}
                 </select>
@@ -690,7 +697,8 @@ export function NewGoal() {
               </div>
             </div>
             <div className="form-field">
-              <label htmlFor="goal-tags">Tags, separated by commas</label>
+              <label htmlFor="goal-tags">Tags, separated by commas <span>optional</span></label>
+              <p className="field-hint">Create your own labels by typing them here.</p>
               <input
                 id="goal-tags"
                 maxLength={160}
@@ -869,7 +877,7 @@ export function NewGoal() {
               Edit
             </button>
             <button type="submit" className="button primary">
-              Use this plan <Check size={17} />
+              Save plan <Check size={17} />
             </button>
           </div>
         </form>
@@ -880,10 +888,11 @@ export function NewGoal() {
 
 export function WeeklyReview() {
   const { data, commit } = useStore();
-  const review = data.review;
+  const schedule = reviewSchedule(data);
+  const review = schedule.completed ?? schedule.current;
   const navigate = useNavigate();
   const actions = data.actions.filter(
-    (a) => !a.unplanned && a.date >= localDate(-6) && a.date <= localDate(),
+    (a) => !a.unplanned && a.date >= schedule.periodStart && a.date <= schedule.today,
   );
   return (
     <div className="form-page">
@@ -894,15 +903,19 @@ export function WeeklyReview() {
       <div className="page-heading">
         <div>
           <span className="section-kicker">
-            {formatDate(localDate(-6))} — {formatDate(localDate())}
+            {formatDate(schedule.periodStart)} — {formatDate(schedule.periodEnd)}
           </span>
-          <h1>Your weekly review</h1>
+          <h1>Review & plan your week</h1>
           <p>
-            Compare results with your plan, identify what helped or blocked
-            progress, and choose next week’s change.
+            Take a few minutes to see what happened, decide what to keep or change, and choose your next actions. Your results and notes are available to Adler.
           </p>
         </div>
       </div>
+      <section className="panel review-schedule">
+        <div><b>Next review: {formatDate(schedule.nextDate)} at {data.automation.reviewTime}</b><p className="field-hint">{data.timeZone} · A weekly starting point. Choose a time that fits your life.</p></div>
+        <label>Review day<select value={data.reviewDay} onChange={(event) => commit((d) => reviseProgram(d, currentProgram(d).version, { reviewDay: event.target.value, reason: "Changed weekly review day." }))}>{["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => <option key={day}>{day}</option>)}</select></label>
+        <label>Review time<input type="time" value={data.automation.reviewTime} onChange={(event) => { if (event.target.value) commit((d) => { d.automation.reviewTime = event.target.value; }); }} /></label>
+      </section>
       {review.completedAt ? (
         <div className="panel review-complete">
           <CheckCircle2 size={35} />
@@ -919,7 +932,7 @@ export function WeeklyReview() {
             className="button text-button"
             onClick={() =>
               commit((d) => {
-                d.review = { step: 0, note: "", decision: "" };
+                d.review = { step: 0, note: "", decision: "", periodStart: schedule.periodStart, periodEnd: schedule.periodEnd };
               })
             }
           >
@@ -960,7 +973,7 @@ export function WeeklyReview() {
               value={review.note}
               onChange={(e) => {
                 const note = e.target.value;
-                commit((d) => { d.review.note = note; });
+                commit((d) => { d.review = { ...schedule.current, note }; });
               }}
               rows={3}
               maxLength={2000}
@@ -971,7 +984,8 @@ export function WeeklyReview() {
               onClick={() =>
                 commit((d) => {
                   d.review = {
-                    ...d.review,
+                    ...schedule.current,
+                    note: review.note,
                     decision: "Keep the current plans",
                     completedAt: new Date().toISOString(),
                   };
@@ -986,7 +1000,7 @@ export function WeeklyReview() {
               </span>
               <ArrowRight size={18} />
             </button>
-            <Link className="review-choice" to="/app/coach">
+            <Link className="review-choice" to={`/app/coach?goal=general&prompt=${encodeURIComponent(`Guide my weekly review for ${schedule.periodStart} through ${schedule.today}. Use the review note and recorded actions and results. Compare each plan with its review question, discuss what to keep or change, and help schedule the next actions. Save the completed review when we agree.`)}`}>
               <Asterisk size={22} />
               <span>
                 <b>Review changes with Adler</b>
@@ -1004,7 +1018,8 @@ export function WeeklyReview() {
               if (
                 commit((d) => {
                   d.review = {
-                    ...d.review,
+                    ...schedule.current,
+                    note: review.note,
                     decision: "Skipped — plans unchanged",
                     completedAt: new Date().toISOString(),
                   };

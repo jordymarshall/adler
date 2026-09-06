@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageCircle, Plus, Pencil, Trash2 } from "lucide-react";
+import { MessageCircle, Plus, Pencil, Trash2, Folder } from "lucide-react";
 import { Modal } from "./components";
 import { api } from "./api";
 import { useStore } from "./store";
@@ -7,11 +7,13 @@ import type { Conversation } from "../shared/workspace";
 
 export function Conversations({
   selected,
+  goalId = "general",
   disabled,
   onSelect,
   onError,
 }: {
   selected?: string;
+  goalId?: string;
   disabled: boolean;
   onSelect: (id: string, goalId: string) => void;
   onError: (message: string) => void;
@@ -50,7 +52,7 @@ export function Conversations({
       setBusy(false);
     }
   }
-  const groups = [{ id: "general", title: "Across goals" }, ...data.goals];
+  const groups = [{ id: "general", title: "General" }, ...data.goals];
   return (
     <aside className="conversation-library" aria-label="Your chats">
       <div className="conversation-library-heading">
@@ -63,7 +65,7 @@ export function Conversations({
             void save("create", {
               id: crypto.randomUUID(),
               title: "New conversation",
-              goalId: "general",
+              goalId,
               createdAt: new Date().toISOString(),
             })
           }
@@ -73,14 +75,9 @@ export function Conversations({
       </div>
       <div className="conversation-groups">
         {groups
-          .filter(
-            (g) =>
-              (g.id === "general" && !data.conversations.length) ||
-              data.conversations.some((c) => c.goalId === g.id),
-          )
           .map((group) => (
             <section key={group.id}>
-              <h3>{group.title}</h3>
+              <h3><Folder size={14} /> {group.title}</h3>
               {data.conversations
                 .filter((c) => c.goalId === group.id)
                 .slice()
@@ -116,11 +113,8 @@ export function Conversations({
                     </button>
                   </div>
                 ))}
-              {group.id === "general" &&
-                !data.conversations.some((c) => c.goalId === group.id) && (
-                  <p className="field-hint">
-                    Start a conversation about any goal.
-                  </p>
+              {!data.conversations.some((c) => c.goalId === group.id) && (
+                  <button className="text-link" disabled={disabled || busy} onClick={() => void save("create", { id: crypto.randomUUID(), title: "New conversation", goalId: group.id, createdAt: new Date().toISOString() })}>Start a chat</button>
                 )}
             </section>
           ))}

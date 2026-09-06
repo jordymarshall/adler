@@ -1,7 +1,10 @@
+import { reviewSchedule } from "../shared/journey.ts";
+import { planningBasisSchema } from "../shared/planning.ts";
 import { z } from "zod";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import {
   currentPlan,
+  startGoal,
   currentProgram,
   reviseProgram,
   recordAction,
@@ -19,6 +22,7 @@ import {
   programSchema,
   automationSchema,
   conversationSchema,
+  measureSchema,
 } from "../shared/validation.ts";
 export const changeSchema = z
   .object({
@@ -50,7 +54,7 @@ export const changeSchema = z
       .optional(),
     values: z
       .string()
-      .max(15000)
+      .max(120000)
       .describe(
         "JSON object containing only the fields to set, according to the command catalog. Use {} for deletion.",
       ),
@@ -64,14 +68,14 @@ export const commandCatalog = {
   goal:
     "create: " +
     JSON.stringify(z.toJSONSchema(createGoalSchema)) +
-    "; update: title,why,success,area,tags,priority,targetDate,status,target (measured goals only); delete removes the goal and its actions/results. id identifies goal.",
-  plan: "update only: parentId=goal ID; values={action,criterion,timing}. Creates a new plan version and preserves recorded work.",
+    "; update: title,why,success,area,tags,priority,targetDate,status,target (measured goals only),measure (label,unit,target,baseline; changing measurement archives prior results); delete removes the goal and its actions/results. id identifies goal.",
+  plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?}; basis uses the same schema as goal creation. Creates a new plan version and preserves recorded work.",
   milestone:
     "parentId=goal ID. create/update: {title,criterion,done,dueDate?}. id for existing milestone. Toggling done records the verified outcome. delete removes milestone and revises future target.",
   checkpoint:
     "parentId=goal ID. create/update: {date,value,label}. id identifies checkpoint. Values are cumulative expected results.",
   action:
-    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?}. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
+    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?,amount?}. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
   result:
     "parentId=goal ID with measure or learning assessment. create/update: {value,date,source}; use the goal’s measurement and only user-reported values. Legacy assessments use 0–10. For milestone-count goals, change milestone.done instead. delete uses id.",
   memory:
@@ -157,16 +161,35 @@ export function applyChanges(
               title: str,
               why: str,
               success: str,
-              area: z.enum(["Career", "Learning", "Personal"]),
+              area: z.enum(["Unassigned", "Career", "Learning", "Personal"]),
               tags: z.array(z.string().max(50)).max(8),
               priority: z.enum(["Focus", "Maintain", "Later"]),
               targetDate: str,
               target: z.number().positive().max(1000000),
-              status: z.enum(["Active", "Paused", "Completed", "Set aside"]),
+              measure: measureSchema,
+              status: z.enum(["Draft", "Active", "Paused", "Completed", "Set aside"]),
             })
             .partial()
             .strict()
             .parse(values);
+          if (patch.measure && JSON.stringify(patch.measure) !== JSON.stringify(goal.measure)) {
+            if (patch.target !== undefined && patch.target !== patch.measure.target) throw new Error("Use one consistent measurement target.");
+            goal.measurementHistory ??= [];
+            goal.measurementHistory.push({ date: today, label: goal.measure?.label ?? goal.success, unit: goal.unit ?? "milestones", results: structuredClone(goal.results), reason: change.reason ?? "Measurement revised." });
+            goal.results = patch.measure.baseline === null ? [] : [{ id: randomUUID(), date: today, value: patch.measure.baseline, source: "Starting result reported for the new measurement" }];
+            goal.outcomeUpdatedAt = goal.results.at(-1)?.date;
+            goal.target = patch.measure.target;
+            goal.unit = patch.measure.unit;
+            goal.checkpointHistory ??= [];
+            goal.checkpointHistory.push({ date: new Date().toISOString(), checkpoints: structuredClone(goal.checkpoints ?? []), targetDate: goal.targetDate ?? "", reason: change.reason ?? "Measurement revised." });
+            goal.checkpoints = [{ id: randomUUID(), date: patch.targetDate ?? goal.targetDate ?? today, value: patch.measure.target, label: "Target result" }];
+            if (patch.measure.baseline !== null) goal.checkpoints.unshift({ id: randomUUID(), date: today, value: patch.measure.baseline, label: "Starting point" });
+            goal.measure = patch.measure;
+            if (!changes.some((change) => change.entity === "plan" && change.parentId === goal.id)) {
+              const previous = currentPlan(goal);
+              goal.plans.push({ action: previous.action, timing: previous.timing, criterion: previous.criterion, ...(previous.durationMinutes ? { durationMinutes: previous.durationMinutes } : {}), version: previous.version + 1, date: today });
+            }
+          }
           if (patch.target !== undefined) {
             if (!goal.measure)
               throw new Error(
@@ -178,6 +201,7 @@ export function applyChanges(
             );
             if (final) final.value = patch.target;
           }
+          if (patch.status === "Active") startGoal(data, goal.id);
           Object.assign(goal, patch);
           goal.organizationVersion = (goal.organizationVersion ?? 0) + 1;
         }
@@ -190,7 +214,7 @@ export function applyChanges(
         goal.id,
         currentPlan(goal).version,
         z
-          .object({ action: str, criterion: str, timing: str })
+          .object({ action: str, criterion: str, timing: str, basis: planningBasisSchema.optional(), durationMinutes: z.number().int().min(5).max(240).optional() })
           .strict()
           .parse(values),
       );
@@ -290,7 +314,7 @@ export function applyChanges(
           .strict()
           .parse(values);
         if (patch.outcome !== undefined || patch.note !== undefined)
-          recordAction(data, id, patch.outcome ?? existing.outcome, patch.note);
+          recordAction(data, id, patch.outcome ?? existing.outcome, patch.note, patch.amount ?? existing.amount);
         Object.assign(existing, patch);
       }
     } else if (change.entity === "memory") {
@@ -327,7 +351,10 @@ export function applyChanges(
         .object({ note: str, decision: str, complete: z.boolean() })
         .strict()
         .parse(values);
+      const period = reviewSchedule(data);
       const review = {
+        periodStart: period.periodStart,
+        periodEnd: period.periodEnd,
         note: value.note,
         decision: value.decision,
         step: value.complete ? 3 : 1,

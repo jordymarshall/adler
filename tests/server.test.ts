@@ -1,3 +1,4 @@
+import { basis, literature, researched } from "./planning-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, readFileSync } from "node:fs";
@@ -24,6 +25,7 @@ import { createRuntime } from "../server/api.ts";
 import { createGoal, type GoalInput } from "../shared/validation.ts";
 import type { coachingContext } from "../src/coach-context.ts";
 const goalInput: GoalInput = {
+  basis,
   title: "Publish two essays",
   kind: "project",
   why: "Practice explaining my work",
@@ -276,7 +278,7 @@ test("AI goal setup uses server records, saves conversation once, and waits for 
       changes: [change("goal", "create", goalInput)],
     });
   };
-  const service = new Service(db, runner);
+  const service = new Service(db, researched(runner), literature);
   const result = await service.chat(
     user.id,
     "Create my two essay goal",
@@ -1002,14 +1004,15 @@ test("explicit chat creation saves a linked goal and next action once", async (t
   const { db, user } = fixture(t);
   const service = new Service(
     db,
-    async (_config, _instructions, _context, schema) =>
+    researched(async (_config, _instructions, _context, schema) =>
       schema.parse({
         reply: "Your goal is ready.",
         summary: "Create the goal you requested.",
         methods: [],
         execution: "apply",
         changes: [change("goal", "create", goalInput)],
-      }),
+      })),
+    literature,
   );
   const response = await service.chat(
     user.id,
@@ -1019,6 +1022,7 @@ test("explicit chat creation saves a linked goal and next action once", async (t
     "direct-create-001",
   );
   assert.equal(response.data.goals.length, 1);
+  assert.equal(response.data.goals[0].status, "Draft");
   assert.equal(response.data.actions[0].goalId, response.data.goals[0].id);
   assert.equal(response.proposal.status, "applied");
   assert.equal(
@@ -1033,6 +1037,84 @@ test("explicit chat creation saves a linked goal and next action once", async (t
     "direct-create-001",
   );
   assert.equal(db.snapshot(user.id).data.goals.length, 1);
+});
+
+test("the coach researches its own questions, repairs invented citations, and saves the source-backed plan", async (t) => {
+  const { db, user } = fixture(t);
+  let calls = 0;
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") return schema.parse({ issues: [] });
+    calls++;
+    if (calls === 1) return schema.parse({ reply: "I’m investigating feedback during writing.", summary: "Research", methods: [], changes: [], researchQueries: ["writing feedback monitoring outcomes"] });
+    assert.equal(context.researchSearches[0].queries[0], "writing feedback monitoring outcomes");
+    assert.match(context.researchSearches[0].sources[0].summary, /138 experimental studies/);
+    if (calls === 3) assert.match(context.validationError, /Do not invent citations/);
+    return schema.parse({ reply: "Review the draft and start when ready.", summary: "A provisional writing approach", methods: [], execution: "apply", changes: [change("goal", "create", { ...goalInput, basis: { ...basis, evidence: calls === 2 ? [{ ...basis.evidence[0], sourceId: "invented-study" }] : basis.evidence, sources: [] } })] });
+  }, literature);
+  const result = await service.chat(user.id, "Help me develop my essay goal.");
+  assert.equal(calls, 3);
+  assert.equal(result.data.goals[0].status, "Draft");
+  assert.equal(result.data.goals[0].plans[0].basis.sources[0].id, "epmc:MED:26479070");
+  assert.equal(result.data.goals[0].plans[0].basis.sources[0].access, "abstract");
+  assert.equal(result.data.decisions[0].research[0].queries[0], "writing feedback monitoring outcomes");
+  assert.equal(result.data.actions.length, 1);
+});
+
+test("unsupported citations cannot be saved after the repair attempt", async (t) => {
+  const { db, user } = fixture(t);
+  const service = new Service(db, researched(async (_config, _instructions, _context, schema) => schema.parse({ reply: "A plan", summary: "A plan", methods: [], execution: "apply", changes: [change("goal", "create", { ...goalInput, basis: { ...basis, evidence: [{ ...basis.evidence[0], sourceId: "fabricated" }] } })] })), literature);
+  await assert.rejects(service.chat(user.id, "Create the essay goal"), /Do not invent citations/);
+  assert.equal(db.snapshot(user.id).data.goals.length, 0);
+  assert.equal(db.snapshot(user.id).data.messages.length, 0);
+});
+
+test("an evidence review sends unsupported causal claims back for correction before saving", async (t) => {
+  const { db, user } = fixture(t);
+  let revisions = 0;
+  let reviews = 0;
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") {
+      reviews++;
+      assert.equal(db.snapshot(user.id).data.goals.length, 0);
+      assert.equal(context.effectiveGoals[0].target, 2);
+      return schema.parse({ issues: reviews === 1 ? [{ changeIndex: 0, issue: "The proposed claim says the intervention guarantees success.", correction: "Describe the average result and uncertainty for this individual." }] : [] });
+    }
+    if (!context.researchSearches.length) return schema.parse({ reply: "Checking evidence", summary: "Research", methods: [], changes: [], researchQueries: ["progress monitoring"] });
+    revisions++;
+    if (revisions === 2) assert.match(context.validationError, /guarantees success/);
+    return schema.parse({ reply: "A plan to review", summary: "Plan", methods: [], execution: "apply", changes: [change("goal", "create", { ...goalInput, basis: { ...basis, evidence: [{ ...basis.evidence[0], finding: revisions === 1 ? "This guarantees success." : basis.evidence[0].finding }] } })] });
+  }, literature);
+  const result = await service.chat(user.id, "Create my essay goal");
+  assert.equal(reviews, 2);
+  assert.equal(revisions, 2);
+  assert.equal(result.data.goals[0].plans[0].basis.evidence[0].finding, basis.evidence[0].finding);
+});
+
+test("unavailable research can produce an explicitly provisional plan without fabricated sources", async (t) => {
+  const { db, user } = fixture(t);
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    assert.equal(context.researchSearches[0].sources.length, 0);
+    assert(context.researchSearches[0].unavailable.length);
+    return schema.parse({ reply: "Research search is unavailable. This is a provisional plan to discuss.", summary: "Provisional plan", methods: [], changes: [change("goal", "create", { ...goalInput, basis: { ...basis, evidence: [], uncertainty: "Search was unavailable. There is no retrieved evidence for this individual approach." } })] });
+  }), async (queries) => ({ queries, sources: [], unavailable: queries, searchedAt: new Date().toISOString() }));
+  const result = await service.chat(user.id, "Help me plan the essays");
+  const values = JSON.parse(result.proposal.changes[0].values);
+  assert.deepEqual(values.basis.sources, []);
+  assert.match(values.basis.uncertainty, /unavailable/);
+});
+
+test("starting a saved draft twice keeps one first action, and changing a metric archives the old observations", (t) => {
+  const { db, user } = fixture(t);
+  let data = applyChanges(db.snapshot(user.id).data, [change("goal", "create", { ...goalInput, status: "Draft", measure: { label: "First measurement", unit: "units", target: 20, baseline: 5 } }, "draft")], "2026-09-06");
+  assert.equal(data.goals[0].status, "Draft");
+  data = applyChanges(data, [change("goal", "update", { status: "Active" }, "draft"), change("goal", "update", { status: "Active" }, "draft")], "2026-09-06");
+  assert.equal(data.actions.length, 1);
+  assert.equal(data.actions[0].outcome, undefined);
+  data = applyChanges(data, [change("goal", "update", { measure: { label: "A different result", unit: "other units", target: 3, baseline: null } }, "draft")], "2026-09-06");
+  assert.equal(data.goals[0].results.length, 0);
+  assert.equal(data.goals[0].measurementHistory![0].results[0].value, 5);
+  assert.equal(data.goals[0].measurementHistory![0].unit, "units");
+  assert.equal(data.goals[0].checkpoints!.at(-1)!.value, 3);
 });
 
 test("a measured personal goal keeps distance separate from milestone and action completion", (t) => {
@@ -1132,7 +1214,7 @@ test("an ordinary chat reply can confirm a pending proposal without invalidating
   let calls = 0;
   const service = new Service(
     db,
-    async (_config, _instructions, context: any, schema) => {
+    researched(async (_config, _instructions, context: any, schema) => {
       calls++;
       if (calls === 1)
         return schema.parse({
@@ -1149,7 +1231,8 @@ test("an ordinary chat reply can confirm a pending proposal without invalidating
         changes: [],
         confirmProposalId: context.pendingProposals[0].id,
       });
-    },
+    }),
+    literature,
   );
   const first = await service.chat(
     user.id,

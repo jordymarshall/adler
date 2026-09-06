@@ -1,3 +1,5 @@
+import { dateInZone } from "./journey.ts";
+import type { PlanningBasis } from "./planning.ts";
 import type {
   Checkpoint,
   CoachDecision,
@@ -8,9 +10,11 @@ import type {
 import { DEFAULT_METHODS } from "../src/methods.ts";
 
 export type Outcome = "Done" | "Partly" | "Didn’t happen";
-export type GoalStatus = "Active" | "Paused" | "Completed" | "Set aside";
+export type GoalStatus = "Draft" | "Active" | "Paused" | "Completed" | "Set aside";
 export type GoalKind = "project" | "learning" | "practical";
 export interface Plan {
+  basis?: PlanningBasis;
+  durationMinutes?: number;
   version: number;
   action: string;
   timing: string;
@@ -46,6 +50,7 @@ export interface Goal {
     target: number;
     baseline: number | null;
   };
+  measurementHistory?: { date: string; label: string; unit: string; results: Goal["results"]; reason: string }[];
   checkpoints?: Checkpoint[];
   outcomeUpdatedAt?: string;
   checkpointHistory?: {
@@ -72,9 +77,10 @@ export interface Action {
   date: string;
   planVersion: number;
   outcome?: Outcome;
+  amount?: number;
   note?: string;
   unplanned?: boolean;
-  history: { outcome?: Outcome; note?: string; at: string }[];
+  history: { outcome?: Outcome; amount?: number; note?: string; at: string }[];
 }
 export const reactionTypes = [
   "love",
@@ -114,6 +120,8 @@ export interface Message {
   at?: string;
 }
 export interface Review {
+  periodStart?: string;
+  periodEnd?: string;
   step: number;
   note: string;
   decision: string;
@@ -253,6 +261,15 @@ export function enrichData(data: Data): Data {
 export function currentProgram(data: Data) {
   return data.programs[data.programs.length - 1];
 }
+export function startGoal(data: Data, goalId: string) {
+  const goal = data.goals.find((g) => g.id === goalId);
+  if (!goal || goal.status !== "Draft") return;
+  goal.status = "Active";
+  goal.startDate = dateInZone(data.timeZone);
+  const program = currentProgram(data);
+  if (!data.goals.some((g) => g.id === program.focusGoalId && g.status === "Active"))
+    reviseProgram(data, program.version, { focusGoalId: goalId, reason: "Started the goal’s plan." });
+}
 export function reviseProgram(
   data: Data,
   expectedVersion: number,
@@ -277,18 +294,21 @@ export function recordAction(
   id: string,
   outcome?: Outcome,
   note?: string,
+  amount?: number,
 ) {
   const action = data.actions.find((a) => a.id === id)!;
   if (!action.date && outcome) {
-    action.date = localDate();
+    action.date = dateInZone(data.timeZone);
     action.unplanned = true;
   }
   action.history.push({
     outcome: action.outcome,
+    amount: action.amount,
     note: action.note,
     at: new Date().toISOString(),
   });
   action.outcome = outcome;
+  action.amount = outcome ? amount : undefined;
   const block = data.workBlocks.find((b) => b.id === id);
   if (block) block.status = outcome ?? "Scheduled";
   if (note !== undefined) action.note = note;
@@ -300,26 +320,26 @@ export function applyPlan(
   data: Data,
   goalId: string,
   expectedVersion: number,
-  changes: Pick<Plan, "action" | "timing" | "criterion">,
+  changes: Pick<Plan, "action" | "timing" | "criterion" | "basis" | "durationMinutes">,
 ) {
   const goal = data.goals.find((g) => g.id === goalId)!;
   if (currentPlan(goal).version !== expectedVersion)
     throw new Error(
       "This plan changed in another view. Close this form and review the latest plan.",
     );
-  if (goal.status !== "Active")
+  if (goal.status !== "Active" && goal.status !== "Draft")
     throw new Error(
       "This goal is no longer active. Resume it before changing the plan.",
     );
   const plan: Plan = {
     ...changes,
     version: expectedVersion + 1,
-    date: localDate(),
+    date: dateInZone(data.timeZone),
   };
   goal.plans.push(plan);
   if (goal.trial?.state === "Suggested") goal.trial.state = "Set aside";
   const future = data.actions.filter(
-    (a) => a.goalId === goalId && a.date > localDate() && !a.outcome,
+    (a) => a.goalId === goalId && (!a.date || a.date > dateInZone(data.timeZone)) && !a.outcome && !data.workBlocks.some((b) => b.id === a.id),
   );
   if (future.length)
     future.forEach((a) => {
@@ -335,7 +355,7 @@ export function applyPlan(
       title: plan.action,
       criterion: plan.criterion,
       timing: plan.timing,
-      date: plan.timing === "Unscheduled" ? "" : localDate(1),
+      date: "",
       planVersion: plan.version,
       history: [],
     });

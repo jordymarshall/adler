@@ -1,3 +1,5 @@
+import { WeekCalendar, weekOf } from "./WeekCalendar";
+import { addDays, dateInZone, zonedTime } from "../shared/journey";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -13,7 +15,7 @@ import { currentPlan, currentProgram, useStore, type Action } from "./store";
 import { Modal } from "./components";
 import { CalendarLogo } from "./CalendarLogo";
 import { RecordAction } from "./Workspace";
-import { findSlots } from "./scheduling";
+import { findSlots, overlaps } from "./scheduling";
 import type { BusyInterval } from "./program-types";
 type Provider = "local" | "google" | "apple";
 interface BookingInput {
@@ -43,8 +45,9 @@ function savedPending(): BookingInput | null {
     return null;
   }
 }
-const displayTime = (date: string) =>
+const displayTime = (date: string, timeZone?: string) =>
   new Date(date).toLocaleString(undefined, {
+    timeZone,
     weekday: "short",
     month: "short",
     day: "numeric",
@@ -53,7 +56,10 @@ const displayTime = (date: string) =>
   });
 export function Calendar() {
   const { data, commit, flush, refresh: refreshWorkspace } = useStore();
-  const program = currentProgram(data);
+  const baseProgram = currentProgram(data);
+  const [week, setWeek] = useState(() => weekOf(dateInZone(data.timeZone)));
+  const [customDate, setCustomDate] = useState(dateInZone(data.timeZone));
+  const [customTime, setCustomTime] = useState("09:00");
   const [params] = useSearchParams();
   const [service, setService] = useState<ServiceStatus | null>(null);
   const [calendars, setCalendars] = useState<{
@@ -65,8 +71,9 @@ export function Calendar() {
     const requested = params.get("goal");
     return data.goals.some((g) => g.id === requested && g.status === "Active")
       ? requested!
-      : program.focusGoalId;
+      : data.goals.find((g) => g.id === baseProgram.focusGoalId && g.status === "Active")?.id ?? data.goals.find((g) => g.status === "Active")?.id ?? "";
   });
+  const [chosenAction, setChosenAction] = useState(params.get("action") ?? "");
   const [destination, setDestination] = useState("");
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [busy, setBusy] = useState<BusyInterval[]>([]);
@@ -83,14 +90,19 @@ export function Calendar() {
   const goal = data.goals.find(
     (g) => g.id === selected && g.status === "Active",
   );
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timezone = data.timeZone;
+  const actions = data.actions.filter((a) => a.goalId === goal?.id && !a.outcome && !data.workBlocks.some((b) => b.id === a.id)).sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"));
+  const action = actions.find((a) => a.id === chosenAction) ?? actions[0];
+  const actionPlan = goal?.plans.find((plan) => plan.version === action?.planVersion) ?? (goal ? currentPlan(goal) : undefined);
+  const program = { ...baseProgram, sessionMinutes: actionPlan?.durationMinutes ?? baseProgram.sessionMinutes };
+  const actionTitle = action?.title ?? (goal ? currentPlan(goal).action : "");
   const localBusy = data.workBlocks.map((b) => ({
     start: b.start,
     end: b.end,
   }));
   const slots =
     provider === "local" || checkedAt
-      ? findSlots(program, [...busy, ...localBusy], new Date(), checkIn)
+      ? findSlots(program, [...busy, ...localBusy], new Date(), provider !== "local" && checkIn, timezone, week)
       : [];
   const weeklyScheduled = data.workBlocks
     .filter(
@@ -143,9 +155,8 @@ export function Calendar() {
     setSlot(null);
     setCheckedAt("");
     try {
-      const start = new Date();
-      const end = new Date(start);
-      end.setDate(end.getDate() + 7);
+      const start = zonedTime(week, "00:00", timezone)!;
+      const end = zonedTime(addDays(week, 7), "00:00", timezone)!;
       const result = await api<{ busy: BusyInterval[]; checkedAt: string }>(
         "availability",
         {
@@ -189,6 +200,8 @@ export function Calendar() {
     return commit(
       (d) => {
         const current = d.goals.find((g) => g.id === input.goalId)!;
+        if (current.status !== "Active") throw new Error("Start this plan before scheduling work.");
+        if (Date.parse(input.start) <= Date.now() || d.workBlocks.some((b) => b.id !== input.id && overlaps(b, input))) throw new Error("This time conflicts with saved work or is in the past. Choose another time.");
         const existing = d.workBlocks.find((b) => b.id === input.id);
         if (existing) {
           existing.checkInId = result?.checkInDone
@@ -207,21 +220,19 @@ export function Calendar() {
           eventId: result?.workId,
           checkInId: result?.checkInDone ? result.checkInId : undefined,
         });
-        const date = new Date(input.start);
-        const localDay = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-        d.actions = d.actions.filter(
-          (a) =>
-            a.goalId !== input.goalId ||
-            a.date ||
-            a.outcome ||
-            a.title !== input.title,
-        );
+        const localDay = dateInZone(d.timeZone, new Date(input.start));
+        const original = d.actions.find((a) => a.id === input.id);
+        if (original) {
+          original.date = localDay;
+          original.timing = displayTime(input.start, timezone);
+          return;
+        }
         d.actions.push({
           id: input.id,
           goalId: input.goalId,
           title: input.title,
           criterion: currentPlan(current).criterion,
-          timing: displayTime(input.start),
+          timing: displayTime(input.start, timezone),
           date: localDay,
           planVersion: currentPlan(current).version,
           history: [],
@@ -246,6 +257,7 @@ export function Calendar() {
       sessionStorage.removeItem(pendingKey);
       setPending(null);
       setSlot(null);
+      setWeek(weekOf(dateInZone(timezone, new Date(input.start))));
       setCheckedAt("");
       setBusy([]);
     } catch (err) {
@@ -261,14 +273,14 @@ export function Calendar() {
   function confirm() {
     if (!slot || !goal) return;
     const input = {
-      id: crypto.randomUUID(),
+      id: action?.id ?? crypto.randomUUID(),
       goalId: goal.id,
-      title: currentPlan(goal).action,
+      title: actionTitle,
       ...slot,
       provider,
     };
     if (provider === "local") {
-      if (saveBlock(input)) setSlot(null);
+      if (saveBlock(input)) { setSlot(null); setWeek(weekOf(dateInZone(timezone, new Date(input.start)))); }
       return;
     }
     void book({
@@ -296,6 +308,9 @@ export function Calendar() {
           Edit work hours <ArrowRight size={15} />
         </Link>
       </div>
+      <WeekCalendar week={week} onWeek={(date) => { setWeek(date); setSlot(null); setBusy([]); setCheckedAt(""); }} busy={busy} checked={Boolean(checkedAt)} onRecord={setRecording} onChoose={(date) => { setCustomDate(date); document.getElementById("calendar-planner")?.scrollIntoView({ behavior: "smooth" }); }} />
+      {!goal && <section className="panel"><h2>Start a plan to schedule its actions.</h2><p>Your calendar can give each next step a place in the week.</p><Link className="button primary" to={data.goals.length ? "/app/goals" : "/app/onboarding"}>{data.goals.length ? "Review your plans" : "Create your first goal"} <ArrowRight size={16} /></Link></section>}
+      <details className="calendar-connection-details"><summary>Connect or manage Google / iCloud Calendar</summary>
       <div className="calendar-connections">
         {(["google", "apple"] as const).map((p) => (
           <section className="panel connection-card" key={p}>
@@ -308,7 +323,7 @@ export function Calendar() {
               </h3>
               <p>
                 {service?.[p].connected
-                  ? "Connected for this server session"
+                  ? "Connected to your account"
                   : p === "google"
                     ? service?.google.configured
                       ? "Ready to connect your account"
@@ -360,6 +375,7 @@ export function Calendar() {
           </section>
         ))}
       </div>
+      </details>
       {error && (
         <p role="alert" className="inline-error">
           {error}
@@ -369,7 +385,7 @@ export function Calendar() {
         <section className="panel pending-booking">
           <h3>Finish confirming this booking</h3>
           <p>
-            {pending.title} · {displayTime(pending.start)}
+            {pending.title} · {displayTime(pending.start, timezone)}
           </p>
           <p>
             Retry checks the existing event IDs to avoid duplicates. Review your
@@ -396,7 +412,7 @@ export function Calendar() {
           </button>
         </section>
       )}
-      <div className="calendar-layout">
+      <div className="calendar-layout" id="calendar-planner">
         <section className="panel calendar-planner">
           <div className="section-kicker">01 · CHOOSE THE WORK</div>
           <label>
@@ -406,6 +422,7 @@ export function Calendar() {
               value={selected}
               onChange={(e) => {
                 setSelected(e.target.value);
+                setChosenAction("");
                 setSlot(null);
               }}
             >
@@ -418,10 +435,11 @@ export function Calendar() {
                 ))}
             </select>
           </label>
+          {actions.length > 1 && <label>Action to schedule<select value={action?.id ?? ""} onChange={(event) => { setChosenAction(event.target.value); setSlot(null); }}>{actions.map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}</select></label>}
           {goal && (
             <div className="calendar-action">
-              <b>{currentPlan(goal).action}</b>
-              <p>Finished when: {currentPlan(goal).criterion}</p>
+              <b>{actionTitle}</b>
+              <p>Finished when: {action?.criterion ?? currentPlan(goal).criterion}</p>
             </div>
           )}
           <label>
@@ -555,12 +573,14 @@ export function Calendar() {
                   <CalendarDays size={17} />
                   <span>
                     {new Date(s.start).toLocaleDateString(undefined, {
+                      timeZone: timezone,
                       weekday: "short",
                       month: "short",
                       day: "numeric",
                     })}
                     <b>
                       {new Date(s.start).toLocaleTimeString([], {
+                        timeZone: timezone,
                         hour: "numeric",
                         minute: "2-digit",
                       })}
@@ -577,13 +597,22 @@ export function Calendar() {
               length in the program.
             </p>
           )}
+          <form className="custom-calendar-time" onSubmit={(event) => {
+            event.preventDefault();
+            const start = zonedTime(customDate, customTime, timezone);
+            if (!start || start.getTime() <= Date.now()) { setError("Choose a valid future time in your timezone."); return; }
+            const candidate = { start: start.toISOString(), end: new Date(start.getTime() + program.sessionMinutes * 60000).toISOString() };
+            const occupied = { ...candidate, end: new Date(Date.parse(candidate.end) + (provider !== "local" && checkIn ? 5 * 60000 : 0)).toISOString() };
+            if ([...busy, ...localBusy].some((interval) => overlaps(interval, occupied))) { setError("That time conflicts with a commitment. Choose another time."); return; }
+            setError(""); setSlot(candidate);
+          }}><h3>Or choose a specific time</h3><div className="form-row"><label>Date<input type="date" required min={dateInZone(timezone)} value={customDate} onChange={(event) => setCustomDate(event.target.value)} /></label><label>Start time<input type="time" required value={customTime} onChange={(event) => setCustomTime(event.target.value)} /></label></div><button className="button secondary" disabled={working || Boolean(pending) || !goal}>Review this time</button><p className="field-hint">{program.sessionMinutes} minutes · {timezone}. External conflicts are checked again before booking.</p></form>
           {slot && (
             <div className="booking-confirmation">
               <h3>Confirm the time block</h3>
-              <p>{goal && currentPlan(goal).action}</p>
+              <p>{actionTitle}</p>
               <p>
                 <Clock3 size={15} />
-                {displayTime(slot.start)} · {program.sessionMinutes} min
+                {displayTime(slot.start, timezone)} · {program.sessionMinutes} min
                 {provider !== "local" && checkIn ? " + 5 min check-in" : ""}
               </p>
               <button
@@ -613,7 +642,7 @@ export function Calendar() {
                 <article className="panel work-block" key={block.id}>
                   <div className="work-block-date">
                     <CalendarDays size={20} />
-                    <b>{displayTime(block.start)}</b>
+                    <b>{displayTime(block.start, timezone)}</b>
                   </div>
                   <div>
                     <h3>{block.action}</h3>
@@ -668,8 +697,7 @@ export function Calendar() {
           shown as a failed booking.
         </p>
         <p>
-          Connections and credentials are kept in server memory; reconnect after
-          a server restart. Google disconnect requests token revocation. Revoke
+          Connections are saved securely for your account. Google disconnect requests token revocation. Revoke
           an Apple app-specific password in your Apple Account to remove its
           access. Existing events remain in your calendar.
         </p>
@@ -678,7 +706,7 @@ export function Calendar() {
           offered. All-day events block a conservative full-day range. Calendar
           event details are processed on the server for availability; they are
           not sent to the coach. Check-in events use your calendar’s
-          notifications. Adler does not send background messages while closed.
+          notifications. Scheduled text check-ins require a linked phone and enabled reminders in Connections.
         </p>
       </details>
       {appleForm && (
@@ -694,7 +722,7 @@ export function Calendar() {
           <form className="program-form" onSubmit={connectApple}>
             <p>
               Use an app-specific password generated in your Apple Account. It
-              is sent to this local server and kept only for the server session.
+              is saved securely for your account.
             </p>
             <a
               className="text-link"

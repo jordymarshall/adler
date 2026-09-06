@@ -1,3 +1,4 @@
+import { reviewSchedule } from "../shared/journey.ts";
 import type { Data } from "../shared/workspace.ts";
 import type { DecisionCheck } from "./program-types.ts";
 import { progressStatus } from "./progress.ts";
@@ -98,6 +99,8 @@ export function coachingContext(
   ];
   return {
     today,
+    weeklyReview: reviewSchedule(data),
+    planningBasis: goal?.plans.at(-1)?.basis ?? null,
     timeZone: data.timeZone,
     message,
     selectedGoalId: goalId,
