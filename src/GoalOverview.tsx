@@ -30,15 +30,23 @@ export function GoalOverview({
   const block = data.workBlocks.find((b) => b.id === action?.id);
   const review = reviewSchedule(data);
   const measure = plan.basis?.actionMeasure;
-  const observations = data.actions.filter(
-    (a) =>
-      a.goalId === goal.id &&
-      a.planVersion === plan.version &&
-      a.outcome &&
-      (measure?.period === "day"
-        ? a.date === review.today
-        : a.date >= review.periodStart && a.date <= review.today),
-  );
+  const observations = data.actions
+    .filter(
+      (a) =>
+        a.goalId === goal.id &&
+        a.planVersion === plan.version &&
+        a.outcome &&
+        (measure?.period === "action"
+          ? true
+          : measure?.period === "day"
+            ? a.date === review.today
+            : a.date >= review.periodStart && a.date <= review.today),
+    )
+    .sort(
+      (a, b) =>
+        a.date.localeCompare(b.date) ||
+        (a.history.at(-1)?.at ?? "").localeCompare(b.history.at(-1)?.at ?? ""),
+    );
   const amounts = (
     measure?.period === "action" ? observations.slice(-1) : observations
   ).filter((a) => a.amount !== undefined);
@@ -60,7 +68,10 @@ export function GoalOverview({
           <button
             className="button primary"
             onClick={() =>
-              commit((d) => startGoal(d, goal.id), "Plan started. Choose when to do your first action.")
+              commit(
+                (d) => startGoal(d, goal.id),
+                "Plan started. Choose when to do your first action.",
+              )
             }
           >
             <Play size={16} /> Start plan
@@ -221,7 +232,11 @@ export function GoalOverview({
             <section className="panel">
               <span className="section-kicker">NEXT MILESTONE</span>
               <h3>{milestone.title}</h3>
-              {milestone.dueDate && <p className="field-hint">Due {formatDate(milestone.dueDate)}</p>}
+              {milestone.dueDate && (
+                <p className="field-hint">
+                  Due {formatDate(milestone.dueDate)}
+                </p>
+              )}
               <p>{milestone.criterion}</p>
               <Link className="text-link" to={`/app/goals/${goal.id}/progress`}>
                 View progress <ArrowRight size={15} />
@@ -230,14 +245,20 @@ export function GoalOverview({
           )}
           <section className="panel">
             <span className="section-kicker">REVIEW & PLAN YOUR WEEK</span>
-            <h3>{draft ? "After you start the plan" : <>
-              {formatDate(review.nextDate, {
-                weekday: "long",
-                month: "short",
-                day: "numeric",
-              })}{" "}
-              · {data.automation.reviewTime}
-            </>}</h3>
+            <h3>
+              {draft ? (
+                "After you start the plan"
+              ) : (
+                <>
+                  {formatDate(review.nextDate, {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                  })}{" "}
+                  · {data.automation.reviewTime}
+                </>
+              )}
+            </h3>
             <p>
               Look at what happened across your goals, decide what to keep or
               change, and make room for the next steps.

@@ -25,7 +25,7 @@ The first visit to Today and the New goal route guide the user into either a coa
 
 A newly created UI/coach goal is a **Draft**. The goal overview brings the intended result, first action, completion criterion, explanation, milestone, chats, and review together. **Start plan** activates the saved goal without creating another action. The user can then **Do now**, **Choose a time**, or leave the action visibly unscheduled. Starting is not a completion record or calendar booking. Existing Active goals retain their status.
 
-A plan can store `durationMinutes`. Scheduling uses the duration of the selected action's plan version, falling back to the user's default session length for older plans. Free-text timing is a suggestion or cue; it is never treated as a confirmed external booking. Revising a plan no longer assigns an arbitrary tomorrow date or rewrites booked work.
+A plan can store `durationMinutes`. Scheduling uses the duration of the selected action's plan version, falling back to the user's default session length for older plans. Free-text timing is a suggestion or cue; it is never treated as a confirmed external booking. Revising a plan no longer assigns an arbitrary tomorrow date or rewrites booked work. Cue-only edits retain the unchanged research explanation, action measure, and duration.
 
 The model may choose an action measure with a target per action, day, or week, or choose no action measure. Actual amounts are recorded during action check-ins. The overview aggregates observations for the current plan and period and keeps them separate from the desired outcome. Missing amounts remain unknown.
 
@@ -39,7 +39,7 @@ Users can select suggested slots or review a specific date and time. Scheduling 
 
 Google/iCloud booking still uses the existing provider adapters, explicit confirmation, and availability rechecks. Existing external events are managed at their provider. This change adds a built-in view of work and checked busy periods; it does not claim continuous two-way synchronization or import every external event's details.
 
-**Review & plan your week** explains its purpose, shows its date/time, and lets the user edit the schedule. Reviews have explicit periods so a completed review does not hide the next week's review. Opening Coach from a review carries a specific review request; the note and records remain available to the model. Prior reviews remain archived. The weekly appointment is displayed in Adler as a 15-minute planning allowance, not an external booking.
+**Review & plan your week** explains its purpose, shows its date/time, and lets the user edit the schedule. Reviews have explicit periods so a completed review does not hide the next week's review. Opening Coach from a review carries a specific review request; the note and records remain available to the model. Prior reviews remain archived. The weekly appointment repeats in future calendar weeks and reserves a 15-minute planning allowance in Adler. Suggestions and booking checks respect that reservation. It is not an external booking.
 
 ## Chats and organization
 

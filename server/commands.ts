@@ -1,4 +1,4 @@
-import { reviewSchedule } from "../shared/journey.ts";
+import { dateInZone, reviewBlock, reviewSchedule } from "../shared/journey.ts";
 import { planningBasisSchema } from "../shared/planning.ts";
 import { z } from "zod";
 import { createHash, randomUUID } from "node:crypto";
@@ -403,6 +403,9 @@ export function applyChanges(
           Date.parse(value.start) <= Date.now()
         )
           throw new Error("Choose a future work block with a valid end time.");
+        const review = reviewBlock(data, dateInZone(data.timeZone, new Date(value.start)));
+        if (review && Date.parse(value.start) < Date.parse(review.end) && Date.parse(review.start) < Date.parse(value.end) + (value.checkIn ? 5 * 60000 : 0))
+          throw new Error("This time overlaps your weekly review. Choose another time or move the review.");
         if (existing)
           Object.assign(existing, {
             action: value.action,

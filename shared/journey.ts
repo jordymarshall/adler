@@ -87,7 +87,10 @@ export function reviewSchedule(data: Data, now = new Date()) {
       ? data.review
       : { step: 0, note: "", decision: "" };
   const active = data.goals.filter((goal) => goal.status === "Active");
-  const firstDay = active.length > 0 && active.every((goal) => goal.startDate === today) && !data.actions.some((action) => action.outcome);
+  const firstDay =
+    active.length > 0 &&
+    active.every((goal) => goal.startDate === today) &&
+    !data.actions.some((action) => action.outcome);
   const deferFirstReview = firstDay && today === periodEnd;
   return {
     today,
@@ -98,4 +101,24 @@ export function reviewSchedule(data: Data, now = new Date()) {
     nextDate: completed || deferFirstReview ? addDays(periodEnd, 7) : periodEnd,
     due: !completed && !deferFirstReview && today === periodEnd,
   };
+}
+
+export function reviewBlock(data: Data, fromDate: string, now = new Date()) {
+  if (!data.goals.some((goal) => goal.status === "Active")) return null;
+  const nextDate = reviewSchedule(data, now).nextDate;
+  const weeksAhead = Math.max(
+    0,
+    Math.ceil((Date.parse(fromDate) - Date.parse(nextDate)) / 86400000 / 7),
+  );
+  const start = zonedTime(
+    addDays(nextDate, weeksAhead * 7),
+    data.automation.reviewTime,
+    data.timeZone,
+  );
+  return start
+    ? {
+        start: start.toISOString(),
+        end: new Date(start.getTime() + 15 * 60000).toISOString(),
+      }
+    : null;
 }

@@ -331,8 +331,11 @@ export function applyPlan(
     throw new Error(
       "This goal is no longer active. Resume it before changing the plan.",
     );
+  const previous = currentPlan(goal);
   const plan: Plan = {
     ...changes,
+    durationMinutes: changes.durationMinutes ?? previous.durationMinutes,
+    basis: changes.basis ?? (changes.action === previous.action && changes.criterion === previous.criterion ? previous.basis : undefined),
     version: expectedVersion + 1,
     date: dateInZone(data.timeZone),
   };

@@ -1,5 +1,5 @@
 import { Onboarding } from "./Onboarding";
-import { addDays, dateInZone, reviewSchedule } from "../shared/journey";
+import { addDays, dateInZone, reviewSchedule, timeInZone } from "../shared/journey";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -265,14 +265,15 @@ export function Today() {
   const actions = data.actions.filter((a) =>
     active.some((g) => g.id === a.goalId),
   );
-  const today = actions.filter((a) => a.date === localDate() && !a.outcome);
+  const accountToday = dateInZone(data.timeZone);
+  const today = actions.filter((a) => a.date === accountToday && !a.outcome);
   const completed = data.actions.filter(
-    (a) => a.date === localDate() && a.outcome,
+    (a) => a.date === accountToday && a.outcome,
   );
   const secondary = actions.filter(
-    (a) => (!a.date || a.date > localDate()) && !a.outcome,
+    (a) => (!a.date || a.date > accountToday) && !a.outcome,
   );
-  const previous = data.actions.filter((a) => a.date && a.date < localDate());
+  const previous = data.actions.filter((a) => a.date && a.date < accountToday);
   const renderAction = (a: Action) => (
     <ActionCard
       key={a.id}
@@ -281,7 +282,7 @@ export function Today() {
       onRecord={() => setRecording(a)}
     />
   );
-  const hour = new Date().getHours();
+  const hour = Number(timeInZone(data.timeZone, new Date()).slice(0, 2));
   const review = reviewSchedule(data);
   const drafts = data.goals.filter((g) => g.status === "Draft");
   if (!data.goals.length) return <Onboarding />;
@@ -292,6 +293,7 @@ export function Today() {
           <span className="section-kicker">
             {new Date()
               .toLocaleDateString("en-US", {
+                timeZone: data.timeZone,
                 weekday: "long",
                 month: "long",
                 day: "numeric",
@@ -316,7 +318,7 @@ export function Today() {
           <b>
             {
               data.goals.filter(
-                (g) => progressStatus(g, localDate()).label === "Behind plan",
+                (g) => progressStatus(g, accountToday).label === "Behind plan",
               ).length
             }{" "}
             goals behind their checkpoint
@@ -324,7 +326,7 @@ export function Today() {
           <span>
             {
               data.goals.filter(
-                (g) => progressStatus(g, localDate()).label === "Update needed",
+                (g) => progressStatus(g, accountToday).label === "Update needed",
               ).length
             }{" "}
             need a result update · Compare actual results with the dated plan

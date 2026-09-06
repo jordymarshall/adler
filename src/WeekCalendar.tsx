@@ -5,9 +5,8 @@ import { useStore, formatDate, type Action } from "./store";
 import {
   addDays,
   dateInZone,
-  reviewSchedule,
+  reviewBlock,
   timeInZone,
-  zonedTime,
 } from "../shared/journey";
 import type { BusyInterval } from "./program-types";
 
@@ -21,6 +20,7 @@ export function WeekCalendar({
   checked,
   onChoose,
   onRecord,
+  working,
 }: {
   week: string;
   onWeek: (date: string) => void;
@@ -28,6 +28,7 @@ export function WeekCalendar({
   checked: boolean;
   onChoose: (date: string) => void;
   onRecord: (action: Action) => void;
+  working: boolean;
 }) {
   const { data } = useStore();
   const scroll = useRef<HTMLDivElement>(null);
@@ -36,12 +37,7 @@ export function WeekCalendar({
   }, [week]);
   const today = dateInZone(data.timeZone);
   const days = Array.from({ length: 7 }, (_, i) => addDays(week, i));
-  const review = reviewSchedule(data);
-  const reviewStart = zonedTime(
-    review.nextDate,
-    data.automation.reviewTime,
-    data.timeZone,
-  );
+  const review = reviewBlock(data, week);
   const entries = [
     ...data.workBlocks.map((block) => ({
       ...block,
@@ -65,15 +61,14 @@ export function WeekCalendar({
         kind: "busy" as const,
         goalId: "",
       })),
-    ...(reviewStart && data.goals.some((goal) => goal.status === "Active")
+    ...(review
       ? [
           {
             id: "weekly-review",
             title: "Review & plan your week",
             kind: "review" as const,
             goalId: "",
-            start: reviewStart.toISOString(),
-            end: new Date(reviewStart.getTime() + 15 * 60000).toISOString(),
+            ...review,
           },
         ]
       : []),
@@ -137,12 +132,14 @@ export function WeekCalendar({
           <button
             className="icon-button"
             aria-label="Previous week"
+            disabled={working}
             onClick={() => onWeek(addDays(week, -7))}
           >
             <ChevronLeft size={20} />
           </button>
           <button
             className="button secondary small-button"
+            disabled={working}
             onClick={() => onWeek(weekOf(today))}
           >
             This week
@@ -150,6 +147,7 @@ export function WeekCalendar({
           <button
             className="icon-button"
             aria-label="Next week"
+            disabled={working}
             onClick={() => onWeek(addDays(week, 7))}
           >
             <ChevronRight size={20} />

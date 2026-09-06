@@ -24,6 +24,8 @@ import { generate } from "../server/providers.ts";
 import { createRuntime } from "../server/api.ts";
 import { createGoal, type GoalInput } from "../shared/validation.ts";
 import type { coachingContext } from "../src/coach-context.ts";
+import { applyPlan, currentPlan } from "../shared/workspace.ts";
+import { addDays, dateInZone, reviewBlock, reviewSchedule } from "../shared/journey.ts";
 const goalInput: GoalInput = {
   basis,
   title: "Publish two essays",
@@ -1342,4 +1344,41 @@ test("conversation folders isolate history, can move to a goal, and delete messa
     ),
     /deleted/,
   );
+});
+
+
+test("cue-only edits preserve the researched measurement and action duration", (t) => {
+  const { db, user } = fixture(t);
+  const data = db.snapshot(user.id).data;
+  createGoal(data, { ...goalInput, durationMinutes: 45 }, "2026-09-01", "essays");
+  const plan = currentPlan(data.goals[0]);
+  applyPlan(data, "essays", plan.version, { action: plan.action, criterion: plan.criterion, timing: "After breakfast" });
+  const updated = currentPlan(data.goals[0]);
+  assert.equal(updated.durationMinutes, 45);
+  assert.deepEqual(updated.basis, basis);
+  assert.equal(data.actions[0].planVersion, updated.version);
+  assert.equal(data.actions[0].timing, "After breakfast");
+});
+
+test("first-day reviews wait for a week of observations and calendar reservations recur", (t) => {
+  const { db, user } = fixture(t);
+  const data = db.snapshot(user.id).data;
+  createGoal(data, goalInput, "2026-09-06", "essays");
+  const now = new Date("2026-09-06T13:00:00Z");
+  assert.equal(reviewSchedule(data, now).due, false);
+  assert.equal(reviewSchedule(data, now).nextDate, "2026-09-13");
+  assert.equal(reviewBlock(data, "2026-09-14", now)?.start, "2026-09-20T21:00:00.000Z");
+  data.actions[0].outcome = "Done";
+  assert.equal(reviewSchedule(data, now).due, true);
+});
+
+test("command scheduling cannot overlap the weekly review reservation", (t) => {
+  const { db, user } = fixture(t);
+  const data = db.snapshot(user.id).data;
+  createGoal(data, goalInput, addDays(dateInZone(data.timeZone), -7), "essays");
+  const review = reviewBlock(data, addDays(dateInZone(data.timeZone), 1))!;
+  assert.throws(() => applyChanges(data, [change("workBlock", "create", {
+    action: "Draft five points", ...review, provider: "local",
+  }, "reserved-work", "essays")], dateInZone(data.timeZone)), /overlaps your weekly review/);
+  assert.equal(data.workBlocks.length, 0);
 });

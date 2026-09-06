@@ -13,6 +13,7 @@ import {
   type CalendarSession,
 } from "./calendars.ts";
 import { currentPlan, type Data } from "../shared/workspace.ts";
+import { dateInZone, reviewBlock } from "../shared/journey.ts";
 import type { Change } from "./commands.ts";
 import { json } from "./http.ts";
 const configuredGoogle = () =>
@@ -371,6 +372,9 @@ export class CalendarAPI {
             throw new Error("Choose an active goal before booking.");
           const original = snapshot.data.actions.find((a) => a.id === input.id);
           if (original && (original.goalId !== goalId || original.outcome || original.title !== input.title)) throw new Error("Choose an unrecorded action belonging to this goal.");
+          const review = reviewBlock(snapshot.data, dateInZone(snapshot.data.timeZone, new Date(input.start)));
+          if (!snapshot.data.workBlocks.some((block) => block.id === input.id) && review && Date.parse(input.start) < Date.parse(review.end) && Date.parse(review.start) < Date.parse(input.end) + (input.checkIn ? 5 * 60000 : 0))
+            throw new Error("This time overlaps your weekly review. Choose another time or move the review.");
           const result = await this.book(session, userId, input);
           if (result.workDone) {
             const existing = snapshot.data.workBlocks.find(

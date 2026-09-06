@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot, synced } from "./fixtures";
-import { addDays, dateInZone } from "../shared/journey";
+import { addDays, dateInZone, reviewBlock } from "../shared/journey";
 import { basis, literature } from "./planning-fixture";
 
 test("a first goal moves from onboarding to a started plan and one scheduled action", async ({
@@ -191,4 +191,122 @@ test("goal guidance and the week agenda work at phone width and pass accessibili
     path: ".context/onboarding-mobile.png",
     fullPage: true,
   });
+});
+
+test("Do now uses the account day even when the browser is on a different date", async ({
+  page,
+}) => {
+  await register(page, true);
+  await page.clock.setFixedTime(new Date("2026-09-06T23:00:00Z"));
+  const state = await snapshot(page);
+  state.data.timeZone = "Asia/Tokyo";
+  state.data.actions[0].date = "";
+  await save(page, state.data, state.revision);
+  await page.goto("/app/goals/essays");
+  await page.getByRole("button", { name: "Do now", exact: true }).click();
+  await synced(page);
+  await page.goto("/app/today");
+  await expect(page.locator(".action-card")).toContainText(
+    "Draft five main points",
+  );
+  await expect(
+    page.getByRole("heading", { name: "Your next steps 1" }),
+  ).toBeVisible();
+  expect((await snapshot(page)).data.actions[0].date).toBe("2026-09-07");
+});
+
+test("latest action amounts survive week boundaries and follow action dates", async ({
+  page,
+}) => {
+  await register(page, true);
+  const state = await snapshot(page);
+  state.data.goals[0].plans[0].basis = basis;
+  state.data.actions[0] = {
+    ...state.data.actions[0],
+    date: "2026-01-05",
+    outcome: "Done",
+    amount: 7,
+  };
+  state.data.actions.push({
+    ...state.data.actions[0],
+    id: "older-action",
+    date: "2026-01-01",
+    amount: 2,
+  });
+  await save(page, state.data, state.revision);
+  await page.goto("/app/goals/essays");
+  await expect(page.locator(".action-observations")).toContainText(
+    "7 points recorded",
+  );
+});
+
+test("the calendar preserves review time and cannot switch weeks during an availability check", async ({
+  page,
+}) => {
+  await register(page, true);
+  const state = await snapshot(page);
+  state.data.goals[0].startDate = "2026-01-01";
+  await save(page, state.data, state.revision);
+  await page.route("**/api/status", async (route) => {
+    const response = await route.fetch();
+    const status = await response.json();
+    await route.fulfill({
+      json: { ...status, google: { ...status.google, connected: true } },
+    });
+  });
+  await page.route("**/api/calendars", (route) =>
+    route.fulfill({
+      json: {
+        google: [{ id: "primary", name: "Test calendar", writable: true }],
+        apple: [],
+      },
+    }),
+  );
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/availability", async (route) => {
+    await pending;
+    await route.fulfill({
+      json: { busy: [], checkedAt: new Date().toISOString() },
+    });
+  });
+  await page.goto("/app/calendar");
+  await page.getByRole("button", { name: "Next week", exact: true }).click();
+  await expect(page.locator(".calendar-entry.entry-review")).toHaveCount(1);
+  const review = reviewBlock(
+    state.data,
+    addDays(dateInZone(state.data.timeZone), 1),
+  )!;
+  await page
+    .locator(".custom-calendar-time")
+    .getByLabel("Date", { exact: true })
+    .fill(dateInZone(state.data.timeZone, new Date(review.start)));
+  await page
+    .getByLabel("Start time", { exact: true })
+    .fill(state.data.automation.reviewTime);
+  await page.getByRole("button", { name: "Review this time" }).click();
+  await expect(page.getByRole("alert")).toContainText(
+    "conflicts with a commitment",
+  );
+  await page
+    .getByRole("combobox", { name: "Book in", exact: true })
+    .selectOption("google");
+  await page
+    .getByRole("button", { name: "Check availability", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Next week", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByRole("combobox", { name: "Book in", exact: true }),
+  ).toBeDisabled();
+  release();
+  await expect(
+    page.getByRole("button", { name: "Refresh", exact: true }),
+  ).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Next week", exact: true }),
+  ).toBeEnabled();
 });

@@ -1,5 +1,5 @@
 import { WeekCalendar, weekOf } from "./WeekCalendar";
-import { addDays, dateInZone, zonedTime } from "../shared/journey";
+import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -96,10 +96,11 @@ export function Calendar() {
   const actionPlan = goal?.plans.find((plan) => plan.version === action?.planVersion) ?? (goal ? currentPlan(goal) : undefined);
   const program = { ...baseProgram, sessionMinutes: actionPlan?.durationMinutes ?? baseProgram.sessionMinutes };
   const actionTitle = action?.title ?? (goal ? currentPlan(goal).action : "");
-  const localBusy = data.workBlocks.map((b) => ({
+  const review = reviewBlock(data, week);
+  const localBusy = [...data.workBlocks.map((b) => ({
     start: b.start,
     end: b.end,
-  }));
+  })), ...(review ? [review] : [])];
   const slots =
     provider === "local" || checkedAt
       ? findSlots(program, [...busy, ...localBusy], new Date(), provider !== "local" && checkIn, timezone, week)
@@ -201,6 +202,8 @@ export function Calendar() {
       (d) => {
         const current = d.goals.find((g) => g.id === input.goalId)!;
         if (current.status !== "Active") throw new Error("Start this plan before scheduling work.");
+        const scheduledReview = reviewBlock(d, dateInZone(d.timeZone, new Date(input.start)));
+        if (scheduledReview && overlaps(scheduledReview, input)) throw new Error("This time overlaps your weekly review. Choose another time or move the review.");
         if (Date.parse(input.start) <= Date.now() || d.workBlocks.some((b) => b.id !== input.id && overlaps(b, input))) throw new Error("This time conflicts with saved work or is in the past. Choose another time.");
         const existing = d.workBlocks.find((b) => b.id === input.id);
         if (existing) {
@@ -308,7 +311,7 @@ export function Calendar() {
           Edit work hours <ArrowRight size={15} />
         </Link>
       </div>
-      <WeekCalendar week={week} onWeek={(date) => { setWeek(date); setSlot(null); setBusy([]); setCheckedAt(""); }} busy={busy} checked={Boolean(checkedAt)} onRecord={setRecording} onChoose={(date) => { setCustomDate(date); document.getElementById("calendar-planner")?.scrollIntoView({ behavior: "smooth" }); }} />
+      <WeekCalendar working={working} week={week} onWeek={(date) => { setWeek(date); setSlot(null); setBusy([]); setCheckedAt(""); }} busy={busy} checked={Boolean(checkedAt)} onRecord={setRecording} onChoose={(date) => { setCustomDate(date); document.getElementById("calendar-planner")?.scrollIntoView({ behavior: "smooth" }); }} />
       {!goal && <section className="panel"><h2>Start a plan to schedule its actions.</h2><p>Your calendar can give each next step a place in the week.</p><Link className="button primary" to={data.goals.length ? "/app/goals" : "/app/onboarding"}>{data.goals.length ? "Review your plans" : "Create your first goal"} <ArrowRight size={16} /></Link></section>}
       <details className="calendar-connection-details"><summary>Connect or manage Google / iCloud Calendar</summary>
       <div className="calendar-connections">
@@ -446,6 +449,7 @@ export function Calendar() {
             Book in
             <select
               aria-label="Book in"
+              disabled={working}
               value={provider}
               onChange={(e) => chooseProvider(e.target.value as Provider)}
             >
@@ -466,6 +470,7 @@ export function Calendar() {
                 Destination calendar
                 <select
                   aria-label="Destination calendar"
+                  disabled={working}
                   value={destination}
                   onChange={(e) => {
                     setDestination(e.target.value);
@@ -489,7 +494,7 @@ export function Calendar() {
                     <input
                       type="checkbox"
                       checked={conflicts.includes(c.id) || destination === c.id}
-                      disabled={destination === c.id}
+                      disabled={working || destination === c.id}
                       onChange={(e) => {
                         setConflicts(
                           e.target.checked
@@ -510,7 +515,7 @@ export function Calendar() {
             <input
               type="checkbox"
               checked={checkIn}
-              disabled={provider === "local"}
+              disabled={working || provider === "local"}
               onChange={(e) => {
                 setCheckIn(e.target.checked);
                 setSlot(null);
@@ -603,7 +608,8 @@ export function Calendar() {
             if (!start || start.getTime() <= Date.now()) { setError("Choose a valid future time in your timezone."); return; }
             const candidate = { start: start.toISOString(), end: new Date(start.getTime() + program.sessionMinutes * 60000).toISOString() };
             const occupied = { ...candidate, end: new Date(Date.parse(candidate.end) + (provider !== "local" && checkIn ? 5 * 60000 : 0)).toISOString() };
-            if ([...busy, ...localBusy].some((interval) => overlaps(interval, occupied))) { setError("That time conflicts with a commitment. Choose another time."); return; }
+            const customReview = reviewBlock(data, customDate);
+            if ([...busy, ...localBusy, ...(customReview ? [customReview] : [])].some((interval) => overlaps(interval, occupied))) { setError("That time conflicts with a commitment. Choose another time."); return; }
             setError(""); setSlot(candidate);
           }}><h3>Or choose a specific time</h3><div className="form-row"><label>Date<input type="date" required min={dateInZone(timezone)} value={customDate} onChange={(event) => setCustomDate(event.target.value)} /></label><label>Start time<input type="time" required value={customTime} onChange={(event) => setCustomTime(event.target.value)} /></label></div><button className="button secondary" disabled={working || Boolean(pending) || !goal}>Review this time</button><p className="field-hint">{program.sessionMinutes} minutes · {timezone}. External conflicts are checked again before booking.</p></form>
           {slot && (
