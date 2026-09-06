@@ -365,6 +365,30 @@ test("the landing keeps the existing font and shows the detailed walkthrough bel
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
+test("landing chart details stay available while hovered or keyboard focused", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await page.evaluate(() => document.fonts.ready);
+  const chart = page.locator(".evidence-card .graph-only");
+  const graph = chart.locator("svg");
+  const details = chart.locator(".chart-tooltip");
+  await graph.hover();
+  await expect(details).toBeVisible();
+  const bounds = (await details.boundingBox())!;
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+  await expect(details).toBeVisible();
+  await graph.focus();
+  await page.mouse.move(0, 0);
+  await expect(details).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(details).toHaveCount(0);
+  await graph.hover();
+  await page.mouse.move(0, 0);
+  await expect(details).toHaveCount(0);
+});
+
 test("onboarding submits once, clarifies in place, then opens the researched draft", async ({
   page,
 }) => {

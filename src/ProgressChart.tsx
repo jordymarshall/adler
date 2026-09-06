@@ -66,6 +66,18 @@ export function ProgressChart({
   return (
     <div
       className={`progress-viz ${compact ? "compact" : ""} ${graphOnly ? "graph-only" : ""}`}
+      onPointerLeave={(event) => {
+        if (graphOnly && !event.currentTarget.matches(":focus-within"))
+          setHover(null);
+      }}
+      onBlur={(event) => {
+        if (
+          graphOnly &&
+          !event.currentTarget.contains(event.relatedTarget) &&
+          !event.currentTarget.matches(":hover")
+        )
+          setHover(null);
+      }}
     >
       {!graphOnly && (
         <>
@@ -124,12 +136,6 @@ export function ProgressChart({
           );
         }}
         onFocus={() => setHover(points.indexOf(today))}
-        onPointerLeave={() => {
-          if (graphOnly) setHover(null);
-        }}
-        onBlur={() => {
-          if (graphOnly) setHover(null);
-        }}
         onKeyDown={(event) => {
           if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
             event.preventDefault();
