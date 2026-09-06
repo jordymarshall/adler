@@ -66,7 +66,7 @@ export function LandingPlanPreview() {
 }
 
 export function LandingSchedulePreview() {
-  const [time, setTime] = useState("Tuesday, 7:00 am");
+  const [time, setTime] = useState("Tuesday, 6:30 pm");
   const [saved, setSaved] = useState(false);
   return (
     <div className="landing-schedule-preview">
@@ -93,7 +93,7 @@ export function LandingSchedulePreview() {
       <details className="preview-disclosure">
         <summary>Choose another time</summary>
         <div className="preview-time-options">
-          {["Tuesday, 7:00 am", "Tuesday, 6:30 pm"].map((option) => (
+          {["Tuesday, 6:30 pm", "Tuesday, 7:00 am"].map((option) => (
             <button
               className="text-link"
               key={option}

@@ -354,6 +354,7 @@ test("the landing uses Adler Warm and one disclosed four-part journey", async ({
   await expect(preview.locator(".progress-viz")).not.toBeVisible();
   await preview.getByRole("link", { name: "Start plan" }).click();
   await expect(page.locator("#step-2")).toBeInViewport();
+  await expect(page.locator("#step-2 .suggested-time")).toContainText("6:30 pm");
   await page
     .locator("#step-2")
     .getByRole("button", { name: "Save time" })

@@ -237,13 +237,6 @@
   margin: 0 auto;
   padding-inline: 40px;
 }
-.v2-landing .live-dot {
-  display: inline-block;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: #8ca465;
-}
 .v2-landing .destination-diamond {
   width: 9px;
   height: 9px;
@@ -251,27 +244,6 @@
   transform: rotate(45deg);
   background: #71894c;
   flex-shrink: 0;
-}
-.v2-landing .goal-symbol {
-  display: inline-flex;
-  width: 34px;
-  height: 34px;
-  align-items: center;
-  justify-content: center;
-  background: #edf1e4;
-  border: 1px solid #e2e8d5;
-  border-radius: 9px;
-  color: #607543;
-}
-.v2-landing .goal-symbol.tone-clay {
-  background: #f5eade;
-  border-color: #edddcd;
-  color: #8c6646;
-}
-.v2-landing .goal-symbol.tone-blue {
-  background: #e7edf0;
-  border-color: #d8e4e9;
-  color: #567281;
 }
 .v2-landing .soft-pill,
 .v2-landing .mini-pill {
@@ -283,21 +255,6 @@
   font-size: 10px;
   color: #63734d;
   white-space: nowrap;
-}
-.v2-landing .coach-token {
-  width: 36px;
-  height: 36px;
-  background: #edf1e4;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.v2-landing .coach-token .adler-mark {
-  width: 25px;
-  height: 25px;
-  color: #607443;
 }
 .v2-landing .tone-clay {
   --path-color: #aa815c;
@@ -377,32 +334,6 @@
   border-radius: 50%;
   display: grid;
   place-items: center;
-}
-.v2-landing .action-duration {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 9px;
-  color: #60704f;
-  margin-top: 10px;
-}
-.v2-landing .mini-action {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  border-top: 1px solid #d9e2c9;
-  padding-top: 12px;
-  margin-top: 14px;
-  font-size: 9px;
-}
-.v2-landing .mini-action > svg {
-  margin-left: auto;
-}
-.v2-landing .empty-check {
-  width: 12px;
-  height: 12px;
-  border: 1px solid #849969;
-  border-radius: 50%;
 }
 
 .v2-landing .possibility-strip {
@@ -501,14 +432,6 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
-.v2-landing .visual-caption {
-  margin-top: 19px;
-  text-align: center;
-  color: #69705f;
-  font-family: var(--heading-font);
-  font-style: normal;
-  font-size: 16px;
 }
 
 .v2-landing .week-visual {
@@ -1382,9 +1305,6 @@
   .v2-landing .chapter-visual {
     min-height: 365px;
   }
-  .v2-landing .visual-caption {
-    font-size: 14px;
-  }
   .v2-landing .chapter-visual .week-top {
     font-size: 7px;
   }
@@ -1655,10 +1575,6 @@
 .v2-landing .final-section h2 {
   font-size: clamp(43px, 5.5vw, 76px);
   letter-spacing: -0.055em;
-}
-.v2-landing .visual-caption {
-  font-size: 12px;
-  font-style: normal;
 }
 .v2-landing .button.primary {
   background: #294b3a;

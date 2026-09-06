@@ -85,10 +85,3 @@ export const demoGoal: Goal = {
     },
   ],
 };
-
-export const proposedCheckpoints = [
-  { date: "2026-10-17", value: 2 },
-  { date: "2026-11-01", value: 3 },
-  { date: "2026-11-08", value: 4 },
-  { date: "2026-11-15", value: 5 },
-];

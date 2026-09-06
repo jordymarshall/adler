@@ -76,13 +76,13 @@ test("texting and the app show the same check-in without changing measured dista
   const scheduling = page.locator("#step-2");
   await scheduling.getByText("Choose another time", { exact: true }).click();
   await scheduling
-    .getByRole("button", { name: "Tuesday, 6:30 pm", exact: true })
+    .getByRole("button", { name: "Tuesday, 7:00 am", exact: true })
     .click();
   await scheduling
     .getByRole("button", { name: "Save time", exact: true })
     .click();
   await expect(scheduling).toContainText("Check in after the session");
-  await expect(scheduling.locator(".suggested-time")).toContainText("6:30 pm");
+  await expect(scheduling.locator(".suggested-time")).toContainText("7:00 am");
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({
