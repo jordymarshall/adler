@@ -1,3 +1,4 @@
+import { Insights } from "./Insights";
 import { useEffect } from "react";
 import {
   Link,
@@ -11,17 +12,20 @@ import {
 import {
   ArrowUpRight,
   CalendarDays,
+  ClipboardCheck,
   Asterisk,
   ChevronRight,
   CircleHelp,
-  Leaf,
   MessageCircle,
   Settings,
   Sun,
   Target,
+  Lightbulb,
 } from "lucide-react";
 import { Footer, Logo } from "./components";
-import { Landing, PublicPage, SignIn } from "./Landing";
+import { Landing, PublicPage } from "./Landing";
+import { SignIn } from "./Auth";
+import { Connections, ProviderSettings } from "./Connections";
 import { useStore } from "./store";
 import { NewGoal, SettingsPage, Today, WeeklyReview } from "./Workspace";
 import { GoalWorkspace } from "./GoalWorkspace";
@@ -45,23 +49,30 @@ function ScrollReset() {
 }
 function AppShell() {
   const location = useLocation();
-  const label = location.pathname.includes("/calendar")
-    ? "Calendar"
-    : location.pathname.includes("/goals")
-      ? "Goals"
-      : location.pathname.includes("/coach")
-        ? "Coach"
-        : location.pathname.includes("/settings")
-          ? "Settings"
-          : location.pathname.includes("/reviews")
-            ? "Your weekly review"
-            : "Today";
+  const { user, loading, saving, saveError } = useStore();
+  const label = location.pathname.includes("/insights")
+    ? "Insights"
+    : location.pathname.includes("/calendar")
+      ? "Calendar"
+      : location.pathname.includes("/goals")
+        ? "Goals"
+        : location.pathname.includes("/coach")
+          ? "Coach"
+          : location.pathname.includes("/settings")
+            ? "Settings"
+            : location.pathname.includes("/reviews")
+              ? "Your weekly review"
+              : "Today";
   const nav = [
     { to: "/app/today", label: "Today", Icon: Sun },
     { to: "/app/goals", label: "Goals", Icon: Target },
     { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
     { to: "/app/coach", label: "Coach", Icon: MessageCircle },
+    { to: "/app/insights", label: "Insights", Icon: Lightbulb },
+    { to: "/app/reviews/current", label: "Review", Icon: ClipboardCheck },
   ];
+  if (loading) return <div className="auth-page">Opening your workspace…</div>;
+  if (!user) return <SignIn />;
   return (
     <div className="app-shell">
       <a className="skip-link" href="#app-main">
@@ -80,15 +91,6 @@ function AppShell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <div className="sidebar-note">
-            <Leaf size={24} strokeWidth={1.3} />
-            <p>
-              Plan the work.
-              <br />
-              Track the result.
-            </p>
-            <span>Adjust with evidence.</span>
-          </div>
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
             Settings
@@ -101,7 +103,7 @@ function AppShell() {
             <span className="avatar">Y</span>
             <div>
               <b>Your workspace</b>
-              <span>Personal preview</span>
+              <span>{user.username}</span>
             </div>
             <span className="status-dot" />
           </div>
@@ -116,13 +118,23 @@ function AppShell() {
           </div>
           <Link className="preview-badge" to="/support">
             <span className="status-dot" />
-            Local preview <ArrowUpRight size={12} />
+            {saving
+              ? "Saving…"
+              : saveError
+                ? "Sync needs attention"
+                : "Workspace synced"}{" "}
+            <ArrowUpRight size={12} />
           </Link>
           <Link className="mobile-logo" to="/" aria-label="Adler home">
             <Asterisk size={27} />
           </Link>
         </header>
         <main id="app-main" className="app-main">
+          {saveError && (
+            <p role="alert" className="save-error">
+              {saveError}
+            </p>
+          )}
           <Outlet />
         </main>
         <footer className="app-footer">
@@ -170,12 +182,15 @@ export function App() {
           <Route path="onboarding" element={<NewGoal />} />
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
+          <Route path="insights" element={<Insights />} />
           <Route path="coach" element={<Coach />} />
           <Route path="coach/program" element={<Program />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="coach/about-you" element={<Memory />} />
           <Route path="reviews/:reviewId" element={<WeeklyReview />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/provider" element={<ProviderSettings />} />
+          <Route path="connections" element={<Connections />} />
         </Route>
         <Route
           path="*"

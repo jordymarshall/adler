@@ -11,6 +11,7 @@ import {
 import { api, type CalendarOption, type ServiceStatus } from "./api";
 import { currentPlan, currentProgram, useStore, type Action } from "./store";
 import { Modal } from "./components";
+import { CalendarLogo } from "./CalendarLogo";
 import { RecordAction } from "./Workspace";
 import { findSlots } from "./scheduling";
 import type { BusyInterval } from "./program-types";
@@ -51,7 +52,7 @@ const displayTime = (date: string) =>
     minute: "2-digit",
   });
 export function Calendar() {
-  const { data, commit } = useStore();
+  const { data, commit, flush, refresh: refreshWorkspace } = useStore();
   const program = currentProgram(data);
   const [params] = useSearchParams();
   const [service, setService] = useState<ServiceStatus | null>(null);
@@ -60,7 +61,12 @@ export function Calendar() {
     apple: CalendarOption[];
   }>({ google: [], apple: [] });
   const [provider, setProvider] = useState<Provider>("local");
-  const [selected, setSelected] = useState(program.focusGoalId);
+  const [selected, setSelected] = useState(() => {
+    const requested = params.get("goal");
+    return data.goals.some((g) => g.id === requested && g.status === "Active")
+      ? requested!
+      : program.focusGoalId;
+  });
   const [destination, setDestination] = useState("");
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [busy, setBusy] = useState<BusyInterval[]>([]);
@@ -203,6 +209,13 @@ export function Calendar() {
         });
         const date = new Date(input.start);
         const localDay = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        d.actions = d.actions.filter(
+          (a) =>
+            a.goalId !== input.goalId ||
+            a.date ||
+            a.outcome ||
+            a.title !== input.title,
+        );
         d.actions.push({
           id: input.id,
           goalId: input.goalId,
@@ -223,11 +236,9 @@ export function Calendar() {
     sessionStorage.setItem(pendingKey, JSON.stringify(input));
     setPending(input);
     try {
+      await flush();
       const result = await api<BookingResult>("bookings", input);
-      if (result.workDone && !saveBlock(input, result))
-        throw new Error(
-          "The calendar event exists, but the browser record could not be saved. Keep this booking open and retry.",
-        );
+      await refreshWorkspace();
       if (result.error)
         throw new Error(
           `${result.workDone ? "Work block created. Check-in is not yet confirmed. " : "Booking not confirmed. "}${result.error}`,
@@ -289,7 +300,7 @@ export function Calendar() {
         {(["google", "apple"] as const).map((p) => (
           <section className="panel connection-card" key={p}>
             <span className={`calendar-brand ${p}`}>
-              {p === "google" ? "G" : <CalendarDays size={25} />}
+              <CalendarLogo provider={p} />
             </span>
             <div>
               <h3>

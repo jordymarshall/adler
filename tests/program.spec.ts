@@ -1,190 +1,123 @@
 import { expect, test } from "@playwright/test";
-const key = "adler-preview-v1";
-const status = {
-  coach: { configured: true, model: "fixture" },
-  google: { configured: false, connected: false },
-  apple: { connected: false },
-};
-const reply = {
-  reply:
-    "Your last note says editing the opening displaced the draft. Try five rough bullets before editing.",
-  summary:
-    "The published result is behind the dated checkpoint, and the recorded blocker is editing while drafting.",
-  methods: ["barriers", "monitoring"],
-  proposal: {
-    title: "Draft before editing",
-    action: "Write five rough bullets for the problem statement",
-    criterion: "Five bullets describe the problem and my contribution.",
-    timing: "Unscheduled",
-    reason:
-      "The saved action note describes editing the opening instead of drafting.",
-    reviewAfter:
-      "Two sessions: check whether a complete draft is ready for feedback.",
-  },
-};
+import { register, snapshot, save, synced } from "./fixtures";
 
-test("goal filters and checkpoint edits persist with the previous schedule", async ({
+test("coach has only small message avatars and shows cross-channel proposals for approval", async ({
   page,
 }) => {
-  await page.goto("/app/goals");
-  await expect(page.locator(".organized-card")).toHaveCount(3);
-  await page.getByLabel("Filter by tag").selectOption("Writing");
-  await expect(page.locator(".organized-card")).toHaveCount(1);
-  await page.locator(".organized-card").click();
-  await expect(page.locator(".progress-viz .pace-badge")).toHaveText(
-    "Behind plan",
-  );
-  await page
-    .getByRole("button", { name: "Organize & edit checkpoints" })
-    .click();
-  await page.getByLabel("Checkpoint 2 value").fill("1");
-  await page
-    .getByLabel("Tags, separated by commas")
-    .fill("Portfolio, Applications");
-  await page
-    .getByLabel("Reason for a schedule change")
-    .fill("Feedback needs an extra week.");
-  await page.getByRole("button", { name: "Save changes", exact: true }).click();
-  await expect(page.locator(".progress-viz .pace-badge")).toHaveText("On plan");
-  await page.reload();
-  await page
-    .getByText("Previous checkpoint schedules", { exact: true })
-    .click();
-  await expect(page.locator(".chart-data").last()).toContainText(
-    "Feedback needs an extra week.",
-  );
-  const saved = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)!),
-    key,
-  );
-  expect(saved.goals[0].checkpointHistory[0].checkpoints[1].value).toBe(2);
-});
-
-test("program revisions preserve history and stale forms cannot overwrite changes", async ({
-  page,
-  context,
-}) => {
-  await page.goto("/app/coach/program");
-  await page.getByRole("button", { name: "Edit program", exact: true }).click();
-  await page.getByLabel("Minutes per week").fill("120");
-  await page
-    .getByLabel("Reason for this revision")
-    .fill("Fewer hours available this week.");
-  await page.getByRole("button", { name: "Save program v2" }).click();
-  await page.reload();
-  await expect(page.locator(".program-grid")).toContainText("120");
-  await page.getByRole("button", { name: "Edit program", exact: true }).click();
-  const second = await context.newPage();
-  await second.goto("/app/settings");
-  await second.getByLabel("Weekly review day").selectOption("Friday");
-  await page.getByLabel("Minutes per week").fill("90");
-  await page
-    .getByLabel("Reason for this revision")
-    .fill("Old form should not replace the new review day.");
-  await page.getByRole("button", { name: "Save program v3" }).click();
-  await expect(page.getByRole("status")).toContainText(
-    "changed in another view",
-  );
-  const saved = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)!),
-    key,
-  );
-  expect(saved.programs).toHaveLength(3);
-  expect(saved.programs.at(-1).weeklyMinutes).toBe(120);
-  expect(saved.programs.at(-1).reviewDay).toBe("Friday");
-});
-
-test("coach uses saved context and requires approval before changing the program", async ({
-  page,
-}) => {
-  let sent: Record<string, any> | undefined;
-  await page.route("**/api/status", (route) => route.fulfill({ json: status }));
-  await page.route("**/api/coach", (route) => {
-    sent = route.request().postDataJSON();
-    return route.fulfill({ json: reply });
+  await register(page, true);
+  const current = await snapshot(page);
+  current.data.messages.push({
+    id: "sms-message",
+    goalId: "general",
+    role: "coach",
+    text: "Would you like to move your drafting session to mornings?",
+    channel: "sms",
+    at: new Date().toISOString(),
   });
-  await page.goto("/app/coach?goal=portfolio");
-  await page.getByRole("button", { name: "Enable live coaching" }).click();
-  await page
-    .getByRole("textbox", { name: "Message Adler" })
-    .fill("I feel stuck on the opening.");
-  await page.getByRole("button", { name: "Send message" }).click();
-  await expect(page.locator(".live-proposal")).toContainText(
-    "Draft before editing",
+  await save(page, current.data, current.revision);
+  await page.request.post("/api/proposals", {
+    data: {
+      summary: "Keep mornings for drafting",
+      changes: [
+        {
+          entity: "memory",
+          operation: "create",
+          id: null,
+          parentId: null,
+          values: JSON.stringify({ text: "I prefer mornings for drafting." }),
+        },
+      ],
+    },
+  });
+  await page.goto("/app/coach");
+  await expect(page.locator(".coach-topline .adler-avatar")).toHaveCount(0);
+  await expect(page.locator(".live-message .adler-avatar")).toHaveCount(1);
+  await expect(page.locator(".message-author")).toContainText("SMS");
+  await expect(page.locator(".shared-proposal")).toContainText(
+    "Keep mornings for drafting",
   );
-  expect(sent!.context.activeGoals).toHaveLength(3);
-  expect(sent!.context.confirmedContext).toHaveLength(1);
-  expect(sent!.context.checks).toHaveLength(6);
-  expect(
-    sent!.context.recentActions.some((a: { note?: string }) =>
-      a.note?.includes("editing"),
-    ),
-  ).toBe(true);
-  let saved = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)!),
-    key,
+  expect((await snapshot(page)).data.memories).toHaveLength(0);
+  await page.getByText("React", { exact: true }).click();
+  await page.getByRole("button", { name: "React like", exact: true }).click();
+  await expect(
+    page.getByLabel("You reacted like", { exact: true }),
+  ).toBeVisible();
+  expect((await snapshot(page)).data.messages[0].reactions?.user?.type).toBe(
+    "like",
   );
-  expect(saved.goals[0].plans).toHaveLength(1);
-  await page.getByText("Why this response", { exact: false }).click();
-  await expect(page.locator(".decision-checks")).toContainText(
-    "Confirmed context",
+  expect((await snapshot(page)).data.memories).toHaveLength(0);
+  await page.getByRole("button", { name: "Confirm changes" }).click();
+  await expect(page.locator(".shared-proposal")).toHaveCount(0);
+  expect((await snapshot(page)).data.memories[0].text).toBe(
+    "I prefer mornings for drafting.",
   );
-  await page.getByRole("button", { name: "Use this change" }).click();
-  await expect(page.locator(".live-proposal")).toContainText("Accepted");
-  await page.reload();
-  saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)!), key);
-  expect(saved.goals[0].plans).toHaveLength(2);
-  expect(saved.programs).toHaveLength(2);
-  expect(
-    saved.actions.find((a: { id: string }) => a.id === "portfolio-earlier")
-      .planVersion,
-  ).toBe(1);
-  await page.getByLabel("Conversation goal").selectOption("statistics");
-  await expect(page.locator(".live-message.user")).toHaveCount(0);
-  await page.goto("/app/coach/program");
-  await page.getByRole("button", { name: "Decisions & versions" }).click();
-  await page.getByRole("button", { name: "Review this change" }).click();
-  await page
-    .getByLabel("What did you observe?")
-    .fill("Both attempts produced a full draft ready for feedback.");
-  await page.getByRole("button", { name: "Save review", exact: true }).click();
-  await page.reload();
-  saved = await page.evaluate((k) => JSON.parse(localStorage.getItem(k)!), key);
-  expect(saved.decisions[0].status).toBe("Reviewed");
-  expect(saved.decisions[0].review.note).toContain("full draft");
 });
 
-test("a failed live turn preserves the draft and does not manufacture a response", async ({
+test("failed coaching preserves the draft without manufacturing a reply", async ({
   page,
 }) => {
-  await page.route("**/api/status", (route) => route.fulfill({ json: status }));
-  await page.route("**/api/coach", (route) =>
+  await register(page, true);
+  await page.route("**/api/status", (route) =>
     route.fulfill({
-      status: 502,
       json: {
-        error:
-          "The model provider account needs API credits before live coaching can run.",
+        coach: { configured: true, model: "fixture" },
+        google: { configured: false, connected: false },
+        apple: { connected: false },
       },
     }),
   );
+  await page.route("**/api/coach", (route) =>
+    route.fulfill({
+      status: 400,
+      json: { error: "The account needs API credits." },
+    }),
+  );
   await page.goto("/app/coach");
-  await page.getByRole("button", { name: "Enable live coaching" }).click();
   await page.getByLabel("Message Adler").fill("Review my progress");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByRole("alert")).toContainText("API credits");
   await expect(page.getByLabel("Message Adler")).toHaveValue(
     "Review my progress",
   );
-  await expect(page.locator(".live-message.coach")).toHaveCount(0);
+  await expect(page.locator(".live-message")).toHaveCount(0);
   await page.reload();
   await expect(page.getByLabel("Message Adler")).toHaveValue(
     "Review my progress",
   );
 });
 
-test("local scheduling creates a persistent action without claiming an external booking", async ({
+test("provider choices save without returning the key and phone setup reports missing configuration", async ({
   page,
 }) => {
+  await register(page);
+  await page.goto("/app/settings/provider");
+  await page.getByLabel("Provider", { exact: true }).selectOption("openai");
+  await page
+    .getByLabel("API key", { exact: true })
+    .fill("fictional-api-key-for-test");
+  await page
+    .getByRole("button", { name: "Save provider", exact: true })
+    .click();
+  await expect(page.getByRole("status")).toContainText(
+    "Provider settings saved",
+  );
+  await expect(page.getByLabel("API key", { exact: true })).toHaveValue("");
+  const status = await (await page.request.get("/api/provider")).json();
+  expect(status.selected.provider).toBe("openai");
+  expect(JSON.stringify(status)).not.toContain("fictional-api-key-for-test");
+  await page.goto("/app/connections");
+  await expect(
+    page.getByRole("button", { name: "Get pairing code" }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText("Phone messaging has not been connected", { exact: false }),
+  ).toBeVisible();
+});
+
+test("local scheduling creates a synced work block without an external booking claim", async ({
+  page,
+}) => {
+  await register(page, true);
   await page.goto("/app/calendar");
   await expect(page.locator(".calendar-availability-note")).toContainText(
     "External calendar conflicts have not been checked",
@@ -193,44 +126,306 @@ test("local scheduling creates a persistent action without claiming an external 
   await page
     .getByRole("button", { name: "Save in Adler", exact: true })
     .click();
+  await synced(page);
   await page.reload();
   await expect(page.locator(".work-block")).toHaveCount(1);
   await expect(page.locator(".work-block")).toContainText("Adler only");
-  const saved = await page.evaluate(
-    (k) => JSON.parse(localStorage.getItem(k)!),
-    key,
+  const { data } = await snapshot(page);
+  expect(data.actions.some((a) => a.id === data.workBlocks[0].id)).toBeTruthy();
+  expect(data.workBlocks[0].eventId).toBeUndefined();
+  await page.goto("/app/coach/program");
+  const marker = page
+    .locator(".plan-timeline")
+    .getByRole("button", { name: new RegExp(data.workBlocks[0].action) });
+  await marker.click();
+  await expect(page.locator(".timeline-detail")).toContainText(
+    data.workBlocks[0].action,
   );
-  expect(
-    saved.actions.some((a: { id: string }) => a.id === saved.workBlocks[0].id),
-  ).toBe(true);
-  expect(saved.workBlocks[0].eventId).toBeUndefined();
+  await expect(page.locator(".timeline-detail")).toContainText("Scheduled");
+  await expect(page.locator(".timeline-detail")).toContainText(
+    "America/Toronto",
+  );
 });
 
-test("calendar errors do not offer conflict-free slots", async ({ page }) => {
-  await page.route("**/api/status", (route) =>
-    route.fulfill({
-      json: { ...status, google: { configured: true, connected: true } },
-    }),
+test("program views preserve edits and show the context and settings behind each revision", async ({
+  page,
+}) => {
+  await register(page, true);
+  await page.goto("/app/coach/program");
+  await expect(page.locator(".program-roadmap")).toContainText(
+    "Publish two essays",
   );
-  await page.route("**/api/calendars", (route) =>
-    route.fulfill({
-      json: {
-        google: [{ id: "primary", name: "Personal", writable: true }],
-        apple: [],
-      },
-    }),
-  );
-  await page.route("**/api/availability", (route) =>
-    route.fulfill({
-      status: 400,
-      json: { error: "Google could not check every selected calendar." },
-    }),
-  );
-  await page.goto("/app/calendar");
-  await page.getByLabel("Book in", { exact: true }).selectOption("google");
+  await page.getByRole("button", { name: "Edit program", exact: true }).click();
+  await page.getByLabel("Minutes per week", { exact: true }).fill("180");
   await page
-    .getByRole("button", { name: "Check availability", exact: true })
+    .getByLabel("Reason for this revision", { exact: true })
+    .fill("Reserve more time for the essay draft");
+  await page.getByRole("button", { name: /Save program v/ }).click();
+  await synced(page);
+  await expect(page.locator(".program-budget h2")).toContainText("180");
+  await page
+    .getByRole("button", { name: "Context & checks", exact: true })
     .click();
-  await expect(page.getByRole("alert")).toContainText("could not check");
-  await expect(page.locator(".slot-grid button")).toHaveCount(0);
+  await expect(page.locator(".program-check-detail")).toContainText(
+    "Two published essays with a clear problem and result",
+  );
+  await page.getByRole("button", { name: /Schedule & capacity/ }).click();
+  await expect(page.locator(".context-finding")).toContainText(
+    "180 minutes budgeted per week",
+  );
+  await page.getByRole("button", { name: "Versions", exact: true }).click();
+  await expect(page.locator(".program-version-entry").first()).toContainText(
+    "Reserve more time for the essay draft",
+  );
+  await expect(page.locator(".version-changes").first()).toContainText(
+    "180 minutes",
+  );
+  await expect(page.locator(".version-before").first()).toContainText(
+    "120 minutes",
+  );
+  await page.getByRole("button", { name: /Decisions/ }).click();
+  await expect(page.locator(".program-empty")).toContainText(
+    "Your first coaching decision starts here.",
+  );
+  await page.reload();
+  await expect(page.locator(".program-budget h2")).toContainText("180");
+});
+
+test("a coordinated adjustment saves goal, approach, timing, and memory before optional calendar booking", async ({
+  page,
+}) => {
+  await register(page, true);
+  const initial = await snapshot(page);
+  initial.data.programs.at(-1)!.focusGoalId = "";
+  await save(page, initial.data, initial.revision);
+  const deadline = initial.data.goals[0].targetDate!;
+  const proposal = await page.request.post("/api/proposals", {
+    data: {
+      summary: "Outline first and protect the lunch break",
+      changes: [
+        {
+          entity: "goal",
+          operation: "update",
+          reason: "Allow time for feedback within the user's available hours.",
+          id: "essays",
+          parentId: null,
+          values: JSON.stringify({ targetDate: "2027-04-30" }),
+        },
+        {
+          entity: "plan",
+          operation: "update",
+          id: null,
+          parentId: "essays",
+          values: JSON.stringify({
+            action: "Write the whole outline before editing",
+            criterion: "Five main points on the page",
+            timing: "Tuesday after lunch · 25 min",
+          }),
+        },
+        {
+          entity: "program",
+          operation: "update",
+          id: null,
+          parentId: null,
+          values: JSON.stringify({
+            approach:
+              "Try outlining before sentence edits; review the next draft on Friday.",
+            workStart: "12:00",
+            workEnd: "15:00",
+            reviewDay: "Friday",
+            reason: "The user has confirmed that evenings are reserved.",
+          }),
+        },
+        {
+          entity: "memory",
+          operation: "create",
+          id: null,
+          parentId: null,
+          values: JSON.stringify({
+            text: "Evenings are reserved. Lunch breaks are available for writing.",
+          }),
+        },
+        {
+          entity: "action",
+          operation: "update",
+          id: initial.data.actions[0].id,
+          parentId: null,
+          values: JSON.stringify({
+            title: "Write the whole outline before editing",
+            timing: "Tuesday after lunch · 25 min",
+          }),
+        },
+      ],
+    },
+  });
+  expect(await proposal.text()).not.toContain('"error"');
+  await page.goto("/app/coach");
+  const adjustment = page.locator(".shared-proposal");
+  await expect(
+    adjustment
+      .getByRole("list", { name: "Proposed changes" })
+      .locator(":scope > li"),
+  ).toHaveCount(5);
+  await expect(adjustment.locator(".adjustment-dimension")).toHaveCount(0);
+  await expect(adjustment.locator(".adjustment-context-note")).toContainText(
+    "information Adler uses",
+  );
+  await expect(adjustment.locator(".change-before").first()).toContainText(
+    new Date(`${deadline}T12:00:00`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  );
+  await expect(adjustment.locator(".change-after").first()).toContainText(
+    "Apr 30, 2027",
+  );
+  await expect(adjustment.locator(".change-reason").first()).toContainText(
+    "Allow time for feedback within the user's available hours.",
+  );
+  expect((await snapshot(page)).data.memories).toHaveLength(0);
+  await expect(page.locator(".coach-calendar-next")).toHaveCount(0);
+  await page.getByRole("button", { name: "Confirm changes" }).click();
+  await expect(adjustment).toHaveCount(0);
+  const approved = (await snapshot(page)).data;
+  expect(approved.goals[0].targetDate).toBe("2027-04-30");
+  expect(approved.goals[0].plans.at(-1)!.action).toBe(
+    "Write the whole outline before editing",
+  );
+  expect(approved.programs.at(-1)!.workStart).toBe("12:00");
+  expect(approved.programs.at(-1)!.reviewDay).toBe("Friday");
+  expect(approved.memories[0].text).toContain("Evenings are reserved");
+  expect(approved.goals[0].results).toEqual(initial.data.goals[0].results);
+  expect(approved.workBlocks).toHaveLength(0);
+  await page.reload();
+  await page
+    .getByRole("link", { name: "Add to calendar", exact: true })
+    .click();
+  await expect(page).toHaveURL(/calendar\?goal=essays/);
+  await expect(
+    page.getByLabel("Goal to schedule", { exact: true }),
+  ).toHaveValue("essays");
+  expect((await snapshot(page)).data.workBlocks).toHaveLength(0);
+  await expect(page.locator(".calendar-action")).toContainText(
+    "Write the whole outline before editing",
+  );
+});
+
+test("chats can be renamed, filed under a goal, and deleted without removing the goal", async ({
+  page,
+}) => {
+  await register(page, true);
+  await page.goto("/app/coach");
+  await page.getByRole("button", { name: "New chat", exact: true }).click();
+  await expect(page.locator(".conversation-item.selected")).toContainText(
+    "New conversation",
+  );
+  await page
+    .getByRole("button", { name: "Edit chat: New conversation", exact: true })
+    .click();
+  await page.getByLabel("Chat name").fill("A plan for my essays");
+  await page.getByLabel("Goal folder").selectOption("essays");
+  await page.getByRole("button", { name: "Save chat", exact: true }).click();
+  await expect(page.locator(".coach-context-strip")).toContainText("Open plan");
+  await expect(page.locator(".conversation-item.selected")).toContainText(
+    "A plan for my essays",
+  );
+  await page.reload();
+  await expect(page.locator(".conversation-item.selected")).toContainText(
+    "A plan for my essays",
+  );
+  await page.getByRole("button", { name: "New chat", exact: true }).click();
+  await expect(page.locator(".coach-context-strip")).toContainText(
+    "Across goals",
+  );
+  await page
+    .getByRole("button", {
+      name: "Delete chat: A plan for my essays",
+      exact: true,
+    })
+    .click();
+  await page
+    .getByRole("button", { name: "Delete conversation", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", {
+      name: "Delete chat: A plan for my essays",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  expect((await snapshot(page)).data.goals[0].id).toBe("essays");
+  expect((await snapshot(page)).data.conversations).toHaveLength(1);
+});
+
+test("a sourced insight opens its original chat and a reply links to the actual plan", async ({
+  page,
+}) => {
+  await register(page, true);
+  const state = await snapshot(page);
+  const now = new Date().toISOString();
+  state.data.conversations = [
+    {
+      id: "conversation-source",
+      title: "Evening check-in",
+      goalId: "essays",
+      createdAt: now,
+    },
+  ];
+  state.data.messages = [
+    {
+      id: "message-source",
+      conversationId: "conversation-source",
+      goalId: "essays",
+      role: "user",
+      text: "My meeting ran late. I missed the session.",
+      at: now,
+    },
+    {
+      id: "message-reply",
+      conversationId: "conversation-source",
+      goalId: "essays",
+      role: "coach",
+      text: "Let’s review the timing in your plan.",
+      at: now,
+      decisionId: "decision-source",
+      links: [{ goalId: "essays", tab: "plan" }],
+    },
+  ];
+  state.data.decisions = [
+    {
+      id: "decision-source",
+      date: now,
+      goalId: "essays",
+      programVersion: state.data.programs.at(-1)!.version,
+      planVersion: 1,
+      mode: "live",
+      checks: [],
+      methods: [],
+      summary: "Review the timing.",
+      status: "No change",
+      insights: [
+        {
+          finding: "A late meeting interrupted the session.",
+          status: "Reported",
+          sourceIds: ["message-source"],
+          changeIndexes: [],
+        },
+      ],
+    },
+  ];
+  await save(page, state.data, state.revision);
+  await page.goto("/app/insights");
+  await expect(page.locator(".insight-row")).toContainText(
+    "A late meeting interrupted the session.",
+  );
+  await page.locator(".insight-sources summary").click();
+  await expect(page.locator(".insight-sources")).toContainText(
+    "My meeting ran late. I missed the session.",
+  );
+  await page.getByRole("link", { name: "Open source" }).click();
+  await expect(page.locator(".coach-thread")).toContainText(
+    "My meeting ran late.",
+  );
+  await page.locator(".message-record-links a").click();
+  await expect(page).toHaveURL(/\/app\/goals\/essays\/plan$/);
 });

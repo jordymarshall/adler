@@ -19,8 +19,9 @@ import {
   Trash2,
   Target,
 } from "lucide-react";
+import { createGoal } from "../shared/validation";
 import { progressStatus } from "./progress";
-import { EmptyState, GoalIcon, Modal, Sprout, Tag } from "./components";
+import { EmptyState, GoalIcon, Modal, Tag } from "./components";
 import {
   currentProgram,
   reviseProgram,
@@ -429,23 +430,6 @@ export function Today() {
           )}
         </div>
         <aside className="today-aside">
-          <div className="gentle-note">
-            <span className="section-kicker">
-              <Asterisk size={17} />A LITTLE PERSPECTIVE
-            </span>
-            <h2>
-              You can make the step smaller.
-              <br />
-              <em>The goal still matters.</em>
-            </h2>
-            <p>
-              A workable plan makes room for the week you’re actually having.
-            </p>
-            <Link to="/app/coach">
-              Talk it through <ArrowUpRight size={16} />
-            </Link>
-            <Sprout />
-          </div>
           <div className="goals-snapshot">
             <div className="list-heading">
               <h2>The bigger picture</h2>
@@ -484,9 +468,10 @@ export function Today() {
             ))}
           </div>
           <p className="sample-note">
-            <Leaf size={14} />A sample workspace. Make it your own.
+            <Leaf size={14} />
+            Your goals and records, saved together.
             <br />
-            Changes stay in this browser.
+            Changes sync across your connected channels.
           </p>
         </aside>
       </div>
@@ -510,6 +495,11 @@ const draftDefaults = {
   tags: "",
   targetDate: localDate(28),
   assessmentTarget: "8",
+  tracking: "milestones",
+  measureLabel: "",
+  measureUnit: "",
+  measureTarget: "",
+  measureBaseline: "",
 };
 export function NewGoal() {
   const { data, commit } = useStore();
@@ -528,82 +518,52 @@ export function NewGoal() {
     const id = crypto.randomUUID();
     if (
       commit((d) => {
-        const goal: Goal = {
-          id,
-          title: draft.title.trim(),
-          success: draft.success.trim(),
-          why: draft.why.trim(),
-          kind: draft.kind as GoalKind,
-          status: "Active",
-          area: draft.area as "Career" | "Learning" | "Personal",
-          tags: [
-            ...new Set(
-              draft.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean),
-            ),
-          ].slice(0, 8),
-          priority: "Maintain",
-          targetDate: draft.targetDate,
-          startDate: localDate(),
-          target:
-            draft.kind === "learning"
-              ? Number(draft.assessmentTarget)
-              : draft.milestone.split("\n").filter((t) => t.trim()).length,
-          unit:
-            draft.kind === "learning"
-              ? "correct answers / 10"
-              : "milestones verified",
-          checkpoints: [
-            {
-              id: crypto.randomUUID(),
-              date: draft.targetDate,
-              value:
-                draft.kind === "learning"
-                  ? Number(draft.assessmentTarget)
-                  : draft.milestone.split("\n").filter((t) => t.trim()).length,
-              label: "Target result",
-            },
-          ],
-          milestones: [
-            ...draft.milestone
+        createGoal(
+          d,
+          {
+            title: draft.title.trim(),
+            kind: draft.kind as GoalKind,
+            why: draft.why.trim(),
+            success: draft.success.trim(),
+            area: draft.area as NonNullable<Goal["area"]>,
+            tags: [
+              ...new Set(
+                draft.tags
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean),
+              ),
+            ].slice(0, 8),
+            targetDate: draft.targetDate,
+            milestones: draft.milestone
               .split("\n")
               .filter((t) => t.trim())
               .map((title) => ({
-                id: crypto.randomUUID(),
                 title: title.trim(),
                 criterion: title.trim(),
-                done: false,
               })),
-          ],
-          plans: [
-            {
-              version: 1,
-              action: draft.action.trim(),
-              criterion: draft.criterion.trim(),
-              timing: draft.timing,
-              date: localDate(),
-            },
-          ],
-          results: [],
-        };
-        d.goals.push(goal);
-        d.actions.push({
-          id: crypto.randomUUID(),
-          goalId: id,
-          title: draft.action.trim(),
-          criterion: draft.criterion.trim(),
-          timing: draft.timing,
-          date:
-            draft.timing === "Unscheduled"
-              ? ""
-              : draft.timing === "Tomorrow"
-                ? localDate(1)
-                : localDate(),
-          planVersion: 1,
-          history: [],
-        });
+            ...(draft.tracking === "measure"
+              ? {
+                  measure: {
+                    label: draft.measureLabel.trim(),
+                    unit: draft.measureUnit.trim(),
+                    target: Number(draft.measureTarget),
+                    baseline:
+                      draft.measureBaseline === ""
+                        ? null
+                        : Number(draft.measureBaseline),
+                  },
+                }
+              : {}),
+            assessmentTarget: Number(draft.assessmentTarget),
+            baseline: null,
+            action: draft.action.trim(),
+            criterion: draft.criterion.trim(),
+            timing: draft.timing,
+          },
+          localDate(),
+          id,
+        );
         d.goalDraft = {};
       }, "Your goal and first plan are saved.")
     )
@@ -674,145 +634,233 @@ export function NewGoal() {
         </div>
       </div>
       {!review ? (
-        <form
-          className="panel goal-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (fields.every((f) => f.optional || draft[f.key].trim()))
-              setReview(true);
-          }}
-        >
-          <span className="draft-saved">
-            <Check size={13} /> Draft saved in this browser
-          </span>
-          {fields.map((f) => (
-            <div className="form-field" key={f.key}>
-              <label htmlFor={f.key}>
-                {f.label}
-                {f.optional && <span> optional</span>}
-              </label>
-              {f.multiline ? (
-                <textarea
-                  id={f.key}
-                  placeholder={f.placeholder}
-                  value={draft[f.key]}
-                  required={!f.optional}
-                  maxLength={1000}
-                  rows={3}
-                  onChange={(e) => field(f.key, e.target.value)}
-                />
-              ) : (
-                <input
-                  id={f.key}
-                  placeholder={f.placeholder}
-                  value={draft[f.key]}
-                  required={!f.optional}
-                  pattern={f.optional ? undefined : ".*\\S.*"}
-                  maxLength={300}
-                  onChange={(e) => field(f.key, e.target.value)}
-                />
-              )}
+        <>
+          <div className="setup-choice">
+            <div>
+              <b>Prefer to work it out together?</b>
+              <p>
+                Adler asks about your result, timing, and constraints, then
+                proposes a goal for you to review.
+              </p>
             </div>
-          ))}
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="goal-area">Area</label>
-              <select
-                id="goal-area"
-                value={draft.area}
-                onChange={(e) => field("area", e.target.value)}
-              >
-                {["Career", "Learning", "Personal"].map((v) => (
-                  <option key={v}>{v}</option>
-                ))}
-              </select>
-            </div>
-            <div className="form-field">
-              <label htmlFor="goal-deadline">Target date</label>
-              <input
-                id="goal-deadline"
-                type="date"
-                min={localDate()}
-                required
-                value={draft.targetDate}
-                onChange={(e) => field("targetDate", e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="form-field">
-            <label htmlFor="goal-tags">Tags, separated by commas</label>
-            <input
-              id="goal-tags"
-              maxLength={160}
-              value={draft.tags}
-              placeholder="Portfolio, Writing"
-              onChange={(e) => field("tags", e.target.value)}
-            />
-          </div>
-          <p className="field-hint">
-            Add one milestone per line above. Each should describe a result you
-            can verify. You can add intermediate checkpoint dates from the
-            progress screen.
-          </p>
-          {draft.kind === "learning" && (
-            <div className="form-field">
-              <label htmlFor="assessment-target">
-                Target correct answers out of 10
-              </label>
-              <input
-                id="assessment-target"
-                type="number"
-                required
-                min="1"
-                max="10"
-                step="1"
-                value={draft.assessmentTarget}
-                onChange={(e) => field("assessmentTarget", e.target.value)}
-              />
-            </div>
-          )}
-          <div className="form-row">
-            <div className="form-field">
-              <label htmlFor="goal-kind">Kind of goal</label>
-              <select
-                id="goal-kind"
-                value={draft.kind}
-                onChange={(e) => field("kind", e.target.value)}
-              >
-                <option value="project">A creative or career project</option>
-                <option value="learning">Learning something</option>
-                <option value="practical">A practical life change</option>
-              </select>
-            </div>
-            <div className="form-field">
-              <label htmlFor="goal-timing">When does the action fit?</label>
-              <select
-                id="goal-timing"
-                value={draft.timing}
-                onChange={(e) => field("timing", e.target.value)}
-              >
-                <option>Unscheduled</option>
-                <option>Today</option>
-                <option>Tomorrow</option>
-              </select>
-            </div>
-          </div>
-          {draft.kind === "learning" && (
-            <p className="form-notice">
-              Learning results in this preview use comparable course problems
-              solved correctly, out of 10. Choose another kind of goal if that
-              measure doesn’t fit.
-            </p>
-          )}
-          <div className="modal-actions">
-            <Link className="button text-button" to="/app/goals">
-              Save draft for later
+            <Link className="button secondary" to="/app/coach?goal=general">
+              Plan my goal with Adler →
             </Link>
-            <button className="button primary" type="submit">
-              Review my plan <ArrowRight size={16} />
-            </button>
           </div>
-        </form>
+          <form
+            className="panel goal-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (fields.every((f) => f.optional || draft[f.key].trim()))
+                setReview(true);
+            }}
+          >
+            <span className="draft-saved">
+              <Check size={13} /> Draft synced to your workspace
+            </span>
+            {fields.map((f) => (
+              <div className="form-field" key={f.key}>
+                <label htmlFor={f.key}>
+                  {f.label}
+                  {f.optional && <span> optional</span>}
+                </label>
+                {f.multiline ? (
+                  <textarea
+                    id={f.key}
+                    placeholder={f.placeholder}
+                    value={draft[f.key]}
+                    required={!f.optional}
+                    maxLength={1000}
+                    rows={3}
+                    onChange={(e) => field(f.key, e.target.value)}
+                  />
+                ) : (
+                  <input
+                    id={f.key}
+                    placeholder={f.placeholder}
+                    value={draft[f.key]}
+                    required={!f.optional}
+                    pattern={f.optional ? undefined : ".*\\S.*"}
+                    maxLength={300}
+                    onChange={(e) => field(f.key, e.target.value)}
+                  />
+                )}
+              </div>
+            ))}
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="goal-area">Area</label>
+                <select
+                  id="goal-area"
+                  value={draft.area}
+                  onChange={(e) => field("area", e.target.value)}
+                >
+                  {["Career", "Learning", "Personal"].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-field">
+                <label htmlFor="goal-deadline">Target date</label>
+                <input
+                  id="goal-deadline"
+                  type="date"
+                  min={localDate()}
+                  required
+                  value={draft.targetDate}
+                  onChange={(e) => field("targetDate", e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="form-field">
+              <label htmlFor="goal-tags">Tags, separated by commas</label>
+              <input
+                id="goal-tags"
+                maxLength={160}
+                value={draft.tags}
+                placeholder="Portfolio, Writing"
+                onChange={(e) => field("tags", e.target.value)}
+              />
+            </div>
+            <p className="field-hint">
+              Add one milestone per line above. Each should describe a result
+              you can verify. You can add intermediate checkpoint dates from the
+              progress screen.
+            </p>
+            <div className="form-field">
+              <label htmlFor="goal-tracking">
+                How will you measure progress?
+              </label>
+              <select
+                id="goal-tracking"
+                value={draft.tracking}
+                onChange={(e) => field("tracking", e.target.value)}
+              >
+                <option value="milestones">
+                  Verified milestones
+                  {draft.kind === "learning" ? " / assessment score" : ""}
+                </option>
+                <option value="measure">
+                  A measured result, such as distance or savings
+                </option>
+              </select>
+            </div>
+            {draft.tracking === "measure" && (
+              <div className="goal-measure-fields">
+                <div className="form-row">
+                  <label className="form-field">
+                    What you’re measuring
+                    <input
+                      required
+                      maxLength={150}
+                      value={draft.measureLabel}
+                      placeholder="Longest run without stopping"
+                      onChange={(e) => field("measureLabel", e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    Unit
+                    <input
+                      required
+                      maxLength={50}
+                      value={draft.measureUnit}
+                      placeholder="km"
+                      onChange={(e) => field("measureUnit", e.target.value)}
+                    />
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label className="form-field">
+                    Target result
+                    <input
+                      type="number"
+                      required
+                      min="0.01"
+                      max="1000000"
+                      step="any"
+                      value={draft.measureTarget}
+                      onChange={(e) => field("measureTarget", e.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    Current result, if known
+                    <input
+                      type="number"
+                      min="0"
+                      max="1000000"
+                      step="any"
+                      value={draft.measureBaseline}
+                      onChange={(e) => field("measureBaseline", e.target.value)}
+                    />
+                  </label>
+                </div>
+                <p className="field-hint">
+                  Use a result that increases toward your target, such as
+                  distance run or money saved. Completing an action won’t change
+                  this number automatically.
+                </p>
+              </div>
+            )}
+            {draft.kind === "learning" && draft.tracking !== "measure" && (
+              <div className="form-field">
+                <label htmlFor="assessment-target">
+                  Target correct answers out of 10
+                </label>
+                <input
+                  id="assessment-target"
+                  type="number"
+                  required
+                  min="1"
+                  max="10"
+                  step="1"
+                  value={draft.assessmentTarget}
+                  onChange={(e) => field("assessmentTarget", e.target.value)}
+                />
+              </div>
+            )}
+            <div className="form-row">
+              <div className="form-field">
+                <label htmlFor="goal-kind">Kind of goal</label>
+                <select
+                  id="goal-kind"
+                  value={draft.kind}
+                  onChange={(e) => field("kind", e.target.value)}
+                >
+                  <option value="project">A creative or career project</option>
+                  <option value="learning">Learning something</option>
+                  <option value="practical">A practical life change</option>
+                </select>
+              </div>
+              <div className="form-field">
+                <label htmlFor="goal-timing">When does the action fit?</label>
+                <select
+                  id="goal-timing"
+                  value={draft.timing}
+                  onChange={(e) => field("timing", e.target.value)}
+                >
+                  <option>Unscheduled</option>
+                  <option>Today</option>
+                  <option>Tomorrow</option>
+                </select>
+              </div>
+            </div>
+            {draft.kind === "learning" && draft.tracking !== "measure" && (
+              <p className="form-notice">
+                Learning results use comparable course problems solved
+                correctly, out of 10. Choose a measured result above if another
+                measure fits your goal better.
+              </p>
+            )}
+            <div className="modal-actions">
+              <Link className="button text-button" to="/app/goals">
+                Save draft for later
+              </Link>
+              <button className="button primary" type="submit">
+                Review my plan <ArrowRight size={16} />
+              </button>
+            </div>
+          </form>
+        </>
       ) : (
         <form className="panel plan-summary" onSubmit={save}>
           <GoalIcon kind={draft.kind as GoalKind} />
@@ -878,8 +926,11 @@ export function WeeklyReview() {
           <span className="section-kicker">
             {formatDate(localDate(-6))} — {formatDate(localDate())}
           </span>
-          <h1>A moment to look back.</h1>
-          <p>Notice what happened. Choose what comes next.</p>
+          <h1>Your weekly review</h1>
+          <p>
+            Compare results with your plan, identify what helped or blocked
+            progress, and choose next week’s change.
+          </p>
         </div>
       </div>
       {review.completedAt ? (
@@ -1008,6 +1059,7 @@ export function WeeklyReview() {
                         decision: "Keep the current plans",
                         completedAt: new Date().toISOString(),
                       };
+                      d.reviews.push({ ...d.review });
                     }, "Review saved. Your plans stay as they are.")
                   }
                 >
@@ -1056,6 +1108,7 @@ export function WeeklyReview() {
                     decision: "Skipped — plans unchanged",
                     completedAt: new Date().toISOString(),
                   };
+                  d.reviews.push({ ...d.review });
                 }, "Review skipped. Your plans are unchanged.")
               )
                 navigate("/app/today");
@@ -1065,12 +1118,28 @@ export function WeeklyReview() {
           </button>
         </>
       )}
+      {data.reviews.length > 0 && (
+        <details className="panel review-history">
+          <summary>Previous reviews · {data.reviews.length}</summary>
+          {[...data.reviews].reverse().map((r, i) => (
+            <article key={`${r.completedAt}-${i}`}>
+              <b>
+                {r.completedAt
+                  ? new Date(r.completedAt).toLocaleDateString()
+                  : "Review"}
+              </b>
+              <p>{r.note || "No note recorded."}</p>
+              <span className="field-hint">{r.decision}</span>
+            </article>
+          ))}
+        </details>
+      )}
     </div>
   );
 }
 
 export function SettingsPage() {
-  const { data, commit } = useStore();
+  const { data, commit, logout } = useStore();
   const [reset, setReset] = useState(false);
   function exportData() {
     const url = URL.createObjectURL(
@@ -1080,7 +1149,7 @@ export function SettingsPage() {
             {
               exportedAt: new Date().toISOString(),
               description:
-                "Adler local preview workspace. Goal results, action records, plan versions, conversations, confirmed memory, review, and preferences.",
+                "Adler workspace. Goal results, action records, plan versions, conversations, confirmed memory, review, and preferences.",
               ...data,
             },
             null,
@@ -1172,11 +1241,9 @@ export function SettingsPage() {
         <div className="settings-row">
           <div>
             <h3>Timezone</h3>
-            <p>Dates follow this browser’s local timezone.</p>
+            <p>Scheduled check-ins follow your saved timezone.</p>
           </div>
-          <span className="small-text">
-            {Intl.DateTimeFormat().resolvedOptions().timeZone}
-          </span>
+          <span className="small-text">{data.timeZone}</span>
         </div>
         <div className="settings-row">
           <div>
@@ -1190,25 +1257,48 @@ export function SettingsPage() {
         <h2>Your information</h2>
         <div className="settings-row">
           <div>
-            <h3>Live coaching</h3>
-            <p>
-              Send your selected coaching context to Anthropic when you send a
-              message.
-            </p>
+            <h3>AI provider</h3>
+            <p>Choose Gemini, GPT, or Claude and connect your API account.</p>
+          </div>
+          <Link
+            className="button secondary small-button"
+            to="/app/settings/provider"
+          >
+            AI provider →
+          </Link>
+        </div>
+        <div className="settings-row">
+          <div>
+            <h3>Phone, MCP & automations</h3>
+            <p>Text Adler, connect a chat client, and schedule check-ins.</p>
+          </div>
+          <Link className="button secondary small-button" to="/app/connections">
+            Connections →
+          </Link>
+        </div>
+        <div className="settings-row">
+          <div>
+            <h3>Your account</h3>
+            <p>Use this account to sign in on another device.</p>
           </div>
           <button
             className="button secondary small-button"
-            aria-pressed={data.modelConsent}
-            onClick={() =>
-              commit((d) => {
-                d.modelConsent = !d.modelConsent;
-              })
-            }
+            onClick={() => void logout()}
           >
-            {data.modelConsent
-              ? "Disable live coaching"
-              : "Enable live coaching"}
+            Sign out
           </button>
+        </div>
+        <div className="settings-row">
+          <div>
+            <h3>AI coaching</h3>
+            <p>Automatically available with your connected AI provider.</p>
+          </div>
+          <Link
+            className="button secondary small-button"
+            to="/app/settings/provider"
+          >
+            AI provider <ArrowUpRight size={15} />
+          </Link>
         </div>
         <div className="settings-row">
           <div>
@@ -1251,8 +1341,8 @@ export function SettingsPage() {
         </div>
         <div className="settings-row">
           <div>
-            <h3>Delete local workspace data</h3>
-            <p>Remove your saved changes and start with fresh examples.</p>
+            <h3>Clear goals and conversation</h3>
+            <p>Start with an empty workspace. Export a copy first.</p>
           </div>
           <button
             className="button danger-text small-button"
@@ -1265,9 +1355,8 @@ export function SettingsPage() {
       </section>
       <p className="settings-disclosure">
         <Leaf size={17} />
-        This is a local preview. Your changes are stored in this browser. Live
-        coaching and calendar access use the services you enable. Account sync
-        and email delivery are not configured.{" "}
+        Your records are saved on this Adler server and synced across connected
+        channels. Coaching uses your chosen AI provider.{" "}
         <Link to="/privacy">
           Privacy details <ArrowUpRight size={12} />
         </Link>
@@ -1276,10 +1365,9 @@ export function SettingsPage() {
         <Modal title="Start with a clean page?" onClose={() => setReset(false)}>
           <p>
             This deletes the goals, action history, conversations, memory,
-            drafts, and preferences saved in this preview and restores the
-            fictional examples. Export first if you’d like to keep a copy.
-            Calendar connections, existing events, and the server booking
-            journal are separate and will remain.
+            drafts, and preferences in your workspace. Export first if you’d
+            like to keep a copy. Calendar connections, existing events, and the
+            server booking journal are separate and will remain.
           </p>
           <div className="modal-actions">
             <button
@@ -1294,7 +1382,7 @@ export function SettingsPage() {
                 if (
                   commit((d) => {
                     Object.assign(d, initialData());
-                  }, "Local changes deleted. The sample workspace is restored.")
+                  }, "Workspace cleared. You can start with a new goal.")
                 ) {
                   Object.keys(sessionStorage)
                     .filter((key) => key.startsWith("adler-coach-draft-"))

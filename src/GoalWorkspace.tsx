@@ -424,12 +424,13 @@ export function GoalWorkspace() {
           const milestone = g.milestones.find((m) => m.id === result.id)!;
           milestone.done = !result.done;
           milestone.completedAt = milestone.done ? localDate() : undefined;
-          g.results.push({
-            id: crypto.randomUUID(),
-            date: localDate(),
-            value: g.milestones.filter((m) => m.done).length,
-            source: `${milestone.done ? "Verified" : "Reopened"}: ${milestone.title}`,
-          });
+          if (!g.measure && g.kind !== "learning")
+            g.results.push({
+              id: crypto.randomUUID(),
+              date: localDate(),
+              value: g.milestones.filter((m) => m.done).length,
+              source: `${milestone.done ? "Verified" : "Reopened"}: ${milestone.title}`,
+            });
         }
         g.outcomeUpdatedAt = g.results.at(-1)?.date;
       }, "Result saved. Goal progress is updated everywhere.")
@@ -615,7 +616,12 @@ export function GoalWorkspace() {
             <section className="panel outcome-panel">
               <span className="section-kicker">THE RESULT THAT MATTERS</span>
               <h2>
-                {goal.kind === "learning" ? (
+                {goal.measure ? (
+                  <>
+                    {goal.results.at(-1)?.value ?? "—"}
+                    <span> {goal.measure.unit}</span>
+                  </>
+                ) : goal.kind === "learning" ? (
                   <>
                     {goal.results.at(-1)?.value ?? "—"}
                     <span> / 10</span>
@@ -628,18 +634,31 @@ export function GoalWorkspace() {
                 )}
               </h2>
               <p>
-                {goal.kind === "learning"
-                  ? "Problems solved correctly, out of 10"
-                  : goal.kind === "project" && goal.id === "portfolio"
-                    ? "Case studies published"
-                    : "Steps verified against their criteria"}
+                {goal.measure
+                  ? goal.measure.label
+                  : goal.kind === "learning"
+                    ? "Problems solved correctly, out of 10"
+                    : goal.kind === "project" && goal.id === "portfolio"
+                      ? "Case studies published"
+                      : "Steps verified against their criteria"}
               </p>
               <span className="result-source">
                 {goal.kind === "learning"
                   ? "Target: 8/10 · Comparable course assessments"
                   : "Confirmed results, separate from action updates"}
               </span>
-              {goal.kind === "learning" && (
+              {goal.measure && (
+                <button
+                  className="button secondary small-button"
+                  onClick={() => {
+                    setResult("assessment");
+                    setConfirmed(false);
+                  }}
+                >
+                  Record a result <Plus size={15} />
+                </button>
+              )}
+              {!goal.measure && goal.kind === "learning" && (
                 <>
                   <div
                     className="assessment-chart"
@@ -856,7 +875,9 @@ export function GoalWorkspace() {
         <Modal
           title={
             result === "assessment"
-              ? "Record what you can solve."
+              ? goal.measure
+                ? "Record your result"
+                : "Record what you can solve."
               : result.done
                 ? "Correct this result."
                 : "A result worth recording."
@@ -867,23 +888,28 @@ export function GoalWorkspace() {
             {result === "assessment" ? (
               <>
                 <p className="muted">
-                  Use the same kind of course assessment so the results mean the
-                  same thing.
+                  {goal.measure
+                    ? `Measure ${goal.measure.label.toLowerCase()} in ${goal.measure.unit}, using the same method each time.`
+                    : "Use the same kind of course assessment so the results mean the same thing."}
                 </p>
                 <div className="form-row">
                   <div className="form-field">
-                    <label htmlFor="score">Problems solved correctly</label>
+                    <label htmlFor="score">
+                      {goal.measure?.label ?? "Problems solved correctly"}
+                    </label>
                     <input
                       id="score"
                       type="number"
                       min="0"
-                      max="10"
-                      step="1"
+                      max={goal.measure ? 1000000 : 10}
+                      step={goal.measure ? "any" : "1"}
                       required
                       value={score}
                       onChange={(e) => setScore(e.target.value)}
                     />
-                    <p className="field-hint">Out of 10 problems</p>
+                    <p className="field-hint">
+                      {goal.measure?.unit ?? "Out of 10 problems"}
+                    </p>
                   </div>
                   <div className="form-field">
                     <label htmlFor="score-date">Observation date</label>
@@ -898,7 +924,11 @@ export function GoalWorkspace() {
                   </div>
                 </div>
                 <div className="form-field">
-                  <label htmlFor="score-source">Assessment / source</label>
+                  <label htmlFor="score-source">
+                    {goal.measure
+                      ? "How you measured it"
+                      : "Assessment / source"}
+                  </label>
                   <input
                     id="score-source"
                     required
@@ -915,12 +945,14 @@ export function GoalWorkspace() {
                     checked={confirmed}
                     onChange={(e) => setConfirmed(e.target.checked)}
                   />
-                  This assessment has comparable content, difficulty, and
-                  scoring to this goal’s other results.
+                  {goal.measure
+                    ? "I measured this result using the goal’s agreed definition."
+                    : "This assessment has comparable content, difficulty, and scoring to this goal’s other results."}
                 </label>
                 <p className="field-hint">
-                  Incompatible assessments can’t be entered in this series.
-                  Create a separate goal with a suitable measure instead.
+                  {goal.measure
+                    ? "Completing a session or milestone does not change this measurement automatically."
+                    : "Incompatible assessments can’t be entered in this series. Create a separate goal with a suitable measure instead."}
                 </p>
               </>
             ) : (

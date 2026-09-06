@@ -1,7 +1,8 @@
-import type { Goal } from "./store";
+import { formatDate, type Goal } from "../shared/workspace.ts";
 
 export function goalValue(goal: Goal) {
-  if (goal.kind === "learning") return goal.results.at(-1)?.value ?? null;
+  if (goal.measure || goal.kind === "learning")
+    return goal.results.at(-1)?.value ?? null;
   return goal.milestones.filter((m) => m.done).length;
 }
 export function progressStatus(goal: Goal, date: string) {
@@ -11,7 +12,7 @@ export function progressStatus(goal: Goal, date: string) {
   );
   const due = checkpoints.filter((point) => point.date <= date).at(-1);
   const latestDate =
-    goal.kind === "learning"
+    goal.measure || goal.kind === "learning"
       ? goal.results.at(-1)?.date
       : goal.outcomeUpdatedAt;
   const stale =
@@ -41,7 +42,7 @@ export function progressStatus(goal: Goal, date: string) {
       actual,
       planned: due?.value ?? null,
       detail: latestDate
-        ? `Last result recorded ${latestDate}. Update it before judging the pace.`
+        ? `Last result recorded ${formatDate(latestDate)}. Update it before judging the pace.`
         : "Record a result to compare it with the plan.",
     };
   if (!due)
@@ -51,7 +52,7 @@ export function progressStatus(goal: Goal, date: string) {
       actual,
       planned: null,
       detail: checkpoints[0]
-        ? `Your first checkpoint is ${checkpoints[0].date}.`
+        ? `Your first checkpoint is ${formatDate(checkpoints[0].date)}.`
         : "Add dated checkpoints to compare actual progress with your plan.",
     };
   const delta = actual - due.value;
@@ -60,6 +61,6 @@ export function progressStatus(goal: Goal, date: string) {
     tone: delta < 0 ? "attention" : "positive",
     actual,
     planned: due.value,
-    detail: `${actual} recorded; ${due.value} planned by ${due.date}. ${delta < 0 ? "Inspect the obstacle before changing the workload." : "Compared with your agreed checkpoint, not a forecast."}`,
+    detail: `${actual} ${goal.measure?.unit ?? goal.unit ?? "milestones verified"} recorded; ${due.value} planned by ${formatDate(due.date)}. ${delta < 0 ? "Inspect the obstacle before changing the workload." : "Compared with your agreed checkpoint."}`,
   };
 }

@@ -44,7 +44,14 @@ export interface DecisionCheck {
   finding: string;
   sources: string[];
 }
+export interface CoachInsight {
+  finding: string;
+  status: "Reported" | "To test";
+  sourceIds: string[];
+  changeIndexes: number[];
+}
 export interface CoachDecision {
+  insights?: CoachInsight[];
   id: string;
   date: string;
   goalId: string;

@@ -1,382 +1,538 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { randomBytes } from "node:crypto";
-import { mkdir, readFile, writeFile, rename } from "node:fs/promises";
+import { randomBytes, randomUUID } from "node:crypto";
 import type { Plugin } from "vite";
 import { z } from "zod";
-import { createDAVClient } from "tsdav";
-import { coachTurn, modelName } from "./coach.ts";
+import { Database, digest } from "./database.ts";
+import { Service } from "./service.ts";
+import { Channels, validateTwilio, messagingProvider } from "./channels.ts";
+import { verifyLinq, parseLinq } from "./linq.ts";
+import { reactionTypes } from "../shared/workspace.ts";
+import { CalendarAPI } from "./calendar-api.ts";
 import {
-  availability,
-  listCalendars,
-  finishBooking,
-  newBooking,
-  type Booking,
-  type CalendarSession,
-} from "./calendars.ts";
-const sessions = new Map<string, CalendarSession>();
-const bookingFile = ".context/calendar-bookings.json";
-let bookings: Booking[] = [];
-const loaded = readFile(bookingFile, "utf8")
-  .then((text) => {
-    bookings = JSON.parse(text);
-  })
-  .catch((error: NodeJS.ErrnoException) => {
-    if (error.code !== "ENOENT") throw error;
-  });
-let queue = Promise.resolve();
-const configuredGoogle = () =>
-  Boolean(
-    process.env.GOOGLE_CLIENT_ID &&
-    process.env.GOOGLE_CLIENT_SECRET &&
-    process.env.GOOGLE_REDIRECT_URI,
-  );
-const providerSchema = z.enum(["google", "apple"]);
-const rangeSchema = z
-  .object({
-    provider: providerSchema,
-    calendarIds: z.array(z.string().min(1).max(2000)).min(1).max(30),
-    start: z.iso.datetime({ offset: true }),
-    end: z.iso.datetime({ offset: true }),
-  })
-  .refine(
-    (v) =>
-      Date.parse(v.end) > Date.parse(v.start) &&
-      Date.parse(v.end) - Date.parse(v.start) <= 14 * 86400000,
-    "Choose a range of up to 14 days.",
-  );
-const bookingSchema = z
-  .object({
-    id: z.uuid(),
-    provider: providerSchema,
-    calendarId: z.string().min(1).max(2000),
-    conflictIds: z.array(z.string().min(1).max(2000)).min(1).max(30),
-    title: z.string().min(1).max(500),
-    start: z.iso.datetime({ offset: true }),
-    end: z.iso.datetime({ offset: true }),
-    checkIn: z.boolean(),
-  })
-  .refine(
-    (v) =>
-      Date.parse(v.end) > Date.parse(v.start) &&
-      Date.parse(v.end) - Date.parse(v.start) <= 4 * 3600000,
-    "Work blocks must last between 1 minute and 4 hours.",
-  );
-async function body(req: IncomingMessage) {
-  if (!req.headers["content-type"]?.startsWith("application/json"))
-    throw new Error("Expected a JSON request.");
-  let value = "";
-  for await (const chunk of req) {
-    value += chunk;
-    if (Buffer.byteLength(value) > 150000)
-      throw new Error("This request is too large.");
-  }
-  return JSON.parse(value || "{}");
-}
-function json(res: ServerResponse, value: unknown, status = 200) {
-  res.statusCode = status;
-  res.setHeader("Content-Type", "application/json");
-  res.setHeader("Cache-Control", "no-store");
-  res.end(JSON.stringify(value));
-}
-async function persist() {
-  await mkdir(".context", { recursive: true });
-  await writeFile(`${bookingFile}.tmp`, JSON.stringify(bookings), {
-    mode: 0o600,
-  });
-  await rename(`${bookingFile}.tmp`, bookingFile);
-}
-async function book(
-  session: CalendarSession,
-  sessionId: string,
-  input: z.infer<typeof bookingSchema>,
-) {
-  await loaded;
-  let booking = bookings.find(
-    (b) => b.id === input.id && b.sessionId === sessionId,
-  );
-  if (
-    booking &&
-    ["provider", "calendarId", "title", "start", "end", "checkIn"].some(
-      (key) =>
-        booking![key as keyof Booking] !== input[key as keyof typeof input],
-    )
-  )
-    throw new Error(
-      "This booking changed. Choose a new slot before confirming.",
-    );
-  if (!booking) {
-    if (Date.parse(input.start) <= Date.now())
-      throw new Error("Choose a future time slot.");
-    booking = newBooking({ ...input, sessionId });
-    bookings.push(booking);
-    await persist();
-  }
-  const current = booking;
-  if (current.workDone && (!current.checkIn || current.checkInDone))
-    return {
-      id: current.id,
-      workDone: true,
-      checkInDone: current.checkInDone,
-      workId: current.workId,
-      checkInId: current.checkInId,
-    };
-  await finishBooking(session, current, persist);
-  return {
-    id: current.id,
-    workDone: current.workDone,
-    checkInDone: current.checkInDone,
-    workId: current.workId,
-    checkInId: current.checkInId,
-    error: current.error,
-  };
-}
-async function handle(
-  req: IncomingMessage,
-  res: ServerResponse,
-  next: () => void,
-) {
-  if (/\/(?:\.|%2e)context(?:\/|%2f)/i.test(req.url ?? ""))
-    return json(res, { error: "Private workspace files are not served." }, 403);
-  if (!req.url?.startsWith("/api/")) return next();
-  const host = req.headers.host ?? "";
-  if (
-    !/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host) ||
-    (req.headers.origin &&
-      req.headers.origin !== `http://${host}` &&
-      req.headers.origin !== `https://${host}`)
-  )
-    return json(
-      res,
-      { error: "Adler’s local API is available only on this computer." },
-      403,
-    );
-  if (req.method === "POST" && req.headers["sec-fetch-site"] === "cross-site")
-    return json(res, { error: "Cross-site request refused." }, 403);
-  const url = new URL(req.url, `http://${host}`);
-  let sessionId = req.headers.cookie?.match(
-    /(?:^|; )adler_session=([a-f0-9]{48})(?:;|$)/,
-  )?.[1];
-  if (!sessionId) {
-    sessionId = randomBytes(24).toString("hex");
+  configuration,
+  defaults,
+  providerNames,
+  providerStatus,
+  generate,
+} from "./providers.ts";
+import { changeSchema } from "./commands.ts";
+import { handleMCP } from "./mcp.ts";
+import { body, rawBody, json } from "./http.ts";
+const credentials = z.object({
+  username: z
+    .string()
+    .trim()
+    .min(3)
+    .max(80)
+    .regex(/^[a-zA-Z0-9_.@-]+$/),
+  password: z.string().min(10).max(200),
+  timeZone: z
+    .string()
+    .default("UTC")
+    .refine((s) => {
+      try {
+        new Intl.DateTimeFormat("en", { timeZone: s });
+        return true;
+      } catch {
+        return false;
+      }
+    }, "Choose a valid time zone."),
+});
+const cookie = (req: IncomingMessage) =>
+  req.headers.cookie?.match(
+    /(?:^|;\s*)adler_session=([a-f0-9]{64})(?:;|$)/,
+  )?.[1] ?? "";
+export function createRuntime(directory?: string) {
+  const db = new Database(directory),
+    service = new Service(db),
+    channels = new Channels(db, service),
+    calendar = new CalendarAPI(db, service);
+  service.onChanged = (userId) => channels.ensureJobs(userId);
+  service.onReaction = (...args) => channels.queueReaction(...args);
+  service.calendarContext = (userId) => calendar.context(userId);
+  service.externalApply = (userId, changes, data) =>
+    calendar.applyExternal(userId, changes, data);
+  function sessionCookie(res: ServerResponse, value: string) {
     res.setHeader(
       "Set-Cookie",
-      `adler_session=${sessionId}; HttpOnly; SameSite=Lax; Path=/; Max-Age=2592000`,
+      `adler_session=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=${value ? 2592000 : 0}${process.env.PUBLIC_URL?.startsWith("https:") ? "; Secure" : ""}`,
     );
   }
-  const session = sessions.get(sessionId) ?? {};
-  sessions.set(sessionId, session);
-  try {
-    if (req.method === "GET" && url.pathname === "/api/status")
-      return json(res, {
-        coach: {
-          configured: Boolean(process.env.ANTHROPIC_API_KEY),
-          model: modelName(),
-        },
-        google: {
-          configured: configuredGoogle(),
-          connected: Boolean(session.google),
-        },
-        apple: { connected: Boolean(session.apple) },
-      });
-    if (req.method === "GET" && url.pathname === "/api/calendars")
-      return json(res, await listCalendars(session));
-    if (
-      req.method === "GET" &&
-      url.pathname === "/api/calendar/google/connect"
-    ) {
-      if (!configuredGoogle())
-        throw new Error(
-          "Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and GOOGLE_REDIRECT_URI on the server first.",
-        );
-      session.state = {
-        value: randomBytes(32).toString("hex"),
-        expires: Date.now() + 600000,
-      };
-      const target = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-      target.search = new URLSearchParams({
-        client_id: process.env.GOOGLE_CLIENT_ID!,
-        redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
-        response_type: "code",
-        access_type: "offline",
-        prompt: "consent",
-        state: session.state.value,
-        scope: [
-          "calendar.calendarlist.readonly",
-          "calendar.events.freebusy",
-          "calendar.events.owned",
-        ]
-          .map((s) => `https://www.googleapis.com/auth/${s}`)
-          .join(" "),
-      }).toString();
-      res.writeHead(302, { Location: target.toString() });
-      return res.end();
-    }
-    if (
-      req.method === "GET" &&
-      url.pathname === "/api/calendar/google/callback"
-    ) {
-      const state = session.state;
-      session.state = undefined;
-      if (
-        !state ||
-        state.expires < Date.now() ||
-        state.value !== url.searchParams.get("state")
+  function bearer(req: IncomingMessage, scope: string) {
+    const token =
+      req.headers.authorization?.match(/^Bearer ([a-zA-Z0-9_-]+)$/)?.[1] ?? "";
+    return db.sql
+      .prepare(
+        "SELECT user_id FROM tokens WHERE hash=? AND scope=? AND expires>?",
       )
-        throw new Error(
-          "Google sign-in expired or could not be verified. Start the connection again.",
-        );
-      if (!url.searchParams.get("code"))
-        throw new Error("Google Calendar access was not granted.");
-      const response = await fetch("https://oauth2.googleapis.com/token", {
-        method: "POST",
-        body: new URLSearchParams({
-          client_id: process.env.GOOGLE_CLIENT_ID!,
-          client_secret: process.env.GOOGLE_CLIENT_SECRET!,
-          redirect_uri: process.env.GOOGLE_REDIRECT_URI!,
-          code: url.searchParams.get("code")!,
-          grant_type: "authorization_code",
-        }),
-      });
-      const tokens = await response.json();
-      if (!response.ok)
-        throw new Error(
-          "Google could not complete the connection. Check the OAuth configuration.",
-        );
-      session.google = {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token || session.google?.refresh_token,
-        expires_at: Date.now() + tokens.expires_in * 1000,
-      };
-      res.writeHead(302, { Location: "/app/calendar?connected=google" });
-      return res.end();
-    }
+      .get(digest(token), scope, Date.now()) as { user_id: string } | undefined;
+  }
+  async function handle(
+    req: IncomingMessage,
+    res: ServerResponse,
+    next: () => void,
+  ) {
+    if (/\/(?:\.|%2e)(?:context|data|env)(?:\/|%2f|\.|$)/i.test(req.url ?? ""))
+      return json(res, { error: "Private files are not served." }, 403);
+    if (!req.url?.startsWith("/api/") && req.url?.split("?")[0] !== "/mcp")
+      return next();
+    const host = req.headers.host ?? "",
+      publicOrigin = process.env.PUBLIC_URL
+        ? new URL(process.env.PUBLIC_URL).origin
+        : undefined,
+      frontendOrigin = process.env.FRONTEND_ORIGIN
+        ? new URL(process.env.FRONTEND_ORIGIN).origin
+        : undefined;
     if (
-      req.method === "POST" &&
-      url.pathname === "/api/calendar/apple/connect"
-    ) {
-      const input = z
-        .object({
-          email: z.email(),
-          password: z
-            .string()
-            .regex(
-              /^[a-z]{4}(?:-[a-z]{4}){3}$/,
-              "Use an Apple app-specific password, not your account password.",
-            ),
-        })
-        .parse(await body(req));
-      const client = await createDAVClient({
-        serverUrl: "https://caldav.icloud.com",
-        credentials: { username: input.email, password: input.password },
-        authMethod: "Basic",
-        defaultAccountType: "caldav",
-      });
-      const calendars = await client.fetchCalendars();
-      if (!calendars.length)
-        throw new Error(
-          "No iCloud calendars were returned. Check that iCloud Calendar is enabled.",
-        );
-      session.apple = client;
-      session.appleCalendars = calendars;
-      return json(res, { connected: true });
-    }
-    if (req.method === "POST" && url.pathname === "/api/calendar/disconnect") {
-      const { provider } = z
-        .object({ provider: providerSchema })
-        .parse(await body(req));
-      if (provider === "google") {
-        if (session.google)
-          await fetch("https://oauth2.googleapis.com/revoke", {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              token:
-                session.google.refresh_token || session.google.access_token,
-            }),
-          });
-        session.google = undefined;
-      } else {
-        session.apple = undefined;
-        session.appleCalendars = undefined;
+      publicOrigin
+        ? host !== new URL(publicOrigin).host
+        : !/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host)
+    )
+      return json(res, { error: "Unrecognized host." }, 403);
+    const url = new URL(req.url, publicOrigin ?? `http://${host}`);
+    const twilioSigned = url.pathname.startsWith("/api/webhooks/twilio/");
+    const linqSigned = url.pathname === "/api/webhooks/linq";
+    const signed = twilioSigned || linqSigned;
+    if (
+      !signed &&
+      ((req.headers.origin &&
+        req.headers.origin !== (publicOrigin ?? `http://${host}`) &&
+        req.headers.origin !== `https://${host}` &&
+        req.headers.origin !== frontendOrigin) ||
+        req.headers["sec-fetch-site"] === "cross-site")
+    )
+      return json(res, { error: "Cross-site request refused." }, 403);
+    try {
+      if (req.method === "GET" && url.pathname === "/api/health") {
+        db.sql.prepare("SELECT 1").get();
+        return json(res, { ok: true });
       }
-      return json(res, { connected: false });
-    }
-    if (req.method === "POST" && url.pathname === "/api/availability") {
-      const input = rangeSchema.parse(await body(req));
-      return json(res, {
-        busy: await availability(
-          session,
-          input.provider,
-          input.calendarIds,
-          input.start,
-          input.end,
-        ),
-        checkedAt: new Date().toISOString(),
-      });
-    }
-    if (req.method === "POST" && url.pathname === "/api/bookings") {
-      const input = bookingSchema.parse(await body(req));
-      const result = queue.then(() => book(session, sessionId!, input));
-      queue = result.then(
-        () => {},
-        () => {},
-      );
-      return json(res, await result);
-    }
-    if (req.method === "POST" && url.pathname === "/api/coach") {
-      const input = z
-        .object({
-          consent: z.literal(true),
-          context: z.record(z.string(), z.unknown()),
-        })
-        .parse(await body(req));
-      return json(res, await coachTurn(input.context));
-    }
-    return json(res, { error: "API route not found." }, 404);
-  } catch (error) {
-    const message =
-      error instanceof z.ZodError
-        ? error.issues.map((i) => i.message).join(" ")
-        : error instanceof Error
-          ? error.message
-          : "The request could not be completed.";
-    // Provider errors may contain request metadata; never forward raw SDK error objects.
-    if (url.pathname === "/api/coach")
+      if (linqSigned) {
+        if (
+          req.method !== "POST" ||
+          !req.headers["content-type"]?.startsWith("application/json")
+        )
+          return json(res, { error: "Expected a signed JSON POST." }, 405);
+        const raw = await rawBody(req, 100000);
+        if (messagingProvider() !== "linq" || !verifyLinq(raw, req.headers))
+          return json(res, { error: "Invalid webhook signature." }, 403);
+        const event = parseLinq(raw);
+        if (event) channels.acceptLinq(event);
+        return json(res, { received: true });
+      }
+      if (twilioSigned) {
+        if (
+          req.method !== "POST" ||
+          !req.headers["content-type"]?.startsWith(
+            "application/x-www-form-urlencoded",
+          )
+        )
+          return json(res, { error: "Expected a signed form POST." }, 405);
+        const form = Object.fromEntries(
+          new URLSearchParams(await rawBody(req, 50000)),
+        );
+        if (
+          messagingProvider() !== "twilio" ||
+          !validateTwilio(
+            req.url,
+            String(req.headers["x-twilio-signature"] ?? ""),
+            form,
+          )
+        )
+          return json(res, { error: "Invalid webhook signature." }, 403);
+        if (url.pathname === "/api/webhooks/twilio/inbound")
+          channels.inbound(form);
+        else if (url.pathname === "/api/webhooks/twilio/status")
+          channels.callback(form, url.searchParams.get("delivery") ?? "");
+        else return json(res, { error: "Webhook not found." }, 404);
+        res.writeHead(200, { "Content-Type": "text/xml" });
+        return res.end("<Response/>");
+      }
+      if (url.pathname === "/mcp") {
+        const token = bearer(req, "mcp");
+        if (!token)
+          return json(
+            res,
+            {
+              error:
+                "Use an active personal MCP bearer token from Connections.",
+            },
+            401,
+          );
+        if (req.method !== "POST") {
+          res.setHeader("Allow", "POST");
+          return json(res, { error: "Use stateless MCP POST." }, 405);
+        }
+        db.limit(`mcp:${token.user_id}`, 100);
+        return await handleMCP(
+          req,
+          res,
+          await body(req),
+          token.user_id,
+          service,
+          calendar,
+        );
+      }
+      if (url.pathname === "/api/webhooks/events") {
+        const token = bearer(req, "webhook");
+        if (!token) return json(res, { error: "Webhook token required." }, 401);
+        if (req.method !== "POST")
+          return json(res, { error: "Use POST." }, 405);
+        db.limit(`webhook:${token.user_id}`, 20);
+        const input = z
+          .object({
+            id: z.string().min(8).max(100),
+            message: z.string().min(1).max(5000),
+          })
+          .strict()
+          .parse(await body(req));
+        const id = `webhook:${token.user_id}:${input.id}`;
+        const old = db.sql
+          .prepare("SELECT json FROM jobs WHERE id=?")
+          .get(id) as { json: string } | undefined;
+        const payload = { message: input.message };
+        if (old && old.json !== JSON.stringify(payload))
+          throw new Error(
+            "This event ID was already used with different content.",
+          );
+        db.enqueue(id, token.user_id, "webhook", payload);
+        return json(res, { accepted: true, id }, 202);
+      }
+      if (
+        req.method === "POST" &&
+        ["/api/auth/register", "/api/auth/login"].includes(url.pathname)
+      ) {
+        db.limit(
+          `auth:${req.socket.remoteAddress}`,
+          process.env.NODE_ENV === "test" ? 1000 : 15,
+          15 * 60000,
+        );
+        const input = credentials.parse(await body(req));
+        let user;
+        if (url.pathname.endsWith("/register")) {
+          if (process.env.ADLER_REGISTRATION === "closed")
+            throw new Error("Registration is closed on this server.");
+          if (
+            db.sql
+              .prepare("SELECT id FROM users WHERE username=?")
+              .get(input.username.toLowerCase())
+          )
+            throw new Error("That username is unavailable.");
+          user = db.createUser(input.username, input.password, input.timeZone);
+        } else user = db.login(input.username, input.password);
+        sessionCookie(res, db.session(user.id));
+        return json(res, { user, ...db.snapshot(user.id) });
+      }
+      const user = db.authenticate(cookie(req));
+      if (req.method === "GET" && url.pathname === "/api/auth")
+        return json(res, {
+          user: user ?? null,
+          ...(user ? db.snapshot(user.id) : {}),
+        });
+      if (!user) return json(res, { error: "Sign in to your workspace." }, 401);
+      if (req.method === "POST" && url.pathname === "/api/auth/logout") {
+        db.sql
+          .prepare("DELETE FROM sessions WHERE hash=?")
+          .run(digest(cookie(req)));
+        sessionCookie(res, "");
+        db.changed(user.id);
+        return json(res, { signedOut: true });
+      }
+      const id = user.id;
+      if (
+        req.method === "POST" &&
+        /^\/api\/messages\/[^/]+\/reaction$/.test(url.pathname)
+      ) {
+        const input = z
+          .object({
+            reaction: z.enum(reactionTypes),
+            remove: z.boolean().default(false),
+          })
+          .strict()
+          .parse(await body(req));
+        return json(
+          res,
+          await service.react(
+            id,
+            decodeURIComponent(url.pathname.split("/")[3]),
+            input.reaction,
+            "user",
+            input.remove,
+          ),
+        );
+      }
+      if (req.method === "GET" && url.pathname === "/api/events") {
+        res.writeHead(200, {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "private, no-store, no-transform",
+          Connection: "keep-alive",
+          "X-Accel-Buffering": "no",
+        });
+        const send = () => {
+          if (!db.authenticate(cookie(req))) {
+            res.end();
+            return;
+          }
+          res.write(
+            `data: ${JSON.stringify({ revision: db.snapshot(id).revision })}\n\n`,
+          );
+        };
+        send();
+        db.events.on(id, send);
+        const timer = setInterval(send, 25000);
+        res.on("close", () => {
+          clearInterval(timer);
+          db.events.off(id, send);
+        });
+        return;
+      }
+      if (req.method === "GET" && url.pathname === "/api/workspace")
+        return json(res, db.snapshot(id));
+      if (req.method === "POST" && url.pathname === "/api/workspace") {
+        const input = z
+          .object({
+            data: z.unknown(),
+            revision: z.number().int().min(0),
+            requestId: z.string().min(8).max(100),
+          })
+          .parse(await body(req));
+        return json(
+          res,
+          await service.update(id, input.data, input.revision, input.requestId),
+        );
+      }
+      if (req.method === "GET" && url.pathname === "/api/status") {
+        let coach = { configured: false, provider: "", model: "" };
+        try {
+          const config = configuration(db, id);
+          coach = {
+            configured: true,
+            provider: config.provider,
+            model: config.model,
+          };
+        } catch {}
+        return json(res, { coach, ...calendar.status(id) });
+      }
+      if (req.method === "GET" && url.pathname === "/api/provider")
+        return json(res, providerStatus(db, id));
+      if (req.method === "POST" && url.pathname === "/api/provider") {
+        const input = z
+          .object({
+            provider: z.enum(providerNames),
+            model: z
+              .string()
+              .trim()
+              .min(1)
+              .max(100)
+              .regex(/^[a-zA-Z0-9_.:/-]+$/),
+            useServer: z.boolean(),
+            key: z.string().trim().max(500).optional(),
+            removeKey: z.boolean().optional(),
+          })
+          .strict()
+          .parse(await body(req));
+        if (input.removeKey) db.removeSecret(id, `model-${input.provider}`);
+        else if (input.key)
+          db.setSecret(id, `model-${input.provider}`, { key: input.key });
+        db.setSecret(id, "model-choice", {
+          provider: input.provider,
+          model: input.model || defaults[input.provider],
+          useServer: input.useServer,
+        });
+        return json(res, providerStatus(db, id));
+      }
+      if (req.method === "POST" && url.pathname === "/api/provider/test") {
+        db.limit(`model-test:${id}`, 5);
+        const config = configuration(db, id);
+        await generate(
+          config,
+          "Return exactly the requested status as JSON.",
+          { status: "connected" },
+          z.object({ status: z.literal("connected") }).strict(),
+          250,
+        );
+        const testedAt = new Date().toISOString();
+        if (config.source === "personal")
+          db.setSecret(id, `model-${config.provider}`, {
+            key: config.key,
+            testedAt,
+          });
+        return json(res, {
+          connected: true,
+          provider: config.provider,
+          model: config.model,
+          testedAt,
+        });
+      }
+      if (req.method === "POST" && url.pathname === "/api/conversations") {
+        const change = changeSchema.parse(await body(req));
+        return json(res, await service.editConversation(id, change));
+      }
+      if (req.method === "POST" && url.pathname === "/api/coach") {
+        const input = z
+          .object({
+            message: z.string().trim().min(1).max(5000),
+            goalId: z.string().max(100).default("general"),
+            conversationId: z.string().max(100).optional(),
+            requestId: z.string().min(8).max(100),
+          })
+          .strict()
+          .parse(await body(req));
+        return json(
+          res,
+          await service.chat(
+            id,
+            input.message,
+            input.goalId,
+            "web",
+            input.requestId,
+            undefined,
+            input.conversationId,
+          ),
+        );
+      }
+      if (req.method === "GET" && url.pathname === "/api/proposals")
+        return json(res, service.listProposals(id));
+      if (req.method === "POST" && url.pathname === "/api/proposals") {
+        const input = z
+          .object({
+            changes: z.array(changeSchema).min(1).max(20),
+            summary: z.string().min(1).max(1200),
+          })
+          .parse(await body(req));
+        return json(
+          res,
+          await service.locked(id, () => {
+            const p = service.propose(id, input.changes, input.summary, "web");
+            service.changed(id);
+            return p;
+          }),
+        );
+      }
+      if (
+        req.method === "POST" &&
+        /^\/api\/proposals\/[^/]+\/(approve|dismiss)$/.test(url.pathname)
+      ) {
+        const [, , , proposalId, action] = url.pathname.split("/");
+        if (action === "approve")
+          return json(res, await service.approve(id, proposalId, "web"));
+        await service.reject(id, proposalId);
+        return json(res, { dismissed: true });
+      }
+      if (req.method === "GET" && url.pathname === "/api/connections")
+        return json(res, {
+          ...channels.status(id),
+          publicUrl: process.env.PUBLIC_URL ?? null,
+          tokens: db.sql
+            .prepare("SELECT id,name,scope,expires FROM tokens WHERE user_id=?")
+            .all(id),
+        });
+      if (req.method === "POST" && url.pathname === "/api/connections/pair") {
+        const input = z
+          .object({ address: z.string().max(50) })
+          .parse(await body(req));
+        return json(res, channels.pair(id, input.address, "sms"));
+      }
+      if (req.method === "POST" && url.pathname === "/api/connections/unlink") {
+        channels.unlink(id);
+        return json(res, { unlinked: true });
+      }
+      if (req.method === "POST" && url.pathname === "/api/tokens") {
+        db.limit(`token:${id}`, 10);
+        const input = z
+          .object({
+            name: z.string().trim().min(1).max(100),
+            scope: z.enum(["mcp", "webhook"]),
+            days: z.number().int().min(1).max(365),
+          })
+          .parse(await body(req));
+        const token = randomBytes(32).toString("base64url"),
+          tokenId = randomUUID(),
+          expires = Date.now() + input.days * 86400000;
+        db.sql
+          .prepare("INSERT INTO tokens VALUES(?,?,?,?,?,?)")
+          .run(digest(token), tokenId, id, input.name, input.scope, expires);
+        return json(res, { id: tokenId, token, expires });
+      }
+      if (req.method === "POST" && url.pathname === "/api/tokens/revoke") {
+        const input = z.object({ id: z.string() }).parse(await body(req));
+        db.sql
+          .prepare("DELETE FROM tokens WHERE id=? AND user_id=?")
+          .run(input.id, id);
+        return json(res, { revoked: true });
+      }
+      if (
+        ["/api/calendars", "/api/availability", "/api/bookings"].includes(
+          url.pathname,
+        ) ||
+        url.pathname.startsWith("/api/calendar/")
+      )
+        return await calendar.handle(
+          req,
+          res,
+          url,
+          id,
+          req.method === "POST" ? await body(req) : undefined,
+        );
+      return json(res, { error: "API route not found." }, 404);
+    } catch (error) {
+      const message =
+        error instanceof z.ZodError
+          ? error.issues
+              .map((i) => `${i.path.join(".")}: ${i.message}`)
+              .join(" ")
+          : error instanceof Error
+            ? error.message
+            : "The request could not complete.";
+      if (res.headersSent) {
+        res.end();
+        return;
+      }
+      if (url.pathname.endsWith("/callback")) {
+        res.writeHead(302, {
+          Location: `/app/calendar?error=${encodeURIComponent(message)}`,
+        });
+        return res.end();
+      }
       return json(
         res,
-        {
-          error:
-            message.includes("API key") ||
-            message.includes("authentication") ||
-            message.includes("401")
-              ? "The model provider rejected the configured API key. Update ANTHROPIC_API_KEY on the server."
-              : message.includes("credit") || message.includes("balance")
-                ? "The model provider account needs API credits before live coaching can run."
-                : "Live coaching could not complete. Check the server’s model configuration and provider access, then retry. Your plan is unchanged.",
-        },
-        502,
+        { error: message },
+        (error as { status?: number })?.status ?? 400,
       );
-    if (url.pathname.endsWith("/callback")) {
-      res.writeHead(302, {
-        Location: `/app/calendar?error=${encodeURIComponent(message)}`,
-      });
-      return res.end();
     }
-    return json(res, { error: message }, 400);
   }
+  return {
+    db,
+    service,
+    channels,
+    calendar,
+    handle,
+    start: () => channels.start(),
+    close: () => {
+      channels.stop();
+      db.close();
+    },
+  };
 }
 export function adlerApi(): Plugin {
+  let runtime: ReturnType<typeof createRuntime> | undefined;
   return {
-    name: "adler-local-api",
+    name: "adler-server",
     configureServer(server) {
+      runtime = createRuntime();
+      runtime.start();
       server.middlewares.use((req, res, next) => {
-        void handle(req, res, next);
+        void runtime!.handle(req, res, next);
       });
+      server.httpServer?.once("close", () => runtime?.close());
     },
     configurePreviewServer(server) {
+      runtime = createRuntime();
+      runtime.start();
       server.middlewares.use((req, res, next) => {
-        void handle(req, res, next);
+        void runtime!.handle(req, res, next);
       });
+      server.httpServer.once("close", () => runtime?.close());
     },
   };
 }

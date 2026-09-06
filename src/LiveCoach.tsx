@@ -1,53 +1,64 @@
+import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import {
-  ArrowRight,
-  ArrowUp,
-  Check,
-  ChevronRight,
-  SlidersHorizontal,
-  UserRound,
-} from "lucide-react";
+import { ArrowUp, CalendarDays, Check, SlidersHorizontal } from "lucide-react";
 import { AdlerAvatar } from "./persona";
 import { api, type ServiceStatus } from "./api";
 import {
-  applyPlan,
-  currentPlan,
   currentProgram,
-  localDate,
-  reviseProgram,
   useStore,
+  reactionTypes,
+  reactionEmoji,
 } from "./store";
-import { coachingContext } from "./coach-context";
 import { METHODS } from "./methods";
-import type { CoachDecision } from "./program-types";
-interface Reply {
-  reply: string;
-  summary: string;
-  methods: string[];
-  proposal: CoachDecision["proposal"] | null;
-}
+import type { Proposal } from "../server/service";
+import { ProposalChanges, goalsToSchedule } from "./ProposalChanges";
 export function LiveCoach() {
-  const { data, commit } = useStore();
-  const [params, setParams] = useSearchParams();
-  const selected = params.get("goal") ?? currentProgram(data).focusGoalId;
+  const { data, flush, refresh } = useStore(),
+    [params, setParams] = useSearchParams();
+  const requestedGoal = params.get("goal") ?? "general";
+  const conversation = params.get("chat")
+    ? data.conversations.find((c) => c.id === params.get("chat"))
+    : data.conversations.filter((c) => c.goalId === requestedGoal).at(-1);
+  const selected = conversation?.goalId ?? requestedGoal;
+  function selectChat(id: string, goalId: string) {
+    setParams(id ? { chat: id, goal: goalId } : { goal: goalId });
+  }
+  const belongsHere = (p: Proposal) =>
+    p.conversationId
+      ? p.conversationId === conversation?.id
+      : p.goalId === selected;
   const goal = data.goals.find((g) => g.id === selected);
-  const key = `adler-coach-draft-${selected}`;
-  const [text, setText] = useState(() => sessionStorage.getItem(key) ?? "");
-  const [sending, setSending] = useState(false);
-  const [error, setError] = useState("");
-  const [service, setService] = useState<ServiceStatus | null>(null);
-  const bottom = useRef<HTMLDivElement>(null);
-  const messages = data.messages.filter((m) => m.goalId === selected);
+  const key = `adler-coach-draft-${conversation?.id ?? selected}`;
+  const [text, setText] = useState(() => sessionStorage.getItem(key) ?? ""),
+    [sending, setSending] = useState(false),
+    [error, setError] = useState(""),
+    [service, setService] = useState<ServiceStatus | null>(null),
+    [proposals, setProposals] = useState<Proposal[]>([]);
+  const latestApplied = proposals.find(
+    (p) => p.status === "applied" && belongsHere(p),
+  );
+  const calendarGoals = latestApplied
+    ? goalsToSchedule(latestApplied.changes, data)
+    : [];
+  const bottom = useRef<HTMLDivElement>(null),
+    request = useRef<{ text: string; goal: string; id: string } | null>(null);
+  const messages = data.messages.filter((m) =>
+    conversation
+      ? m.conversationId === conversation.id
+      : !m.conversationId && m.goalId === selected,
+  );
+  async function reloadProposals() {
+    setProposals(await api<Proposal[]>("proposals"));
+  }
   useEffect(() => {
     api<ServiceStatus>("status")
       .then(setService)
-      .catch(() =>
-        setError(
-          "The coaching server is unavailable. Start Adler with npm run dev.",
-        ),
-      );
+      .catch((e) => setError(e.message));
   }, []);
+  useEffect(() => {
+    void reloadProposals().catch((e) => setError(e.message));
+  }, [data]);
   useEffect(() => {
     setText(sessionStorage.getItem(key) ?? "");
     setError("");
@@ -58,223 +69,226 @@ export function LiveCoach() {
   }, [messages.length, sending]);
   async function send(e: FormEvent) {
     e.preventDefault();
-    if (
-      !text.trim() ||
-      sending ||
-      !data.modelConsent ||
-      !service?.coach.configured
-    )
-      return;
-    const value = text.trim();
-    const context = coachingContext(data, selected, value, localDate());
+    if (!text.trim() || sending) return;
     setSending(true);
     setError("");
+    const value = text.trim();
+    if (
+      request.current?.text !== value ||
+      request.current.goal !== (conversation?.id ?? selected)
+    )
+      request.current = {
+        text: value,
+        goal: conversation?.id ?? selected,
+        id: crypto.randomUUID(),
+      };
     try {
-      const reply = await api<Reply>("coach", { consent: true, context });
-      if (
-        !reply.reply ||
-        !Array.isArray(reply.methods) ||
-        reply.methods.some((id) => !context.program.enabledMethods.includes(id))
-      )
-        throw new Error(
-          "Adler returned a method outside your program. Please retry. Your plan is unchanged.",
-        );
-      const id = crypto.randomUUID();
-      if (
-        commit((d) => {
-          const decision: CoachDecision = {
-            id,
-            date: new Date().toISOString(),
-            goalId: selected,
-            programVersion: context.program.version,
-            planVersion: goal ? currentPlan(goal).version : 0,
-            mode: "live",
-            checks: context.checks,
-            methods: reply.methods,
-            summary: reply.summary,
-            ...(reply.proposal && goal?.status === "Active"
-              ? { proposal: reply.proposal }
-              : {}),
-            status:
-              reply.proposal && goal?.status === "Active"
-                ? "Suggested"
-                : "No change",
-          };
-          d.decisions.push(decision);
-          d.messages.push(
-            {
-              id: crypto.randomUUID(),
-              goalId: selected,
-              role: "user",
-              text: value,
-            },
-            {
-              id: crypto.randomUUID(),
-              goalId: selected,
-              role: "coach",
-              text: reply.reply,
-              decisionId: id,
-            },
-          );
-        })
-      ) {
-        setText("");
-        sessionStorage.removeItem(key);
-      }
-    } catch (err) {
+      await flush();
+      const result = await api<{ conversationId: string }>("coach", {
+        message: value,
+        goalId: selected,
+        conversationId: conversation?.id,
+        requestId: request.current.id,
+      });
+      await refresh();
+      await reloadProposals();
+      selectChat(result.conversationId, selected);
+      setText("");
+      sessionStorage.removeItem(key);
+      request.current = null;
+    } catch (e) {
       setError(
-        err instanceof Error
-          ? err.message
+        e instanceof Error
+          ? e.message
           : "Adler could not respond. Your draft is saved.",
       );
     } finally {
       setSending(false);
     }
   }
-  function accept(decision: CoachDecision) {
-    if (!decision.proposal) return;
-    commit((d) => {
-      const saved = d.decisions.find((x) => x.id === decision.id)!;
-      if (saved.status !== "Suggested")
-        throw new Error("This proposal has already been reviewed.");
-      if (currentProgram(d).version !== decision.programVersion)
-        throw new Error(
-          "This program has changed since this suggestion. Ask Adler to review the current version.",
-        );
-      applyPlan(d, decision.goalId, decision.planVersion, decision.proposal!);
-      reviseProgram(d, decision.programVersion, {
-        ...(currentProgram(d).focusGoalId === decision.goalId
-          ? {
-              approach: `${decision.proposal!.action}. Review: ${decision.proposal!.reviewAfter}`,
-            }
-          : {}),
-        reason: `Accepted for ${d.goals.find((g) => g.id === decision.goalId)?.title}: ${decision.proposal!.title}`,
-      });
-      saved.status = "Accepted";
-    }, "Future plan and coaching program updated.");
+  async function review(id: string, action: "approve" | "dismiss") {
+    setSending(true);
+    setError("");
+    try {
+      await flush();
+      await api(`proposals/${id}/${action}`, {});
+      await refresh();
+      await reloadProposals();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setSending(false);
+    }
   }
+  const suggestions = data.goals.length
+    ? [
+        "Review my progress and suggest one change.",
+        "My schedule changed. Help me replan.",
+        "Walk me through my weekly review.",
+      ]
+    : [
+        "Help me set up my first goal.",
+        "I know what I want, but not how to measure it.",
+        "Help me make a plan that fits my week.",
+      ];
   return (
-    <div className="live-coach">
-      <div className="coach-topline">
-        <div className="coach-identity">
-          <AdlerAvatar />
-          <div>
-            <h1>Adler</h1>
-            <p>Your goals. A plan. Someone to work through it with.</p>
+    <div className="coach-workspace">
+      <Conversations
+        selected={conversation?.id}
+        disabled={sending}
+        onSelect={selectChat}
+        onError={setError}
+      />
+      <div className="live-coach">
+        <div className="coach-topline">
+          <div className="coach-identity">
+            <div>
+              <h1>Adler</h1>
+            </div>
           </div>
+          <Link className="button secondary" to="/app/coach/program">
+            <SlidersHorizontal size={16} />
+            Coaching program{" "}
+            <span className="program-version">
+              v{currentProgram(data).version}
+            </span>
+          </Link>
         </div>
-        <Link className="button secondary" to="/app/coach/program">
-          <SlidersHorizontal size={16} /> Coaching program{" "}
-          <span className="program-version">
-            v{currentProgram(data).version}
-          </span>
-        </Link>
-      </div>
-      <div className="coach-context-strip">
-        <span className="status-dot" />
-        <span>
-          {service?.coach.configured
-            ? "Model configured"
-            : "Live coach needs setup"}
-        </span>
-        <label>
-          Working on
-          <select
-            aria-label="Conversation goal"
-            value={selected}
-            disabled={sending}
-            onChange={(e) => setParams({ goal: e.target.value })}
-          >
-            <option value="general">The bigger picture</option>
-            {data.goals.map((g) => (
-              <option value={g.id} key={g.id}>
-                {g.title}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Link to="/app/coach/about-you">
-          <UserRound size={15} /> About you
-        </Link>
-      </div>
-      {!data.modelConsent && (
-        <section className="coach-consent">
-          <div>
-            <b>Let Adler use your saved context.</b>
-            <p>
-              Live coaching sends your active goals, program, recent records,
-              confirmed context, and conversation to Anthropic. Calendar
-              passwords and unrelated event titles stay out. Your workspace
-              stays in this browser.
-            </p>
-          </div>
-          <button
-            className="button primary"
-            disabled={!service?.coach.configured}
-            onClick={() =>
-              commit((d) => {
-                d.modelConsent = true;
-              })
-            }
-          >
-            Enable live coaching
-          </button>
-        </section>
-      )}
-      <div
-        className="coach-thread"
-        role="log"
-        aria-label="Conversation with Adler"
-        aria-live="polite"
-      >
-        <div className="coach-welcome">
-          <AdlerAvatar />
-          <h2>Let’s work out what needs to change.</h2>
-          <p>
-            {goal
-              ? `We’re working toward: ${goal.title}. Tell me what happened in your last session, or ask me to review the progress you’ve recorded.`
-              : "We can look across your goals and decide where this week’s time will do the most useful work."}
-          </p>
-          <div className="coach-starters">
-            {[
-              "Am I on track? What should I change?",
-              "My schedule changed. Help me replan.",
-              "What are you using to coach me?",
-            ].map((prompt) => (
-              <button
-                key={prompt}
-                onClick={() => {
-                  setText(prompt);
-                  sessionStorage.setItem(key, prompt);
-                }}
-                disabled={sending}
-              >
-                {prompt}
-                <ArrowRight size={14} />
-              </button>
-            ))}
-          </div>
+        <div className="coach-context-strip">
+          {goal ? (
+            <Link to={`/app/goals/${goal.id}/plan`}>
+              {goal.title} · Open plan ↗
+            </Link>
+          ) : (
+            <span>Across goals</span>
+          )}
+          {!service?.coach.configured && (
+            <Link to="/app/settings/provider">Connect your AI provider</Link>
+          )}
+          <Link to="/app/insights">Insights ↗</Link>
         </div>
-        {messages.map((m) => {
-          const decision = data.decisions.find((d) => d.id === m.decisionId);
-          return (
-            <article key={m.id} className={`live-message ${m.role}`}>
-              {m.role === "coach" && <AdlerAvatar small />}
-              <div className="message-content">
-                <span className="message-author">
-                  {m.role === "coach" ? "Adler" : "You"}
-                  {m.role === "coach" && !decision
-                    ? " · Example conversation"
-                    : ""}
-                </span>
-                <p>{m.text}</p>
-                {decision && (
-                  <>
+        <div
+          className="coach-thread"
+          role="log"
+          aria-label="Conversation with Adler"
+          aria-live="polite"
+        >
+          {!messages.length && (
+            <div className="coach-welcome">
+              <h2>
+                {data.goals.length
+                  ? "What would you like to work through?"
+                  : "What would you like to achieve?"}
+              </h2>
+              <p>
+                {goal
+                  ? `We’re working toward: ${goal.title}. Tell me what happened or what needs to change.`
+                  : "We’ll define a result you can verify, choose a first milestone, and find a next action that fits your time."}
+              </p>
+              <div className="coach-starters">
+                {suggestions.map((prompt) => (
+                  <button
+                    key={prompt}
+                    disabled={sending}
+                    onClick={() => {
+                      setText(prompt);
+                      sessionStorage.setItem(key, prompt);
+                    }}
+                  >
+                    {prompt} →
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {messages.map((m) => {
+            const decision = data.decisions.find((d) => d.id === m.decisionId);
+            return (
+              <article className={`live-message ${m.role}`} key={m.id}>
+                {m.role === "coach" && <AdlerAvatar small />}
+                <div className="message-content">
+                  <span className="message-author">
+                    {m.role === "coach" ? "Adler" : "You"}
+                    {m.channel && m.channel !== "web"
+                      ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
+                      : ""}
+                  </span>
+                  <p>{m.text}</p>
+                  {decision?.status === "Accepted" && (
+                    <span className="insight-change-status">
+                      Saved to your workspace
+                    </span>
+                  )}
+                  {!!m.links?.length && (
+                    <div className="message-record-links">
+                      {m.links
+                        .filter((l) =>
+                          data.goals.some((g) => g.id === l.goalId),
+                        )
+                        .map((l) => (
+                          <Link
+                            key={`${l.goalId}-${l.tab}`}
+                            to={`/app/goals/${encodeURIComponent(l.goalId)}/${l.tab}`}
+                          >
+                            {data.goals.find((g) => g.id === l.goalId)!.title} ·{" "}
+                            {l.tab === "plan" ? "Open plan" : "View progress"} ↗
+                          </Link>
+                        ))}
+                    </div>
+                  )}
+                  <div className="message-reactions">
+                    {(["user", "coach"] as const).map((actor) => {
+                      const reaction = m.reactions?.[actor]?.type;
+                      return reaction ? (
+                        <span
+                          key={actor}
+                          aria-label={`${actor === "coach" ? "Adler" : "You"} reacted ${reaction}`}
+                          title={`${actor === "coach" ? "Adler" : "You"}: ${reaction}`}
+                        >
+                          {reactionEmoji[reaction]}
+                        </span>
+                      ) : null;
+                    })}
+                    {m.role === "coach" && (
+                      <details className="reaction-picker">
+                        <summary>React</summary>
+                        <div>
+                          {reactionTypes.map((reaction) => (
+                            <button
+                              key={reaction}
+                              type="button"
+                              aria-label={`React ${reaction}`}
+                              aria-pressed={
+                                m.reactions?.user?.type === reaction
+                              }
+                              onClick={async () => {
+                                try {
+                                  await flush();
+                                  await api(
+                                    `messages/${encodeURIComponent(m.id)}/reaction`,
+                                    {
+                                      reaction,
+                                      remove:
+                                        m.reactions?.user?.type === reaction,
+                                    },
+                                  );
+                                  await refresh();
+                                } catch (e) {
+                                  setError((e as Error).message);
+                                }
+                              }}
+                            >
+                              {reactionEmoji[reaction]}
+                            </button>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+                  </div>
+                  {decision && (
                     <details className="decision-inspector">
                       <summary>
-                        Why this response{" "}
-                        <span>Program v{decision.programVersion}</span>
-                        <ChevronRight size={14} />
+                        Context & rationale · Program v{decision.programVersion}
                       </summary>
                       <p>{decision.summary}</p>
                       <div className="decision-checks">
@@ -306,115 +320,117 @@ export function LiveCoach() {
                         })}
                       </div>
                     </details>
-                    {decision.proposal && (
-                      <div className="live-proposal">
-                        <span className="section-kicker">
-                          PROPOSED PLAN CHANGE
-                        </span>
-                        <h3>{decision.proposal.title}</h3>
-                        <p>{decision.proposal.action}</p>
-                        <dl>
-                          <dt>Finished when</dt>
-                          <dd>{decision.proposal.criterion}</dd>
-                          <dt>When</dt>
-                          <dd>{decision.proposal.timing}</dd>
-                          <dt>Why try it</dt>
-                          <dd>{decision.proposal.reason}</dd>
-                          <dt>Review after</dt>
-                          <dd>{decision.proposal.reviewAfter}</dd>
-                        </dl>
-                        {decision.status === "Suggested" ? (
-                          <div className="button-row">
-                            <button
-                              className="button primary"
-                              onClick={() => accept(decision)}
-                            >
-                              Use this change <Check size={15} />
-                            </button>
-                            <button
-                              className="button secondary"
-                              onClick={() =>
-                                commit((d) => {
-                                  d.decisions.find(
-                                    (x) => x.id === decision.id,
-                                  )!.status = "Kept plan";
-                                }, "Current plan kept.")
-                              }
-                            >
-                              Keep my plan
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="pace-badge positive">
-                            {decision.status}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
+                  )}
+                </div>
+              </article>
+            );
+          })}
+          {proposals
+            .filter((p) => p.status === "pending" && belongsHere(p))
+            .map((p) => (
+              <article className="live-proposal shared-proposal" key={p.id}>
+                <span className="section-kicker">PROPOSED CHANGES</span>
+                <h3>{p.summary}</h3>
+                <ProposalChanges
+                  changes={p.changes}
+                  data={data}
+                  beforeRecords={p.before}
+                />
+                <div className="button-row">
+                  <button
+                    className="button primary"
+                    disabled={sending || p.expires < Date.now()}
+                    onClick={() => void review(p.id, "approve")}
+                  >
+                    Confirm changes <Check size={15} />
+                  </button>
+                  <button
+                    className="button secondary"
+                    disabled={sending}
+                    onClick={() => void review(p.id, "dismiss")}
+                  >
+                    Dismiss
+                  </button>
+                </div>
+                <p className="field-hint">
+                  Expires {new Date(p.expires).toLocaleString()}. If your
+                  workspace has changed, Adler will need to make an updated
+                  proposal.
+                </p>
+              </article>
+            ))}
+          {calendarGoals.length > 0 && (
+            <aside className="coach-calendar-next">
+              <CalendarDays size={19} />
+              <div>
+                <span className="section-kicker">OPTIONAL NEXT STEP</span>
+                <h3>Give the updated plan a place in your week.</h3>
+                <p>Choose a time and calendar, then confirm the booking.</p>
+                {calendarGoals.map((goal) => (
+                  <Link
+                    className="button secondary"
+                    key={goal.id}
+                    to={`/app/calendar?goal=${encodeURIComponent(goal.id)}`}
+                  >
+                    Add to calendar
+                    {calendarGoals.length > 1 ? ` · ${goal.title}` : ""}{" "}
+                    <CalendarDays size={14} />
+                  </Link>
+                ))}
               </div>
-            </article>
-          );
-        })}
-        {sending && (
-          <div className="coach-working">
-            <AdlerAvatar small />
-            <span>
-              Reviewing your goal, records, and program
-              <span className="thinking-dots">…</span>
-            </span>
-          </div>
-        )}
-        <div ref={bottom} />
-      </div>
-      <form className="live-composer" onSubmit={send}>
-        {error && (
-          <p role="alert" className="inline-error">
-            {error}
-          </p>
-        )}
-        <div>
-          <textarea
-            aria-label="Message Adler"
-            rows={2}
-            maxLength={5000}
-            placeholder={
-              data.modelConsent
-                ? "What happened, or what’s on your mind?"
-                : "Enable live coaching to start a conversation"
-            }
-            value={text}
-            disabled={sending}
-            onChange={(e) => {
-              setText(e.target.value);
-              sessionStorage.setItem(key, e.target.value);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                e.currentTarget.form?.requestSubmit();
-              }
-            }}
-          />
-          <button
-            type="submit"
-            aria-label="Send message"
-            disabled={
-              sending ||
-              !text.trim() ||
-              !data.modelConsent ||
-              !service?.coach.configured
-            }
-          >
-            <ArrowUp size={21} />
-          </button>
+            </aside>
+          )}
+          {sending && (
+            <div className="coach-working">
+              <AdlerAvatar small />
+              <span>Reviewing your records and program…</span>
+            </div>
+          )}
+          <div ref={bottom} />
         </div>
-        <p>
-          Adler can suggest a change. You decide whether to use it.{" "}
-          <Link to="/app/coach/program">See the program</Link>
-        </p>
-      </form>
+        <form className="live-composer" onSubmit={send}>
+          {error && (
+            <p className="inline-error" role="alert">
+              {error}
+            </p>
+          )}
+          <div>
+            <textarea
+              aria-label="Message Adler"
+              rows={2}
+              maxLength={5000}
+              value={text}
+              disabled={sending}
+              placeholder="A goal, an update, or something to work through…"
+              onChange={(e) => {
+                setText(e.target.value);
+                sessionStorage.setItem(key, e.target.value);
+              }}
+              onKeyDown={(e) => {
+                if (
+                  e.key === "Enter" &&
+                  !e.shiftKey &&
+                  !e.nativeEvent.isComposing
+                ) {
+                  e.preventDefault();
+                  e.currentTarget.form?.requestSubmit();
+                }
+              }}
+            />
+            <button
+              type="submit"
+              aria-label="Send message"
+              disabled={sending || !text.trim() || !service?.coach.configured}
+            >
+              <ArrowUp size={21} />
+            </button>
+          </div>
+          <p>
+            Ask Adler to create a goal, update your plan, or record progress.{" "}
+            <Link to="/app/coach/program">See the coaching program</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

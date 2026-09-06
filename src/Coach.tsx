@@ -63,8 +63,8 @@ export function Memory() {
       <p className="memory-explanation">
         <UserRound size={20} />
         This is confirmed context, separate from your goals and action history.
-        It is stored in this browser and included in live coaching requests
-        after you enable them. Edit or remove anything Adler should stop using.
+        It is saved to your workspace and included in live coaching requests
+        to help plan your next step. Edit or remove anything Adler should stop using.
       </p>
       {data.memories.length ? (
         <div className="memory-list">

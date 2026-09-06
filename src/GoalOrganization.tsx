@@ -361,8 +361,14 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
                     aria-label={`Checkpoint ${i + 1} value`}
                     type="number"
                     min="0"
-                    max={goal.kind === "learning" ? 10 : goal.milestones.length}
-                    step="1"
+                    max={
+                      goal.measure
+                        ? 1000000
+                        : goal.kind === "learning"
+                          ? 10
+                          : goal.milestones.length
+                    }
+                    step={goal.measure ? "any" : "1"}
                     required
                     value={p.value}
                     onChange={(e) =>

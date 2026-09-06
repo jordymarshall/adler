@@ -1,3 +1,4 @@
+import { LandingInsights } from "./Insights";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -5,8 +6,8 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  CalendarDays,
   Check,
+  CalendarDays,
   ChevronRight,
   MessageCircle,
   Target,
@@ -15,63 +16,9 @@ import { Footer, Logo } from "./components";
 import { AdlerAvatar } from "./persona";
 import { ProgressChart } from "./ProgressChart";
 import { METHODS } from "./methods";
-import type { Goal } from "./store";
-const demoGoal: Goal = {
-  id: "demo-portfolio",
-  title: "Publish 3 portfolio case studies by October 31",
-  kind: "project",
-  status: "Active",
-  area: "Career",
-  tags: ["Portfolio", "Writing"],
-  priority: "Focus",
-  why: "Include three examples of my work in design applications.",
-  success:
-    "Each published case study explains the problem, my contribution, and the result.",
-  target: 3,
-  unit: "Case studies published",
-  targetDate: "2026-10-31",
-  outcomeUpdatedAt: "2026-10-17",
-  milestones: [
-    { id: "1", title: "First case study", criterion: "Published", done: true },
-    {
-      id: "2",
-      title: "Second case study",
-      criterion: "Published",
-      done: false,
-    },
-    { id: "3", title: "Third case study", criterion: "Published", done: false },
-  ],
-  plans: [
-    {
-      version: 1,
-      date: "2026-10-01",
-      action: "Draft five bullets for case study two",
-      criterion: "Five bullets describe the problem and my contribution.",
-      timing: "Tuesday, 1:00 pm · 25 min",
-    },
-  ],
-  checkpoints: [
-    { id: "p0", date: "2026-10-01", value: 0, label: "Start" },
-    { id: "p1", date: "2026-10-08", value: 1, label: "First published" },
-    { id: "p2", date: "2026-10-15", value: 2, label: "Second published" },
-    { id: "p3", date: "2026-10-31", value: 3, label: "All three published" },
-  ],
-  results: [
-    { id: "r0", date: "2026-10-01", value: 0, source: "Starting result" },
-    {
-      id: "r1",
-      date: "2026-10-09",
-      value: 1,
-      source: "First case study published",
-    },
-    {
-      id: "r2",
-      date: "2026-10-17",
-      value: 1,
-      source: "Second case study remains in draft",
-    },
-  ],
-};
+import { CalendarLogo } from "./CalendarLogo";
+import { DecisionPreview, ProgramPreview } from "./LandingProgram";
+import { demoGoal, proposedCheckpoints } from "./landing-data";
 function WindowBar({ title }: { title: string }) {
   return (
     <div className="walk-windowbar">
@@ -81,14 +28,13 @@ function WindowBar({ title }: { title: string }) {
         <i />
       </span>
       <b>adler / {title}</b>
-      <span>Example</span>
     </div>
   );
 }
 function HeroPreview() {
   return (
     <div className="landing-product">
-      <WindowBar title="goals / portfolio / progress" />
+      <WindowBar title="goals / running / progress" />
       <div className="landing-product-body">
         <aside>
           <Logo />
@@ -104,22 +50,19 @@ function HeroPreview() {
               <MessageCircle size={14} /> Coach
             </span>
           </nav>
-          <small>CAREER</small>
-          <b>Portfolio</b>
-          <span className="mini-goal-line">1 of 3 published</span>
-          <small>LEARNING</small>
-          <span>Statistics course</span>
           <small>PERSONAL</small>
-          <span>Essential documents</span>
+          <b>My first 5 km</b>
+          <span className="mini-goal-line">2 km without stopping</span>
+          <small>LEARNING</small>
+          <span>Learn conversational Spanish</span>
         </aside>
         <div className="landing-product-main">
           <div className="mini-breadcrumb">
-            Career <ChevronRight size={12} /> #Portfolio <span>Focus goal</span>
+            Personal <ChevronRight size={12} /> #Running <span>Focus goal</span>
           </div>
-          <h2>Publish 3 portfolio case studies</h2>
+          <h2>Run 5 km without stopping</h2>
           <p className="mini-deadline">
-            By October 31 · Each explains the problem, my contribution, and the
-            result.
+            By November 15 · Complete the route without a walking break.
           </p>
           <div className="mini-tabs">
             <b>Progress</b>
@@ -127,15 +70,20 @@ function HeroPreview() {
             <span>Learning</span>
           </div>
           <ProgressChart goal={demoGoal} today="2026-10-17" compact />
+          <div className="hero-outcome-count">
+            <Check size={13} />
+            <b>2 km recorded</b>
+            <span>Goal: 5 km without stopping</span>
+          </div>
           <div className="hero-coach-note">
             <AdlerAvatar small />
             <div>
-              <b>The second case study is still in draft.</b>
+              <b>Work ran late. Both weekday runs were missed.</b>
               <p>
-                You reported editing the opening in two sessions. Try five rough
-                bullets before editing, then review after two attempts.
+                You said mornings are free. Try your Tuesday and Thursday runs
+                before work, then review how they went on Sunday.
               </p>
-              <Link to="/app/coach?goal=portfolio">
+              <Link to="/app/coach?goal=general">
                 Review with Adler <ArrowRight size={13} />
               </Link>
             </div>
@@ -147,51 +95,68 @@ function HeroPreview() {
 }
 const steps = [
   {
-    label: "Define the result",
-    title: "Turn “work on my portfolio” into a result you can verify.",
-    problem: "A vague goal gives you no finish line.",
-    body: "Set a target, a date, and what counts as finished. Add checkpoints so you can compare progress with a plan before the deadline arrives.",
-    route: "/app/goals/portfolio/progress",
+    label: "Set your goal",
+    cta: "Set your goal",
+    title: "Decide exactly what you want to achieve.",
+    problem: "“Get fitter” gives you no clear way to know you’ve succeeded.",
+    body: "Set a goal such as “run 5 km without stopping by November 15.” Record where you are now and choose smaller milestones so you can see progress along the way.",
+    route: "/app/goals/new",
   },
   {
-    label: "Build your program",
-    title: "Decide what this week can realistically hold.",
-    problem: "Each goal competes for the same hours.",
-    body: "Choose a focus goal, a sprint result, and a weekly time budget. Adler considers your other active goals and confirmed preferences when it suggests the next step.",
+    label: "Plan your week",
+    cta: "Plan your week",
+    title: "Know what to do this week.",
+    problem: "A goal needs specific actions you can fit into your life.",
+    body: "Put your planned runs, distance milestones, and weekly review on one timeline. See how much time they need alongside your other goals and commitments.",
     route: "/app/coach/program",
   },
   {
-    label: "Find the time",
-    title: "Give the next action a time and a place.",
-    problem: "“I’ll do it this week” leaves the decision for later.",
-    body: "Connect a calendar, check for gaps within your work hours, and approve a work block. Add a short check-in immediately afterward while the details are fresh.",
+    label: "Make time",
+    cta: "Find a time",
+    title: "Put it on your calendar.",
+    problem: "“I’ll go for a run this week” is easy to put off.",
+    body: "Connect your calendar, choose an available time, and confirm the booking. Add a short check-in afterward to record how it went.",
     route: "/app/calendar",
   },
   {
-    label: "Record what happened",
-    title: "Keep the useful details from each attempt.",
-    problem: "A checked box can hide the obstacle.",
-    body: "Record done, partly, or didn’t happen. Add what got in the way. Verify the goal result separately, so a drafting session is never mistaken for a published case study.",
+    label: "Check in",
+    cta: "Record what happened",
+    title: "Tell Adler how it went.",
+    problem: "A missed run doesn’t tell you why the plan failed.",
+    body: "Record what you did and what got in the way. Track your longest run separately, so completing a session doesn’t automatically count as reaching a distance milestone.",
     route: "/app/today",
   },
   {
     label: "See your progress",
-    title: "Know where you stand before the deadline.",
-    problem: "Being busy doesn’t tell you whether you’re on track.",
-    body: "Compare recorded results with your dated checkpoints. See ahead, on, or behind plan—and exactly which numbers produce that label. Missing or old evidence asks for an update.",
-    route: "/app/goals/portfolio/progress",
+    cta: "Track your own goal",
+    title: "See whether you’re on track.",
+    problem:
+      "Doing something every week doesn’t always mean you’re getting closer.",
+    body: "Compare your recorded results with the milestones you planned to reach. See exactly why you’re ahead or behind, and compare proposed dates before changing your plan.",
+    route: "/app/goals/new",
   },
   {
-    label: "Make a useful change",
-    title: "Get a specific adjustment, with a reason you can inspect.",
-    problem: "Advice is hard to use when you can’t see what it’s based on.",
-    body: "Adler reviews your records, schedule constraints, and coaching program. Inspect the methods and context behind a suggestion, approve the change, and decide when to review it.",
-    route: "/app/coach?goal=portfolio",
+    label: "Learn what helps",
+    cta: "See your insights",
+    title: "See what helps you make progress.",
+    problem: "A check-in is only useful if you learn something you can act on.",
+    body: "See what Adler has learned from your results and conversations, where each insight came from, and what it changes in your plan. Open the sources and see which ideas still need testing.",
+    route: "/app/insights",
+  },
+  {
+    label: "Improve your plan",
+    cta: "Review your plan with Adler",
+    title: "Get specific changes when your plan isn’t working.",
+    problem:
+      "Another reminder won’t help if work keeps taking the time you set aside.",
+    body: "Adler uses your results, check-ins, and availability to suggest what to change. See the current plan, the proposed changes, and the reason for each one. You choose what to approve.",
+    route: "/app/coach?goal=general",
   },
 ];
 function WalkScreen({ step }: { step: number }) {
-  const [outcome, setOutcome] = useState("Partly");
-  const [time, setTime] = useState("1:00 pm");
+  const [outcome, setOutcome] = useState("Didn’t happen");
+  const [time, setTime] = useState("6:30 pm");
+  const [compare, setCompare] = useState(false);
   return (
     <div className="walk-screen">
       <WindowBar
@@ -202,6 +167,7 @@ function WalkScreen({ step }: { step: number }) {
             "calendar / schedule",
             "today / check-in",
             "goals / progress",
+            "insights / what helps",
             "coach / decision",
           ][step]
         }
@@ -210,105 +176,69 @@ function WalkScreen({ step }: { step: number }) {
         {step === 0 && (
           <>
             <div className="goal-tags">
-              <span>Career</span>
-              <span>#Portfolio</span>
+              <span>Personal</span>
+              <span>#Running</span>
               <b>Focus</b>
             </div>
             <h3>{demoGoal.title}</h3>
             <dl className="demo-definition">
               <dt>Why</dt>
-              <dd>Have three examples to include in design applications.</dd>
+              <dd>{demoGoal.why}</dd>
               <dt>Finished means</dt>
-              <dd>
-                Each case study is published and explains the problem, my
-                contribution, and the result.
-              </dd>
+              <dd>{demoGoal.success}</dd>
               <dt>Milestones</dt>
               <dd>
                 <span>
-                  <Check size={14} /> First published · Oct 8
+                  <Check size={14} /> 2 km without stopping · reached Oct 11
                 </span>
-                <span>02 · Second published · Oct 15</span>
-                <span>03 · Third published · Oct 31</span>
+                <span>3 km · planned for Oct 15</span>
+                <span>5 km · goal for Nov 15</span>
               </dd>
             </dl>
             <div className="demo-next">
               <span>NEXT ACTION</span>
-              <b>Draft five bullets for case study two.</b>
-              <p>Done = the problem and my contribution are on the page.</p>
+              <b>Go for my next planned run.</b>
+              <p>Afterward, record whether I ran and the distance I covered.</p>
             </div>
           </>
         )}
-        {step === 1 && (
-          <>
-            <div className="mini-program-title">
-              <AdlerAvatar small />
-              <h3>
-                Your coaching program <span>v2</span>
-              </h3>
-            </div>
-            <div className="demo-program-grid">
-              <div>
-                <span>FOCUS</span>
-                <b>Portfolio</b>
-                <p>Statistics stays at two short sessions.</p>
-              </div>
-              <div>
-                <span>THIS SPRINT</span>
-                <b>Finish case study two</b>
-                <p>Draft → feedback → publish</p>
-              </div>
-              <div>
-                <span>TIME BUDGET</span>
-                <b>180 min / week</b>
-                <p>25-minute blocks after lunch</p>
-              </div>
-              <div>
-                <span>REVIEW</span>
-                <b>Every Friday</b>
-                <p>Results, obstacles, next change</p>
-              </div>
-            </div>
-            <div className="demo-method-flow">
-              <span>Define</span>
-              <ArrowRight size={13} />
-              <span>Schedule</span>
-              <ArrowRight size={13} />
-              <span>Observe</span>
-              <ArrowRight size={13} />
-              <span>Adjust</span>
-            </div>
-            <p className="demo-footnote">
-              Editable goals, constraints, methods, context, and version
-              history.
-            </p>
-          </>
-        )}
+        {step === 1 && <ProgramPreview />}
         {step === 2 && (
           <>
             <div className="mini-calendar-head">
-              <h3>Tuesday, October 20</h3>
-              <span className="pace-badge positive">Example availability</span>
+              <h3>Thursday, October 15</h3>
+              <span className="pace-badge positive">Choose a time</span>
+            </div>
+            <div
+              className="calendar-provider-list"
+              aria-label="Calendar connections"
+            >
+              <span>
+                <CalendarLogo provider="google" /> Google Calendar
+              </span>
+              <span>
+                <CalendarLogo provider="apple" /> Apple Calendar
+              </span>
             </div>
             <div className="demo-calendar">
-              <span>12:00</span>
+              <span>6:00</span>
               <div className="calendar-busy">Busy</div>
-              <span>12:30</span>
+              <span>6:15</span>
               <div className="calendar-free">Available</div>
-              <span>1:00</span>
+              <span>6:30</span>
               <div className="calendar-focus">
-                <b>Draft five rough bullets</b>
-                <small>Portfolio · 25 min</small>
+                <b>Go for a run</b>
+                <small>My first 5 km · 25 min</small>
               </div>
-              <span>1:25</span>
+              <span>6:55</span>
               <div className="calendar-checkin">
                 <Check size={13} /> Check in · 5 min
               </div>
-              <span>2:00</span>
+              <span>7:30</span>
               <div className="calendar-busy">Busy</div>
             </div>
             <div className="demo-time-options">
-              {["1:00 pm", "3:00 pm", "4:15 pm"].map((t) => (
+              {["6:30 pm", "7:00 pm", "7:30 pm"].map((t) => (
                 <button
                   key={t}
                   className={time === t ? "selected" : ""}
@@ -326,9 +256,9 @@ function WalkScreen({ step }: { step: number }) {
         )}
         {step === 3 && (
           <>
-            <span className="section-kicker">AFTER YOUR WORK BLOCK</span>
-            <h3>How did the draft go?</h3>
-            <p>Planned: five rough bullets for case study two.</p>
+            <span className="section-kicker">AFTER YOUR PLANNED RUN</span>
+            <h3>How did your run go?</h3>
+            <p>Planned: go for a run at 6:30 pm.</p>
             <div className="demo-outcomes">
               {["Done", "Partly", "Didn’t happen"].map((v) => (
                 <button
@@ -347,10 +277,10 @@ function WalkScreen({ step }: { step: number }) {
               </span>
               <p>
                 {outcome === "Done"
-                  ? "Five bullets are drafted. Ready for a feedback pass."
+                  ? "Went for my run. My longest distance without stopping is still 2 km."
                   : outcome === "Partly"
-                    ? "“I kept editing the opening instead of getting the rest down.”"
-                    : "“A meeting ran over and took the time I’d reserved.”"}
+                    ? "“Got outside for a walk, but didn’t start the run.”"
+                    : "“Work ran late again. By the time I got home, I missed the run.”"}
               </p>
             </div>
             <div className="demo-result-separation">
@@ -359,58 +289,45 @@ function WalkScreen({ step }: { step: number }) {
                 Action recorded: <b>{outcome}</b>
               </span>
               <span>
-                Published result: <b>1 of 3</b>
+                Longest run: <b>2 km</b>
               </span>
             </div>
           </>
         )}
         {step === 4 && (
           <>
-            <h3>Are the results keeping pace?</h3>
-            <ProgressChart goal={demoGoal} today="2026-10-17" compact />
+            <h3>How close are you to 5 km?</h3>
+            <div
+              className="chart-scenario-switch"
+              role="group"
+              aria-label="Compare plans"
+            >
+              <button aria-pressed={!compare} onClick={() => setCompare(false)}>
+                Current plan
+              </button>
+              <button aria-pressed={compare} onClick={() => setCompare(true)}>
+                Proposed adjustment
+              </button>
+            </div>
+            <ProgressChart
+              goal={demoGoal}
+              today="2026-10-17"
+              compact
+              proposedCheckpoints={compare ? proposedCheckpoints : undefined}
+            />
             <div className="demo-next">
               <span>WHAT TO REVIEW</span>
-              <b>The second case study was due October 15.</b>
-              <p>Open the action records to see what delayed it.</p>
-            </div>
-          </>
-        )}
-        {step === 5 && (
-          <>
-            <div className="mini-program-title">
-              <AdlerAvatar small />
-              <h3>
-                Adler <span>Portfolio</span>
-              </h3>
-            </div>
-            <p className="demo-coach-message">
-              You’ve made time for the draft, but the opening is taking the
-              whole session. Let’s give the first pass a smaller job.
-            </p>
-            <div className="demo-proposal">
-              <span className="section-kicker">TRY FOR TWO SESSIONS</span>
-              <h3>Draft five bullets before editing.</h3>
+              <b>2 km recorded. Your plan called for 3 km by October 15.</b>
               <p>
-                Finish when the problem and your contribution are on the page.
+                {compare
+                  ? "Compare new dates for the 3 km and 4 km milestones. Your 5 km goal stays on November 15, with a review next week to check whether that date still fits."
+                  : "Both weekday runs were missed when work ran late. Review the schedule before adding more sessions."}
               </p>
-              <div>
-                <b>Based on</b>
-                <span>Two action notes about editing the opening.</span>
-              </div>
-              <div>
-                <b>Method</b>
-                <span>Identify the blocker → change the task.</span>
-              </div>
-              <div>
-                <b>Review</b>
-                <span>Did you finish a draft ready for feedback?</span>
-              </div>
             </div>
-            <Link className="demo-inspect" to="/app/coach/program">
-              Open the full coaching program <ArrowUpRight size={15} />
-            </Link>
           </>
         )}
+        {step === 5 && <LandingInsights />}
+        {step === 6 && <DecisionPreview />}
       </div>
     </div>
   );
@@ -432,53 +349,49 @@ export function Landing() {
       <main>
         <section className="concrete-hero">
           <div className="hero-label">
-            <span className="status-dot" /> A GOAL COACH WITH A PLAN YOU CAN SEE
+            <span className="status-dot" /> YOUR PERSONAL BEHAVIOURAL SCIENCE
+            COACH
           </div>
           <h1>
-            Know if you’re making progress.
-            <br /> <span>Know what to do next.</span>
+            Reach your goals with a plan
+            <br /> <span>that adapts to you.</span>
           </h1>
           <p>
-            Turn a goal into measurable milestones, find time for the work, and
-            see whether the results match your plan. Adler helps you adjust
-            using what actually happened.
+            Turn a goal into weekly actions, make time for them, and see your
+            progress. When you get stuck, Adler uses your check-ins and schedule
+            to suggest specific changes and explain why.
           </p>
           <div className="hero-actions">
             <Link className="button primary" to="/app/today">
               Explore the app <ArrowRight size={17} />
             </Link>
             <a className="button text-button" href="#how-it-works">
-              See every step <ArrowDown size={16} />
+              See how Adler helps <ArrowDown size={16} />
             </a>
           </div>
           <div className="hero-access-note">
-            Interactive local preview · Start with example goals or create your
-            own
+            Start with your own goal · Connect your AI provider when you’re
+            ready
           </div>
           <HeroPreview />
-          <div className="hero-caption">
-            Fictional portfolio example · The same progress view is available
-            inside the app.
-          </div>
         </section>
+
         <section className="concrete-problem">
-          <span className="section-kicker">
-            THE GAP BETWEEN PLANNING AND PROGRESS
-          </span>
+          <span className="section-kicker">WHY GOALS GET STUCK</span>
           <h2>
-            You have a goal. A list. Maybe a chat.
+            You know what you want.
             <br />
-            But is the plan working?
+            Following through is harder.
           </h2>
           <div className="problem-grid">
             <article>
               <span>01</span>
-              <h3>“I worked on it all week.”</h3>
+              <h3>“Am I actually getting closer?”</h3>
               <p>
-                Hours spent and tasks finished can hide a result that hasn’t
-                moved.
+                A list of completed tasks doesn’t show how close you are to the
+                goal.
               </p>
-              <b>Track the outcome alongside the effort.</b>
+              <b>See your results against your milestones.</b>
             </article>
             <article>
               <span>02</span>
@@ -487,32 +400,30 @@ export function Landing() {
                 The plan competes with meetings, other goals, and the rest of
                 your week.
               </p>
-              <b>Find time before committing more work.</b>
+              <b>Choose times that fit your actual week.</b>
             </article>
             <article>
               <span>03</span>
               <h3>“Now what should I change?”</h3>
               <p>
-                Generic encouragement doesn’t tell you which obstacle to
-                address.
+                “Keep going” doesn’t tell you what to do differently when the
+                same problem keeps coming up.
               </p>
-              <b>Connect the next change to your records.</b>
+              <b>Get a specific change and the reason for it.</b>
             </article>
           </div>
         </section>
         <section className="product-walkthrough" id="how-it-works">
           <div className="walkthrough-heading">
-            <span className="section-kicker">
-              ONE GOAL, FROM INTENTION TO ADJUSTMENT
-            </span>
+            <span className="section-kicker">HOW ADLER HELPS</span>
             <h2>
-              Here’s how Adler helps.
+              A clear plan.
               <br />
-              Screen by screen.
+              Progress you can see.
             </h2>
             <p>
-              Follow a portfolio goal through the full workflow. Try the
-              controls, then open any screen in the app.
+              Follow a goal to run 5 km without stopping—from choosing the first
+              steps to changing a schedule that isn’t working.
             </p>
           </div>
           <nav className="walk-step-nav" aria-label="Product walkthrough">
@@ -525,7 +436,7 @@ export function Landing() {
           </nav>
           {steps.map((s, i) => (
             <article
-              className={`walk-step ${i % 2 ? "reverse" : ""}`}
+              className={`walk-step ${i >= 5 ? "walk-step-wide" : i % 2 ? "reverse" : ""}`}
               id={`step-${i + 1}`}
               key={s.label}
             >
@@ -537,7 +448,7 @@ export function Landing() {
                 <p className="walk-problem">{s.problem}</p>
                 <p>{s.body}</p>
                 <Link className="text-link" to={s.route}>
-                  Open this screen <ArrowUpRight size={15} />
+                  {s.cta} <ArrowUpRight size={15} />
                 </Link>
               </div>
               <WalkScreen step={i} />
@@ -547,17 +458,18 @@ export function Landing() {
         <section className="concrete-method">
           <div>
             <span className="section-kicker">
-              BEHAVIOURAL SCIENCE, WITH A JOB TO DO
+              COACHING BASED ON BEHAVIOURAL SCIENCE
             </span>
             <h2>
-              A method should change
+              Get help with what’s
               <br />
-              what you do next.
+              stopping your progress.
             </h2>
             <p>
-              Adler’s program uses research on goal setting, implementation
-              intentions, progress monitoring, and structured review. For
-              learning goals, it can add retrieval and spaced practice.
+              Adler looks at what you planned, what happened, and the time you
+              have available. It uses research on goal setting, action planning,
+              and progress reviews to suggest a next step that addresses the
+              problem you reported.
             </p>
             <Link className="button secondary" to="/method">
               See the methods and sources <ArrowUpRight size={16} />
@@ -565,28 +477,30 @@ export function Landing() {
           </div>
           <div className="method-examples">
             <article>
-              <span>Instead of “try harder”</span>
-              <h3>Find the blocker.</h3>
+              <span>“Work keeps getting in the way.”</span>
+              <h3>Find a time you can keep.</h3>
               <p>
-                A meeting displaced the session? Change the time. The task was
-                unclear? Define a smaller, observable first step.
+                If late work keeps displacing your runs, Adler uses your
+                availability to suggest another time. You confirm it before
+                anything is booked.
               </p>
             </article>
             <article>
-              <span>Instead of “keep going”</span>
-              <h3>Check the result.</h3>
+              <span>“I’m trying, but not improving.”</span>
+              <h3>Check what needs to change.</h3>
               <p>
-                If practice sessions are complete but test results haven’t
-                improved, inspect the practice method before adding more
-                sessions.
+                Compare the actions you completed with your actual result. Adler
+                helps you review the approach, the schedule, and the milestones
+                before committing to more work.
               </p>
             </article>
             <article>
-              <span>Instead of advice you can’t inspect</span>
-              <h3>Open the program.</h3>
+              <span>“Why this change?”</span>
+              <h3>Understand the recommendation.</h3>
               <p>
-                See the goals, context, enabled methods, proposed changes, and
-                saved versions Adler uses to coach you.
+                See exactly what would change and why. Your check-ins and
+                preferences explain the situation; research informs the
+                suggested response.
               </p>
             </article>
           </div>
@@ -611,8 +525,8 @@ export function Landing() {
               "The app includes Google Calendar OAuth and iCloud CalDAV connections. After account setup, it checks selected calendars and can create the work block and check-in you approve. You can also schedule inside Adler without connecting a calendar.",
             ],
             [
-              "What is available in this preview?",
-              "Goals, tagging, action records, progress charts, program editing, and local scheduling work in this browser. Live coaching needs a configured Anthropic account; calendar connections need your authorization. There is no account sync or background coaching service.",
+              "What can I use today?",
+              "Create an empty workspace, define goals, track results, and run weekly reviews. Connect Gemini, GPT, or Claude with an API key for goal setup and coaching. Linked phone conversations and MCP clients share the same records; scheduled check-ins run on your configured server.",
             ],
           ].map(([q, a]) => (
             <details key={q}>
@@ -625,49 +539,18 @@ export function Landing() {
           ))}
         </section>
         <section className="concrete-final">
-          <AdlerAvatar />
           <h2>
-            Bring a goal.
-            <br />
-            Leave with a next step you can check.
+            Start working toward
+            <br />a goal that matters to you.
           </h2>
           <p>
-            Start with the example workspace. See the plan, the progress, and
-            the program behind the coach.
+            Create your workspace, define your first goal, and build a plan
+            around the time you actually have.
           </p>
           <Link className="button primary" to="/app/today">
             Explore the app <ArrowRight size={17} />
           </Link>
         </section>
-      </main>
-      <Footer />
-    </div>
-  );
-}
-export function SignIn() {
-  return (
-    <div className="public-page">
-      <header className="site-header">
-        <Logo />
-        <Link to="/">
-          Back to home <ArrowUpRight size={15} />
-        </Link>
-      </header>
-      <main className="signin-card">
-        <AdlerAvatar />
-        <span className="section-kicker">YOUR GOALS, READY TO EXPLORE</span>
-        <h1>Welcome to Adler.</h1>
-        <p>
-          Open the local workspace with three example goals, or create your own.
-          Your changes are saved in this browser.
-        </p>
-        <Link to="/app/today" className="button primary full-width">
-          Enter the preview <ArrowRight size={17} />
-        </Link>
-        <p className="field-hint">
-          No account needed. Enable live coaching separately in Coach and
-          connect calendars from Calendar.
-        </p>
       </main>
       <Footer />
     </div>
@@ -681,7 +564,7 @@ export function PublicPage({
   const titles = {
     method: "What Adler’s methods do.",
     privacy: "Your data and controls.",
-    terms: "About this local preview.",
+    terms: "Using Adler.",
     support: "Using Adler.",
   };
   return (
@@ -743,36 +626,47 @@ export function PublicPage({
             <h2>Workspace records</h2>
             <p>
               Goals, results, actions, program versions, conversations,
-              decisions, and confirmed context are stored in this browser.
-              Anyone using this browser profile can access them. This preview
-              has no account sync.
+              decisions, and confirmed context are stored under your account on
+              this Adler server. Signed-in browsers and authorized phone or MCP
+              connections share these records. The server operator controls
+              storage and backups.
             </p>
             <h2>Live coaching</h2>
             <p>
-              After you enable live coaching, requests send your current
-              program, active goals, recent records, confirmed context, relevant
-              conversation, and saved work blocks to Anthropic. API credentials
-              stay on the server. You can disable live coaching in Settings.
+              When you message Adler, requests send your current program, active
+              goals, recent records, confirmed context, relevant conversation,
+              and saved work blocks to your selected AI provider: Google Gemini,
+              OpenAI, or Anthropic. API credentials stay on the server. Manage
+              your provider in Settings and scheduled messages in Connections.
             </p>
             <h2>Calendar connections</h2>
             <p>
-              Google tokens and iCloud app-specific credentials are held in
-              local server memory and cleared when it restarts. Availability is
-              read only when requested. Google returns busy intervals; iCloud
-              event data is processed on the server to calculate those
-              intervals. Unrelated event titles and calendar credentials are not
-              included in coaching requests.
+              Google tokens and iCloud app-specific credentials are encrypted on
+              the server and survive restarts. Availability is read when you
+              request slots or Adler assembles coaching context. Google returns
+              busy intervals; iCloud event data is processed on the server to
+              calculate those intervals. Unrelated event titles and calendar
+              credentials are not included in coaching requests.
             </p>
             <p>
-              Booking confirmations are saved in a private local server file for
-              retry protection. Resetting the browser workspace does not delete
-              that file or events already created in your calendar. Disconnect
+              Booking confirmations are saved on the server for retry
+              protection. Clearing workspace records does not delete the booking
+              journal or events already created in your calendar. Disconnect
               accounts in Calendar and manage existing events in the calendar
               provider.
             </p>
+            <h2>Texting and connected clients</h2>
+            <p>
+              Linq (iMessage, RCS, and SMS) or Twilio (SMS), depending on the
+              server configuration, processes messages to and from your linked
+              phone. Incoming messages and delivery history are saved on this
+              server. Pairing a phone enables conversational replies; scheduled
+              messages require a separate opt-in. Reply STOP to stop texts,
+              unlink the phone, or revoke client tokens in Connections.
+            </p>
             <h2>Your controls</h2>
             <p>
-              Export or reset browser records in{" "}
+              Export or clear workspace records in{" "}
               <Link to="/app/settings">Settings</Link>, edit{" "}
               <Link to="/app/coach/about-you">confirmed context</Link>, and
               disconnect calendars in <Link to="/app/calendar">Calendar</Link>.
@@ -783,21 +677,23 @@ export function PublicPage({
         ) : type === "terms" ? (
           <>
             <p className="prose-lead">
-              This is a single-user local preview for exploring the product.
-              There are no subscriptions or payments.
+              Adler saves your goals and conversations on the server where it is
+              hosted. There is no Adler subscription billing in this version;
+              model and messaging providers charge their configured API
+              accounts.
             </p>
             <h2>Connected features</h2>
             <p>
-              The coach uses your configured Anthropic account after you enable
-              it. Calendar connections require account configuration and
+              The coach uses the AI provider you choose after you enable it.
+              Calendar connections require account configuration and
               authorization. Approving a booking creates real calendar events.
             </p>
             <h2>Current scope</h2>
             <p>
-              There is no production authentication, cloud sync, or background
-              coaching service. Sample goals and records are fictional. Coaching
-              supports planning and reflection; it is not a guarantee of results
-              or a professional care service.
+              Each account starts empty. The landing walkthrough uses fictional
+              records. Phone messaging needs a configured messaging account and
+              public HTTPS server. Personal MCP tokens work with compatible
+              clients; OAuth-only clients need an authorization service.
             </p>
           </>
         ) : (
@@ -819,15 +715,15 @@ export function PublicPage({
             <p>
               The <Link to="/app/coach/program">coaching program</Link> contains
               the sprint, capacity, enabled methods, context checks, and version
-              history. Live coaching requires ANTHROPIC_API_KEY on the local
-              server. Calendar setup instructions are in the Calendar screen.
+              history. Choose your model and API key in AI provider settings.
+              Use Connections to pair a phone or create an MCP token.
             </p>
             <h2>Export or start fresh</h2>
             <p>
               Use <Link to="/app/settings">Settings</Link> to export or reset
-              browser records. Calendar events and the local booking journal are
-              separate. Share problems in the workspace conversation where this
-              preview was built.
+              workspace records. Calendar events, connection credentials, audit
+              events, delivery history, and the booking journal are separate.
+              The server operator can manage retention and backups.
             </p>
           </>
         )}

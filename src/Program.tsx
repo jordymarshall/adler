@@ -1,20 +1,15 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CalendarDays,
-  Check,
-  ChevronRight,
-  Clock3,
-  Pencil,
-  Target,
-} from "lucide-react";
+import { ArrowLeft, Check, Pencil } from "lucide-react";
 import { Modal } from "./components";
-import { AdlerAvatar } from "./persona";
 import { currentProgram, localDate, reviseProgram, useStore } from "./store";
 import { METHODS } from "./methods";
-import { coachingContext } from "./coach-context";
+import {
+  ProgramContext,
+  ProgramDecisions,
+  ProgramOverview,
+  ProgramVersions,
+} from "./ProgramViews";
 
 export function Program() {
   const { data, commit } = useStore();
@@ -25,8 +20,6 @@ export function Program() {
   const [reviewing, setReviewing] = useState<string | null>(null);
   const [reviewNote, setReviewNote] = useState("");
   const [reviewChoice, setReviewChoice] = useState<"Keep" | "Revisit">("Keep");
-  const [selected, setSelected] = useState(program.focusGoalId);
-  const context = coachingContext(data, selected, "", localDate());
   function save(e: FormEvent) {
     e.preventDefault();
     if (
@@ -55,8 +48,8 @@ export function Program() {
           </span>
           <h1>Your coaching program.</h1>
           <p>
-            Edit what Adler works toward, what it uses, and how it reviews
-            progress.
+            Set your sprint, make time for the work, and see how Adler uses your
+            records to guide the next step.
           </p>
         </div>
         <button
@@ -69,277 +62,50 @@ export function Program() {
           <Pencil size={16} /> Edit program
         </button>
       </div>
-      <div className="program-banner">
-        <AdlerAvatar />
-        <div>
-          <b>Adler · Program v{program.version}</b>
-          <p>
-            Direct, curious, and practical. I’ll use your records, ask about
-            gaps, and help you choose one change at a time.
-          </p>
-        </div>
-        <span className="pace-badge positive">You approve changes</span>
+      <div className="program-status-strip">
+        <span>
+          <i /> Program v{program.version}
+        </span>
+        <span>
+          {data.goals.filter((g) => g.status === "Active").length} active{" "}
+          {data.goals.filter((g) => g.status === "Active").length === 1
+            ? "goal"
+            : "goals"}
+        </span>
+        <span>{program.enabledMethods.length} methods available</span>
+        <button onClick={() => setTab("Versions")}>
+          View revision history
+        </button>
       </div>
-      <div className="filter-tabs">
-        {["Program", "Context & checks", "Decisions & versions"].map((v) => (
-          <button
-            key={v}
-            aria-pressed={tab === v}
-            className={tab === v ? "active" : ""}
-            onClick={() => setTab(v)}
-          >
+      <nav className="program-navigation" aria-label="Coaching program views">
+        {["Program", "Context & checks", "Decisions", "Versions"].map((v) => (
+          <button key={v} aria-pressed={tab === v} onClick={() => setTab(v)}>
             {v}
+            {v === "Decisions" && <span>{data.decisions.length}</span>}
           </button>
         ))}
-      </div>
+      </nav>
       {tab === "Program" && (
-        <>
-          <div className="program-grid">
-            <section className="panel program-focus">
-              <span className="section-kicker">
-                <Target size={15} /> 01 · DIRECTION
-              </span>
-              <h2>
-                {data.goals.find((g) => g.id === program.focusGoalId)?.title ??
-                  "Choose a focus goal"}
-              </h2>
-              <p>
-                Current focus across{" "}
-                {data.goals.filter((g) => g.status === "Active").length} active
-                goals.
-              </p>
-              <Link className="text-link" to="/app/goals">
-                See the bigger picture <ArrowRight size={14} />
-              </Link>
-            </section>
-            <section className="panel">
-              <span className="section-kicker">02 · THIS SPRINT</span>
-              <h3>{program.sprintResult}</h3>
-              <p>
-                {program.sprintStart} → {program.sprintEnd}
-              </p>
-              <p className="small-text">Approach: {program.approach}</p>
-            </section>
-            <section className="panel">
-              <span className="section-kicker">
-                <Clock3 size={15} /> 03 · CAPACITY
-              </span>
-              <h2>
-                {program.weeklyMinutes} <small>minutes / week</small>
-              </h2>
-              <p>
-                {program.sessionMinutes}-minute sessions · {program.workStart}–
-                {program.workEnd}
-              </p>
-              <Link className="text-link" to="/app/calendar">
-                Find time in Calendar <ArrowRight size={14} />
-              </Link>
-            </section>
-            <section className="panel">
-              <span className="section-kicker">
-                <CalendarDays size={15} /> 04 · REVIEW
-              </span>
-              <h2>Every {program.reviewDay}</h2>
-              <p>
-                Compare results with checkpoints. Keep, change, pause, or finish
-                the plan.
-              </p>
-              <Link className="text-link" to="/app/reviews/current">
-                Open your review <ArrowRight size={14} />
-              </Link>
-            </section>
-          </div>
-          <div className="method-heading">
-            <div>
-              <span className="section-kicker">05 · THE COACHING METHODS</span>
-              <h2>A specific job for each method.</h2>
-              <p>
-                Adler checks which enabled methods fit your goal and the
-                obstacle you reported.
-              </p>
-            </div>
-          </div>
-          <div className="method-grid">
-            {METHODS.map((m, i) => (
-              <article
-                className={`panel method-card ${program.enabledMethods.includes(m.id) ? "" : "method-disabled"}`}
-                key={m.id}
-              >
-                <div className="method-card-top">
-                  <span>0{i + 1}</span>
-                  <span className="pace-badge neutral">
-                    {program.enabledMethods.includes(m.id)
-                      ? "Enabled"
-                      : "Disabled"}
-                  </span>
-                </div>
-                <h3>{m.name}</h3>
-                <p>{m.question}</p>
-                <div className="method-action">{m.action}</div>
-                <details>
-                  <summary>
-                    Example & research <ChevronRight size={14} />
-                  </summary>
-                  <p>{m.example}</p>
-                  <a href={m.url} target="_blank" rel="noreferrer">
-                    {m.evidence} · {m.source}
-                  </a>
-                  <p className="field-hint">{m.limit}</p>
-                </details>
-              </article>
-            ))}
-          </div>
-        </>
+        <ProgramOverview
+          data={data}
+          onEdit={() => {
+            setDraft(structuredClone(program));
+            setEditing(true);
+          }}
+        />
       )}
-      {tab === "Context & checks" && (
-        <>
-          <div className="panel program-context-heading">
-            <div>
-              <h2>What Adler will use next</h2>
-              <p>
-                This is the current input snapshot. Each response saves the
-                snapshot’s checks with its program and plan version.
-              </p>
-            </div>
-            <select
-              aria-label="Inspect context for goal"
-              value={selected}
-              onChange={(e) => setSelected(e.target.value)}
-            >
-              {data.goals.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.title}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="check-pipeline">
-            {context.checks.map((check, i) => (
-              <article className="panel" key={check.id}>
-                <span className="pipeline-number">{i + 1}</span>
-                <div>
-                  <h3>{check.label}</h3>
-                  <p>{check.finding}</p>
-                  <small>{check.sources.length} source records</small>
-                </div>
-              </article>
-            ))}
-          </div>
-          <Link className="button secondary" to="/app/coach/about-you">
-            Edit confirmed personal context <ArrowRight size={15} />
-          </Link>
-          <details className="panel architecture-note">
-            <summary>How the agent is implemented</summary>
-            <p>
-              Adler uses the Anthropic API through a small application-owned
-              harness. Each turn assembles your current program, goals, action
-              and result records, confirmed context, and recent conversation. It
-              applies a structured coaching instruction and requires a validated
-              response.
-            </p>
-            <p>
-              Accepted proposals create a new plan and program version. Calendar
-              reads and approved bookings run through separate server tools.
-              Program changes update saved instructions and context; they do not
-              retrain the underlying model. This version does not use ADK and
-              does not run background coaching when the app is closed.
-            </p>
-            <p>
-              The checks and explanations are an inspectable decision record.
-              They are not the model’s private reasoning transcript.
-            </p>
-          </details>
-        </>
+      {tab === "Context & checks" && <ProgramContext data={data} />}
+      {tab === "Decisions" && (
+        <ProgramDecisions
+          data={data}
+          onReview={(id) => {
+            setReviewing(id);
+            setReviewNote("");
+            setReviewChoice("Keep");
+          }}
+        />
       )}
-      {tab === "Decisions & versions" && (
-        <div className="program-history">
-          <h2>Proposals and what you chose</h2>
-          {data.decisions.length ? (
-            [...data.decisions].reverse().map((d) => (
-              <article className="panel" key={d.id}>
-                <span className="pace-badge neutral">
-                  {d.status} · Program v{d.programVersion}
-                </span>
-                <h3>{d.proposal?.title ?? "Coaching review"}</h3>
-                <p>{d.summary}</p>
-                {d.proposal && (
-                  <p>
-                    <b>Review after:</b> {d.proposal.reviewAfter}
-                  </p>
-                )}
-                <details>
-                  <summary>Inputs checked & methods used</summary>
-                  {d.checks.map((c) => (
-                    <p key={c.id}>
-                      <b>{c.label}:</b> {c.finding}
-                    </p>
-                  ))}
-                  <p>
-                    {d.methods
-                      .map((id) => METHODS.find((m) => m.id === id)?.name)
-                      .join(" · ")}
-                  </p>
-                </details>
-                {d.status === "Accepted" && (
-                  <button
-                    className="button secondary"
-                    onClick={() => {
-                      setReviewing(d.id);
-                      setReviewNote("");
-                      setReviewChoice("Keep");
-                    }}
-                  >
-                    Review this change
-                  </button>
-                )}
-                {d.review && (
-                  <div className="method-action">
-                    <b>
-                      {d.review.choice === "Keep"
-                        ? "Keep the approach"
-                        : "Revisit with Adler"}{" "}
-                      · {d.review.date}
-                    </b>
-                    <p>{d.review.note}</p>
-                  </div>
-                )}
-                <Link className="text-link" to={`/app/coach?goal=${d.goalId}`}>
-                  Open conversation <ArrowRight size={14} />
-                </Link>
-              </article>
-            ))
-          ) : (
-            <div className="panel">
-              <h3>No decisions saved yet.</h3>
-              <p>
-                Ask Adler to review a goal. Its explanation and any proposed
-                change will appear here.
-              </p>
-            </div>
-          )}
-          <h2>Program versions</h2>
-          {[...data.programs].reverse().map((p) => (
-            <article className="panel version-record" key={p.version}>
-              <span>v{p.version}</span>
-              <div>
-                <b>
-                  {p.date} · {p.reason}
-                </b>
-                <p>{p.sprintResult}</p>
-                <details>
-                  <summary>Saved settings</summary>
-                  <p>
-                    {p.weeklyMinutes} minutes/week · {p.sessionMinutes}-minute
-                    blocks · {p.workStart}–{p.workEnd}
-                  </p>
-                  <p>{p.approach}</p>
-                  <p>{p.enabledMethods.join(", ")}</p>
-                </details>
-              </div>
-            </article>
-          ))}
-        </div>
-      )}
+      {tab === "Versions" && <ProgramVersions data={data} />}
       {reviewing && (
         <Modal
           title="What happened when you tried it?"
@@ -418,6 +184,7 @@ export function Program() {
                   setDraft({ ...draft, focusGoalId: e.target.value })
                 }
               >
+                <option value="">Choose a focus goal</option>
                 {data.goals
                   .filter((g) => g.status === "Active")
                   .map((g) => (

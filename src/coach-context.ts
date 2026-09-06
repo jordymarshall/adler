@@ -1,12 +1,13 @@
-import type { Data } from "./store";
-import type { DecisionCheck } from "./program-types";
-import { progressStatus } from "./progress";
-import { METHODS } from "./methods";
+import type { Data } from "../shared/workspace.ts";
+import type { DecisionCheck } from "./program-types.ts";
+import { progressStatus } from "./progress.ts";
+import { METHODS } from "./methods.ts";
 export function coachingContext(
   data: Data,
   goalId: string,
   message: string,
   today: string,
+  conversationId?: string,
 ) {
   const program = data.programs.at(-1)!;
   const goal = data.goals.find((g) => g.id === goalId);
@@ -32,6 +33,12 @@ export function coachingContext(
       ? data.calendarSnapshot
       : null;
   const pace = goal ? progressStatus(goal, today) : null;
+  const eligibleMethods = METHODS.filter(
+    (method) =>
+      program.enabledMethods.includes(method.id) &&
+      (goal?.kind === "learning" ||
+        !["retrieval", "spacing"].includes(method.id)),
+  );
   const checks: DecisionCheck[] = [
     {
       id: "outcome",
@@ -64,13 +71,13 @@ export function coachingContext(
       id: "focus",
       label: "Sprint & other goals",
       finding: `Sprint: ${program.sprintResult} Focus: ${goals.find((g) => g.id === program.focusGoalId)?.title ?? "Not selected"}. ${related.length ? `Shared area or tags: ${related.map((g) => g.title).join("; ")}.` : "No related active goals share this area or tags."} All ${goals.length} active goals are included to assess competing demands.`,
-      sources: [`program-v${program.version}`, ...related.map((g) => g.id)],
+      sources: [`program-v${program.version}`, ...goals.map((g) => g.id)],
     },
     {
       id: "capacity",
       label: "Schedule & capacity",
       finding: `${program.weeklyMinutes} minutes budgeted per week; ${minutes} minutes scheduled across the sprint. Work window ${program.workStart}–${program.workEnd}. ${calendar ? `Fresh busy intervals from ${calendar.provider} are available, checked ${calendar.checkedAt}.` : "No calendar availability checked within the last five minutes."} Saved blocks describe planned work. Calendar rechecks conflicts before booking.`,
-      sources: blocks.map((b) => b.id),
+      sources: [`program-v${program.version}`, ...blocks.map((b) => b.id)],
     },
     {
       id: "memory",
@@ -84,21 +91,14 @@ export function coachingContext(
       id: "methods",
       label: "Methods available for this turn",
       finding:
-        METHODS.filter(
-          (m) =>
-            program.enabledMethods.includes(m.id) &&
-            (goal?.kind === "learning" ||
-              !["retrieval", "spacing"].includes(m.id)),
-        )
-          .map((m) => m.name)
-          .join(" · ") ||
+        eligibleMethods.map((m) => m.name).join(" · ") ||
         "No optional methods enabled. Ask about the result and preferences before suggesting a method.",
-      sources: program.enabledMethods,
+      sources: eligibleMethods.map((method) => method.id),
     },
   ];
   return {
     today,
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    timeZone: data.timeZone,
     message,
     selectedGoalId: goalId,
     goal: goal ?? null,
@@ -112,7 +112,11 @@ export function coachingContext(
       .filter((d) => d.goalId === goalId)
       .slice(-5),
     conversation: data.messages
-      .filter((m) => m.goalId === goalId)
+      .filter((m) =>
+        conversationId
+          ? m.conversationId === conversationId
+          : goalId === "general" || m.goalId === goalId,
+      )
       .slice(-12)
       .map((m) => ({ role: m.role, text: m.text })),
     checks,

@@ -1,0 +1,470 @@
+import { z } from "zod";
+import type { Data, Goal, Action } from "./workspace.ts";
+import { reactionTypes } from "./workspace.ts";
+import { METHODS } from "../src/methods.ts";
+const id = z.string().min(1).max(100);
+const date = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .refine(
+    (v) =>
+      !Number.isNaN(Date.parse(v)) &&
+      new Date(v).toISOString().slice(0, 10) === v,
+    "Use a valid date.",
+  );
+const text = z.string().max(5000);
+export const milestoneSchema = z
+  .object({
+    id,
+    title: text,
+    criterion: text,
+    done: z.boolean(),
+    dueDate: date.optional(),
+    completedAt: date.optional(),
+  })
+  .strict();
+export const checkpointSchema = z
+  .object({ id, date, value: z.number().min(0).max(1000000), label: text })
+  .strict();
+export const resultSchema = z
+  .object({ id, date, value: z.number().min(0).max(1000000), source: text })
+  .strict();
+export const planSchema = z
+  .object({
+    version: z.number().int().positive(),
+    action: text,
+    timing: text,
+    criterion: text,
+    date,
+  })
+  .strict();
+export const measureSchema = z
+  .object({
+    label: z.string().trim().min(1).max(150),
+    unit: z.string().trim().min(1).max(50),
+    target: z.number().positive().max(1000000),
+    baseline: z.number().min(0).max(1000000).nullable(),
+  })
+  .strict();
+export const conversationSchema = z
+  .object({
+    id,
+    title: z.string().trim().min(1).max(200),
+    goalId: id,
+    createdAt: z.iso.datetime({ offset: true }),
+  })
+  .strict();
+export const goalSchema = z
+  .object({
+    id,
+    title: z.string().trim().min(1).max(300),
+    kind: z.enum(["project", "learning", "practical"]),
+    why: text,
+    success: text,
+    status: z.enum(["Active", "Paused", "Completed", "Set aside"]),
+    area: z.enum(["Career", "Learning", "Personal"]).optional(),
+    organizationVersion: z.number().int().optional(),
+    tags: z.array(z.string().max(50)).max(8).optional(),
+    priority: z.enum(["Focus", "Maintain", "Later"]).optional(),
+    targetDate: date.optional(),
+    startDate: date.optional(),
+    target: z.number().min(1).max(1000000).optional(),
+    unit: z.string().max(150).optional(),
+    measure: measureSchema.optional(),
+    checkpoints: z.array(checkpointSchema).max(100).optional(),
+    outcomeUpdatedAt: date.optional(),
+    checkpointHistory: z
+      .array(
+        z.object({
+          date: text,
+          checkpoints: z.array(checkpointSchema),
+          targetDate: text,
+          reason: text,
+        }),
+      )
+      .optional(),
+    milestones: z.array(milestoneSchema).max(100),
+    plans: z.array(planSchema).min(1).max(1000),
+    results: z.array(resultSchema).max(5000),
+    trial: z
+      .object({
+        state: z.enum(["Suggested", "Trying", "Set aside", "Reviewed"]),
+        version: z.number(),
+        sourceId: id,
+      })
+      .optional(),
+  })
+  .strict();
+export const actionSchema = z
+  .object({
+    id,
+    goalId: id,
+    title: text,
+    criterion: text,
+    timing: text,
+    date: z.union([date, z.literal("")]),
+    planVersion: z.number().int().positive(),
+    outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
+    note: text.optional(),
+    unplanned: z.boolean().optional(),
+    history: z
+      .array(
+        z.object({
+          outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
+          note: text.optional(),
+          at: text,
+        }),
+      )
+      .max(1000),
+  })
+  .strict();
+export const programSchema = z
+  .object({
+    version: z.number().int().positive(),
+    date,
+    focusGoalId: z.string().max(100),
+    sprintStart: date,
+    sprintEnd: date,
+    sprintResult: text,
+    weeklyMinutes: z.number().int().min(15).max(2400),
+    workStart: z.string().regex(/^\d\d:\d\d$/),
+    workEnd: z.string().regex(/^\d\d:\d\d$/),
+    workDays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+    sessionMinutes: z.number().int().min(5).max(240),
+    reviewDay: z.enum([
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ]),
+    enabledMethods: z.array(z.enum(METHODS.map((m) => m.id))).max(7),
+    approach: text,
+    reason: text,
+  })
+  .strict();
+export const reviewSchema = z
+  .object({
+    step: z.number().int().min(0).max(5),
+    note: text,
+    decision: text,
+    completedAt: text.optional(),
+  })
+  .strict();
+export const insightSchema = z
+  .object({
+    finding: z.string().trim().min(1).max(1000),
+    status: z.enum(["Reported", "To test"]),
+    sourceIds: z.array(id).min(1).max(10),
+    changeIndexes: z.array(z.number().int().min(0)).max(20),
+  })
+  .strict();
+const decisionSchema = z
+  .object({
+    id,
+    date: text,
+    goalId: z.string(),
+    insights: z.array(insightSchema).max(6).optional(),
+    programVersion: z.number(),
+    planVersion: z.number(),
+    mode: z.enum(["live", "guided"]),
+    checks: z.array(
+      z.object({
+        id,
+        label: text,
+        finding: text,
+        sources: z.array(z.string()),
+      }),
+    ),
+    methods: z.array(z.string()),
+    summary: text,
+    proposal: z
+      .object({
+        title: text,
+        action: text,
+        criterion: text,
+        timing: text,
+        reason: text,
+        reviewAfter: text,
+      })
+      .optional(),
+    status: z.enum([
+      "Suggested",
+      "Accepted",
+      "Kept plan",
+      "No change",
+      "Reviewed",
+    ]),
+    review: z
+      .object({ date: text, note: text, choice: z.enum(["Keep", "Revisit"]) })
+      .optional(),
+  })
+  .strict();
+export const workBlockSchema = z
+  .object({
+    id,
+    goalId: id,
+    action: text,
+    start: z.iso.datetime({ offset: true }),
+    end: z.iso.datetime({ offset: true }),
+    provider: z.enum(["local", "google", "apple"]),
+    eventId: text.optional(),
+    checkInId: text.optional(),
+    status: z.enum(["Scheduled", "Done", "Partly", "Didn’t happen"]),
+  })
+  .strict();
+const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
+export const automationSchema = z
+  .object({
+    enabled: z.boolean(),
+    reviewTime: time,
+    quietStart: time,
+    quietEnd: time,
+  })
+  .strict();
+const workspaceSchema = z
+  .object({
+    schema: z.literal(1),
+    goals: z.array(goalSchema).max(100),
+    actions: z.array(actionSchema).max(10000),
+    messages: z
+      .array(
+        z
+          .object({
+            id,
+            goalId: text,
+            role: z.enum(["user", "coach"]),
+            text,
+            decisionId: id.optional(),
+            conversationId: id.optional(),
+            links: z
+              .array(
+                z.object({ goalId: id, tab: z.enum(["progress", "plan"]) }),
+              )
+              .max(20)
+              .optional(),
+            channel: z
+              .enum(["web", "sms", "imessage", "rcs", "whatsapp", "mcp", "job"])
+              .optional(),
+            reactions: z
+              .object({
+                user: z
+                  .object({
+                    type: z.enum(reactionTypes).nullable(),
+                    at: z.iso.datetime({ offset: true }),
+                  })
+                  .optional(),
+                coach: z
+                  .object({
+                    type: z.enum(reactionTypes).nullable(),
+                    at: z.iso.datetime({ offset: true }),
+                  })
+                  .optional(),
+              })
+              .strict()
+              .optional(),
+            at: text.optional(),
+          })
+          .strict(),
+      )
+      .max(10000),
+    conversations: z.array(conversationSchema).max(500).default([]),
+    memories: z.array(z.object({ id, text, date })).max(300),
+    review: reviewSchema,
+    reviews: z.array(reviewSchema).max(1000),
+    reviewDay: programSchema.shape.reviewDay,
+    theme: z.enum(["light", "dark"]),
+    timeZone: z.string().max(100),
+    goalDraft: z.record(z.string().max(100), z.string().max(5000)),
+    programs: z.array(programSchema).min(1).max(1000),
+    workBlocks: z.array(workBlockSchema).max(5000),
+    decisions: z.array(decisionSchema).max(3000),
+    automation: automationSchema,
+    calendarSnapshot: z
+      .object({
+        busy: z.array(z.object({ start: text, end: text })).max(10000),
+        checkedAt: text,
+        provider: text,
+        start: text,
+        end: text,
+      })
+      .optional(),
+  })
+  .strict();
+export function validateWorkspace(input: unknown): Data {
+  const data = workspaceSchema.parse(input) as Data;
+  new Intl.DateTimeFormat("en", { timeZone: data.timeZone });
+  const today = new Intl.DateTimeFormat("en-CA", {
+    timeZone: data.timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const ids = new Set(data.goals.map((g) => g.id));
+  if (data.actions.some((a) => a.outcome && a.date > today))
+    throw new Error("Future actions cannot have an outcome yet.");
+  for (const block of data.workBlocks)
+    if (Date.parse(block.end) <= Date.parse(block.start))
+      throw new Error("A work block must end after it starts.");
+  for (const list of [
+    data.goals,
+    data.actions,
+    data.memories,
+    data.workBlocks,
+    data.messages,
+    data.conversations,
+  ])
+    if (new Set(list.map((x) => x.id)).size !== list.length)
+      throw new Error("Duplicate record IDs are not allowed.");
+  for (const action of [...data.actions, ...data.workBlocks])
+    if (!ids.has(action.goalId))
+      throw new Error("An action must belong to an existing goal.");
+  for (const program of data.programs)
+    if (
+      program.sprintEnd < program.sprintStart ||
+      program.workEnd <= program.workStart
+    )
+      throw new Error("Check the sprint dates and work hours.");
+  for (const goal of data.goals) {
+    for (const list of [goal.milestones, goal.results, goal.checkpoints ?? []])
+      if (new Set(list.map((m) => m.id)).size !== list.length)
+        throw new Error("Goal records need unique IDs.");
+    if (goal.results.some((r) => r.date > today))
+      throw new Error("Future results cannot be recorded yet.");
+    if (
+      !goal.measure &&
+      goal.kind === "learning" &&
+      goal.results.some((r) => r.value > 10)
+    )
+      throw new Error("Learning assessments use a scale of 0–10.");
+  }
+  return data;
+}
+export const createGoalSchema = z
+  .object({
+    title: z.string().trim().min(1).max(300),
+    kind: z.enum(["project", "learning", "practical"]),
+    why: text,
+    success: z.string().trim().min(1).max(1500),
+    area: z.enum(["Career", "Learning", "Personal"]),
+    tags: z.array(z.string().max(50)).max(8),
+    targetDate: date,
+    milestones: z
+      .array(z.object({ title: text, criterion: text }))
+      .min(1)
+      .max(30),
+    measure: measureSchema.optional(),
+    assessmentTarget: z.number().int().min(1).max(10),
+    baseline: z.number().min(0).max(10).nullable(),
+    actionDate: date.optional(),
+    action: text,
+    criterion: text,
+    timing: text,
+  })
+  .strict();
+export type GoalInput = z.infer<typeof createGoalSchema>;
+export function createGoal(
+  data: Data,
+  input: GoalInput,
+  today: string,
+  recordId: string = crypto.randomUUID(),
+) {
+  input = createGoalSchema.parse(input);
+  if (input.targetDate < today)
+    throw new Error("Choose today or a future target date for a new goal.");
+  const goal: Goal = {
+    ...(input.measure ? { measure: input.measure } : {}),
+    id: recordId,
+    title: input.title,
+    kind: input.kind,
+    why: input.why,
+    success: input.success,
+    area: input.area,
+    tags: input.tags,
+    status: "Active",
+    priority: data.goals.length ? "Maintain" : "Focus",
+    startDate: today,
+    targetDate: input.targetDate,
+    target: input.measure
+      ? input.measure.target
+      : input.kind === "learning"
+        ? input.assessmentTarget
+        : input.milestones.length,
+    unit: input.measure
+      ? input.measure.unit
+      : input.kind === "learning"
+        ? "correct answers / 10"
+        : "milestones verified",
+    milestones: input.milestones.map((m) => ({
+      ...m,
+      id: crypto.randomUUID(),
+      done: false,
+    })),
+    plans: [
+      {
+        version: 1,
+        date: today,
+        action: input.action,
+        criterion: input.criterion,
+        timing: input.timing,
+      },
+    ],
+    results: [],
+  };
+  goal.checkpoints = [
+    {
+      id: crypto.randomUUID(),
+      date: input.targetDate,
+      value: goal.target!,
+      label: "Target result",
+    },
+  ];
+  const baseline = input.measure
+    ? input.measure.baseline
+    : input.kind === "learning"
+      ? input.baseline
+      : 0;
+  if (baseline !== null) {
+    goal.results.push({
+      id: crypto.randomUUID(),
+      date: today,
+      value: baseline,
+      source: input.measure
+        ? "Starting result reported by you"
+        : input.kind === "learning"
+          ? "Starting assessment reported by you"
+          : "Starting baseline: no milestones verified yet",
+    });
+    goal.outcomeUpdatedAt = today;
+    goal.checkpoints.unshift({
+      id: crypto.randomUUID(),
+      date: today,
+      value: goal.results[0].value,
+      label: "Starting point",
+    });
+  }
+  data.goals.push(goal);
+  const action: Action = {
+    id: crypto.randomUUID(),
+    goalId: goal.id,
+    title: input.action,
+    criterion: input.criterion,
+    timing: input.timing,
+    date: input.actionDate ?? "",
+    planVersion: 1,
+    history: [],
+  };
+  data.actions.push(action);
+  if (!data.programs.at(-1)!.focusGoalId)
+    data.programs.push({
+      ...data.programs.at(-1)!,
+      version: data.programs.at(-1)!.version + 1,
+      date: today,
+      focusGoalId: goal.id,
+      sprintResult: input.action,
+      reason: "Set the first goal as the program focus.",
+    });
+  return goal;
+}
