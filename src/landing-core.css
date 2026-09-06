@@ -221,27 +221,6 @@
 .v2-landing .icon-button:hover {
   background: #e8edde;
 }
-.v2-landing .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 1.3px;
-  text-transform: uppercase;
-  color: #5b6b4e;
-  line-height: 1.7;
-}
-.v2-landing .eyebrow > span {
-  width: 5px;
-  height: 5px;
-  background: #92a666;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.v2-landing .eyebrow.light {
-  color: #c5d5b6;
-}
 .v2-landing .tiny-label {
   display: flex;
   align-items: center;
@@ -662,14 +641,6 @@
   font-size: 9px;
   color: #68715d;
 }
-.v2-landing .floating-progress .path-graphic {
-  height: 91px;
-  margin-top: -3px;
-}
-.v2-landing .floating-progress .path-graphic svg {
-  height: 100%;
-  width: 100%;
-}
 .v2-landing .card-baseline {
   display: flex;
   justify-content: space-between;
@@ -781,52 +752,6 @@
   color: #68715c;
   opacity: calc(1 - var(--journey) * 4);
 }
-.v2-landing .path-graphic {
-  color: var(--path-color, #718a50);
-  width: 100%;
-  position: relative;
-}
-.v2-landing .path-graphic svg {
-  width: 100%;
-  display: block;
-  overflow: visible;
-}
-.v2-landing .path-graphic text {
-  font-family: "DM Sans", sans-serif;
-  font-size: 8px;
-  letter-spacing: 0.4px;
-  fill: #869076;
-}
-.v2-landing .path-future {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.4;
-  stroke-dasharray: 3 6;
-  opacity: 0.55;
-}
-.v2-landing .path-recorded {
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  transition: stroke-dasharray 0.65s;
-}
-.v2-landing .node-recorded {
-  fill: currentColor;
-  stroke: #fbfcf5;
-  stroke-width: 2;
-}
-.v2-landing .node-future {
-  fill: #fbfcf5;
-  stroke: currentColor;
-  stroke-width: 1.3;
-}
-.v2-landing .path-graphic.compact .path-recorded {
-  stroke-width: 3;
-}
-.v2-landing .path-graphic.compact .path-future {
-  stroke-width: 2;
-}
 
 .v2-landing .possibility-strip {
   border-block: 1px solid var(--line);
@@ -882,56 +807,6 @@
   line-height: 1.65;
   color: #697060;
 }
-.v2-landing .chapter-tabs {
-  display: flex;
-  justify-content: center;
-  margin: 55px auto 0;
-  border-bottom: 1px solid #dfe4d5;
-  gap: 10px;
-  max-width: 910px;
-}
-.v2-landing .chapter-tabs > button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-  padding: 17px 14px;
-  border: 0;
-  background: none;
-  font-size: 13px;
-  color: #69705f;
-  position: relative;
-  text-align: left;
-}
-.v2-landing .chapter-tabs > button > span {
-  font-size: 9px;
-  color: #68715a;
-}
-.v2-landing .chapter-tabs > button > svg {
-  margin-left: auto;
-  opacity: 0;
-}
-.v2-landing .chapter-tabs > button:after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: #6b8149;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.3s;
-}
-.v2-landing .chapter-tabs > button[aria-selected="true"] {
-  color: #31492c;
-}
-.v2-landing .chapter-tabs > button[aria-selected="true"]:after {
-  transform: scaleX(1);
-}
-.v2-landing .chapter-tabs > button[aria-selected="true"] > svg {
-  opacity: 1;
-}
 .v2-landing .chapter-panel {
   display: grid;
   grid-template-columns: 0.85fr 1.25fr;
@@ -966,20 +841,6 @@
   margin-top: 22px;
   line-height: 1.85;
   max-width: 320px;
-}
-.v2-landing .chapter-note {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  margin: 26px 0 34px;
-  font-family: var(--heading-font);
-  font-style: normal;
-  font-size: 17px;
-  color: #65734b;
-}
-.v2-landing .chapter-note .adler-mark {
-  width: 20px;
-  height: 20px;
 }
 .v2-landing .chapter-visual {
   min-width: 0;
@@ -1648,15 +1509,6 @@
   background: #98af76;
   border-color: #98af76;
 }
-.v2-landing .art-adapt {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.v2-landing .art-adapt svg {
-  width: 92%;
-  height: 125px;
-}
 .v2-landing .science-note {
   text-align: center;
   margin-top: 56px;
@@ -2054,9 +1906,6 @@
   .v2-landing .chapter-copy > p {
     font-size: 12px;
   }
-  .v2-landing .chapter-note {
-    font-size: 15px;
-  }
   .v2-landing .direction-card {
     padding: 24px;
   }
@@ -2196,11 +2045,6 @@
     opacity: 1;
     transform: none;
   }
-  .v2-landing .hero-intro-v2 .eyebrow {
-    font-size: 8px;
-    letter-spacing: 0.8px;
-    gap: 6px;
-  }
   .v2-landing .hero-intro-v2 h1 {
     font-size: 87px;
     letter-spacing: -2px;
@@ -2280,9 +2124,6 @@
   .v2-landing .hero-metric > span {
     font-size: 9px;
   }
-  .v2-landing .floating-progress .path-graphic {
-    height: 90px;
-  }
   .v2-landing .floating-action {
     left: 58%;
     top: 204px;
@@ -2358,34 +2199,12 @@
     padding-top: 66px;
     padding-bottom: 65px;
   }
-  .v2-landing .section-intro > .eyebrow {
-    font-size: 8px;
-    letter-spacing: 0.7px;
-  }
   .v2-landing .section-intro h2 {
     font-size: 55px;
     margin: 22px 0 18px;
   }
   .v2-landing .section-intro > p {
     font-size: 12px;
-  }
-  .v2-landing .chapter-tabs {
-    margin-top: 35px;
-    gap: 0;
-  }
-  .v2-landing .chapter-tabs > button {
-    flex-direction: column;
-    gap: 8px;
-    font-size: 10px;
-    padding: 15px 7px;
-    align-items: flex-start;
-    line-height: 1.5;
-  }
-  .v2-landing .chapter-tabs > button > span {
-    font-size: 8px;
-  }
-  .v2-landing .chapter-tabs > button > svg {
-    display: none;
   }
   .v2-landing .chapter-panel {
     display: flex;
@@ -2407,10 +2226,6 @@
   }
   .v2-landing .chapter-copy > h3 br {
     display: none;
-  }
-  .v2-landing .chapter-note {
-    font-size: 16px;
-    margin: 20px 0 19px;
   }
   .v2-landing .chapter-copy > .text-link {
     font-size: 11px;
@@ -2461,9 +2276,6 @@
     font-size: 12px;
     max-width: none;
   }
-  .v2-landing .adapt-copy .eyebrow {
-    font-size: 9px;
-  }
   .v2-landing .adapt-message,
   .v2-landing .adapt-coach {
     max-width: 350px;
@@ -2502,10 +2314,6 @@
   .v2-landing .approach-section {
     padding-top: 65px;
     padding-bottom: 25px;
-  }
-  .v2-landing .approach-heading > .eyebrow {
-    font-size: 7px;
-    letter-spacing: 0.7px;
   }
   .v2-landing .approach-heading h2 {
     font-size: 48px;
@@ -2583,10 +2391,6 @@
   .v2-landing .art-rhythm > span:nth-child(5) {
     height: 75px;
   }
-  .v2-landing .art-adapt svg {
-    width: 100%;
-    height: 100%;
-  }
   .v2-landing .science-note {
     margin-top: 13px;
     padding-top: 9px;
@@ -2601,9 +2405,6 @@
   }
   .v2-landing .connected-section h2 {
     font-size: 48px;
-  }
-  .v2-landing .connected-section .eyebrow {
-    font-size: 8px;
   }
   .v2-landing .connected-section p {
     font-size: 12px;
@@ -2633,9 +2434,6 @@
   }
   .v2-landing .final-section {
     padding-block: 65px;
-  }
-  .v2-landing .final-section .eyebrow {
-    font-size: 8px;
   }
   .v2-landing .final-section h2 {
     font-size: 66px;
@@ -2808,21 +2606,10 @@
   font-size: clamp(42px, 5vw, 68px);
   letter-spacing: -0.055em;
 }
-.v2-landing .chapter-position {
-  border-bottom: 1px solid var(--line);
-  padding: 25px 0 18px;
-  margin-top: 40px;
-  font-size: 11px;
-  color: var(--muted);
-}
 .v2-landing .chapter-copy h3 {
   font-size: clamp(30px, 3.5vw, 44px);
   line-height: 1.16;
   letter-spacing: -0.04em;
-}
-.v2-landing .chapter-note {
-  font-size: 14px;
-  line-height: 1.6;
 }
 .v2-landing .adapt-copy h2 {
   font-size: clamp(55px, 6.2vw, 83px);
@@ -2960,17 +2747,6 @@
   text-align: center;
   margin-top: 40px;
 }
-.v2-landing .walk-evidence dt {
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 20px;
-}
-.v2-landing .walk-evidence dd {
-  font-size: 13px;
-  line-height: 1.65;
-  margin: 8px 0;
-  color: var(--muted);
-}
 .v2-landing .walk-screen .suggested-time {
   display: flex;
   align-items: center;
@@ -3101,4 +2877,214 @@
 
 .v2-landing .ambition-note > span {
   color: #5b654d;
+}
+
+/* The story advances with the page; every chapter stays readable. */
+.v2-landing .chapter-flow {
+  position: relative;
+  margin-top: 55px;
+}
+.v2-landing .chapter-flow .chapter-panel {
+  position: relative;
+  display: grid;
+  grid-template-columns: 0.85fr 1.2fr;
+  gap: 60px;
+  align-items: center;
+  padding: 55px 0 95px 74px;
+  min-height: 650px;
+  margin: 0;
+}
+.v2-landing .chapter-flow .chapter-number {
+  position: absolute;
+  top: 55px;
+  left: 0;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid #c4ceb5;
+  border-radius: 50%;
+  background: var(--paper);
+  color: #526644;
+  font-size: 12px;
+  letter-spacing: 0;
+  transition:
+    background 0.3s,
+    color 0.3s;
+}
+.v2-landing .chapter-flow .is-current > .chapter-number,
+.v2-landing .chapter-flow .is-past > .chapter-number {
+  background: #365239;
+  color: #fffefa;
+  border-color: #365239;
+}
+.v2-landing .chapter-rail {
+  position: absolute;
+  top: 77px;
+  left: 21px;
+  width: 2px;
+  height: var(--path-length, 70%);
+  background: #dde3d3;
+}
+.v2-landing .chapter-rail > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #617d4e;
+  transform: scaleY(var(--path-progress, 0));
+  transform-origin: top;
+}
+.v2-landing .chapter-flow .chapter-copy {
+  animation: none;
+}
+.v2-landing .chapter-flow .chapter-visual {
+  width: 100%;
+  min-width: 0;
+  animation: none;
+  transform: translateY(18px);
+  transition: transform 0.5s ease;
+}
+.v2-landing .chapter-flow .is-current .chapter-visual,
+.v2-landing .chapter-flow .is-past .chapter-visual {
+  transform: none;
+}
+.v2-landing .hero-assembled-title h2 {
+  line-height: 1.15;
+}
+.v2-landing .walkthrough-intro h2 em {
+  color: #647343;
+}
+.v2-landing .approach-heading > p {
+  max-width: 620px;
+  margin-inline: auto;
+}
+.v2-landing .art-memory {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #556d43;
+  font-size: 13px;
+}
+.v2-landing .remembered-context {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px;
+  margin: 22px 0;
+  background: #f1f4e9;
+}
+.v2-landing .remembered-context > span {
+  font-size: 9px;
+  color: #59674d;
+  letter-spacing: 0.08em;
+}
+.v2-landing .remembered-context p {
+  margin: 7px 0 18px;
+}
+.v2-landing .remembered-context p:last-child {
+  margin-bottom: 0;
+}
+.v2-landing .floating-progress {
+  height: 245px;
+}
+.v2-landing .floating-progress .graph-only > svg {
+  height: 110px;
+  margin-top: 9px;
+}
+.v2-landing .floating-progress .card-baseline {
+  display: none;
+}
+.v2-landing .graph-only {
+  position: relative;
+}
+.v2-landing .graph-only .chart-legend {
+  gap: 12px;
+  font-size: 10px;
+  flex-wrap: wrap;
+}
+.v2-landing .graph-only .chart-tooltip {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 4;
+  background: var(--white);
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 5px 20px #293a2d14;
+  width: max(100%, 210px);
+}
+.v2-landing .evidence-card .graph-only {
+  margin-top: 20px;
+}
+@media (max-width: 650px) {
+  .v2-landing .chapter-flow {
+    margin-top: 30px;
+  }
+  .v2-landing .chapter-flow .chapter-panel {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 55px 0 80px 50px;
+    gap: 28px;
+  }
+  .v2-landing .chapter-flow .chapter-number {
+    width: 36px;
+    height: 44px;
+    border-radius: 18px;
+  }
+  .v2-landing .chapter-rail {
+    left: 17px;
+  }
+  .v2-landing .chapter-flow .chapter-copy h3 {
+    margin-top: 0;
+    font-size: 31px;
+  }
+  .v2-landing .chapter-flow .chapter-visual {
+    min-height: 0;
+  }
+  .v2-landing .chapter-flow .direction-card,
+  .v2-landing .chapter-flow .evidence-card {
+    padding: 20px 16px;
+  }
+  .v2-landing .chapter-flow .direction-stats {
+    gap: 20px;
+  }
+  .v2-landing .chapter-flow .direction-stats strong {
+    font-size: 32px;
+  }
+  .v2-landing .chapter-flow .evidence-metric {
+    gap: 12px;
+  }
+  .v2-landing .chapter-flow .evidence-metric > strong {
+    font-size: 40px;
+  }
+  .v2-landing .chapter-flow .evidence-metric > span {
+    font-size: 10px;
+  }
+  .v2-landing .floating-progress .graph-only > svg {
+    height: 110px;
+  }
+  .v2-landing .floating-progress .graph-only .chart-legend {
+    gap: 7px;
+    font-size: 8px;
+  }
+  .v2-landing .floating-progress .graph-only .chart-legend i {
+    width: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2-landing .chapter-flow .chapter-visual {
+    transform: none;
+    transition: none;
+  }
+}
+.v2-landing .calendar-late {
+  color: #6d5e4e;
+}
+.v2-landing .small-message p {
+  color: #566548;
+}
+@media (max-width: 650px) {
+  .v2-landing .chapter-flow .chapter-copy h3 em {
+    display: block;
+  }
 }

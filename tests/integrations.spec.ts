@@ -50,7 +50,6 @@ test("texting and the app show the same check-in without changing measured dista
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "See the app, step by step" }).click();
   const step = page.locator("#step-4");
   await expect(
     step.getByLabel("iMessage conversation with Adler"),
@@ -115,7 +114,6 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
     "animation-name",
     "none",
   );
-  await page.getByRole("button", { name: "See the app, step by step" }).click();
   for (const selector of ["#step-4", ".connected-section"]) {
     await page.locator(selector).scrollIntoViewIfNeeded();
     const result = await new AxeBuilder({ page }).include(selector).analyze();

@@ -17,8 +17,10 @@ import {
   Target,
   X,
 } from "lucide-react";
-import { Eyebrow, Logo, Mark, PathGraphic } from "./LandingArt";
+import { Logo, Mark } from "./LandingArt";
 
+import { ProgressChart } from "./ProgressChart";
+import { demoGoal } from "./landing-data";
 import { LandingWalkthrough } from "./LandingWalkthrough";
 import "./landing-core.css";
 
@@ -66,9 +68,11 @@ function Hero() {
             <em>A way forward.</em>
           </h1>
           <p>
-            For the things you keep meaning to do.
-            <br />A personal coach. One clear next step.
-            <br className="desktop-break" /> A plan that adapts as life changes.
+            Personal coaching, grounded in behavioural science.
+            <br />
+            Adler helps you find a strategy, make a plan,
+            <br className="desktop-break" /> and keep it working as life
+            changes.
           </p>
           <div className="hero-buttons">
             <Link className="btn dark" to="/app/goals/new">
@@ -83,9 +87,10 @@ function Hero() {
           </div>
         </div>
         <div className="hero-assembled-title">
-          <Eyebrow>Your ambition, with a little direction</Eyebrow>
           <h2>
-            Someday becomes <em>a next step.</em>
+            Reach your goals with a plan
+            <br />
+            <em>that adapts to you.</em>
           </h2>
         </div>
         <div
@@ -187,7 +192,12 @@ function Hero() {
                 <small>your goal</small>
               </span>
             </div>
-            <PathGraphic compact />
+            <ProgressChart
+              goal={demoGoal}
+              today="2026-10-17"
+              compact
+              graphOnly
+            />
             <div className="card-baseline">
               <span>Oct 1</span>
               <span>Every step has a place.</span>
@@ -255,8 +265,7 @@ const chapters = [
         <em>a starting point.</em>
       </>
     ),
-    body: "Something you care about. A clear idea of what success looks like. A first step you can see yourself taking.",
-    note: "Your goal. Your reasons. A plan built around both.",
+    body: "Adler helps define what success means for you, researches an approach, and turns it into a concrete first step.",
   },
   {
     label: "Make room for it",
@@ -268,7 +277,6 @@ const chapters = [
       </>
     ),
     body: "Adler brings one suggested time to your next action. Confirm it here, or connect a calendar when you want to check availability.",
-    note: "Choose a time. Then leave the planning here.",
   },
   {
     label: "See yourself move",
@@ -279,8 +287,7 @@ const chapters = [
         <em>Something to show.</em>
       </>
     ),
-    body: "A short check-in keeps your plan connected to real life. Open progress and history whenever you want the bigger picture.",
-    note: "Your effort matters. Your results tell the story.",
+    body: "Your check-ins tell Adler what happened. It compares results with the plan, remembers what helped, and works with you on the next adjustment.",
   },
 ];
 
@@ -353,141 +360,184 @@ export function Week({
   );
 }
 
+function ChapterVisual({ chapter }: { chapter: number }) {
+  return (
+    <div className={`chapter-visual chapter-${chapter}`}>
+      {" "}
+      {chapter === 0 ? (
+        <>
+          <div className="ambition-note">
+            <PenLine size={15} />
+            <span>“I want to feel like a runner.”</span>
+          </div>
+          <div className="direction-card">
+            <div className="tiny-label">
+              <Footprints size={16} /> A GOAL WITH A LITTLE DIRECTION
+            </div>
+            <h4>My first uninterrupted 5 km.</h4>
+            <div className="direction-stats">
+              <span>
+                <strong>
+                  1 <small>km</small>
+                </strong>
+                Where I am
+              </span>
+              <ArrowRight size={25} />
+              <span>
+                <strong>
+                  5 <small>km</small>
+                </strong>
+                Where I’m going
+              </span>
+            </div>
+            <div className="direction-milestones">
+              <span>
+                <i className="solid" />
+                Start here
+              </span>
+              <span>
+                <i />3 km
+              </span>
+              <span>
+                <i />4 km
+              </span>
+              <span>
+                <i />5 km
+              </span>
+            </div>
+            <div className="direction-why">
+              THE REASON THAT MATTERS
+              <p>Join my friends at our local Sunday run.</p>
+            </div>
+          </div>
+          <span className="visual-caption">
+            A destination you can picture. A first step you can take.
+          </span>
+        </>
+      ) : chapter === 1 ? (
+        <>
+          <Week adjusted />
+          <span className="visual-caption">
+            Two little windows. A week that feels possible.
+          </span>
+        </>
+      ) : (
+        <>
+          <div className="evidence-card">
+            <span className="tiny-label">LOOK HOW FAR YOU’VE COME</span>
+            <div className="evidence-metric">
+              <strong>
+                2 <small>km</small>
+              </strong>
+              <span>
+                without stopping
+                <br />
+                <b>+1 km from your starting point</b>
+              </span>
+            </div>
+            <ProgressChart
+              goal={demoGoal}
+              today="2026-10-17"
+              compact
+              graphOnly
+            />
+            <div className="evidence-footer">
+              <Check size={16} />
+              <span>Your latest result, recorded October 17.</span>
+            </div>
+          </div>
+          <div className="small-message">
+            <Mark />
+            <p>
+              That’s twice your starting distance.
+              <br />
+              <b>Next, let’s make 3 km feel possible.</b>
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ThePath() {
-  const [chapter, setChapter] = useState(0);
+  const flow = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = flow.current!;
+    const panels = [...node.querySelectorAll<HTMLElement>(".chapter-panel")];
+    let frame = 0;
+    function update() {
+      frame = 0;
+      const center = innerHeight * 0.55;
+      const first = panels[0].getBoundingClientRect().top + 77;
+      const last = panels.at(-1)!.getBoundingClientRect().top + 77;
+      const progress = Math.min(
+        1,
+        Math.max(0, (center - first) / Math.max(1, last - first)),
+      );
+      node.style.setProperty("--path-progress", String(progress));
+      node.style.setProperty("--path-length", `${last - first}px`);
+      const current = panels.reduce(
+        (selected, panel, index) =>
+          panel.getBoundingClientRect().top < center ? index : selected,
+        0,
+      );
+      panels.forEach((panel, index) => {
+        panel.classList.toggle("is-current", index === current);
+        panel.classList.toggle("is-past", index < current);
+        const marker = panel.querySelector(".chapter-number")!;
+        if (index === current) marker.setAttribute("aria-current", "step");
+        else marker.removeAttribute("aria-current");
+      });
+    }
+    function scroll() {
+      if (!frame) frame = requestAnimationFrame(update);
+    }
+    update();
+    addEventListener("scroll", scroll, { passive: true });
+    addEventListener("resize", scroll);
+    return () => {
+      removeEventListener("scroll", scroll);
+      removeEventListener("resize", scroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
   return (
     <section className="path-section section-wrap" id="the-path">
       <div className="section-intro reveal">
-        <Eyebrow>From a good intention to a real possibility</Eyebrow>
         <h2>
           A little clarity
           <br />
           changes <em>everything.</em>
         </h2>
         <p>
-          You bring the ambition.
-          <br />
-          We’ll help you find the way.
+          A strategy for your goal. A place in your day.
+          <br />A coach to help you keep moving.
         </p>
       </div>
-      <div className="chapter-position" aria-label="Walkthrough step">
-        0{chapter + 1} / 03 · {chapters[chapter].label}
-      </div>
-      <div
-        className="chapter-panel"
-        id="chapter-panel"
-        aria-label={chapters[chapter].label}
-      >
-        <div className="chapter-copy" key={`copy-${chapter}`}>
-          <span className="chapter-number">
-            0{chapter + 1} / THE WAY FORWARD
-          </span>
-          <h3>{chapters[chapter].title}</h3>
-          <p>{chapters[chapter].body}</p>
-          <span className="chapter-note">
-            <Mark />
-            {chapters[chapter].note}
-          </span>
-          <button
-            className="text-link"
-            onClick={() => setChapter((chapter + 1) % 3)}
+      <div className="chapter-flow" ref={flow}>
+        <div className="chapter-rail" aria-hidden="true">
+          <span />
+        </div>
+        {chapters.map((chapter, index) => (
+          <article
+            className="chapter-panel"
+            aria-labelledby={`chapter-title-${index}`}
+            key={chapter.label}
           >
-            {chapter === 2 ? "Back to the beginning" : "Follow the next step"}
-            <ArrowRight size={16} />
-          </button>
-        </div>
-        <div
-          className={`chapter-visual chapter-${chapter}`}
-          key={`scene-${chapter}`}
-        >
-          {chapter === 0 ? (
-            <>
-              <div className="ambition-note">
-                <PenLine size={15} />
-                <span>“I want to feel like a runner.”</span>
-              </div>
-              <div className="direction-card">
-                <div className="tiny-label">
-                  <Footprints size={16} /> A GOAL WITH A LITTLE DIRECTION
-                </div>
-                <h4>My first uninterrupted 5 km.</h4>
-                <div className="direction-stats">
-                  <span>
-                    <strong>
-                      1 <small>km</small>
-                    </strong>
-                    Where I am
-                  </span>
-                  <ArrowRight size={25} />
-                  <span>
-                    <strong>
-                      5 <small>km</small>
-                    </strong>
-                    Where I’m going
-                  </span>
-                </div>
-                <div className="direction-milestones">
-                  <span>
-                    <i className="solid" />
-                    Start here
-                  </span>
-                  <span>
-                    <i />3 km
-                  </span>
-                  <span>
-                    <i />4 km
-                  </span>
-                  <span>
-                    <i />5 km
-                  </span>
-                </div>
-                <div className="direction-why">
-                  THE REASON THAT MATTERS
-                  <p>Join my friends at our local Sunday run.</p>
-                </div>
-              </div>
-              <span className="visual-caption">
-                A destination you can picture. A first step you can take.
-              </span>
-            </>
-          ) : chapter === 1 ? (
-            <>
-              <Week adjusted />
-              <span className="visual-caption">
-                Two little windows. A week that feels possible.
-              </span>
-            </>
-          ) : (
-            <>
-              <div className="evidence-card">
-                <span className="tiny-label">LOOK HOW FAR YOU’VE COME</span>
-                <div className="evidence-metric">
-                  <strong>
-                    2 <small>km</small>
-                  </strong>
-                  <span>
-                    without stopping
-                    <br />
-                    <b>+1 km from your starting point</b>
-                  </span>
-                </div>
-                <PathGraphic />
-                <div className="evidence-footer">
-                  <Check size={16} />
-                  <span>Your latest result, recorded October 17.</span>
-                </div>
-              </div>
-              <div className="small-message">
-                <Mark />
-                <p>
-                  That’s twice your starting distance.
-                  <br />
-                  <b>Next, let’s make 3 km feel possible.</b>
-                </p>
-              </div>
-            </>
-          )}
-        </div>
+            <span
+              className="chapter-number"
+              aria-label={`Step ${index + 1} of 3`}
+            >
+              0{index + 1}
+            </span>
+            <div className="chapter-copy">
+              <h3 id={`chapter-title-${index}`}>{chapter.title}</h3>
+              <p>{chapter.body}</p>
+            </div>
+            <ChapterVisual chapter={index} />
+          </article>
+        ))}
       </div>
     </section>
   );
@@ -499,7 +549,6 @@ function Adaptation() {
     <section className="adapt-section" id="a-plan-that-adapts">
       <div className="adapt-inner section-wrap">
         <div className="adapt-copy reveal">
-          <Eyebrow light>A coach for real life</Eyebrow>
           <h2>
             Life moves.
             <br />
@@ -658,16 +707,16 @@ export function Landing() {
         <Adaptation />
         <section className="approach-section section-wrap" id="approach">
           <div className="approach-heading reveal">
-            <Eyebrow>Thoughtful by nature. Grounded in science.</Eyebrow>
             <h2>
-              Your next step deserves
+              Behavioural science.
               <br />
-              <em>good support.</em>
+              <em>In your corner.</em>
             </h2>
             <p>
-              Behavioural science, translated into the small
-              <br className="desktop-break" /> decisions that make your next
-              step easier.
+              You shouldn’t need a professional coach to get thoughtful help
+              with your goals. Adler brings behavioural research into everyday
+              planning, with ongoing support to choose a strategy, make time,
+              and adapt when life changes.
             </p>
           </div>
           <div className="principles">
@@ -678,11 +727,10 @@ export function Landing() {
                 <span />
                 <span className="art-destination" />
               </div>
-              <span className="chapter-number">01 / FIND CLARITY</span>
-              <h3>Make it mean something.</h3>
+              <h3>A strategy with a reason.</h3>
               <p>
-                Adler clarifies your goal, researches approaches, and explains
-                the measurement it recommends.
+                Adler researches approaches, weighs them against your goal and
+                constraints, and explains why it recommends a particular plan.
               </p>
               <a
                 href="https://doi.org/10.1037/0003-066X.57.9.705"
@@ -698,11 +746,11 @@ export function Landing() {
                   <span key={i} />
                 ))}
               </div>
-              <span className="chapter-number">02 / FIND YOUR RHYTHM</span>
-              <h3>Give the work a when.</h3>
+              <h3>A plan it helps you manage.</h3>
               <p>
-                One concrete next action, with a time that fits. Calendar
-                connections are optional.
+                Turn the strategy into milestones, realistic work sessions, and
+                one clear next action. Adler helps you revisit timing and
+                priorities as your week changes.
               </p>
               <a
                 href="https://doi.org/10.1016/S0065-2601(06)38002-1"
@@ -713,35 +761,17 @@ export function Landing() {
               </a>
             </article>
             <article className="reveal">
-              <div className="principle-art art-adapt">
-                <svg viewBox="0 0 240 120" fill="none" aria-hidden="true">
-                  <path
-                    d="M15 90C60 90 70 25 120 25S175 90 225 30"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeDasharray="3 6"
-                  />
-                  <path
-                    d="M15 90C65 90 70 60 120 60S175 65 225 30"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                  />
-                  <circle cx="120" cy="60" r="8" fill="currentColor" />
-                  <circle
-                    cx="225"
-                    cy="30"
-                    r="5"
-                    fill="#f8f8f2"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  />
-                </svg>
+              <div className="principle-art art-memory" aria-hidden="true">
+                <BookOpen size={34} />
+                <span>Remember</span>
+                <ArrowRight size={18} />
+                <span>Refine</span>
               </div>
-              <span className="chapter-number">03 / KEEP LEARNING</span>
-              <h3>Let the plan get wiser.</h3>
+              <h3>Coaching that learns about you.</h3>
               <p>
-                A short review brings forward what matters. See the evidence and
-                alternatives when you want to go deeper.
+                Your check-ins, results, and saved preferences inform later
+                conversations. Adler uses that history to suggest changes, then
+                reviews whether they helped.
               </p>
               <a
                 href="https://doi.org/10.1037/bul0000025"
@@ -753,12 +783,12 @@ export function Landing() {
             </article>
           </div>
           <p className="science-note">
-            Research informs the approach. Your experience shapes the plan.
+            Built on behavioural science. Refined through your check-ins,
+            results, and reviews.
           </p>
         </section>
         <section className="connected-section section-wrap">
           <div>
-            <Eyebrow>One plan. Wherever life finds you.</Eyebrow>
             <h2>
               A little closer.
               <br />
@@ -807,6 +837,14 @@ export function Landing() {
               "Record what happened, with as much or as little context as you want. Adler helps you look at the approach, timing, or size of the next step. Your previous progress stays part of the picture.",
             ],
             [
+              "Does Adler remember what I tell it?",
+              "Yes. Adler can save your preferences, constraints, and context for future conversations. It also uses your check-ins, results, and past plan decisions to help refine its recommendations. You can review, correct, or remove saved information.",
+            ],
+            [
+              "How is Adler’s coaching system improving?",
+              "Today, Adler combines retrieved behavioural research with your saved context, check-ins, and results. We plan to expand the system with additional model training and proprietary goal-attainment data.",
+            ],
+            [
               "Do I stay in control?",
               "Yes. You can review the reason for a suggestion, ask for a different approach, or keep your current plan. You choose what to accept.",
             ],
@@ -826,7 +864,6 @@ export function Landing() {
         </section>
         <section className="final-section">
           <div className="final-orbit" />
-          <Eyebrow>There’s a way from here</Eyebrow>
           <h2>
             Your someday.
             <br />

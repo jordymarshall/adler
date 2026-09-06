@@ -37,9 +37,9 @@ const steps = [
     body: "Your review arrives in the same flow. Adler looks at your observations and asks what matters, then proposes a useful adjustment. You choose what to accept.",
   },
   {
-    label: "Understand why",
-    title: "There’s depth behind the simple next step.",
-    body: "Open Why this plan? to see the approach, measurement choice, alternatives, and uncertainty. Cited findings include their applicability and limits; earlier plan versions keep their evidence.",
+    label: "A coach that knows you",
+    title: "You don’t start from scratch every week.",
+    body: "Adler remembers what you share: your preferences, constraints, and what happened when you tried the plan. It brings that context into later conversations and reviews, so the next recommendation can fit you better.",
   },
 ];
 function WalkScreen({ step }: { step: number }) {
@@ -60,7 +60,7 @@ function WalkScreen({ step }: { step: number }) {
             {step === 4
               ? "progress & history"
               : step === 6
-                ? "why this plan"
+                ? "what Adler remembers"
                 : "your next step"}
           </b>
         </div>
@@ -194,30 +194,32 @@ function WalkScreen({ step }: { step: number }) {
         )}
         {step === 6 && (
           <>
-            <span className="section-kicker">WHY THIS PLAN?</span>
-            <h3>A reason you can inspect.</h3>
-            <dl className="walk-evidence">
-              <dt>The measurement</dt>
-              <dd>
-                Uninterrupted distance reflects this person’s stated goal.
-                Completing a session is recorded separately.
-              </dd>
-              <dt>The evidence</dt>
-              <dd>
-                Adler searches relevant literature, checks the recommendation
-                against retrieved sources, and saves citations with the plan.
-              </dd>
-              <dt>The uncertainty</dt>
-              <dd>
-                Research informs a provisional approach. Your observations help
-                test whether it fits.
-              </dd>
-            </dl>
+            <span className="section-kicker">WHAT ADLER REMEMBERS</span>
+            <h3>A plan with your life in mind.</h3>
+            <div className="remembered-context">
+              <span>YOU SHARED</span>
+              <p>“Mornings are usually free. Work often runs late.”</p>
+              <span>SAVED CONTEXT</span>
+              <p>Mornings are usually free. Work can run late.</p>
+            </div>
+            <div className="walk-coach-question">
+              You mentioned mornings are free. Both evening runs were missed —
+              shall we try mornings next week?
+            </div>
+            <p className="demo-footnote">
+              An illustrative conversation. You can review, correct, or remove
+              saved information.
+            </p>
             <details className="quiet-disclosure">
-              <summary>What else can I inspect?</summary>
+              <summary>How does Adler decide what to change?</summary>
               <p>
-                Alternative approaches, source abstracts, applicability,
-                limitations, and the question for the next review.
+                It combines your context and recorded results with relevant
+                behavioural research, considers alternatives, and proposes an
+                adjustment. The next review checks whether it helped.
+              </p>
+              <p>
+                Open Why this plan? to inspect the evidence, measurement choice,
+                and uncertainty.
               </p>
             </details>
           </>
@@ -227,52 +229,39 @@ function WalkScreen({ step }: { step: number }) {
   );
 }
 export function LandingWalkthrough() {
-  const [expanded, setExpanded] = useState(false);
   return (
     <section className="landing-walkthrough" id="how-it-works">
       <div className="walkthrough-intro">
-        <span className="section-kicker">A CLOSER LOOK</span>
         <h2>
-          One next step.
+          Reach your goals with a plan
           <br />
-          The detail is here when you need it.
+          <em>that adapts to you.</em>
         </h2>
-        <p>Follow an illustrative goal through the app.</p>
-        <button
-          className="button secondary"
-          aria-expanded={expanded}
-          aria-controls="walkthrough-screens"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? "Close the walkthrough" : "See the app, step by step"}{" "}
-          <ArrowRight size={16} />
-        </button>
+        <p>See how Adler helps you plan, act, and learn from what happens.</p>
       </div>
-      {expanded && (
-        <div id="walkthrough-screens">
-          {steps.map((step, index) => (
-            <article
-              className="walk-step"
-              id={`step-${index + 1}`}
-              key={step.label}
-            >
-              <div className="walk-copy">
-                <span className="walk-number">
-                  0{index + 1} / {step.label.toUpperCase()}
-                </span>
-                <h2>{step.title}</h2>
-                <p>{step.body}</p>
-              </div>
-              <WalkScreen step={index} />
-            </article>
-          ))}
-          <div className="walkthrough-end">
-            <Link className="button primary" to="/app/goals/new">
-              Start with your goal <ArrowRight size={17} />
-            </Link>
-          </div>
+      <div id="walkthrough-screens">
+        {steps.map((step, index) => (
+          <article
+            className="walk-step"
+            id={`step-${index + 1}`}
+            key={step.label}
+          >
+            <div className="walk-copy">
+              <span className="walk-number">
+                0{index + 1} / {step.label.toUpperCase()}
+              </span>
+              <h2>{step.title}</h2>
+              <p>{step.body}</p>
+            </div>
+            <WalkScreen step={index} />
+          </article>
+        ))}
+        <div className="walkthrough-end">
+          <Link className="button primary" to="/app/goals/new">
+            Start with your goal <ArrowRight size={17} />
+          </Link>
         </div>
-      )}
+      </div>
     </section>
   );
 }

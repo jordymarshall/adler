@@ -9,7 +9,6 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toContainText("Big goals.");
-  await page.getByRole("button", { name: "See the app, step by step" }).click();
   const chart = page.locator("#step-5 .progress-viz svg");
   await expect(chart.locator(".chart-recorded-label")).toHaveText(
     "Recorded: 2 km",

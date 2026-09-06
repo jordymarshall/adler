@@ -323,12 +323,18 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the V2 landing uses the existing font and reveals the updated detailed walkthrough below the core story", async ({
+test("the landing keeps the existing font and shows the detailed walkthrough below the core story", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(page.locator(".hero-intro-v2 h1")).toContainText("Big goals.");
-  await expect(page.locator(".hero-intro-v2 .eyebrow")).toHaveCount(0);
+  await expect(page.locator(".eyebrow")).toHaveCount(0);
+  await expect(page.locator(".walkthrough-intro h2")).toHaveText(
+    "Reach your goals with a planthat adapts to you.",
+  );
+  await expect(page.locator(".hero-assembled-title h2")).toHaveText(
+    "Reach your goals with a planthat adapts to you.",
+  );
   await expect(page.locator(".adapt-copy h2")).toHaveText(
     /Life moves\.Your planshould, too\./,
   );
@@ -337,8 +343,6 @@ test("the V2 landing uses the existing font and reveals the updated detailed wal
       .locator(".hero-intro-v2 h1")
       .evaluate((el) => getComputedStyle(el).fontFamily),
   ).toContain("DM Sans");
-  await expect(page.locator(".walk-step")).toHaveCount(0);
-  await page.getByRole("button", { name: "See the app, step by step" }).click();
   await expect(page.locator(".walk-step")).toHaveCount(7);
   await expect(page.locator("#step-2")).toContainText("Start plan");
   expect(
@@ -682,5 +686,40 @@ test("latest action observations use the last check-in when records share a date
   await page.goto("/app/goals/essays/progress");
   await expect(page.locator(".action-observations")).toContainText(
     "4 points recorded",
+  );
+});
+
+test("the three-part story follows normal scrolling and uses the app chart throughout", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const panels = page.locator(".chapter-flow .chapter-panel");
+  await expect(panels).toHaveCount(3);
+  for (let index = 0; index < 3; index++) {
+    const panel = panels.nth(index);
+    await panel.evaluate((node) =>
+      window.scrollTo({
+        top: scrollY + node.getBoundingClientRect().top - innerHeight * 0.25,
+        behavior: "instant",
+      }),
+    );
+    await expect(panel.locator(".chapter-number")).toHaveAttribute(
+      "aria-current",
+      "step",
+    );
+    await expect(panel.locator(".chapter-visual")).toBeVisible();
+  }
+  const paths = await page
+    .locator(".v2-landing .chart-actual")
+    .evaluateAll((elements) => elements.map((el) => el.getAttribute("d")));
+  expect(paths).toHaveLength(3);
+  expect(new Set(paths).size).toBe(1);
+  await page.goto("/#step-7");
+  await expect(page.locator("#step-7")).toContainText("Adler remembers");
+  await expect(page.locator(".remembered-context")).toBeInViewport();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(panels.nth(1).locator(".chapter-visual")).toHaveCSS(
+    "transform",
+    "none",
   );
 });

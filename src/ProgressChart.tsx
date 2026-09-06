@@ -7,11 +7,13 @@ export function ProgressChart({
   goal,
   today = localDate(),
   compact = false,
+  graphOnly = false,
   proposedCheckpoints = [],
 }: {
   goal: Goal;
   today?: string;
   compact?: boolean;
+  graphOnly?: boolean;
   proposedCheckpoints?: { date: string; value: number }[];
 }) {
   const id = useId();
@@ -62,36 +64,45 @@ export function ProgressChart({
     .map((p, i) => `${i ? `H${x(p.date)} V` : `M${x(p.date)},`}${y(p.value)}`)
     .join(" ");
   return (
-    <div className={`progress-viz ${compact ? "compact" : ""}`}>
-      <div className="viz-heading">
-        <div>
-          <span className="section-kicker">HOW WE MEASURE PROGRESS</span>
-          <Heading>{goal.measure?.label ?? goal.unit ?? "Verified milestones"}</Heading>
-        </div>
-        <span className={`pace-badge ${status.tone}`}>{status.label}</span>
-      </div>
-      <div className="viz-numbers">
-        <strong>
-          {status.actual ?? "—"}{" "}
-          <small>
-            {goal.measure?.unit ?? goal.unit ?? "milestones verified"} recorded
-          </small>
-        </strong>
-        <span>/</span>
-        <strong>
-          {status.planned ?? "—"}{" "}
-          <small>
-            {goal.measure?.unit ?? ""}{" "}
-            {plannedNow
-              ? `due ${formatDate(plannedNow.date)}`
-              : "no checkpoint due"}
-          </small>
-        </strong>
-        <span className="viz-target">
-          Target: {goal.target ?? max} {goal.measure?.unit ?? ""}
-          {goal.targetDate ? ` by ${formatDate(goal.targetDate)}` : ""}
-        </span>
-      </div>
+    <div
+      className={`progress-viz ${compact ? "compact" : ""} ${graphOnly ? "graph-only" : ""}`}
+    >
+      {!graphOnly && (
+        <>
+          <div className="viz-heading">
+            <div>
+              <span className="section-kicker">HOW WE MEASURE PROGRESS</span>
+              <Heading>
+                {goal.measure?.label ?? goal.unit ?? "Verified milestones"}
+              </Heading>
+            </div>
+            <span className={`pace-badge ${status.tone}`}>{status.label}</span>
+          </div>
+          <div className="viz-numbers">
+            <strong>
+              {status.actual ?? "—"}{" "}
+              <small>
+                {goal.measure?.unit ?? goal.unit ?? "milestones verified"}{" "}
+                recorded
+              </small>
+            </strong>
+            <span>/</span>
+            <strong>
+              {status.planned ?? "—"}{" "}
+              <small>
+                {goal.measure?.unit ?? ""}{" "}
+                {plannedNow
+                  ? `due ${formatDate(plannedNow.date)}`
+                  : "no checkpoint due"}
+              </small>
+            </strong>
+            <span className="viz-target">
+              Target: {goal.target ?? max} {goal.measure?.unit ?? ""}
+              {goal.targetDate ? ` by ${formatDate(goal.targetDate)}` : ""}
+            </span>
+          </div>
+        </>
+      )}
       <svg
         viewBox="0 0 560 212"
         role="group"
@@ -113,6 +124,12 @@ export function ProgressChart({
           );
         }}
         onFocus={() => setHover(points.indexOf(today))}
+        onPointerLeave={() => {
+          if (graphOnly) setHover(null);
+        }}
+        onBlur={() => {
+          if (graphOnly) setHover(null);
+        }}
         onKeyDown={(event) => {
           if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
             event.preventDefault();
@@ -265,39 +282,43 @@ export function ProgressChart({
       <span className="chart-screen-reader" id={`${id}-help`}>
         Use arrow keys to inspect each recorded date and checkpoint.
       </span>
-      <div className="chart-tooltip" aria-live="polite">
-        {selected ? (
-          <>
-            <b>{formatDate(selected)}</b>
+      {(!graphOnly || selected) && (
+        <div className="chart-tooltip" aria-live="polite">
+          {selected ? (
+            <>
+              <b>{formatDate(selected)}</b>
+              <span>
+                Last recorded:{" "}
+                {selectedActual
+                  ? `${selectedActual.value} ${goal.measure?.unit ?? goal.unit ?? ""}`
+                  : "No result yet"}{" "}
+                ·{" "}
+                {selectedPlan
+                  ? `${selectedPlan.value} ${goal.measure?.unit ?? ""} due ${formatDate(selectedPlan.date)}`
+                  : "No checkpoint due"}
+                {proposed.length > 0 &&
+                  selected >= today &&
+                  ` · Proposed: ${proposed.filter((p) => p.date <= selected).at(-1)?.value ?? "—"}`}
+              </span>
+              <small>
+                {selectedActual
+                  ? `${selectedActual.source} · recorded ${formatDate(selectedActual.date)}`
+                  : "Add a result to begin your recorded line."}
+              </small>
+            </>
+          ) : (
             <span>
-              Last recorded:{" "}
-              {selectedActual
-                ? `${selectedActual.value} ${goal.measure?.unit ?? goal.unit ?? ""}`
-                : "No result yet"}{" "}
-              ·{" "}
-              {selectedPlan
-                ? `${selectedPlan.value} ${goal.measure?.unit ?? ""} due ${formatDate(selectedPlan.date)}`
-                : "No checkpoint due"}
-              {proposed.length > 0 &&
-                selected >= today &&
-                ` · Proposed: ${proposed.filter((p) => p.date <= selected).at(-1)?.value ?? "—"}`}
+              Hover, tap, or use the arrow keys to inspect dates and results.
             </span>
-            <small>
-              {selectedActual
-                ? `${selectedActual.source} · recorded ${formatDate(selectedActual.date)}`
-                : "Add a result to begin your recorded line."}
-            </small>
-          </>
-        ) : (
-          <span>
-            Hover, tap, or use the arrow keys to inspect dates and results.
-          </span>
-        )}
-      </div>
-      {!compact && <p className="chart-date-explanation">
-        Each hollow point is a result due on that date. The dashed line holds
-        that target until the next checkpoint.
-      </p>}
+          )}
+        </div>
+      )}
+      {!compact && !graphOnly && (
+        <p className="chart-date-explanation">
+          Each hollow point is a result due on that date. The dashed line holds
+          that target until the next checkpoint.
+        </p>
+      )}
       <div className="chart-legend">
         <span>
           <i /> Recorded result
@@ -317,8 +338,10 @@ export function ProgressChart({
           shows the proposed checkpoints.
         </p>
       )}
-      {!compact && <p className="chart-explanation">{status.detail}</p>}
-      {!compact && (
+      {!compact && !graphOnly && (
+        <p className="chart-explanation">{status.detail}</p>
+      )}
+      {!compact && !graphOnly && (
         <details className="chart-data">
           <summary>View checkpoints and evidence</summary>
           <p className="field-hint">
