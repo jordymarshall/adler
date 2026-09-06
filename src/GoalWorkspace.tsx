@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from "react";
-import { Link, NavLink, useParams } from "react-router-dom";
+import { Link, Navigate, NavLink, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  Asterisk,
   Check,
   CheckCircle2,
   ChevronDown,
@@ -30,275 +29,6 @@ import {
 import { ProgressChart } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
 import { RecordAction } from "./Workspace";
-
-export function ProposalCard({ goal }: { goal: Goal }) {
-  const { data, commit } = useStore();
-  const [edit, setEdit] = useState(false);
-  const [text, setText] = useState(
-    "Write rough bullets for the problem statement before editing",
-  );
-  const [review, setReview] = useState(false);
-  const [assessment, setAssessment] = useState("");
-  const plan = currentPlan(goal);
-  const trial = goal.trial;
-  const source = data.actions.find((a) => a.id === trial?.sourceId);
-  if (!trial)
-    return (
-      <div className="learning-empty">
-        <Asterisk size={29} />
-        <h3>No plan changes recorded yet.</h3>
-        <p>
-          Ask Adler to review your results and action notes. Approved changes
-          and their reviews appear in your coaching program.
-        </p>
-        <Link className="button secondary" to={`/app/coach?goal=${goal.id}`}>
-          Talk through this goal <ArrowUpRight size={16} />
-        </Link>
-      </div>
-    );
-  function accept() {
-    const expectedVersion = trial!.version;
-    commit((d) => {
-      const current = d.goals.find((g) => g.id === goal.id)!;
-      if (
-        current.trial?.state !== "Suggested" ||
-        current.trial.version !== expectedVersion
-      )
-        throw new Error(
-          "This suggestion has changed. Review the latest version before accepting.",
-        );
-      applyPlan(d, goal.id, expectedVersion, {
-        action: text.trim(),
-        timing: plan.timing,
-        criterion:
-          "A set of rough bullets explains the problem. Editing can wait.",
-      });
-      current.trial = { ...current.trial!, state: "Trying" };
-    }, "Change accepted for future actions. Earlier records are preserved.");
-  }
-  return (
-    <article className="proposal-card">
-      <div className="proposal-header">
-        <span className="coach-mark">
-          <Asterisk size={22} />
-        </span>
-        <div>
-          <span className="section-kicker">EXAMPLE ADJUSTMENT</span>
-          <h3>
-            {trial.state === "Trying"
-              ? "Draft rough bullets before editing."
-              : trial.state === "Set aside"
-                ? "A suggestion you set aside."
-                : trial.state === "Reviewed"
-                  ? "Drafting approach reviewed."
-                  : "Separate drafting from editing."}
-          </h3>
-        </div>
-        <Tag tone="sage">{trial.state}</Tag>
-      </div>
-      <div className="proposal-observation">
-        <span>THE OBSERVATION</span>
-        <p>
-          {source?.note
-            ? `You reported: “${source.note}”`
-            : "The original context is no longer available. This suggestion needs to be reconsidered."}
-        </p>
-        {source && (
-          <Link
-            to={`/app/goals/${goal.id}/progress#action-history`}
-            className="small-text text-link"
-          >
-            Action update · {formatDate(source.date)} <ArrowUpRight size={12} />
-          </Link>
-        )}
-      </div>
-      <div className="proposal-body">
-        <span className="section-kicker">POSSIBLE EXPLANATION</span>
-        <p>
-          Editing while drafting may make it harder to get a first version
-          finished. Try separating the two tasks, then check whether a complete
-          draft is ready for feedback.
-        </p>
-        <div className="plan-diff">
-          <div>
-            <span>BEFORE · PLAN {trial.version}</span>
-            <p>{goal.plans.find((p) => p.version === trial.version)?.action}</p>
-          </div>
-          <ArrowRight size={18} />
-          <div>
-            <span>CHANGE TO TRY</span>
-            {edit ? (
-              <input
-                aria-label="Proposed action"
-                value={text}
-                maxLength={300}
-                onChange={(e) => setText(e.target.value)}
-              />
-            ) : (
-              <p>
-                {trial.state === "Trying" || trial.state === "Reviewed"
-                  ? plan.action
-                  : text}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="trial-details">
-          <span>
-            <Clock3 size={16} />
-            <b>Review after</b> the next two opportunities
-          </span>
-          <span>
-            <CheckCircle2 size={16} />
-            <b>Notice</b> whether you get rough ideas down before editing
-          </span>
-        </div>
-        <details className="suggestion-rationale">
-          <summary>
-            Why this suggestion? <ChevronDown size={15} />
-          </summary>
-          <p>
-            Your saved note says editing the opening displaced the rest of the
-            draft. This example gives the first pass one job: put the rough
-            ideas on the page. After two attempts, check whether a complete
-            draft is ready for feedback.
-          </p>
-          <Link className="text-link" to="/method">
-            About the method <ArrowUpRight size={13} />
-          </Link>
-        </details>
-        {trial.state === "Suggested" && (
-          <div className="proposal-actions">
-            <button
-              className="button primary small-button"
-              disabled={!text.trim()}
-              onClick={accept}
-            >
-              Try this change <ArrowRight size={15} />
-            </button>
-            <button
-              className="button text-button small-button"
-              onClick={() => setEdit(!edit)}
-            >
-              {edit ? "Done editing" : "Edit proposal"}
-            </button>
-            <button
-              className="button text-button small-button"
-              onClick={() =>
-                commit((d) => {
-                  d.goals.find((g) => g.id === goal.id)!.trial!.state =
-                    "Set aside";
-                }, "Suggestion set aside. Your plan is unchanged.")
-              }
-            >
-              Keep current plan
-            </button>
-          </div>
-        )}
-        {trial.state === "Trying" && (
-          <>
-            <p className="form-notice">
-              Your accepted plan applies to future actions. Today’s original
-              action keeps its original wording and criterion.
-            </p>
-            <button
-              className="button secondary small-button"
-              onClick={() => setReview(true)}
-            >
-              Review this change <ArrowRight size={15} />
-            </button>
-          </>
-        )}
-        {trial.state === "Set aside" && (
-          <p className="muted small-text">
-            This suggestion will not make any changes. You can edit the plan
-            directly whenever it’s useful.
-          </p>
-        )}
-      </div>
-      {review && (
-        <Modal
-          title="How did this approach feel?"
-          onClose={() => setReview(false)}
-        >
-          <p className="muted">
-            Your experience is useful information. It doesn’t have to be a firm
-            conclusion.
-          </p>
-          <fieldset className="choice-fieldset">
-            <legend>Your assessment</legend>
-            {[
-              "It helped",
-              "No clear difference",
-              "It was harder",
-              "Need more attempts",
-            ].map((value) => (
-              <label key={value}>
-                <input
-                  type="radio"
-                  name="assessment"
-                  value={value}
-                  checked={assessment === value}
-                  onChange={() => setAssessment(value)}
-                />
-                {value}
-              </label>
-            ))}
-          </fieldset>
-          <p className="field-label">Choose what happens to the plan</p>
-          <div className="stack-actions">
-            <button
-              className="button primary"
-              disabled={!assessment}
-              onClick={() => {
-                if (
-                  commit((d) => {
-                    const g = d.goals.find((g) => g.id === goal.id)!;
-                    g.trial!.state = "Reviewed";
-                    d.messages.push({
-                      id: crypto.randomUUID(),
-                      goalId: goal.id,
-                      role: "user",
-                      text: `Trial review: ${assessment}. My decision: keep the current approach.`,
-                    });
-                  }, "Assessment saved. You chose to keep the current approach.")
-                )
-                  setReview(false);
-              }}
-            >
-              Save assessment & keep this approach
-            </button>
-            <button
-              className="button secondary"
-              disabled={!assessment}
-              onClick={() => {
-                if (
-                  commit((d) => {
-                    const g = d.goals.find((g) => g.id === goal.id)!;
-                    const before = g.plans.find(
-                      (p) => p.version === trial.version,
-                    )!;
-                    applyPlan(d, g.id, plan.version, before);
-                    g.trial!.state = "Reviewed";
-                    d.messages.push({
-                      id: crypto.randomUUID(),
-                      goalId: goal.id,
-                      role: "user",
-                      text: `Trial review: ${assessment}. My decision: restore the previous approach for future actions.`,
-                    });
-                  }, "Assessment saved. Previous approach restored for future actions.")
-                )
-                  setReview(false);
-              }}
-            >
-              Save assessment & restore previous approach
-            </button>
-          </div>
-        </Modal>
-      )}
-    </article>
-  );
-}
 
 function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   const { commit } = useStore();
@@ -497,9 +227,7 @@ export function GoalWorkspace() {
       <nav className="goal-tabs" aria-label="Goal views">
         <NavLink to={`/app/goals/${goal.id}/progress`}>Progress</NavLink>
         <NavLink to={`/app/goals/${goal.id}/plan`}>Plan</NavLink>
-        <NavLink to={`/app/goals/${goal.id}/learning`}>
-          What we’re learning
-        </NavLink>
+        <Link to={`/app/insights?goal=${goal.id}`}>Insights</Link>
       </nav>
       {tab === "plan" ? (
         <div className="goal-content">
@@ -575,16 +303,7 @@ export function GoalWorkspace() {
           </section>
         </div>
       ) : tab === "learning" ? (
-        <div className="goal-content">
-          <div className="subview-heading">
-            <h2>Changes you’re testing.</h2>
-            <p>
-              Review the obstacle, the proposed action, and what you’ll check
-              after trying it.
-            </p>
-          </div>
-          <ProposalCard goal={goal} />
-        </div>
+        <Navigate to={`/app/insights?goal=${goal.id}`} replace />
       ) : (
         <div className="goal-progress-layout">
           <div>
@@ -609,133 +328,27 @@ export function GoalWorkspace() {
                   ))}
                 </details>
               )}
-              <Link className="text-link" to={`/app/coach?goal=${goal.id}`}>
-                Review progress with Adler <ArrowRight size={15} />
-              </Link>
-            </section>
-            <section className="panel outcome-panel">
-              <span className="section-kicker">THE RESULT THAT MATTERS</span>
-              <h2>
-                {goal.measure ? (
-                  <>
-                    {goal.results.at(-1)?.value ?? "—"}
-                    <span> {goal.measure.unit}</span>
-                  </>
-                ) : goal.kind === "learning" ? (
-                  <>
-                    {goal.results.at(-1)?.value ?? "—"}
-                    <span> / 10</span>
-                  </>
-                ) : (
-                  <>
-                    {goal.milestones.filter((m) => m.done).length}
-                    <span> of {goal.milestones.length}</span>
-                  </>
-                )}
-              </h2>
-              <p>
-                {goal.measure
-                  ? goal.measure.label
-                  : goal.kind === "learning"
-                    ? "Problems solved correctly, out of 10"
-                    : goal.kind === "project" && goal.id === "portfolio"
-                      ? "Case studies published"
-                      : "Steps verified against their criteria"}
-              </p>
-              <span className="result-source">
-                {goal.kind === "learning"
-                  ? "Target: 8/10 · Comparable course assessments"
-                  : "Confirmed results, separate from action updates"}
-              </span>
-              {goal.measure && (
-                <button
-                  className="button secondary small-button"
-                  onClick={() => {
-                    setResult("assessment");
-                    setConfirmed(false);
-                  }}
-                >
-                  Record a result <Plus size={15} />
-                </button>
-              )}
-              {!goal.measure && goal.kind === "learning" && (
-                <>
-                  <div
-                    className="assessment-chart"
-                    role="img"
-                    aria-label={
-                      goal.results
-                        .map(
-                          (r) => `${formatDate(r.date)}: ${r.value} out of 10`,
-                        )
-                        .join("; ") + ". Target: 8 out of 10."
-                    }
-                  >
-                    <span className="chart-target">Target 8/10</span>
-                    <div className="chart-grid" />
-                    {goal.results.map((r, i) => (
-                      <div className="assessment-column" key={r.id}>
-                        <div
-                          className="assessment-bar"
-                          style={{ height: `${r.value * 10}%` }}
-                        >
-                          <b>{r.value}/10</b>
-                        </div>
-                        <span>{formatDate(r.date)}</span>
-                        <small>
-                          {i < 2 && goal.id === "statistics"
-                            ? "Example data"
-                            : "Entered by you"}
-                        </small>
-                      </div>
-                    ))}
-                  </div>
-                  <details className="result-table">
-                    <summary>
-                      Assessment records <ChevronDown size={15} />
-                    </summary>
-                    <table>
-                      <caption>
-                        Comparable course problems solved correctly, out of 10
-                      </caption>
-                      <thead>
-                        <tr>
-                          <th>Date</th>
-                          <th>Result</th>
-                          <th>Source</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {goal.results.map((r) => (
-                          <tr key={r.id}>
-                            <td>{formatDate(r.date)}</td>
-                            <td>{r.value}/10</td>
-                            <td>{r.source}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </details>
+              <div className="plan-actions">
+                {(goal.measure || goal.kind === "learning") && (
                   <button
-                    className="button secondary small-button"
+                    className="button primary small-button"
                     onClick={() => {
                       setResult("assessment");
                       setConfirmed(false);
                     }}
                   >
                     <Plus size={15} />
-                    Record an assessment
+                    {goal.measure ? "Record a result" : "Record an assessment"}
                   </button>
-                </>
-              )}
+                )}
+                <Link className="text-link" to={`/app/coach?goal=${goal.id}`}>
+                  Review progress with Adler <ArrowRight size={15} />
+                </Link>
+              </div>
             </section>
             <section className="milestone-section">
               <div className="list-heading">
-                <h2>
-                  {goal.kind === "project"
-                    ? "Your path to published."
-                    : "One meaningful milestone at a time."}
-                </h2>
+                <h2>Milestones</h2>
               </div>
               <div className="milestone-list">
                 {goal.milestones.map((m, i) => (
@@ -754,9 +367,7 @@ export function GoalWorkspace() {
                       <h3>{m.title}</h3>
                       <Tag tone={m.done ? "sage" : ""}>
                         {m.done
-                          ? goal.kind === "project" && goal.id === "portfolio"
-                            ? "Published"
-                            : "Verified"
+                          ? "Verified"
                           : i === goal.milestones.findIndex((m) => !m.done)
                             ? "In progress"
                             : "Not started"}
@@ -844,25 +455,6 @@ export function GoalWorkspace() {
               <b>
                 Open your plan <ArrowUpRight size={16} />
               </b>
-            </Link>
-            <Link
-              className="learning-link"
-              to={`/app/goals/${goal.id}/learning`}
-            >
-              <Asterisk size={23} />
-              <div>
-                <h3>
-                  {goal.trial?.state === "Suggested"
-                    ? "A change worth considering."
-                    : "What are you learning?"}
-                </h3>
-                <p>
-                  {goal.trial?.state === "Trying"
-                    ? "You’re trying a different way to begin."
-                    : "Make a little room for a new perspective."}
-                </p>
-              </div>
-              <ArrowUpRight size={18} />
             </Link>
           </aside>
         </div>

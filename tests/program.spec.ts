@@ -413,8 +413,20 @@ test("a sourced insight opens its original chat and a reply links to the actual 
       ],
     },
   ];
+  state.data.memories.push({
+    id: "shared-context",
+    text: "I prefer short sessions.",
+    date: now.slice(0, 10),
+  });
   await save(page, state.data, state.revision);
-  await page.goto("/app/insights");
+  await page.goto("/app/goals/essays/progress");
+  await page
+    .getByRole("navigation", { name: "Goal views" })
+    .getByRole("link", { name: "Insights" })
+    .click();
+  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
+  await expect(page.getByRole("combobox")).toHaveValue("essays");
+  await expect(page.locator(".insight-row")).toHaveCount(1);
   await expect(page.locator(".insight-row")).toContainText(
     "A late meeting interrupted the session.",
   );
@@ -428,4 +440,10 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   );
   await page.locator(".message-record-links a").click();
   await expect(page).toHaveURL(/\/app\/goals\/essays\/plan$/);
+  await page.goto("/app/goals/essays/learning");
+  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
+  await page.getByRole("combobox").selectOption("all");
+  await expect(page.locator(".insight-row")).toHaveCount(2);
+  await page.reload();
+  await expect(page.getByRole("combobox")).toHaveValue("all");
 });

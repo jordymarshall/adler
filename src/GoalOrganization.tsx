@@ -54,6 +54,7 @@ export function OrganizedGoals() {
           <Plus size={17} /> New goal
         </Link>
       </div>
+      {data.goals.length > 0 && <>
       <div className="goal-toolbar">
         <label className="goal-search">
           <Search size={17} />
@@ -109,6 +110,7 @@ export function OrganizedGoals() {
           </button>
         ))}
       </div>
+      </>}
       <div className="goal-groups">
         {groups.map((group) => {
           const items = goals.filter(
@@ -165,8 +167,9 @@ export function OrganizedGoals() {
       {!goals.length && (
         <div className="empty-state">
           <Target size={30} />
-          <h2>No goals match these filters.</h2>
-          <p>Try another tag or clear your search.</p>
+          <h2>{data.goals.length ? "No goals match these filters." : "What would you like to achieve?"}</h2>
+          <p>{data.goals.length ? "Try another tag or clear your search." : "Start with one goal. Adler can help you define the result and choose a first step."}</p>
+          {!data.goals.length && <Link className="button secondary" to="/app/coach">Plan it with Adler <ArrowUpRight size={16} /></Link>}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import { Integrations } from "./Integrations";
+import { AppIntegrations, Integrations } from "./Integrations";
 import { Insights } from "./Insights";
 import { useEffect } from "react";
 import {
@@ -13,7 +13,6 @@ import {
 import {
   ArrowUpRight,
   CalendarDays,
-  ClipboardCheck,
   Asterisk,
   ChevronRight,
   CircleHelp,
@@ -21,7 +20,6 @@ import {
   Settings,
   Sun,
   Target,
-  Lightbulb,
   Cable,
 } from "lucide-react";
 import { Footer, Logo } from "./components";
@@ -51,6 +49,7 @@ function ScrollReset() {
 }
 function AppShell() {
   const location = useLocation();
+  const inCoach = /\/app\/(coach|insights|reviews)/.test(location.pathname);
   const { user, loading, saving, saveError } = useStore();
   const label = location.pathname.includes("/integrations")
     ? "Integrations"
@@ -72,8 +71,6 @@ function AppShell() {
     { to: "/app/goals", label: "Goals", Icon: Target },
     { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
     { to: "/app/coach", label: "Coach", Icon: MessageCircle },
-    { to: "/app/insights", label: "Insights", Icon: Lightbulb },
-    { to: "/app/reviews/current", label: "Review", Icon: ClipboardCheck },
   ];
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
   if (!user) return <SignIn />;
@@ -87,7 +84,11 @@ function AppShell() {
         <span className="workspace-label">YOUR WORKSPACE</span>
         <nav aria-label="App navigation">
           {nav.map(({ to, label, Icon }) => (
-            <NavLink key={to} to={to}>
+            <NavLink
+              key={to}
+              to={to}
+              className={({ isActive }) => isActive || (label === "Coach" && inCoach) ? "active" : ""}
+            >
               <Icon size={20} strokeWidth={1.7} />
               {label}
               <ChevronRight className="nav-chevron" size={15} />
@@ -154,7 +155,11 @@ function AppShell() {
       </div>
       <nav className="mobile-nav" aria-label="Mobile app navigation">
         {nav.map(({ to, label, Icon }) => (
-          <NavLink key={to} to={to}>
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => isActive || (label === "Coach" && inCoach) ? "active" : ""}
+          >
             <Icon size={21} />
             <span>{label}</span>
           </NavLink>
@@ -165,6 +170,23 @@ function AppShell() {
         </NavLink>
       </nav>
     </div>
+  );
+}
+function CoachSection() {
+  const { pathname } = useLocation();
+  return (
+    <>
+      <nav className="coaching-nav" aria-label="Coaching navigation">
+        <NavLink to="/app/coach" end>Chat</NavLink>
+        <NavLink
+          to="/app/reviews/current"
+          className={pathname.includes("/reviews/") ? "active" : ""}
+        >Weekly review</NavLink>
+        <NavLink to="/app/insights">Insights</NavLink>
+        <NavLink to="/app/coach/program">Program</NavLink>
+      </nav>
+      <Outlet />
+    </>
   );
 }
 export function App() {
@@ -191,13 +213,15 @@ export function App() {
           <Route path="onboarding" element={<NewGoal />} />
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
-          <Route path="integrations" element={<Integrations inApp />} />
-          <Route path="insights" element={<Insights />} />
-          <Route path="coach" element={<Coach />} />
-          <Route path="coach/program" element={<Program />} />
+          <Route path="integrations" element={<AppIntegrations />} />
+          <Route element={<CoachSection />}>
+            <Route path="insights" element={<Insights />} />
+            <Route path="coach" element={<Coach />} />
+            <Route path="coach/program" element={<Program />} />
+            <Route path="coach/about-you" element={<Memory />} />
+            <Route path="reviews/:reviewId" element={<WeeklyReview />} />
+          </Route>
           <Route path="calendar" element={<Calendar />} />
-          <Route path="coach/about-you" element={<Memory />} />
-          <Route path="reviews/:reviewId" element={<WeeklyReview />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/provider" element={<ProviderSettings />} />
           <Route path="connections" element={<Connections />} />

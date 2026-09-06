@@ -103,6 +103,9 @@ export function CheckInPreview() {
             <div className="phone-home" aria-hidden="true" />
           </div>
         ) : (
+          <div className="text-phone app-phone" aria-label="Adler mobile app check-in">
+            <div className="phone-status" aria-hidden="true"><b>7:05</b><i /><span><Signal size={13} /><Wifi size={13} /><BatteryFull size={17} /></span></div>
+            <div className="phone-app-title"><Asterisk size={22} /><b>Adler</b><span>Today</span></div>
           <div className="app-checkin-preview">
             <span className="section-kicker">MY FIRST 5 KM · THURSDAY</span>
             <h3>How did your run go?</h3>
@@ -118,33 +121,13 @@ export function CheckInPreview() {
               Saved: {outcome}
             </div>
           </div>
+            <nav className="phone-app-nav" aria-label="App preview"><b>Today</b><span>Goals</span><span>Coach</span></nav>
+            <div className="phone-home" aria-hidden="true" />
+          </div>
         )}
         <div className="checkin-linked-result">
-          <span className="section-kicker">ONE UPDATE. THE SAME PLAN.</span>
-          <h3>Run 5 km without stopping</h3>
-          <p className="checkin-goal-date">Goal deadline · November 15</p>
-          <dl>
-            <div>
-              <dt>This session</dt>
-              <dd>{outcome}</dd>
-            </div>
-            <div>
-              <dt>Longest continuous run</dt>
-              <dd>
-                2 <small>km</small>
-              </dd>
-            </div>
-            <div>
-              <dt>Distance you’re working toward</dt>
-              <dd>
-                5 <small>km</small>
-              </dd>
-            </div>
-          </dl>
-          <p>
-            Your check-in appears in Adler. The distance changes when you report
-            a new measured result.
-          </p>
+          <Check size={14} />
+          <div><b>{outcome} · Saved to My first 5 km</b><span>2 km recorded · 5 km goal</span></div>
         </div>
       </div>
       <div className="checkin-demo-controls">

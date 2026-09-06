@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { register } from "./fixtures";
 
 test("the integration catalog distinguishes plans from working setup paths", async ({
   page,
@@ -62,7 +63,11 @@ test("texting and the app show the same check-in without changing measured dista
   );
   await expect(step.locator(".checkin-linked-result")).toContainText("Done");
   await step.getByRole("button", { name: "SMS", exact: true }).click();
-  await expect(step.getByLabel("SMS conversation with Adler")).toBeVisible();
+  const phone = step.getByLabel("SMS conversation with Adler");
+  await expect(phone).toBeVisible();
+  const bounds = await phone.boundingBox();
+  expect(bounds!.height / bounds!.width).toBeGreaterThan(2);
+  expect(bounds!.height / bounds!.width).toBeLessThan(2.3);
   await step.getByRole("button", { name: "Use the app", exact: true }).click();
   await expect(step.locator(".app-checkin-saved")).toHaveText("Saved: Done");
   await expect(step.locator(".checkin-linked-result")).toContainText("2 km");
@@ -77,6 +82,23 @@ test("texting and the app show the same check-in without changing measured dista
       .locator("#step-3")
       .getByRole("button", { name: "7:30 pm · Busy", exact: true }),
   ).toBeDisabled();
+});
+
+test("signed-in integrations start with the catalog and retain setup links", async ({
+  page,
+}) => {
+  await register(page);
+  await page.goto("/app/integrations");
+  await expect(
+    page.getByRole("heading", { name: "Integrations", exact: true }),
+  ).toBeVisible();
+  await expect(page.locator(".integration-map")).toHaveCount(0);
+  await expect(page.locator(".connection-setup-row")).toHaveCount(7);
+  await expect(page.locator(".integration-card")).toHaveCount(0);
+  const calendar = page.locator(".connection-setup-row").filter({ hasText: "Google Calendar" });
+  await expect(calendar).toContainText("Not connected");
+  await calendar.getByRole("link", { name: "Set up" }).click();
+  await expect(page).toHaveURL(/\/app\/calendar$/);
 });
 
 test("landing media respects reduced motion and the new surfaces work on mobile", async ({

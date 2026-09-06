@@ -1,11 +1,10 @@
 import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowUp, CalendarDays, Check, SlidersHorizontal } from "lucide-react";
+import { ArrowUp, CalendarDays, Check } from "lucide-react";
 import { AdlerAvatar } from "./persona";
 import { api, type ServiceStatus } from "./api";
 import {
-  currentProgram,
   useStore,
   reactionTypes,
   reactionEmoji,
@@ -146,13 +145,6 @@ export function LiveCoach() {
               <h1>Adler</h1>
             </div>
           </div>
-          <Link className="button secondary" to="/app/coach/program">
-            <SlidersHorizontal size={16} />
-            Coaching program{" "}
-            <span className="program-version">
-              v{currentProgram(data).version}
-            </span>
-          </Link>
         </div>
         <div className="coach-context-strip">
           {goal ? (
@@ -165,7 +157,6 @@ export function LiveCoach() {
           {!service?.coach.configured && (
             <Link to="/app/settings/provider">Connect your AI provider</Link>
           )}
-          <Link to="/app/insights">Insights ↗</Link>
         </div>
         <div
           className="coach-thread"

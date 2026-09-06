@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register, snapshot, synced } from "./fixtures";
+import { register, save, snapshot, synced } from "./fixtures";
+import { localDate } from "../shared/workspace";
+import { createGoal } from "../shared/validation";
 
 test("landing demonstrates goal progress and opens an empty signed-in workspace", async ({
   page,
@@ -12,11 +14,11 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   await expect(page.locator(".landing-product")).toContainText(
     "Run 5 km without stopping",
   );
-  await expect(page.locator(".hero-outcome-count")).toContainText(
+  await expect(page.locator(".landing-product .viz-numbers")).toContainText(
     "2 km recorded",
   );
-  await expect(page.locator(".hero-outcome-count")).toContainText(
-    "Goal: 5 km without stopping",
+  await expect(page.locator(".landing-product .viz-target")).toContainText(
+    "Target: 5 km",
   );
   await expect(
     page.locator(".landing-product .chart-recorded-label"),
@@ -65,42 +67,29 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
     "without a walking break",
   );
   await expect(page.locator(".walk-step")).toHaveCount(7);
-  const changes = page.locator(".decision-change-list > li");
+  const changes = page.locator("#step-6 .decision-change-row");
   await expect(changes).toHaveCount(4);
-  const gaps = await changes.evaluateAll((items) =>
-    items
-      .slice(1)
-      .map(
-        (item, i) =>
-          item.getBoundingClientRect().top -
-          items[i].getBoundingClientRect().bottom,
-      ),
-  );
-  expect(gaps.every((gap) => gap >= 20)).toBe(true);
-  await expect(page.locator("#step-6 .insight-row")).toHaveCount(3);
-  await expect(page.locator(".landing-product .viz-numbers")).toContainText(
-    "3 km due Oct 15",
-  );
+  await expect(page.locator("#step-6 .decision-change-row[open]")).toHaveCount(0);
+  await expect(page.locator("#step-7 .landing-insight")).toHaveCount(3);
+  await expect(page.locator(".landing-product .viz-numbers")).toContainText("3 km due Oct 15");
   for (const item of await changes.all()) {
+    await item.locator(":scope > summary").click();
     await expect(item.locator(".change-before")).toBeVisible();
     await expect(item.locator(".change-after")).toBeVisible();
     await expect(item.locator(".change-reason")).toBeVisible();
     await expect(item.locator(".change-basis")).toContainText("Based on");
+    await expect(page.locator("#step-6 .decision-change-row[open]")).toHaveCount(1);
   }
-  await expect(page.locator(".change-selector")).toHaveCount(0);
-  await expect(changes.first().locator(".change-after")).toContainText(
-    "7:00 am",
-  );
-  await expect(changes.first().locator(".change-reason")).toContainText(
-    "Work ran late",
-  );
-  await changes
-    .first()
-    .getByText("Research behind this change", { exact: true })
-    .click();
-  await expect(
-    changes.first().locator(".change-research a").first(),
-  ).toBeVisible();
+  await changes.first().locator(":scope > summary").click();
+  await expect(changes.first().locator(".change-after")).toContainText("7:00 am");
+  await expect(changes.first().locator(".change-reason")).toContainText("Work ran late");
+  await changes.first().getByText("Research behind this change", { exact: true }).click();
+  await expect(changes.first().locator(".change-research a").first()).toBeVisible();
+  await changes.first().getByRole("button", { name: "Edit this change" }).click();
+  await page.getByLabel("Proposed schedule change").fill("Tuesday and Thursday at 7:30 am");
+  await changes.first().getByRole("button", { name: "Done editing" }).click();
+  await expect(changes.first().locator(".change-after")).toContainText("7:30 am");
+  await changes.first().locator(":scope > summary").click();
   await page
     .getByRole("button", {
       name: "Add the new run times to your calendar",
@@ -124,11 +113,11 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   await page.getByRole("button", { name: "Create my workspace" }).click();
   await expect(page.locator("h1")).toContainText("Your next actions");
   expect((await snapshot(page)).data.goals).toHaveLength(0);
-  await expect(
-    page
-      .getByRole("navigation", { name: "App navigation", exact: true })
-      .getByRole("link", { name: "Review" }),
-  ).toBeVisible();
+  await page
+    .getByRole("navigation", { name: "App navigation", exact: true })
+    .getByRole("link", { name: "Coach", exact: true })
+    .click();
+  await expect(page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Weekly review" })).toBeVisible();
   await page.reload();
   expect((await snapshot(page)).data.goals).toHaveLength(0);
 });
@@ -137,6 +126,11 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   page,
 }) => {
   await register(page);
+  await page.goto("/app/today");
+  await expect(page.getByRole("link", { name: /Review this week’s results/ })).toHaveCount(0);
+  await page.goto("/app/goals");
+  await expect(page.getByRole("heading", { name: "What would you like to achieve?" })).toBeVisible();
+  await expect(page.getByLabel("Search goals", { exact: true })).toHaveCount(0);
   await page.goto("/app/goals/new");
   await page
     .getByLabel("What would you like to work toward?")
@@ -168,6 +162,10 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
   await expect(page.getByTestId("recorded-line")).toBeVisible();
   await expect(page.locator(".progress-viz .pace-badge")).toHaveText("On plan");
+  await page.goto("/app/goals");
+  await expect(page.getByLabel("Search goals", { exact: true })).toBeVisible();
+  await page.getByLabel("Search goals", { exact: true }).fill("does not match");
+  await expect(page.getByRole("heading", { name: "No goals match these filters." })).toBeVisible();
 });
 
 test("action check-ins do not complete milestones and verified results update the interactive chart", async ({
@@ -207,21 +205,71 @@ test("action check-ins do not complete milestones and verified results update th
   await expect(page.locator(".chart-tooltip")).toContainText("Last recorded:");
 });
 
+test("a learning goal records results in one chart with its own target", async ({
+  page,
+}) => {
+  await register(page);
+  const state = await snapshot(page);
+  createGoal(
+    state.data,
+    {
+      title: "Solve six algebra problems correctly",
+      kind: "learning",
+      why: "Prepare for my course",
+      success: "Six correct answers on a comparable ten-question practice set",
+      area: "Learning",
+      tags: [],
+      targetDate: localDate(28),
+      milestones: [{
+        title: "Complete a practice set",
+        criterion: "Six of ten answers correct",
+      }],
+      assessmentTarget: 6,
+      baseline: 3,
+      action: "Practice equations for 20 minutes",
+      criterion: "Attempt five equations and check the answers",
+      timing: "Unscheduled",
+    },
+    localDate(-14),
+    "algebra",
+  );
+  await save(page, state.data, state.revision);
+  await page.goto("/app/goals/algebra/progress");
+  await expect(page.locator(".progress-viz")).toHaveCount(1);
+  await expect(page.locator(".viz-target")).toContainText("Target: 6");
+  await expect(page.locator(".pace-badge")).toHaveText("On plan");
+  await expect(page.locator(".app-main")).not.toContainText("8/10");
+  await page.getByRole("button", { name: "Record an assessment" }).click();
+  await page.getByLabel("Problems solved correctly", { exact: true }).fill("4");
+  await page.getByLabel("Assessment / source").fill("Practice set B");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Save result", exact: true }).click();
+  await synced(page);
+  expect((await snapshot(page)).data.goals[0].results.at(-1)?.value).toBe(4);
+  await expect(page.locator(".viz-numbers")).toContainText(
+    "4 correct answers / 10 recorded",
+  );
+  await expect(page.locator(".pace-badge")).toHaveText("Ahead of plan");
+  await page.getByText("View checkpoints and evidence", { exact: true }).click();
+  await expect(page.getByRole("table")).toContainText("Practice set B");
+});
+
 test("weekly review is directly accessible and archives the decision", async ({
   page,
 }) => {
   await register(page, true);
   await page.goto("/app/today");
-  await page
-    .getByRole("navigation", { name: "App navigation", exact: true })
-    .getByRole("link", { name: "Review" })
-    .click();
+  await page.getByRole("link", { name: /Review this week’s results/ }).click();
   await expect(page.locator("h1")).toHaveText("Your weekly review");
-  await page.getByRole("button", { name: "Take a closer look" }).click();
+  await expect(page.getByRole("link", { name: /Publish two essays/ })).toBeVisible();
   await page
-    .getByLabel("Your perspective")
+    .getByLabel("What helped or got in the way?")
     .fill("Drafting worked best before opening email.");
-  await page.getByRole("button", { name: "Choose what’s next" }).click();
+  await page.getByRole("link", { name: "Review changes with Adler" }).click();
+  await synced(page);
+  expect((await snapshot(page)).data.review.note).toBe("Drafting worked best before opening email.");
+  await page.getByRole("navigation", { name: "Coaching navigation" }).getByRole("link", { name: "Weekly review" }).click();
+  await expect(page.getByLabel("What helped or got in the way?")).toHaveValue("Drafting worked best before opening email.");
   await page.getByRole("button", { name: "Keep my current plans" }).click();
   await synced(page);
   await expect(
@@ -234,6 +282,14 @@ test("weekly review is directly accessible and archives the decision", async ({
       .locator(".review-complete")
       .getByText("Drafting worked best before opening email.", { exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Start another review" }).click();
+  await expect(page.getByLabel("What helped or got in the way?")).toHaveValue("");
+  await page.getByRole("button", { name: "Keep my current plans" }).click();
+  await synced(page);
+  const reviews = (await snapshot(page)).data.reviews;
+  expect(reviews).toHaveLength(2);
+  expect(reviews[0].note).toBe("Drafting worked best before opening email.");
+  expect(reviews[1].note).toBe("");
 });
 
 test("a second signed-in tab receives confirmed changes and stale saves are rejected", async ({

@@ -2,7 +2,7 @@ import { LandingAtmosphere } from "./LandingAtmosphere";
 import { IntegrationShowcase } from "./Integrations";
 import { CheckInPreview } from "./CheckInPreview";
 import { LandingInsights } from "./Insights";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowDown,
@@ -10,10 +10,6 @@ import {
   ArrowRight,
   ArrowUpRight,
   Check,
-  CalendarDays,
-  ChevronRight,
-  MessageCircle,
-  Target,
 } from "lucide-react";
 import { Footer, Logo } from "./components";
 import { AdlerAvatar } from "./persona";
@@ -39,45 +35,12 @@ function HeroPreview() {
     <div className="landing-product">
       <WindowBar title="goals / running / progress" />
       <div className="landing-product-body">
-        <aside>
-          <Logo />
-          <nav>
-            <span>☀ Today</span>
-            <b>
-              <Target size={14} /> Goals
-            </b>
-            <span>
-              <CalendarDays size={14} /> Calendar
-            </span>
-            <span>
-              <MessageCircle size={14} /> Coach
-            </span>
-          </nav>
-          <small>PERSONAL</small>
-          <b>My first 5 km</b>
-          <span className="mini-goal-line">2 km without stopping</span>
-          <small>LEARNING</small>
-          <span>Learn conversational Spanish</span>
-        </aside>
         <div className="landing-product-main">
-          <div className="mini-breadcrumb">
-            Personal <ChevronRight size={12} /> #Running <span>Focus goal</span>
-          </div>
           <h2>Run 5 km without stopping</h2>
           <p className="mini-deadline">
             By November 15 · Complete the route without a walking break.
           </p>
-          <div className="mini-tabs">
-            <b>Progress</b>
-            <span>Plan</span>
-            <span>Learning</span>
-          </div>
           <ProgressChart goal={demoGoal} today="2026-10-17" compact />
-          <div className="hero-outcome-count">
-            <Check size={13} />
-            <b>2 km recorded</b>
-            <span>Goal: 5 km without stopping</span>
-          </div>
           <div className="hero-coach-note">
             <AdlerAvatar small />
             <div>
@@ -139,14 +102,6 @@ const steps = [
     route: "/app/goals/new",
   },
   {
-    label: "Learn what helps",
-    cta: "See your insights",
-    title: "See what helps you make progress.",
-    problem: "A check-in is only useful if you learn something you can act on.",
-    body: "See what Adler has learned from your results and conversations, where each insight came from, and what it changes in your plan. Open the sources and see which ideas still need testing.",
-    route: "/app/insights",
-  },
-  {
     label: "Improve your plan",
     cta: "Review your plan with Adler",
     title: "Get specific changes when your plan isn’t working.",
@@ -155,13 +110,21 @@ const steps = [
     body: "Adler uses your results, check-ins, and availability to suggest what to change. See the current plan, the proposed changes, and the reason for each one. You choose what to approve.",
     route: "/app/coach?goal=general",
   },
+  {
+    label: "Learn what helps",
+    cta: "See your insights",
+    title: "A coach that learns what works for you.",
+    problem: "The same plan won’t work for every person—or every week.",
+    body: "Adler connects your results, check-ins, and preferences with relevant behavioural science. See what it remembers, the evidence behind a suggestion, and what happened after you tried it. Correct anything that no longer fits.",
+    route: "/app/insights",
+  },
 ];
 function WalkScreen({ step }: { step: number }) {
   const [time, setTime] = useState("6:30 pm");
   const [compare, setCompare] = useState(false);
   return (
-    <div className="walk-screen">
-      <WindowBar
+    <div className={`walk-screen ${step === 3 ? "walk-phone-screen" : ""}`}>
+      {step !== 3 && <WindowBar
         title={
           [
             "goals / define",
@@ -169,11 +132,11 @@ function WalkScreen({ step }: { step: number }) {
             "calendar / schedule",
             "today / check-in",
             "goals / progress",
-            "insights / what helps",
-            "coach / decision",
+            "coach / weekly review",
+            "coach / insights",
           ][step]
         }
-      />
+      />}
       <div className="walk-screen-content">
         {step === 0 && (
           <>
@@ -266,7 +229,6 @@ function WalkScreen({ step }: { step: number }) {
         {step === 3 && <CheckInPreview />}
         {step === 4 && (
           <>
-            <h3>How close are you to 5 km?</h3>
             <div
               className="chart-scenario-switch"
               role="group"
@@ -296,13 +258,23 @@ function WalkScreen({ step }: { step: number }) {
             </div>
           </>
         )}
-        {step === 5 && <LandingInsights />}
-        {step === 6 && <DecisionPreview />}
+        {step === 5 && <DecisionPreview />}
+        {step === 6 && <LandingInsights />}
       </div>
     </div>
   );
 }
 export function Landing() {
+  const [activeStep, setActiveStep] = useState(0);
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) setActiveStep(Number(entry.target.id.split("-")[1]) - 1);
+      }
+    }, { rootMargin: "-25% 0px -45% 0px" });
+    document.querySelectorAll(".walk-step").forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
   return (
     <div className="concrete-landing">
       <LandingAtmosphere />
@@ -320,6 +292,7 @@ export function Landing() {
       </header>
       <main>
         <section className="concrete-hero">
+          <div className="hero-intro">
           <div className="hero-label">
             <span className="status-dot" /> YOUR PERSONAL BEHAVIOURAL SCIENCE
             COACH
@@ -344,6 +317,7 @@ export function Landing() {
           <div className="hero-access-note">
             Start with your own goal · Connect your AI provider when you’re
             ready
+          </div>
           </div>
           <HeroPreview />
         </section>
@@ -400,7 +374,7 @@ export function Landing() {
           </div>
           <nav className="walk-step-nav" aria-label="Product walkthrough">
             {steps.map((s, i) => (
-              <a key={s.label} href={`#step-${i + 1}`}>
+              <a key={s.label} href={`#step-${i + 1}`} aria-current={activeStep === i ? "step" : undefined}>
                 <span>0{i + 1}</span>
                 {s.label}
               </a>
@@ -408,7 +382,7 @@ export function Landing() {
           </nav>
           {steps.map((s, i) => (
             <article
-              className={`walk-step ${i === 3 || i >= 5 ? "walk-step-wide" : i % 2 ? "reverse" : ""}`}
+              className="walk-step"
               id={`step-${i + 1}`}
               key={s.label}
             >

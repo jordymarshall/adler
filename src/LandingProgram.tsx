@@ -73,10 +73,6 @@ export function ProgramPreview() {
           </p>
         </div>
       </div>
-      <div className="program-sprint">
-        <span className="section-kicker">THIS WEEK</span>
-        <h3>Make time for your three planned runs.</h3>
-      </div>
       <PlanTimeline events={weeklyEvents} today="2026-10-12" />
       <div className="program-capacity">
         <div>
@@ -115,9 +111,6 @@ export function ProgramPreview() {
           the distance milestone. Adjust next week’s plan using those results.
         </p>
       </details>
-      <Link className="demo-inspect" to="/app/coach/program">
-        Edit your weekly plan <ArrowUpRight size={15} />
-      </Link>
     </div>
   );
 }
@@ -170,6 +163,8 @@ const decisionMethods = [
 const planChanges = [
   {
     category: "Schedule",
+    from: "Weekdays at 6:30 pm",
+    to: "Weekdays at 7:00 am",
     name: "Move weekday runs to before work",
     before: "Tuesday & Thursday at 6:30 pm",
     after: "Tuesday & Thursday at 7:00 am",
@@ -180,6 +175,8 @@ const planChanges = [
   },
   {
     category: "Preparation",
+    from: "Find kit before leaving",
+    to: "Lay it out the night before",
     name: "Get your running clothes ready the night before",
     before: "Look for your kit when it’s time to leave",
     after: "Put shoes and clothes by the door after brushing your teeth",
@@ -190,6 +187,8 @@ const planChanges = [
   },
   {
     category: "Milestones",
+    from: "3 km Oct 15 · 4 km Nov 1",
+    to: "3 km Nov 1 · 4 km Nov 8",
     name: "Set new dates for the 3 km and 4 km milestones",
     before: "3 km by Oct 15 · 4 km by Nov 1",
     after: "3 km by Nov 1 · 4 km by Nov 8",
@@ -200,6 +199,8 @@ const planChanges = [
   },
   {
     category: "Review",
+    from: "Count completed runs",
+    to: "Check starts and distance",
     name: "Check whether the new start times worked",
     before: "Count how many runs you completed",
     after:
@@ -212,188 +213,87 @@ const planChanges = [
 ];
 
 export function DecisionPreview() {
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [editing, setEditing] = useState<number | null>(null);
+  const [drafts, setDrafts] = useState(planChanges.map((change) => change.after));
   const [calendar, setCalendar] = useState(false);
   return (
-    <div className="decision-preview">
+    <div className="decision-preview compact-decision">
       <div className="program-preview-heading">
-        <span className="section-kicker">PROPOSED CHANGES TO YOUR PLAN</span>
-        <span className="program-version">
-          4 changes · review before saving
-        </span>
+        <span className="section-kicker">WEEKLY REVIEW · OCT 18</span>
+        <span className="program-version">4 proposed changes</span>
       </div>
-      <div className="decision-layout">
-        <aside className="decision-recommendation">
-          <div className="decision-message">
-            <AdlerAvatar small />
-            <p>
-              You missed both weekday runs when work ran late. You said mornings
-              are free. Let’s try your runs before work next week.
-            </p>
-          </div>
-          <div className="decision-adjustment">
-            <span className="section-kicker">NEXT WEEK’S PLAN</span>
-            <h3>Try your weekday runs before work.</h3>
-            <p>
-              Keep the sessions you already planned. Change the start time,
-              prepare your kit, and check how the week goes before changing the
-              workload.
-            </p>
-          </div>
-          <ol
-            className="decision-impact-path"
-            aria-label="Your next runs and progress checks"
-          >
-            <li>
-              <span>
-                20+22<small>OCT</small>
-              </span>
-              <div>
-                <b>Tuesday & Thursday · 7:00 am</b>
-                <p>Try the morning start times</p>
-              </div>
-            </li>
-            <li>
-              <span>
-                25<small>OCT</small>
-              </span>
-              <div>
-                <b>Review the week on Sunday</b>
-                <p>Check the runs, start times, and distance</p>
-              </div>
-            </li>
-            <li>
-              <span>
-                01<small>NOV</small>
-              </span>
-              <div>
-                <b>Check your progress toward 3 km</b>
-                <p>Next proposed distance milestone</p>
-              </div>
-            </li>
-            <li>
-              <span>
-                15<small>NOV</small>
-              </span>
-              <div>
-                <b>Your goal: 5 km without stopping</b>
-                <p>Review this date as results come in</p>
-              </div>
-            </li>
-          </ol>
-          <details className="decision-inputs">
-            <summary>
-              What Adler used to suggest these changes <ChevronDown size={14} />
-            </summary>
-            <dl>
-              <div>
-                <dt>Latest result · Oct 17</dt>
-                <dd>
-                  2 km without stopping. The plan called for 3 km by Oct 15.
-                </dd>
-              </div>
-              <div>
-                <dt>Tuesday · Oct 13</dt>
-                <dd>“Work ran late, so I missed the run.”</dd>
-              </div>
-              <div>
-                <dt>Thursday · Oct 15</dt>
-                <dd>“Got home late again. By then I’d missed it.”</dd>
-              </div>
-              <div>
-                <dt>Your availability</dt>
-                <dd>“I’m free before work at 7.”</dd>
-              </div>
-              <div>
-                <dt>Your preparation</dt>
-                <dd>“I lose time finding my running kit.”</dd>
-              </div>
-            </dl>
-          </details>
-          <div className="decision-calendar-step">
-            <button
-              aria-expanded={calendar}
-              aria-controls="decision-calendar-options"
-              onClick={() => setCalendar(!calendar)}
-            >
-              <CalendarDays size={16} />
-              <span>
-                <small>OPTIONAL NEXT STEP</small>Add the new run times to your
-                calendar
-              </span>
+      <div className="decision-message">
+        <AdlerAvatar small />
+        <p>Work interrupted both weekday runs. Try mornings next week, then check whether the new times helped.</p>
+      </div>
+      <div className="decision-table-head" aria-hidden="true">
+        <span>Change</span><span>Current plan</span><span>Proposed plan</span><span />
+      </div>
+      <div className="decision-change-list">
+        {planChanges.map((change, index) => (
+          <details className="decision-change-row" key={change.category} open={expanded === index}>
+            <summary onClick={(e) => { e.preventDefault(); setExpanded(expanded === index ? null : index); }}>
+              <b>{change.category}</b>
+              <span className="change-from">{change.from}</span>
+              <span className="change-to">{drafts[index] === change.after ? change.to : drafts[index]}</span>
               <ChevronDown size={15} />
-            </button>
-            {calendar && (
-              <div id="decision-calendar-options">
-                <p>Check these times against your connected calendar:</p>
-                <ul>
-                  <li>Tue, Oct 20 · 7:00–7:25 am</li>
-                  <li>Thu, Oct 22 · 7:00–7:25 am</li>
-                </ul>
-                <p>Add a five-minute check-in after each run.</p>
-                <Link to="/app/calendar">
-                  Check availability & choose times <ArrowRight size={13} />
-                </Link>
-                <small>
-                  You confirm the calendar and time before anything is booked.
-                </small>
+            </summary>
+            <div className="decision-change-detail">
+              <h3>{change.name}</h3>
+              <ChangeComparison before={change.before} after={drafts[index]} />
+              <ChangeReason>{change.reason}</ChangeReason>
+              <div className="change-basis">
+                <span className="comparison-label">Based on</span>
+                <p>{change.source}</p>
+                <details className="change-research">
+                  <summary>Research behind this change <ChevronDown size={13} /></summary>
+                  {change.methods.map((id) => {
+                    const method = METHODS.find((m) => m.id === id)!;
+                    const application = decisionMethods.find((m) => m.id === id)!;
+                    return (
+                      <div key={id}>
+                        <b>{application.title}</b>
+                        <p>{application.application}</p>
+                        <a href={method.url} target="_blank" rel="noreferrer">
+                          {method.source} <ArrowUpRight size={12} />
+                        </a>
+                        <p>{application.basis}</p>
+                      </div>
+                    );
+                  })}
+                </details>
               </div>
-            )}
-          </div>
-          <Link className="decision-cta" to="/app/coach/program">
-            Open your weekly plan <ArrowRight size={14} />
-          </Link>
-        </aside>
-        <section
-          className="decision-plan-changes"
-          aria-label="Proposed plan changes"
-        >
-          <ol className="decision-change-list">
-            {planChanges.map((change, index) => (
-              <li key={change.name}>
-                <article className="decision-change-panel">
-                  <span className="section-kicker">
-                    0{index + 1} · {change.category}
-                  </span>
-                  <h4>{change.name}</h4>
-                  <ChangeComparison
-                    before={change.before}
-                    after={change.after}
+              {editing === index && (
+                <label className="decision-edit">
+                  Proposed {change.category.toLowerCase()} change
+                  <textarea
+                    rows={3}
+                    maxLength={300}
+                    value={drafts[index]}
+                    onChange={(e) => setDrafts(drafts.map((value, i) => i === index ? e.target.value : value))}
                   />
-                  <ChangeReason>{change.reason}</ChangeReason>
-                  <div className="change-basis">
-                    <span className="comparison-label">Based on</span>
-                    <p>{change.source}</p>
-                    <details className="change-research">
-                      <summary>
-                        Research behind this change <ChevronDown size={13} />
-                      </summary>
-                      {change.methods.map((id) => {
-                        const method = METHODS.find((m) => m.id === id)!;
-                        const application = decisionMethods.find(
-                          (m) => m.id === id,
-                        )!;
-                        return (
-                          <div key={id}>
-                            <b>{application.title}</b>
-                            <p>{application.application}</p>
-                            <a
-                              href={method.url}
-                              target="_blank"
-                              rel="noreferrer"
-                            >
-                              {method.source} <ArrowUpRight size={12} />
-                            </a>
-                            <p>{application.basis}</p>
-                          </div>
-                        );
-                      })}
-                    </details>
-                  </div>
-                </article>
-              </li>
-            ))}
-          </ol>
-        </section>
+                </label>
+              )}
+              <button className="button text-button small-button" onClick={() => setEditing(editing === index ? null : index)}>
+                {editing === index ? "Done editing" : "Edit this change"}
+              </button>
+            </div>
+          </details>
+        ))}
+      </div>
+      <p className="decision-summary-note">Your 5 km goal stays on November 15. Review the new schedule on October 25.</p>
+      <div className="decision-calendar-step">
+        <button aria-expanded={calendar} aria-controls="decision-calendar-options" onClick={() => setCalendar(!calendar)}>
+          <CalendarDays size={16} /><span>Add the new run times to your calendar</span><ChevronDown size={15} />
+        </button>
+        {calendar && (
+          <div id="decision-calendar-options">
+            <p>{drafts[0]}. Allow 25 minutes for each run and a five-minute check-in afterward.</p>
+            <Link to="/app/calendar">Check availability & choose times <ArrowRight size={13} /></Link>
+            <small>You confirm the calendar and time before anything is booked.</small>
+          </div>
+        )}
       </div>
     </div>
   );

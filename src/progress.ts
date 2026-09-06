@@ -15,10 +15,6 @@ export function progressStatus(goal: Goal, date: string) {
     goal.measure || goal.kind === "learning"
       ? goal.results.at(-1)?.date
       : goal.outcomeUpdatedAt;
-  const stale =
-    !latestDate ||
-    Date.parse(`${date}T12:00:00`) - Date.parse(`${latestDate}T12:00:00`) >
-      7 * 86400000;
   if (goal.status === "Completed")
     return {
       label: "Completed",
@@ -35,15 +31,13 @@ export function progressStatus(goal: Goal, date: string) {
       planned: due?.value ?? null,
       detail: "Future work is paused. Historical results are retained.",
     };
-  if (actual === null || stale)
+  if (actual === null)
     return {
       label: "Update needed",
       tone: "neutral",
       actual,
       planned: due?.value ?? null,
-      detail: latestDate
-        ? `Last result recorded ${formatDate(latestDate)}. Update it before judging the pace.`
-        : "Record a result to compare it with the plan.",
+      detail: "Record a result to compare it with the plan.",
     };
   if (!due)
     return {
@@ -61,6 +55,6 @@ export function progressStatus(goal: Goal, date: string) {
     tone: delta < 0 ? "attention" : "positive",
     actual,
     planned: due.value,
-    detail: `${actual} ${goal.measure?.unit ?? goal.unit ?? "milestones verified"} recorded; ${due.value} planned by ${formatDate(due.date)}. ${delta < 0 ? "Inspect the obstacle before changing the workload." : "Compared with your agreed checkpoint."}`,
+    detail: `${actual} ${goal.measure?.unit ?? goal.unit ?? "milestones verified"} recorded${latestDate ? ` ${formatDate(latestDate)}` : ""}; ${due.value} planned by ${formatDate(due.date)}. ${delta < 0 ? "Inspect the obstacle before changing the workload." : "Compared with your agreed checkpoint."}`,
   };
 }

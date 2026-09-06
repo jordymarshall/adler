@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import { formatDate, useStore, type Data } from "./store";
@@ -119,7 +119,9 @@ export function Insights() {
   const { data } = useStore();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [error, setError] = useState("");
-  const [goalId, setGoalId] = useState("all");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const goalId = searchParams.get("goal") ?? "all";
+  const coachLink = goalId === "all" ? "/app/coach" : `/app/coach?goal=${goalId}`;
   useEffect(() => {
     api<Proposal[]>("proposals")
       .then(setProposals)
@@ -209,7 +211,7 @@ export function Insights() {
         };
       }),
     );
-  for (const memory of data.memories) {
+  for (const memory of goalId === "all" ? data.memories : []) {
     if (
       rows.some((row) =>
         row.sources.some((source) => source.text === memory.text),
@@ -243,13 +245,20 @@ export function Insights() {
             followed.
           </p>
         </div>
-        <Link className="button secondary" to="/app/coach">
+        <Link className="button secondary" to={coachLink}>
           Talk with Adler <ArrowRight size={16} />
         </Link>
       </div>
       <label className="insights-filter">
         Show
-        <select value={goalId} onChange={(e) => setGoalId(e.target.value)}>
+        <select
+          value={goalId}
+          onChange={(e) =>
+            setSearchParams(
+              e.target.value === "all" ? {} : { goal: e.target.value },
+            )
+          }
+        >
           <option value="all">All goals</option>
           {data.goals.map((g) => (
             <option key={g.id} value={g.id}>
@@ -271,7 +280,7 @@ export function Insights() {
             Tell Adler about a session, result, or obstacle. Useful observations
             will appear here with their sources and any changes to your plan.
           </p>
-          <Link to="/app/coach">Share a check-in ↗</Link>
+          <Link to={coachLink}>Share a check-in ↗</Link>
         </div>
       )}
     </div>
@@ -279,9 +288,8 @@ export function Insights() {
 }
 
 export function LandingInsights() {
-  return (
-    <InsightsMatrix
-      rows={[
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const rows: InsightRow[] = [
         {
           id: "evenings",
           finding: "Work has interrupted both weekday runs.",
@@ -301,7 +309,7 @@ export function LandingInsights() {
                 Use the 7 am window you said is free, then check whether you
                 actually start.
               </p>
-              <a href="#step-7">Review the schedule change ↗</a>
+              <a href="#step-6">Review the schedule change ↗</a>
             </>
           ),
         },
@@ -326,7 +334,7 @@ export function LandingInsights() {
                 Try it for a week. At the review, check whether it reduced the
                 delay.
               </p>
-              <a href="#step-7">Review the preparation change ↗</a>
+              <a href="#step-6">Review the preparation change ↗</a>
             </>
           ),
         },
@@ -355,11 +363,36 @@ export function LandingInsights() {
                 Compare new intermediate dates with the time available. Revisit
                 the final deadline at the weekly review.
               </p>
-              <a href="#step-7">Review the milestone changes ↗</a>
+              <a href="#step-6">Review the milestone changes ↗</a>
             </>
           ),
         },
-      ]}
-    />
+  ];
+  return (
+    <div className="landing-insights-preview">
+      <div className="learning-cycle" aria-label="How Adler learns from your progress">
+        <span>What happened</span><ArrowRight size={14} /><span>What might help</span><ArrowRight size={14} /><span>Try & review</span>
+      </div>
+      <h3>What Adler has learned so far</h3>
+      <p>Open an insight to see its source and how it informs your plan.</p>
+      {rows.map((row) => (
+        <details className="landing-insight" key={row.id} open={expanded === row.id}>
+          <summary onClick={(e) => { e.preventDefault(); setExpanded(expanded === row.id ? null : row.id); }}>
+            <span>
+              <small>{row.status} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</small>
+              <b>{row.finding}</b>
+            </span>
+            <ChevronDown size={16} />
+          </summary>
+          <div className="landing-insight-detail">
+            <span className="section-kicker">WHERE IT CAME FROM</span>
+            {row.sources.map((source) => <p key={source.label}><b>{source.label}</b><br />{source.text}</p>)}
+            <span className="section-kicker">WHAT IT CHANGES</span>
+            <div className="insight-effect">{row.effect}</div>
+          </div>
+        </details>
+      ))}
+      <Link className="text-link" to="/app/coach/about-you">Review or correct what Adler remembers <ArrowRight size={14} /></Link>
+    </div>
   );
 }

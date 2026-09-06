@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { ArrowLeft, Check, Pencil } from "lucide-react";
+import { Check, Pencil } from "lucide-react";
 import { Modal } from "./components";
 import { currentProgram, localDate, reviseProgram, useStore } from "./store";
 import { METHODS } from "./methods";
@@ -38,9 +37,6 @@ export function Program() {
   }
   return (
     <div className="program-page">
-      <Link className="back-link" to="/app/coach">
-        <ArrowLeft size={15} /> Back to Adler
-      </Link>
       <div className="page-heading">
         <div>
           <span className="section-kicker">

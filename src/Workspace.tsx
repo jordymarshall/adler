@@ -14,7 +14,6 @@ import {
   Leaf,
   Moon,
   Plus,
-  Settings2,
   Sun,
   Trash2,
   Target,
@@ -302,7 +301,7 @@ export function Today() {
           New goal
         </Link>
       </div>
-      <Link className="today-pace-banner" to="/app/goals">
+      {active.length > 0 && <Link className="today-pace-banner" to="/app/goals">
         <Target size={18} />
         <div>
           <b>
@@ -323,7 +322,7 @@ export function Today() {
           </span>
         </div>
         <ArrowRight size={17} />
-      </Link>
+      </Link>}
       <div className="today-layout">
         <div className="today-main">
           <div className="list-heading">
@@ -355,7 +354,7 @@ export function Today() {
               <div>{completed.map(renderAction)}</div>
             </details>
           )}
-          {!data.review.completedAt && (
+          {active.length > 0 && !data.review.completedAt && (
             <Link className="review-banner" to="/app/reviews/weekly">
               <span className="review-icon">
                 <CalendarDays size={24} />
@@ -429,7 +428,7 @@ export function Today() {
             </div>
           )}
         </div>
-        <aside className="today-aside">
+        {active.length > 0 && <aside className="today-aside">
           <div className="goals-snapshot">
             <div className="list-heading">
               <h2>The bigger picture</h2>
@@ -447,33 +446,11 @@ export function Today() {
                 <div>
                   <b>{goal.title}</b>
                   <span>{resultLabel(goal)}</span>
-                  <div className="segmented-progress">
-                    {goal.kind === "learning"
-                      ? Array.from({ length: 10 }, (_, i) => (
-                          <i
-                            key={i}
-                            className={
-                              i < (goal.results.at(-1)?.value ?? 0)
-                                ? "filled"
-                                : ""
-                            }
-                          />
-                        ))
-                      : goal.milestones.map((m) => (
-                          <i key={m.id} className={m.done ? "filled" : ""} />
-                        ))}
-                  </div>
                 </div>
               </Link>
             ))}
           </div>
-          <p className="sample-note">
-            <Leaf size={14} />
-            Your goals and records, saved together.
-            <br />
-            Changes sync across your connected channels.
-          </p>
-        </aside>
+        </aside>}
       </div>
       {recording && (
         <RecordAction action={recording} onClose={() => setRecording(null)} />
@@ -904,17 +881,10 @@ export function NewGoal() {
 export function WeeklyReview() {
   const { data, commit } = useStore();
   const review = data.review;
-  const [note, setNote] = useState(review.note);
   const navigate = useNavigate();
   const actions = data.actions.filter(
     (a) => !a.unplanned && a.date >= localDate(-6) && a.date <= localDate(),
   );
-  function advance(step: number) {
-    commit((d) => {
-      d.review.step = step;
-      d.review.note = note;
-    });
-  }
   return (
     <div className="form-page">
       <Link to="/app/today" className="back-link">
@@ -958,145 +928,75 @@ export function WeeklyReview() {
         </div>
       ) : (
         <>
-          <div className="review-steps">
-            {["See the record", "Understand it", "Choose the next plan"].map(
-              (s, i) => (
-                <span className={review.step === i ? "active" : ""} key={s}>
-                  <b>{i + 1}</b>
-                  {s}
-                </span>
-              ),
-            )}
-          </div>
           <div className="panel review-panel">
-            {review.step === 0 ? (
-              <>
-                <h2>Here’s what you recorded.</h2>
-                {data.goals
-                  .filter((g) => g.status === "Active")
-                  .map((g) => (
-                    <div className="review-goal" key={g.id}>
-                      <GoalIcon kind={g.kind} small />
-                      <div>
-                        <b>{g.title}</b>
-                        <p>{resultLabel(g)}</p>
-                      </div>
-                    </div>
-                  ))}
-                <div className="review-counts">
-                  {(
-                    ["Done", "Partly", "Didn’t happen", "Unknown"] as const
-                  ).map((o) => (
-                    <div key={o}>
-                      <strong>
-                        {
-                          actions.filter((a) => (a.outcome ?? "Unknown") === o)
-                            .length
-                        }
-                      </strong>
-                      <span>{o}</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="muted small-text">
-                  {actions.filter((a) => a.outcome).length} of {actions.length}{" "}
-                  scheduled actions have updates. Unknown actions have no
-                  recorded outcome.
-                </p>
-                <button className="button primary" onClick={() => advance(1)}>
-                  Take a closer look <ArrowRight size={16} />
-                </button>
-              </>
-            ) : review.step === 1 ? (
-              <>
-                <h2>What feels worth paying attention to?</h2>
-                <p className="muted">
-                  A small success, a roadblock, or something that changed. You
-                  don’t need to find a lesson in everything.
-                </p>
-                <label className="field-label" htmlFor="review-note">
-                  Your perspective <span>optional</span>
-                </label>
-                <textarea
-                  id="review-note"
-                  value={note}
-                  onChange={(e) => {
-                    setNote(e.target.value);
-                    commit((d) => {
-                      d.review.note = e.target.value;
-                    });
-                  }}
-                  rows={5}
-                  maxLength={2000}
-                  placeholder="This week, I noticed…"
-                />
-                <div className="modal-actions">
-                  <button
-                    className="button text-button"
-                    onClick={() => advance(0)}
-                  >
-                    Back
-                  </button>
-                  <button className="button primary" onClick={() => advance(2)}>
-                    Choose what’s next <ArrowRight size={16} />
-                  </button>
-                </div>
-              </>
-            ) : (
-              <>
-                <h2>What would you like to do next?</h2>
-                <p className="muted">
-                  Reflecting doesn’t change a plan by itself. Choose the next
-                  move that fits.
-                </p>
-                <button
-                  className="review-choice"
-                  onClick={() =>
-                    commit((d) => {
-                      d.review = {
-                        ...d.review,
-                        note,
-                        decision: "Keep the current plans",
-                        completedAt: new Date().toISOString(),
-                      };
-                      d.reviews.push({ ...d.review });
-                    }, "Review saved. Your plans stay as they are.")
-                  }
-                >
-                  <CheckCircle2 size={22} />
-                  <span>
-                    <b>Keep my current plans</b>
-                    <small>The approach still feels workable.</small>
-                  </span>
-                  <ArrowRight size={18} />
-                </button>
-                <Link className="review-choice" to="/app/goals">
-                  <Settings2 size={22} />
-                  <span>
-                    <b>Make a specific adjustment</b>
-                    <small>
-                      Open a goal to edit, pause, or finish it. Your review
-                      draft stays saved.
-                    </small>
-                  </span>
-                  <ArrowRight size={18} />
+            {data.goals
+              .filter((g) => g.status === "Active")
+              .map((g) => (
+                <Link className="review-goal" key={g.id} to={`/app/goals/${g.id}/progress`}>
+                  <GoalIcon kind={g.kind} small />
+                  <div>
+                    <b>{g.title}</b>
+                    <p>{resultLabel(g)}</p>
+                  </div>
+                  <ArrowUpRight size={16} />
                 </Link>
-                <Link className="review-choice" to="/app/coach">
-                  <Asterisk size={22} />
-                  <span>
-                    <b>Think it through with the coach</b>
-                    <small>Explore what might make the next step easier.</small>
-                  </span>
-                  <ArrowRight size={18} />
-                </Link>
-                <button
-                  className="button text-button"
-                  onClick={() => advance(1)}
-                >
-                  Back
-                </button>
-              </>
-            )}
+              ))}
+            <p className="field-label">This week’s scheduled actions</p>
+            <div className="review-counts">
+              {(["Done", "Partly", "Didn’t happen", "Unknown"] as const).map((o) => (
+                <div key={o}>
+                  <strong>
+                    {actions.filter((a) => (a.outcome ?? "Unknown") === o).length}
+                  </strong>
+                  <span>{o === "Unknown" ? "No update" : o}</span>
+                </div>
+              ))}
+            </div>
+            <label className="field-label" htmlFor="review-note">
+              What helped or got in the way? <span>optional</span>
+            </label>
+            <textarea
+              id="review-note"
+              value={review.note}
+              onChange={(e) => {
+                const note = e.target.value;
+                commit((d) => { d.review.note = note; });
+              }}
+              rows={3}
+              maxLength={2000}
+              placeholder="This week, I noticed…"
+            />
+            <button
+              className="review-choice"
+              onClick={() =>
+                commit((d) => {
+                  d.review = {
+                    ...d.review,
+                    decision: "Keep the current plans",
+                    completedAt: new Date().toISOString(),
+                  };
+                  d.reviews.push({ ...d.review });
+                }, "Review saved. Your plans stay as they are.")
+              }
+            >
+              <CheckCircle2 size={22} />
+              <span>
+                <b>Keep my current plans</b>
+                <small>Save this review with no plan changes.</small>
+              </span>
+              <ArrowRight size={18} />
+            </button>
+            <Link className="review-choice" to="/app/coach">
+              <Asterisk size={22} />
+              <span>
+                <b>Review changes with Adler</b>
+                <small>Your results and this note are available to the coach.</small>
+              </span>
+              <ArrowRight size={18} />
+            </Link>
+            <Link className="button text-button" to="/app/goals">
+              Edit a plan myself <ArrowRight size={16} />
+            </Link>
           </div>
           <button
             className="button text-button muted"
@@ -1211,7 +1111,7 @@ export function SettingsPage() {
         <div className="settings-row">
           <div>
             <label htmlFor="review-day">Weekly review day</label>
-            <p>An invitation to pause and take stock.</p>
+            <p>Choose when to review progress and plan the next week.</p>
           </div>
           <select
             id="review-day"
@@ -1245,13 +1145,6 @@ export function SettingsPage() {
           </div>
           <span className="small-text">{data.timeZone}</span>
         </div>
-        <div className="settings-row">
-          <div>
-            <h3>Email reminders</h3>
-            <p>Email delivery is not connected in this preview.</p>
-          </div>
-          <Tag>Not enabled</Tag>
-        </div>
       </section>
       <section className="panel settings-section">
         <h2>Your information</h2>
@@ -1259,35 +1152,14 @@ export function SettingsPage() {
           <div>
             <h3>Integrations</h3>
             <p>
-              Explore calendar, messaging, fitness, and learning connections.
+              Connect your calendar, phone, and AI provider.
             </p>
           </div>
           <Link
             className="button secondary small-button"
             to="/app/integrations"
           >
-            Browse integrations →
-          </Link>
-        </div>
-        <div className="settings-row">
-          <div>
-            <h3>AI provider</h3>
-            <p>Choose Gemini, GPT, or Claude and connect your API account.</p>
-          </div>
-          <Link
-            className="button secondary small-button"
-            to="/app/settings/provider"
-          >
-            AI provider →
-          </Link>
-        </div>
-        <div className="settings-row">
-          <div>
-            <h3>Phone, MCP & automations</h3>
-            <p>Text Adler, connect a chat client, and schedule check-ins.</p>
-          </div>
-          <Link className="button secondary small-button" to="/app/connections">
-            Connections →
+            Manage integrations →
           </Link>
         </div>
         <div className="settings-row">
@@ -1301,29 +1173,6 @@ export function SettingsPage() {
           >
             Sign out
           </button>
-        </div>
-        <div className="settings-row">
-          <div>
-            <h3>AI coaching</h3>
-            <p>Automatically available with your connected AI provider.</p>
-          </div>
-          <Link
-            className="button secondary small-button"
-            to="/app/settings/provider"
-          >
-            AI provider <ArrowUpRight size={15} />
-          </Link>
-        </div>
-        <div className="settings-row">
-          <div>
-            <h3>Calendar connections</h3>
-            <p>
-              Connect accounts, check availability, and approve time blocks.
-            </p>
-          </div>
-          <Link className="button secondary small-button" to="/app/calendar">
-            Manage calendars <ArrowUpRight size={15} />
-          </Link>
         </div>
         <div className="settings-row">
           <div>

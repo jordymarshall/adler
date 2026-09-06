@@ -783,7 +783,6 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
     ],
     dayInZone(snapshot.data),
   );
-  db.save(user.id, data, snapshot.revision, "web", "Set up coaching");
   const calls: {
     config: Parameters<typeof generate>[0];
     instructions: string;
@@ -808,6 +807,9 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
     });
   };
   const service = new Service(db, runner);
+  // The same save path used by goal/program forms must feed every coach surface.
+  await service.update(user.id, data, snapshot.revision, randomUUID());
+  assert.equal(calls.length, 0, "An explicit form save does not require a model call");
   const channels = ["web", "imessage", "sms", "mcp"] as const;
   for (const channel of channels)
     await service.chat(

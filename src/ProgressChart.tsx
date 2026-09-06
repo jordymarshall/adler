@@ -15,6 +15,7 @@ export function ProgressChart({
   proposedCheckpoints?: { date: string; value: number }[];
 }) {
   const id = useId();
+  const Heading = compact ? "h3" : "h2";
   const [hover, setHover] = useState<number | null>(null);
   const planned = [...(goal.checkpoints ?? [])].sort((a, b) =>
     a.date.localeCompare(b.date),
@@ -65,7 +66,7 @@ export function ProgressChart({
       <div className="viz-heading">
         <div>
           <span className="section-kicker">HOW WE MEASURE PROGRESS</span>
-          <h3>{goal.measure?.label ?? goal.unit ?? "Verified milestones"}</h3>
+          <Heading>{goal.measure?.label ?? goal.unit ?? "Verified milestones"}</Heading>
         </div>
         <span className={`pace-badge ${status.tone}`}>{status.label}</span>
       </div>
@@ -111,9 +112,7 @@ export function ProgressChart({
             ),
           );
         }}
-        onPointerLeave={() => setHover(null)}
         onFocus={() => setHover(points.indexOf(today))}
-        onBlur={() => setHover(null)}
         onKeyDown={(event) => {
           if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) {
             event.preventDefault();
@@ -295,10 +294,10 @@ export function ProgressChart({
           </span>
         )}
       </div>
-      <p className="chart-date-explanation">
+      {!compact && <p className="chart-date-explanation">
         Each hollow point is a result due on that date. The dashed line holds
         that target until the next checkpoint.
-      </p>
+      </p>}
       <div className="chart-legend">
         <span>
           <i /> Recorded result
@@ -318,14 +317,14 @@ export function ProgressChart({
           shows the proposed checkpoints.
         </p>
       )}
-      <p className="chart-explanation">{status.detail}</p>
+      {!compact && <p className="chart-explanation">{status.detail}</p>}
       {!compact && (
         <details className="chart-data">
           <summary>View checkpoints and evidence</summary>
           <p className="field-hint">
             Steps reflect your agreed dates. The solid step line holds the last
             recorded value until the next update; it does not estimate
-            unrecorded progress. Results older than 7 days need an update.
+            unrecorded progress.
           </p>
           <table>
             <thead>

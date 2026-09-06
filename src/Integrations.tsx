@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowRight,
@@ -11,6 +11,7 @@ import {
   Search,
 } from "lucide-react";
 import { Logo, Footer, Modal } from "./components";
+import { api, type ServiceStatus } from "./api";
 import {
   integrations,
   integrationCategories,
@@ -166,7 +167,63 @@ export function IntegrationShowcase() {
     </section>
   );
 }
-export function Integrations({ inApp = false }: { inApp?: boolean }) {
+export function AppIntegrations() {
+  const [status, setStatus] = useState<ServiceStatus | null>(null);
+  const [connections, setConnections] = useState<{
+    configured: boolean;
+    provider: string;
+    link: { opted_out: number } | null;
+    tokens: { scope: string }[];
+  } | null>(null);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    Promise.all([api<ServiceStatus>("status"), api<NonNullable<typeof connections>>("connections")])
+      .then(([service, links]) => { setStatus(service); setConnections(links); })
+      .catch((e) => setError(e.message));
+  }, []);
+  function connectionState(id: string) {
+    if (!status || !connections) return "Checking connection…";
+    if (id === "models") return status.coach.configured ? "Ready" : "Not connected";
+    if (id === "google-calendar") return status.google.connected ? "Connected" : "Not connected";
+    if (id === "apple-calendar") return status.apple.connected ? "Connected" : "Not connected";
+    if (id === "imessage" || id === "sms") {
+      if (!connections.configured || (id === "imessage" && connections.provider !== "linq")) return "Setup required";
+      return connections.link && !connections.link.opted_out ? "Phone paired" : "Pair your phone";
+    }
+    return connections.tokens.some((token) => token.scope === (id === "mcp" ? "mcp" : "webhook"))
+      ? "Token created" : "Setup required";
+  }
+  return (
+    <div className="app-integrations">
+      <div className="page-heading">
+        <div>
+          <h1>Integrations</h1>
+          <p>Connect your calendar, phone, and AI provider to your Adler workspace.</p>
+        </div>
+      </div>
+      {error && <p role="alert">{error}</p>}
+      <div className="connection-setup-list">
+        {integrations.filter((item) => item.route).map((item) => (
+          <article className="connection-setup-row" key={item.id}>
+            <IntegrationLogo item={item} />
+            <div>
+              <h2>{item.name}</h2>
+              <p>{item.description}</p>
+              <span className="connection-state">{error ? "Couldn’t check connection" : connectionState(item.id)}</span>
+            </div>
+            <Link className="button secondary small-button" to={item.route!}>
+              {["Connected", "Ready", "Phone paired", "Token created"].includes(connectionState(item.id))
+                ? "Manage" : "Set up"}
+              <ArrowRight size={14} />
+            </Link>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function Integrations() {
   const [category, setCategory] = useState("All");
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Integration | null>(null);
@@ -269,9 +326,7 @@ export function Integrations({ inApp = false }: { inApp?: boolean }) {
       )}
     </>
   );
-  return inApp ? (
-    <div className="integrations-page in-app">{content}</div>
-  ) : (
+  return (
     <div className="integrations-public">
       <header className="site-header">
         <Logo />

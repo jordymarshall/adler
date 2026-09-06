@@ -63,8 +63,8 @@ export function ProviderSettings() {
   const selected = status?.providers.find((p) => p.provider === provider);
   return (
     <div className="settings-page">
-      <Link className="back-link" to="/app/settings">
-        ← Settings
+      <Link className="back-link" to="/app/integrations">
+        ← Integrations
       </Link>
       <div className="page-heading">
         <div>
@@ -285,8 +285,8 @@ export function Connections() {
   const origin = status?.publicUrl ?? window.location.origin;
   return (
     <div className="settings-page connections-page">
-      <Link className="back-link" to="/app/settings">
-        ← Settings
+      <Link className="back-link" to="/app/integrations">
+        ← Integrations
       </Link>
       <div className="page-heading">
         <div>
