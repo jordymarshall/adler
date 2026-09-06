@@ -1,0 +1,207 @@
+import { useEffect } from "react";
+import {
+  Link,
+  Navigate,
+  NavLink,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import {
+  ArrowUpRight,
+  CalendarDays,
+  Asterisk,
+  ChevronRight,
+  CircleHelp,
+  Leaf,
+  MessageCircle,
+  Settings,
+  Sun,
+  Target,
+} from "lucide-react";
+import { Footer, Logo } from "./components";
+import { Landing, PublicPage, SignIn } from "./Landing";
+import { useStore } from "./store";
+import { NewGoal, SettingsPage, Today, WeeklyReview } from "./Workspace";
+import { GoalWorkspace } from "./GoalWorkspace";
+import { Coach, Memory } from "./Coach";
+import { Program } from "./Program";
+import { Calendar } from "./Calendar";
+import { OrganizedGoals } from "./GoalOrganization";
+
+function ScrollReset() {
+  const { pathname, hash } = useLocation();
+  useEffect(() => {
+    if (hash) {
+      const frame = requestAnimationFrame(() =>
+        document.getElementById(hash.slice(1))?.scrollIntoView(),
+      );
+      return () => cancelAnimationFrame(frame);
+    }
+    window.scrollTo(0, 0);
+  }, [pathname, hash]);
+  return null;
+}
+function AppShell() {
+  const location = useLocation();
+  const label = location.pathname.includes("/calendar")
+    ? "Calendar"
+    : location.pathname.includes("/goals")
+      ? "Goals"
+      : location.pathname.includes("/coach")
+        ? "Coach"
+        : location.pathname.includes("/settings")
+          ? "Settings"
+          : location.pathname.includes("/reviews")
+            ? "Your weekly review"
+            : "Today";
+  const nav = [
+    { to: "/app/today", label: "Today", Icon: Sun },
+    { to: "/app/goals", label: "Goals", Icon: Target },
+    { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
+    { to: "/app/coach", label: "Coach", Icon: MessageCircle },
+  ];
+  return (
+    <div className="app-shell">
+      <a className="skip-link" href="#app-main">
+        Skip to content
+      </a>
+      <aside className="app-sidebar">
+        <Logo />
+        <span className="workspace-label">YOUR WORKSPACE</span>
+        <nav aria-label="App navigation">
+          {nav.map(({ to, label, Icon }) => (
+            <NavLink key={to} to={to}>
+              <Icon size={20} strokeWidth={1.7} />
+              {label}
+              <ChevronRight className="nav-chevron" size={15} />
+            </NavLink>
+          ))}
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="sidebar-note">
+            <Leaf size={24} strokeWidth={1.3} />
+            <p>
+              Plan the work.
+              <br />
+              Track the result.
+            </p>
+            <span>Adjust with evidence.</span>
+          </div>
+          <NavLink to="/app/settings" className="sidebar-setting">
+            <Settings size={19} />
+            Settings
+          </NavLink>
+          <Link to="/support" className="sidebar-setting">
+            <CircleHelp size={19} />
+            Help & the method
+          </Link>
+          <div className="sidebar-profile">
+            <span className="avatar">Y</span>
+            <div>
+              <b>Your workspace</b>
+              <span>Personal preview</span>
+            </div>
+            <span className="status-dot" />
+          </div>
+        </div>
+      </aside>
+      <div className="app-body">
+        <header className="app-topbar">
+          <div className="breadcrumb">
+            <span>My workspace</span>
+            <ChevronRight size={13} />
+            <b>{label}</b>
+          </div>
+          <Link className="preview-badge" to="/support">
+            <span className="status-dot" />
+            Local preview <ArrowUpRight size={12} />
+          </Link>
+          <Link className="mobile-logo" to="/" aria-label="Adler home">
+            <Asterisk size={27} />
+          </Link>
+        </header>
+        <main id="app-main" className="app-main">
+          <Outlet />
+        </main>
+        <footer className="app-footer">
+          <Asterisk size={16} /> Your goals. Your records. Your decisions.
+          <Link to="/">
+            Back to Adler <ArrowUpRight size={12} />
+          </Link>
+        </footer>
+      </div>
+      <nav className="mobile-nav" aria-label="Mobile app navigation">
+        {nav.map(({ to, label, Icon }) => (
+          <NavLink key={to} to={to}>
+            <Icon size={21} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+        <NavLink to="/app/settings">
+          <Settings size={21} />
+          <span>Settings</span>
+        </NavLink>
+      </nav>
+    </div>
+  );
+}
+export function App() {
+  const { toast } = useStore();
+  return (
+    <>
+      <ScrollReset />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        {(["method", "privacy", "terms", "support"] as const).map((type) => (
+          <Route
+            key={type}
+            path={`/${type}`}
+            element={<PublicPage type={type} />}
+          />
+        ))}
+        <Route path="/app" element={<AppShell />}>
+          <Route index element={<Navigate to="today" replace />} />
+          <Route path="today" element={<Today />} />
+          <Route path="goals" element={<OrganizedGoals />} />
+          <Route path="goals/new" element={<NewGoal />} />
+          <Route path="onboarding" element={<NewGoal />} />
+          <Route path="goals/:goalId" element={<GoalWorkspace />} />
+          <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
+          <Route path="coach" element={<Coach />} />
+          <Route path="coach/program" element={<Program />} />
+          <Route path="calendar" element={<Calendar />} />
+          <Route path="coach/about-you" element={<Memory />} />
+          <Route path="reviews/:reviewId" element={<WeeklyReview />} />
+          <Route path="settings" element={<SettingsPage />} />
+        </Route>
+        <Route
+          path="*"
+          element={
+            <div className="public-page">
+              <header className="site-header">
+                <Logo />
+              </header>
+              <main className="empty-state">
+                <h1>This path is still unwritten.</h1>
+                <p>Let’s get you back to a familiar place.</p>
+                <Link className="button primary" to="/">
+                  Back to Adler
+                </Link>
+              </main>
+              <Footer />
+            </div>
+          }
+        />
+      </Routes>
+      {toast && (
+        <div className="toast" role="status">
+          <Asterisk size={18} />
+          {toast}
+        </div>
+      )}
+    </>
+  );
+}

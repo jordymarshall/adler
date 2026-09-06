@@ -1,0 +1,32 @@
+{
+  "name": "adler",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "playwright test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.124.0",
+    "@vitejs/plugin-react": "latest",
+    "ical.js": "^2.2.1",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-router-dom": "latest",
+    "tsdav": "^2.3.1",
+    "typescript": "latest",
+    "vite": "latest",
+    "zod": "^4.5.4"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "latest",
+    "@types/node": "^26.4.1",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
+}
