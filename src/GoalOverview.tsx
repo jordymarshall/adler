@@ -45,12 +45,28 @@ export function GoalOverview({
     setPrompt(text);
     setMode("chat");
   }
+  const pending = savedPending();
+  if (pending?.goalId === goal.id)
+    return (
+      <section className="next-step-card panel" data-phase="booking">
+        <Calendar
+          embedded
+          goalId={goal.id}
+          actionId={pending.id}
+          onDone={() => {
+            setMode("step");
+            setNow(new Date());
+          }}
+        />
+      </section>
+    );
   if (mode === "chat")
     return (
       <LiveCoach
         embedded
         goalId={goal.id}
         initialPrompt={prompt}
+        autoSend={Boolean(prompt)}
         onContinue={() => setMode("step")}
       />
     );
@@ -77,12 +93,7 @@ export function GoalOverview({
         </button>
       </div>
     );
-  if (
-    action &&
-    (mode === "schedule" ||
-      phase === "schedule" ||
-      savedPending()?.id === action.id)
-  )
+  if (action && (mode === "schedule" || phase === "schedule"))
     return (
       <section className="next-step-card panel" data-phase="schedule">
         <span className="section-kicker">MAKE ROOM FOR THE FIRST STEP</span>

@@ -1,6 +1,6 @@
 import { WeekCalendar, weekOf } from "./WeekCalendar";
 import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { CalendarDays, Check, RefreshCw } from "lucide-react";
 import { api, type CalendarOption, type ServiceStatus } from "./api";
@@ -70,6 +70,9 @@ export function Calendar({
     data.actions.find((a) => a.id === actionId)?.date ||
       dateInZone(data.timeZone),
   );
+  const [requestedDate, setRequestedDate] = useState("");
+  const planner = useRef<HTMLElement>(null);
+  const options = useRef<HTMLDetailsElement>(null);
   const [customTime, setCustomTime] = useState("09:00");
   const [params] = useSearchParams();
   const [choosing, setChoosing] = useState(
@@ -150,8 +153,16 @@ export function Calendar({
               ? action.date
               : dateInZone(timezone)
             : week,
+        ).filter(
+          (candidate) =>
+            !requestedDate ||
+            dateInZone(timezone, new Date(candidate.start)) === requestedDate,
         )
       : [];
+  useEffect(() => {
+    if (choosing && !embedded)
+      planner.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [choosing, requestedDate]);
   async function refresh() {
     const status = await api<ServiceStatus>("status");
     setService(status);
@@ -379,6 +390,7 @@ export function Calendar({
             week={week}
             onWeek={(date) => {
               setWeek(date);
+              setRequestedDate("");
               setSlot(null);
               setBusy([]);
               setCheckedAt("");
@@ -386,8 +398,19 @@ export function Calendar({
             busy={busy}
             checked={Boolean(checkedAt)}
             onRecord={setRecording}
+            onCalendars={() => {
+              if (options.current) {
+                options.current.open = true;
+                options.current.scrollIntoView({
+                  block: "start",
+                  behavior: "smooth",
+                });
+              }
+            }}
             onChoose={(date) => {
               setCustomDate(date);
+              setRequestedDate(date);
+              setSlot(null);
               setChoosing(true);
             }}
           />
@@ -422,6 +445,8 @@ export function Calendar({
                 setPending(null);
                 setCheckedAt("");
                 setSlot(null);
+                setChoosing(false);
+                onDone?.();
               }}
             >
               I checked my calendar · close this booking
@@ -432,6 +457,7 @@ export function Calendar({
       {!pending && (choosing || embedded) && (
         <section
           className={embedded ? "scheduler-form" : "panel scheduler-form"}
+          ref={planner}
           id="calendar-planner"
           aria-label="Choose a time"
         >
@@ -582,6 +608,7 @@ export function Calendar({
                       return;
                     }
                     setError("");
+                    setRequestedDate(customDate);
                     setSlot(candidate);
                     event.currentTarget
                       .closest("details")
@@ -619,7 +646,7 @@ export function Calendar({
           )}
         </section>
       )}
-      <details className="quiet-disclosure calendar-options">
+      <details ref={options} className="quiet-disclosure calendar-options">
         <summary>
           {embedded ? "Calendar options" : "Connected calendars"}
         </summary>

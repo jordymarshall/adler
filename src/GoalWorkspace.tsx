@@ -3,7 +3,7 @@ import { LiveCoach } from "./LiveCoach";
 import { GoalOverview } from "./GoalOverview";
 import { PlanExplanation } from "./PlanExplanation";
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -125,6 +125,7 @@ export function GoalWorkspace({
   const params = useParams();
   const goalId = focusedGoalId ?? params.goalId;
   const tab = params.tab;
+  const [query] = useSearchParams();
 
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
@@ -155,7 +156,11 @@ export function GoalWorkspace({
   const plan = currentPlan(goal);
   const actions = data.actions
     .filter((a) => a.goalId === goal.id)
-    .sort((a, b) => b.date.localeCompare(a.date));
+    .sort(
+      (a, b) =>
+        b.date.localeCompare(a.date) ||
+        (b.history.at(-1)?.at ?? "").localeCompare(a.history.at(-1)?.at ?? ""),
+    );
   const actionMeasure = plan.basis?.actionMeasure;
   const observationPeriod = reviewSchedule(data);
   const observations = actions.filter(
@@ -261,7 +266,11 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
-      <GoalOverview key={goal.id} goal={goal} actionId={actionId} />
+      <GoalOverview
+        key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`}
+        goal={goal}
+        actionId={actionId ?? query.get("action") ?? undefined}
+      />
       <details
         className="journey-disclosure"
         open={tab === "plan" || undefined}

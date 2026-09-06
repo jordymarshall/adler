@@ -11,19 +11,21 @@ import { ProposalChanges, ProposalEssentials } from "./ProposalChanges";
 export function LiveCoach({
   goalId,
   initialPrompt,
+  initialConversationId,
   autoSend = false,
   onContinue,
   embedded = false,
 }: {
   goalId?: string;
   initialPrompt?: string;
+  initialConversationId?: string;
   autoSend?: boolean;
-  onContinue?: (goalId?: string) => void;
+  onContinue?: (goalId?: string) => void | Promise<void>;
   embedded?: boolean;
 }) {
   const { data, flush, refresh } = useStore(),
     [params, setParams] = useSearchParams();
-  const [localChat, setLocalChat] = useState("");
+  const [localChat, setLocalChat] = useState(initialConversationId ?? "");
   const requestedGoal = goalId ?? params.get("goal") ?? "general";
   const selectedChat = embedded ? localChat : params.get("chat");
   const conversation = selectedChat
@@ -136,7 +138,15 @@ export function LiveCoach({
           g.status === "Draft" &&
           !data.goals.some((before) => before.id === g.id),
       );
-      if (created && onContinue) onContinue(created.id);
+      if (created && onContinue) await onContinue(created.id);
+      else if (
+        onContinue &&
+        result.proposal?.status === "applied" &&
+        result.proposal.changes.some((c) =>
+          ["goal", "plan", "action", "workBlock"].includes(c.entity),
+        )
+      )
+        await onContinue();
     } catch (e) {
       setError(
         e instanceof Error
@@ -159,7 +169,7 @@ export function LiveCoach({
       await refresh();
       await reloadProposals();
       if (action === "approve" && onContinue)
-        onContinue(
+        await onContinue(
           result.data?.goals.find(
             (g) =>
               g.status === "Draft" &&

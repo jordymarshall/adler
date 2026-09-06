@@ -21,7 +21,7 @@ The existing provider configuration is used for the planning and evidence-review
 
 ## Goal and action lifecycle
 
-The main navigation is Today, Goals, and Calendar. Today and each goal use the same next-step rules (`shared/next-step.ts`). The first visit and New goal begin with one description field. Continue submits that description to an inline coaching conversation; clarification stays in place. Creating a researched draft opens its goal directly. Manual setup remains available under a disclosure at `/app/goals/new/manual`.
+The main navigation is Today, Goals, and Calendar. Today and each goal use the same next-step rules (`shared/next-step.ts`). The first visit and New goal begin with one description field. Continue starts a dedicated intake conversation and submits that description inline; clarification stays in place. Once the draft is created or approved, the intake conversation is filed under its goal. Creating a researched draft opens its goal directly. Manual setup remains available under a disclosure at `/app/goals/new/manual`.
 
 A newly created UI/coach goal is a **Draft**. Its compact card shows one first action, finish criterion, intended result, and material uncertainty. **Start plan** activates the saved goal without creating another action. The next card suggests a time, with alternative times and calendar settings expandable below. **I’ll do it now** starts the action immediately. `startedAt` records starting without recording an outcome, modifying milestones, or claiming a calendar booking.
 
@@ -38,7 +38,7 @@ Changing the outcome measurement through the command system archives the old obs
 
 The built-in calendar has previous/next-week navigation, timed columns on desktop, and an agenda on phones. It shows Adler work, checked external busy periods, and the weekly review. Empty space is explicitly unknown when connected calendars have not been checked. Calendar connections remain available in a secondary section.
 
-Users can select suggested slots or review a specific date and time. Scheduling uses the account timezone. Tests cover timezone conversion and daylight-saving gaps/overlaps. Booking a first action preserves its identity, original completion criterion, and plan version, including when it was already placed on Today.
+Users can select suggested slots or review a specific date and time. Scheduling uses the account timezone. Tests cover timezone conversion and daylight-saving gaps/overlaps. Booking a first action preserves its identity, original completion criterion, and plan version, including when it was already placed on Today. Choosing a day constrains suggestions to that day. Calendar entries show their provider and open the selected action. A partially confirmed booking keeps its retry available even after the session ends; retrying or explicitly closing it returns to the action.
 
 Google/iCloud booking still uses the existing provider adapters, explicit confirmation, and availability rechecks. Existing external events are managed at their provider. This change adds a built-in view of work and checked busy periods; it does not claim continuous two-way synchronization or import every external event's details.
 

@@ -12137,7 +12137,7 @@ input[type="checkbox"] {
 /* A single next step, with depth available in place. */
 .journey-page { width: min(100%, 720px); margin: 28px auto 70px; }
 .app-main:has(> .goal-page-heading), .app-main:has(> .journey-goal-heading) { max-width: 800px; margin: 0 auto; }
-.journey-goal-heading { align-items: center; margin: 12px 0 28px; gap: 14px; }
+.journey-goal-heading { flex-wrap: nowrap; align-items: center; margin: 12px 0 28px; gap: 14px; }
 .journey-goal-heading h1 { font-size: clamp(25px, 4vw, 34px); line-height: 1.25; margin: 0; }
 .journey-goal-heading > .goal-icon { width: 37px; height: 37px; }
 .journey-goal-heading .goal-title-tags { display: none; }
@@ -12262,3 +12262,6 @@ input[type="checkbox"] {
   .onboarding-page { padding-top: 15px; }
   .live-coach { height: auto; }
 }
+
+.journey-goal-heading > div { min-width: 0; flex: 1; }
+.journey-goal-heading .goal-options { position: relative; top: auto; right: auto; }

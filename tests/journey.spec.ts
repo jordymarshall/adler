@@ -378,19 +378,12 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
     requests.push(input.message);
     const state = await snapshot(page);
     const now = new Date().toISOString();
-    if (!state.data.conversations.length)
-      state.data.conversations.push({
-        id: "intake",
-        title: "My essay",
-        goalId: "general",
-        createdAt: now,
-      });
     state.data.messages.push({
       id: crypto.randomUUID(),
       role: "user",
       text: input.message,
       at: now,
-      conversationId: "intake",
+      conversationId: input.conversationId,
       goalId: "general",
     });
     if (requests.length === 1) {
@@ -399,7 +392,7 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
         role: "coach",
         text: "What would you like to publish?",
         at: now,
-        conversationId: "intake",
+        conversationId: input.conversationId,
         goalId: "general",
       });
     } else {
@@ -426,11 +419,10 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
         dateInZone(state.data.timeZone),
         "essay",
       );
-      state.data.conversations[0].goalId = "essay";
     }
     await save(page, state.data, state.revision);
     await route.fulfill({
-      json: { conversationId: "intake", data: state.data },
+      json: { conversationId: input.conversationId, data: state.data },
     });
   });
   await page.goto("/app/onboarding");
@@ -453,94 +445,242 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
     page.getByRole("button", { name: "Start plan", exact: true }),
   ).toBeVisible();
   expect(requests).toHaveLength(2);
+  expect((await snapshot(page)).data.conversations.at(-1)?.goalId).toBe(
+    "essay",
+  );
+  await page.getByText("Questions & conversations", { exact: true }).click();
+  await expect(page.locator(".coach-thread:visible")).toContainText(
+    "What would you like to publish?",
+  );
   expect((await snapshot(page)).data.actions).toHaveLength(1);
 });
 
-test("an inline partial external booking keeps its retry visible and preserves one action", async ({
+for (const finish of ["retry", "dismiss"] as const)
+  test(`an inline partial booking returns to its action after ${finish}`, async ({
+    page,
+  }) => {
+    await register(page, true);
+    const state = await snapshot(page);
+    state.data.actions[0].date = addDays(dateInZone(state.data.timeZone), 1);
+    await save(page, state.data, state.revision);
+    await page.route("**/api/status", async (route) => {
+      const response = await route.fetch();
+      const status = await response.json();
+      await route.fulfill({
+        json: { ...status, google: { ...status.google, connected: true } },
+      });
+    });
+    await page.route("**/api/calendars", (route) =>
+      route.fulfill({
+        json: {
+          google: [{ id: "primary", name: "Test calendar", writable: true }],
+          apple: [],
+        },
+      }),
+    );
+    await page.route("**/api/availability", (route) =>
+      route.fulfill({
+        json: { busy: [], checkedAt: new Date().toISOString() },
+      }),
+    );
+    let attempts = 0;
+    let bookingId = "";
+    await page.route("**/api/bookings", async (route) => {
+      const input = route.request().postDataJSON();
+      const current = await snapshot(page);
+      if (!attempts++) {
+        bookingId = input.id;
+        current.data.workBlocks.push({
+          id: input.id,
+          goalId: "essays",
+          action: input.title,
+          start: input.start,
+          end: input.end,
+          provider: "google",
+          status: "Scheduled",
+          eventId: "work-event",
+        });
+        current.data.actions[0].date = dateInZone(
+          current.data.timeZone,
+          new Date(input.start),
+        );
+      } else {
+        expect(input.id).toBe(bookingId);
+        current.data.workBlocks[0].checkInId = "check-in-event";
+      }
+      await save(page, current.data, current.revision);
+      await route.fulfill({
+        json: {
+          id: input.id,
+          workDone: true,
+          checkInDone: attempts > 1,
+          workId: "work-event",
+          checkInId: "check-in-event",
+          ...(attempts === 1
+            ? { error: "Check-in event could not be confirmed." }
+            : {}),
+        },
+      });
+    });
+    await page.goto("/app/goals/essays");
+    await page.getByText("Calendar options", { exact: true }).click();
+    await page
+      .getByRole("combobox", { name: "Book in", exact: true })
+      .selectOption("google");
+    await page
+      .getByRole("button", { name: "Check availability", exact: true })
+      .click();
+    await page
+      .getByRole("button", { name: "Confirm booking", exact: true })
+      .click();
+    await expect(
+      page.getByRole("button", { name: "Retry confirmation", exact: true }),
+    ).toBeVisible();
+    await expect(page.locator('[data-phase="waiting"]')).toHaveCount(0);
+    const partial = await snapshot(page);
+    await page.clock.setFixedTime(
+      new Date(Date.parse(partial.data.workBlocks[0].end) + 60000),
+    );
+    await page.reload();
+    await expect(
+      page.getByRole("button", { name: "Retry confirmation", exact: true }),
+    ).toBeVisible();
+    if (finish === "retry") {
+      await page
+        .getByRole("button", { name: "Retry confirmation", exact: true })
+        .click();
+    } else {
+      await page.getByText("Booking details", { exact: true }).click();
+      await page
+        .getByRole("button", {
+          name: "I checked my calendar · close this booking",
+          exact: true,
+        })
+        .click();
+    }
+    await expect(page.locator('[data-phase="checkin"]')).toBeVisible();
+    const saved = (await snapshot(page)).data;
+    expect(saved.workBlocks).toHaveLength(1);
+    expect(saved.actions).toHaveLength(1);
+    expect(saved.workBlocks[0].checkInId).toBe(
+      finish === "retry" ? "check-in-event" : undefined,
+    );
+  });
+
+test("calendar day selection books that day and a block opens its own action", async ({
   page,
 }) => {
   await register(page, true);
-  const state = await snapshot(page);
-  state.data.actions[0].date = addDays(dateInZone(state.data.timeZone), 1);
-  await save(page, state.data, state.revision);
+  await page.goto("/app/calendar");
+  await page
+    .getByRole("button", {
+      name: "Choose calendars & check availability",
+      exact: false,
+    })
+    .click();
+  await expect(
+    page.getByRole("combobox", { name: "Book in", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Next week", exact: true }).click();
+  const today = dateInZone("America/Toronto");
+  const day = addDays(
+    today,
+    9 - ((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7),
+  );
+  await page
+    .getByRole("button", { name: `Schedule on ${day}`, exact: true })
+    .click();
+  await page.getByRole("button", { name: "Save time", exact: true }).click();
+  await synced(page);
+  const saved = await snapshot(page);
+  expect(
+    dateInZone(saved.data.timeZone, new Date(saved.data.workBlocks[0].start)),
+  ).toBe(day);
+  const original = saved.data.actions[0];
+  saved.data.actions.push({
+    ...original,
+    id: "other-action",
+    title: "Other work due today",
+    date: dateInZone(saved.data.timeZone),
+  });
+  await save(page, saved.data, saved.revision);
+  await page.locator(".calendar-entry.entry-work a").click();
+  await expect(page).toHaveURL(new RegExp(`action=${original.id}`));
+  await expect(page.locator('[data-phase="waiting"]')).toContainText(
+    original.title,
+  );
+});
+
+test("a directly applied action returns from inline coaching to the next step", async ({
+  page,
+}) => {
+  await register(page, true);
   await page.route("**/api/status", async (route) => {
     const response = await route.fetch();
     const status = await response.json();
     await route.fulfill({
-      json: { ...status, google: { ...status.google, connected: true } },
+      json: { ...status, coach: { configured: true, model: "fixture" } },
     });
   });
-  await page.route("**/api/calendars", (route) =>
-    route.fulfill({
-      json: {
-        google: [{ id: "primary", name: "Test calendar", writable: true }],
-        apple: [],
-      },
-    }),
-  );
-  await page.route("**/api/availability", (route) =>
-    route.fulfill({ json: { busy: [], checkedAt: new Date().toISOString() } }),
-  );
-  let attempts = 0;
-  let bookingId = "";
-  await page.route("**/api/bookings", async (route) => {
-    const input = route.request().postDataJSON();
+  await page.route("**/api/coach", async (route) => {
     const current = await snapshot(page);
-    if (!attempts++) {
-      bookingId = input.id;
-      current.data.workBlocks.push({
-        id: input.id,
-        goalId: "essays",
-        action: input.title,
-        start: input.start,
-        end: input.end,
-        provider: "google",
-        status: "Scheduled",
-        eventId: "work-event",
-      });
-      current.data.actions[0].date = dateInZone(
-        current.data.timeZone,
-        new Date(input.start),
-      );
-    } else {
-      expect(input.id).toBe(bookingId);
-      current.data.workBlocks[0].checkInId = "check-in-event";
-    }
+    current.data.actions[0].title = "Draft three main points";
     await save(page, current.data, current.revision);
     await route.fulfill({
       json: {
-        id: input.id,
-        workDone: true,
-        checkInDone: attempts > 1,
-        workId: "work-event",
-        checkInId: "check-in-event",
-        ...(attempts === 1
-          ? { error: "Check-in event could not be confirmed." }
-          : {}),
+        data: current.data,
+        conversationId: "direct-action",
+        proposal: {
+          status: "applied",
+          changes: [
+            {
+              entity: "action",
+              operation: "update",
+              id: current.data.actions[0].id,
+            },
+          ],
+        },
       },
     });
   });
   await page.goto("/app/goals/essays");
-  await page.getByText("Calendar options", { exact: true }).click();
+  await page.getByText("Something doesn’t fit?", { exact: true }).click();
   await page
-    .getByRole("combobox", { name: "Book in", exact: true })
-    .selectOption("google");
-  await page
-    .getByRole("button", { name: "Check availability", exact: true })
+    .locator(".step-options")
+    .getByRole("button", { name: "Ask Adler", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Confirm booking", exact: true })
-    .click();
+    .locator(".embedded-coach:visible")
+    .getByLabel("Message Adler")
+    .fill("Make this three points instead of five.");
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect(page.locator('[data-phase="ready"]')).toContainText(
+    "Draft three main points",
+  );
   await expect(
-    page.getByRole("button", { name: "Retry confirmation", exact: true }),
+    page.getByRole("button", { name: "Start action", exact: true }),
   ).toBeVisible();
-  await expect(page.locator('[data-phase="waiting"]')).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Retry confirmation", exact: true })
-    .click();
-  await expect(page.locator('[data-phase="waiting"]')).toBeVisible();
-  const saved = (await snapshot(page)).data;
-  expect(saved.workBlocks).toHaveLength(1);
-  expect(saved.actions).toHaveLength(1);
-  expect(saved.workBlocks[0].checkInId).toBe("check-in-event");
+});
+
+test("latest action observations use the last check-in when records share a date", async ({
+  page,
+}) => {
+  await register(page, true);
+  const current = await snapshot(page);
+  current.data.goals[0].plans[0].basis = basis;
+  const action = current.data.actions[0];
+  action.outcome = "Done";
+  action.amount = 2;
+  action.history = [{ outcome: "Done", amount: 2, at: "2026-09-01T12:00:00Z" }];
+  current.data.actions.push({
+    ...action,
+    id: "latest",
+    amount: 4,
+    history: [{ outcome: "Done", amount: 4, at: "2026-09-01T15:00:00Z" }],
+  });
+  await save(page, current.data, current.revision);
+  await page.goto("/app/goals/essays/progress");
+  await expect(page.locator(".action-observations")).toContainText(
+    "4 points recorded",
+  );
 });

@@ -289,33 +289,6 @@ export function ProposalChanges({
     </ol>
   );
 }
-export function goalsToSchedule(changes: Change[], data: Data) {
-  const scheduled = new Set(
-    changes
-      .filter((c) => c.entity === "workBlock")
-      .map(
-        (c) => c.parentId ?? data.workBlocks.find((b) => b.id === c.id)?.goalId,
-      ),
-  );
-  const ids = changes.flatMap((change) => {
-    if (change.operation === "delete") return [];
-    if (change.entity === "goal") return [change.id];
-    if (["plan", "milestone", "checkpoint"].includes(change.entity))
-      return [change.parentId];
-    if (change.entity === "action")
-      return [
-        change.parentId ?? data.actions.find((a) => a.id === change.id)?.goalId,
-      ];
-    return [];
-  });
-  return data.goals.filter(
-    (goal) =>
-      goal.status === "Active" &&
-      ids.includes(goal.id) &&
-      !scheduled.has(goal.id),
-  );
-}
-
 export function ProposalEssentials({
   changes,
   data,

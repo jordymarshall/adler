@@ -20,6 +20,7 @@ export function WeekCalendar({
   checked,
   onChoose,
   onRecord,
+  onCalendars,
   working,
 }: {
   week: string;
@@ -28,6 +29,7 @@ export function WeekCalendar({
   checked: boolean;
   onChoose: (date: string) => void;
   onRecord: (action: Action) => void;
+  onCalendars: () => void;
   working: boolean;
 }) {
   const { data } = useStore();
@@ -93,7 +95,12 @@ export function WeekCalendar({
         {entry.kind === "work" && (
           <small>
             {data.goals.find((g) => g.id === entry.goalId)?.title} ·{" "}
-            {action?.outcome ?? "Scheduled"}
+            {action?.outcome ?? "Scheduled"} ·{" "}
+            {entry.provider === "local"
+              ? "Adler only"
+              : entry.provider === "google"
+                ? "Google Calendar"
+                : "iCloud Calendar"}
           </small>
         )}
       </>
@@ -108,7 +115,13 @@ export function WeekCalendar({
           <small>Record what happened</small>
         </button>
       );
-    return <Link to={`/app/goals/${entry.goalId}`}>{body}</Link>;
+    return (
+      <Link
+        to={`/app/goals/${entry.goalId}?action=${encodeURIComponent(entry.id)}`}
+      >
+        {body}
+      </Link>
+    );
   }
   return (
     <section className="panel week-calendar" aria-label="Your week">
@@ -169,9 +182,9 @@ export function WeekCalendar({
         {checked
           ? "External busy periods were checked for this week."
           : "External availability has not been checked for this week. Empty space may contain other commitments."}{" "}
-        <a className="text-link" href="#calendar-planner">
+        <button className="text-link" disabled={working} onClick={onCalendars}>
           Choose calendars & check availability ↓
-        </a>
+        </button>
       </p>
       <div className="week-desktop">
         <div className="week-day-headings">
@@ -183,7 +196,7 @@ export function WeekCalendar({
               <button
                 className="icon-button"
                 aria-label={`Schedule on ${day}`}
-                disabled={day < today}
+                disabled={working || day < today}
                 onClick={() => onChoose(day)}
               >
                 <Plus size={14} />
@@ -260,7 +273,7 @@ export function WeekCalendar({
               <button
                 className="icon-button"
                 aria-label={`Choose time on ${day}`}
-                disabled={day < today}
+                disabled={working || day < today}
                 onClick={() => onChoose(day)}
               >
                 <Plus size={16} />
