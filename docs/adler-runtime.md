@@ -6,10 +6,10 @@ The app, web coach, iMessage/SMS conversation, and MCP tools read and change the
 
 ```sh
 npm install
-npm run dev -- --port 55011
+npm run dev -- --port 55020
 ```
 
-Open `http://localhost:55011`, create a username and password, then create a goal manually or open Coach. Add a provider API key in **Settings → AI provider**, save/test it, and start a conversation. Coaching is available automatically once a provider is configured. Passwords use salted scrypt; HTTP-only session cookies identify the account. Email verification and password recovery are not configured.
+Open `http://localhost:55020`, create a username and password, then describe a goal in Today. The first conversation and plan stay in one guided flow. Add a provider API key in **Settings → AI provider**, save/test it, and start a conversation. Coaching is available automatically once a provider is configured. Passwords use salted scrypt; HTTP-only session cookies identify the account. Email verification and password recovery are not configured.
 
 For the production server, build and provide configuration through the process environment:
 
@@ -34,7 +34,7 @@ The user can enter a different compatible model name. Defaults were checked agai
 
 Personal keys and calendar credentials are encrypted with AES-256-GCM and are never returned through API status, exports, chat, or MCP. A small **Save & test connection** call verifies actual structured generation and costs a small amount of provider usage. A successful test records its time. Environment keys can be used on a private local dev server; deployed servers require explicit `ADLER_ALLOW_SERVER_KEYS=true` before users can select the host's account. Keep this false for public BYOK deployments.
 
-Initial goal setup uses the same configured model as ongoing coaching. It asks about the intended result, verification, target date, known baseline, available time, and next action. It investigates relevant scientific literature and returns a typed goal/program proposal with a sourced explanation. Explicit creation requests save a Draft; recommendations wait for approval. Start plan activates a draft and opens the next action. See [Guided goals](guided-goal-journey.md). Manual setup needs no AI key. Learning assessments currently use comparable scores out of 10; other goals use verified milestones.
+Initial goal setup uses the same configured model as ongoing coaching. It clarifies the intended result and needed context one question at a time. It investigates relevant scientific literature and returns a typed goal/program proposal with a sourced explanation. Explicit creation requests save a Draft; recommendations wait for approval. Start plan activates a draft and opens the next action. See [Guided goals](guided-goal-journey.md). Manual setup needs no AI key. A goal can use a relevant outcome measure; goals without one use verified milestones or the legacy learning assessment. Action observations remain separate.
 
 Actual validation in this workspace: Gemini's connection test and a fictional end-to-end goal proposal/approval succeeded. Provider protocol tests cover all three adapters. Live OpenAI access was not configured; the available Anthropic account previously reported insufficient credits. No model is silently substituted when billing or access fails.
 

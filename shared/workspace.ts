@@ -76,6 +76,7 @@ export interface Action {
   timing: string;
   date: string;
   planVersion: number;
+  startedAt?: string;
   outcome?: Outcome;
   amount?: number;
   note?: string;

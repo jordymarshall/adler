@@ -21,13 +21,16 @@ The existing provider configuration is used for the planning and evidence-review
 
 ## Goal and action lifecycle
 
-The first visit to Today and the New goal route guide the user into either a coaching conversation or manual setup. The description is carried into the conversation as an editable draft. Manual setup remains available at `/app/goals/new/manual`.
+The main navigation is Today, Goals, and Calendar. Today and each goal use the same next-step rules (`shared/next-step.ts`). The first visit and New goal begin with one description field. Continue submits that description to an inline coaching conversation; clarification stays in place. Creating a researched draft opens its goal directly. Manual setup remains available under a disclosure at `/app/goals/new/manual`.
 
-A newly created UI/coach goal is a **Draft**. The goal overview brings the intended result, first action, completion criterion, explanation, milestone, chats, and review together. **Start plan** activates the saved goal without creating another action. The user can then **Do now**, **Choose a time**, or leave the action visibly unscheduled. Starting is not a completion record or calendar booking. Existing Active goals retain their status.
+A newly created UI/coach goal is a **Draft**. Its compact card shows one first action, finish criterion, intended result, and material uncertainty. **Start plan** activates the saved goal without creating another action. The next card suggests a time, with alternative times and calendar settings expandable below. **I’ll do it now** starts the action immediately. `startedAt` records starting without recording an outcome, modifying milestones, or claiming a calendar booking.
 
+Confirmed future work ends at a useful stopping point. Current work offers **Start action**, then **I’m finished**, then an inline check-in. Completed work and due check-ins use the account timezone and actual booking/starting times. A date alone is not a confirmed appointment. Today prioritizes current work over old unanswered check-ins. **Leave this for later** leaves the old record unknown and advances within the current visit. A due review enters the same flow when current work no longer needs attention; it can be skipped.
+
+Research, alternatives, progress, action observations, milestones, history, and conversations sit below the next action in closed vertical disclosures. Goal tabs and the coaching section navigation have been removed. Existing plan/progress links open the relevant disclosure; learning links still redirect to sourced observations. The user can choose another focus from Today without losing goal context in Ask Adler.
 A plan can store `durationMinutes`. Scheduling uses the duration of the selected action's plan version, falling back to the user's default session length for older plans. Free-text timing is a suggestion or cue; it is never treated as a confirmed external booking. Revising a plan no longer assigns an arbitrary tomorrow date or rewrites booked work. Cue-only edits retain the unchanged research explanation, action measure, and duration.
 
-The model may choose an action measure with a target per action, day, or week, or choose no action measure. Actual amounts are recorded during action check-ins. The overview aggregates observations for the current plan and period and keeps them separate from the desired outcome. Missing amounts remain unknown.
+The model may choose an action measure with a target per action, day, or week, or choose no action measure. Actual amounts are recorded during action check-ins. Progress & history aggregates observations for the current plan and period and keeps them separate from the desired outcome. Missing amounts remain unknown.
 
 Changing the outcome measurement through the command system archives the old observations and units. They are shown under Previous measurements. Old observations are not silently relabeled with the new unit. A measurement-only edit leaves the old explanation in its previous plan version and invites evaluation of the revised plan.
 
@@ -39,11 +42,11 @@ Users can select suggested slots or review a specific date and time. Scheduling 
 
 Google/iCloud booking still uses the existing provider adapters, explicit confirmation, and availability rechecks. Existing external events are managed at their provider. This change adds a built-in view of work and checked busy periods; it does not claim continuous two-way synchronization or import every external event's details.
 
-**Review & plan your week** explains its purpose, shows its date/time, and lets the user edit the schedule. Reviews have explicit periods so a completed review does not hide the next week's review. Opening Coach from a review carries a specific review request; the note and records remain available to the model. Prior reviews remain archived. The weekly appointment repeats in future calendar weeks and reserves a 15-minute planning allowance in Adler. Suggestions and booking checks respect that reservation. It is not an external booking.
+**Review your week** begins with a short purpose and optional context field. Review time and prior reviews open on request. Reviews have explicit periods so a completed review does not hide the next week's review. Review with Adler opens a contextual conversation in place; the note and records remain available to the model. Prior reviews remain archived. The weekly appointment repeats in future calendar weeks and reserves a 15-minute planning allowance in Adler. Suggestions and booking checks respect that reservation. It is not an external booking.
 
 ## Chats and organization
 
-Chats are shown in goal folders and General. New chat inherits the current goal, and the folder editor supports moving it to another goal or General. The goal overview and goal navigation link directly to that goal's chats.
+Chats are shown in goal folders and General. New chat inherits the current goal, and the folder editor supports moving it to another goal or General. Conversations opens the folder library on request. Each goal can open a contextual conversation inline.
 
 Areas and tags are optional organization. New manual goals start Unassigned. The interface explains areas, user-created tags, and priority, and exposes their editing from the goal overview. Coaching instructions require supplied or explained suggestions rather than an unexplained default category.
 
@@ -60,3 +63,7 @@ npm test
 Service tests cover research retrieval, unavailable searches, invented citations, evidence-review corrections, draft activation, measurement-history preservation, and channel parity. Browser tests cover the complete draft-to-scheduled-action journey, research explanations, action amounts, contextual chat folders, recurring reviews, mobile layout, and accessibility.
 
 A live Gemini check in an isolated test account asked for clarification of an ambiguous monetary goal and researched a separately specified writing goal through both literature indexes. It produced a sourced Draft, alternatives, a dated review question, an action-measure period, and an explicit action duration. Live checks establish that the integration executes; they do not establish the best personal strategy or the effectiveness of the combined product.
+
+## Landing page
+
+The core landing composition comes from `v2-design`, retaining Adler’s DM Sans typography. The removed hero eyebrow stays absent; the adaptation heading reads “Life moves. Your plan should, too.” Below the core story, “See the app, step by step” reveals the detailed seven-screen walkthrough, updated to this journey. Illustrations never write account data. Motion reduction, readable contrast, mobile layout, and the shared outcome chart remain covered by browser checks.

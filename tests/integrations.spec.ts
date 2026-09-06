@@ -49,7 +49,8 @@ test("the integration catalog distinguishes plans from working setup paths", asy
 test("texting and the app show the same check-in without changing measured distance", async ({
   page,
 }) => {
-  await page.goto("/#step-4");
+  await page.goto("/");
+  await page.getByRole("button", { name: "See the app, step by step" }).click();
   const step = page.locator("#step-4");
   await expect(
     step.getByLabel("iMessage conversation with Adler"),
@@ -72,16 +73,16 @@ test("texting and the app show the same check-in without changing measured dista
   await expect(step.locator(".app-checkin-saved")).toHaveText("Saved: Done");
   await expect(step.locator(".checkin-linked-result")).toContainText("2 km");
   await expect(step.locator(".checkin-linked-result")).toContainText("5 km");
-  await page
-    .locator("#step-3")
-    .getByRole("button", { name: "7:00 pm", exact: true })
+  const scheduling = page.locator("#step-3");
+  await scheduling.getByText("Choose another time", { exact: true }).click();
+  await scheduling
+    .getByRole("button", { name: "Tuesday, 6:30 pm", exact: true })
     .click();
-  await expect(page.locator("#step-3 .demo-calendar")).toContainText("7:25");
-  await expect(
-    page
-      .locator("#step-3")
-      .getByRole("button", { name: "7:30 pm · Busy", exact: true }),
-  ).toBeDisabled();
+  await scheduling
+    .getByRole("button", { name: "Save time", exact: true })
+    .click();
+  await expect(scheduling).toContainText("Check in after the session");
+  await expect(scheduling.locator(".suggested-time")).toContainText("6:30 pm");
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({
@@ -95,7 +96,9 @@ test("signed-in integrations start with the catalog and retain setup links", asy
   await expect(page.locator(".integration-map")).toHaveCount(0);
   await expect(page.locator(".connection-setup-row")).toHaveCount(7);
   await expect(page.locator(".integration-card")).toHaveCount(0);
-  const calendar = page.locator(".connection-setup-row").filter({ hasText: "Google Calendar" });
+  const calendar = page
+    .locator(".connection-setup-row")
+    .filter({ hasText: "Google Calendar" });
   await expect(calendar).toContainText("Not connected");
   await calendar.getByRole("link", { name: "Set up" }).click();
   await expect(page).toHaveURL(/\/app\/calendar$/);
@@ -107,14 +110,13 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.locator(".landing-atmosphere video")).not.toHaveAttribute(
-    "src",
-    /mp4/,
+  await expect(page.locator(".hero-sticky")).toHaveCSS("position", "relative");
+  await expect(page.locator(".reveal").first()).toHaveCSS(
+    "animation-name",
+    "none",
   );
-  await expect(
-    page.getByRole("button", { name: "Play background video" }),
-  ).toBeVisible();
-  for (const selector of ["#step-4", ".landing-integrations"]) {
+  await page.getByRole("button", { name: "See the app, step by step" }).click();
+  for (const selector of ["#step-4", ".connected-section"]) {
     await page.locator(selector).scrollIntoViewIfNeeded();
     const result = await new AxeBuilder({ page }).include(selector).analyze();
     expect(result.violations).toEqual([]);

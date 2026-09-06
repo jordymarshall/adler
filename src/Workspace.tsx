@@ -1,469 +1,30 @@
-import { Onboarding } from "./Onboarding";
-import { addDays, dateInZone, reviewSchedule, timeInZone } from "../shared/journey";
+import { addDays, dateInZone } from "../shared/journey";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
-  Asterisk,
-  CalendarDays,
   Check,
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
   Download,
   Leaf,
   Moon,
-  Plus,
   Sun,
   Trash2,
-  Target,
 } from "lucide-react";
 import { createGoal } from "../shared/validation";
-import { progressStatus } from "./progress";
-import { EmptyState, GoalIcon, Modal, Tag } from "./components";
+import { GoalIcon, Modal } from "./components";
 import {
   currentProgram,
   reviseProgram,
-  formatDate,
   initialData,
   localDate,
-  recordAction,
-  resultLabel,
   useStore,
-  type Action,
   type Goal,
   type GoalKind,
-  type Outcome,
 } from "./store";
 
-export function RecordAction({
-  action,
-  onClose,
-}: {
-  action: Action;
-  onClose: () => void;
-}) {
-  const { data, commit } = useStore();
-  const [followup, setFollowup] = useState(false);
-  const [note, setNote] = useState(action.note ?? "");
-  const [amount, setAmount] = useState(action.amount?.toString() ?? "");
-  const measure = data.goals.find((g) => g.id === action.goalId)?.plans.find((p) => p.version === action.planVersion)?.basis?.actionMeasure;
-  const current = data.actions.find((a) => a.id === action.id)!;
-  function select(outcome: Outcome) {
-    if (
-      commit(
-        (d) => recordAction(d, action.id, outcome, action.note, amount === "" ? undefined : Number(amount)),
-        `${outcome} saved. Your goal result is unchanged.`,
-      )
-    ) {
-      if (outcome === "Done") onClose();
-      else setFollowup(true);
-    }
-  }
-  return (
-    <Modal
-      title={followup ? "Anything worth noting?" : "How did this action go?"}
-      onClose={onClose}
-    >
-      <span className="section-kicker">
-        {action.date
-          ? formatDate(action.date, {
-              weekday: "long",
-              month: "long",
-              day: "numeric",
-            })
-          : "UNPLANNED ACTION"}{" "}
-        · PLAN {action.planVersion}
-      </span>
-      <h3 className="modal-action-title">{action.title}</h3>
-      <p className="criterion">
-        <CheckCircle2 size={17} />
-        <span>
-          <b>Finished when</b>
-          {action.criterion}
-        </span>
-      </p>
-      {!followup ? (
-        <>
-          {action.date > localDate() && (
-            <p className="form-notice">
-              This action is scheduled for a future day. You can record it when
-              that day arrives.
-            </p>
-          )}
-          <p className="muted small-text">
-            A check-in is a short update about this action. Your goal’s result
-            is recorded separately.
-          </p>
-          {measure && <label className="form-field">{measure.label} ({measure.unit}) · optional<input type="number" min="0" max="1000000" step="any" value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Leave blank if unknown" /><span className="field-hint">Record the actual amount for this action.</span></label>}
-          <div className="outcome-buttons">
-            {(["Done", "Partly", "Didn’t happen"] as Outcome[]).map((o, i) => (
-              <button
-                key={o}
-                className={`outcome-option ${current.outcome === o ? "selected" : ""}`}
-                disabled={action.date > dateInZone(data.timeZone) || (amount !== "" && (!Number.isFinite(Number(amount)) || Number(amount) < 0 || Number(amount) > 1000000))}
-                onClick={() => select(o)}
-              >
-                <span>
-                  {i === 0 ? (
-                    <Check size={22} />
-                  ) : i === 1 ? (
-                    <span className="half-circle" />
-                  ) : (
-                    "—"
-                  )}
-                </span>
-                {o}
-              </button>
-            ))}
-          </div>
-          {action.outcome && (
-            <>
-              <button
-                className="button text-button"
-                onClick={() => setFollowup(true)}
-              >
-                Edit optional context
-              </button>
-              <button
-                className="button text-button muted"
-                onClick={() => {
-                  if (
-                    commit(
-                      (d) => recordAction(d, action.id),
-                      "Update cleared. This action is now unknown.",
-                    )
-                  )
-                    onClose();
-                }}
-              >
-                Clear this update
-              </button>
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          <Tag tone="sage">
-            <Check size={13} /> {current.outcome} is already saved
-          </Tag>
-          <p className="muted">
-            Add a little context if it’s useful. You can also skip this.
-          </p>
-          <div className="context-options">
-            {[
-              "Time got taken",
-              "Unclear next step",
-              "Too difficult",
-              "Needed a resource or help",
-              "Didn’t want to",
-              "Something else",
-            ].map((reason) => (
-              <button
-                key={reason}
-                className={note === reason ? "selected" : ""}
-                onClick={() => setNote(reason)}
-              >
-                {reason}
-              </button>
-            ))}
-          </div>
-          <label className="field-label" htmlFor="action-note">
-            Your note <span>optional</span>
-          </label>
-          <textarea
-            id="action-note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="What happened?"
-            maxLength={2000}
-            rows={3}
-          />
-          <div className="modal-actions">
-            <button className="button text-button" onClick={onClose}>
-              Skip
-            </button>
-            <button
-              className="button primary"
-              onClick={() => {
-                if (
-                  commit(
-                    (d) => recordAction(d, action.id, current.outcome, note, current.amount),
-                    "Context saved.",
-                  )
-                )
-                  onClose();
-              }}
-            >
-              Save note <Check size={16} />
-            </button>
-          </div>
-        </>
-      )}
-    </Modal>
-  );
-}
-
-function ActionCard({
-  action,
-  goal,
-  onRecord,
-}: {
-  action: Action;
-  goal: Goal;
-  onRecord: () => void;
-}) {
-  return (
-    <article
-      className={`action-card ${action.outcome ? "action-recorded" : ""}`}
-    >
-      <div className="action-card-header">
-        <Link to={`/app/goals/${goal.id}/progress`}>
-          <GoalIcon kind={goal.kind} small />
-          {goal.title}
-        </Link>
-        {action.outcome ? (
-          <Tag tone="sage">
-            {action.outcome === "Done" && <Check size={12} />}
-            {action.outcome}
-          </Tag>
-        ) : (
-          <span className="action-menu-label">YOUR NEXT STEP</span>
-        )}
-      </div>
-      <h3>{action.title}</h3>
-      <div className="action-timing">
-        <Clock3 size={15} />
-        {action.timing}
-      </div>
-      <p className="action-criterion">
-        <span>Finished when</span>
-        {action.criterion}
-      </p>
-      <div className="action-card-actions">
-        <button
-          className={`button ${action.outcome ? "secondary" : "primary"} small-button`}
-          onClick={onRecord}
-        >
-          {action.outcome ? "Edit update" : "Record what happened"}
-          {!action.outcome && <ArrowRight size={15} />}
-        </button>
-        <Link to={`/app/coach?goal=${goal.id}`} className="help-start">
-          <Asterisk size={17} /> Help me get started
-        </Link>
-      </div>
-    </article>
-  );
-}
-export function Today() {
-  const { data } = useStore();
-  const [recording, setRecording] = useState<Action | null>(null);
-  const [earlier, setEarlier] = useState(false);
-  const active = data.goals.filter((g) => g.status === "Active");
-  const actions = data.actions.filter((a) =>
-    active.some((g) => g.id === a.goalId),
-  );
-  const accountToday = dateInZone(data.timeZone);
-  const today = actions.filter((a) => a.date === accountToday && !a.outcome);
-  const completed = data.actions.filter(
-    (a) => a.date === accountToday && a.outcome,
-  );
-  const secondary = actions.filter(
-    (a) => (!a.date || a.date > accountToday) && !a.outcome,
-  );
-  const previous = data.actions.filter((a) => a.date && a.date < accountToday);
-  const renderAction = (a: Action) => (
-    <ActionCard
-      key={a.id}
-      action={a}
-      goal={data.goals.find((g) => g.id === a.goalId)!}
-      onRecord={() => setRecording(a)}
-    />
-  );
-  const hour = Number(timeInZone(data.timeZone, new Date()).slice(0, 2));
-  const review = reviewSchedule(data);
-  const drafts = data.goals.filter((g) => g.status === "Draft");
-  if (!data.goals.length) return <Onboarding />;
-  return (
-    <>
-      <div className="page-heading today-heading">
-        <div>
-          <span className="section-kicker">
-            {new Date()
-              .toLocaleDateString("en-US", {
-                timeZone: data.timeZone,
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })
-              .toUpperCase()}
-          </span>
-          <h1>Your next actions, today.</h1>
-          <p>
-            Good {hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening"}.
-            Record today’s work, then check which goal results need attention.
-          </p>
-        </div>
-        <Link className="button secondary" to="/app/goals/new">
-          <Plus size={17} />
-          New goal
-        </Link>
-      </div>
-      {drafts.length > 0 && <section className="panel today-drafts"><span className="section-kicker">READY WHEN YOU ARE</span><h2>Review and start your plan.</h2>{drafts.map((goal) => <Link className="draft-goal-link" key={goal.id} to={`/app/goals/${goal.id}`}><b>{goal.title}</b><span>Review plan <ArrowRight size={16} /></span></Link>)}</section>}
-      {active.length > 0 && <Link className="today-pace-banner" to="/app/goals">
-        <Target size={18} />
-        <div>
-          <b>
-            {
-              data.goals.filter(
-                (g) => progressStatus(g, accountToday).label === "Behind plan",
-              ).length
-            }{" "}
-            goals behind their checkpoint
-          </b>
-          <span>
-            {
-              data.goals.filter(
-                (g) => progressStatus(g, accountToday).label === "Update needed",
-              ).length
-            }{" "}
-            need a result update · Compare actual results with the dated plan
-          </span>
-        </div>
-        <ArrowRight size={17} />
-      </Link>}
-      <div className="today-layout">
-        <div className="today-main">
-          <div className="list-heading">
-            <h2>
-              Your next steps <span>{today.length}</span>
-            </h2>
-            <span>Scheduled for today</span>
-          </div>
-          {today.length ? (
-            today.map(renderAction)
-          ) : (
-            <EmptyState title="No actions scheduled today.">
-              <p>
-                Choose your next action and give it a place in your day.
-              </p>
-              <Link to={secondary[0] ? `/app/goals/${secondary[0].goalId}` : "/app/goals"} className="button secondary">
-                Choose your next step <ArrowRight size={16} />
-              </Link>
-            </EmptyState>
-          )}
-          {completed.length > 0 && (
-            <details className="completed-section">
-              <summary>
-                <CheckCircle2 size={17} />
-                Recorded today <span>{completed.length}</span>
-                <ChevronDown size={16} />
-              </summary>
-              <div>{completed.map(renderAction)}</div>
-            </details>
-          )}
-          {active.length > 0 && (
-            <Link className="review-banner" to="/app/reviews/weekly">
-              <span className="review-icon">
-                <CalendarDays size={24} />
-              </span>
-              <div>
-                <span>A MOMENT TO LOOK BACK</span>
-                <h3>Review & plan your week.</h3>
-                <p>
-                  {review.due ? "Your review is due today." : `Next review: ${formatDate(review.nextDate)} at ${data.automation.reviewTime}.`} Look at what happened and choose the next steps.
-                </p>
-              </div>
-              <ArrowUpRight size={23} />
-            </Link>
-          )}
-          {secondary.length > 0 && (
-            <section className="secondary-actions">
-              <div className="list-heading">
-                <h2>On the horizon</h2>
-                <span>Upcoming & unscheduled</span>
-              </div>
-              {secondary.map((a) => (
-                <div className="compact-action" key={a.id}>
-                  <GoalIcon
-                    kind={data.goals.find((g) => g.id === a.goalId)!.kind}
-                    small
-                  />
-                  <div>
-                    {a.date > localDate() ? (
-                      <Link to={`/app/goals/${a.goalId}/plan`}>{a.title}</Link>
-                    ) : (
-                      <button onClick={() => setRecording(a)}>{a.title}</button>
-                    )}
-                    <span>
-                      {a.date
-                        ? formatDate(a.date, {
-                            weekday: "long",
-                            month: "short",
-                            day: "numeric",
-                          })
-                        : "Unscheduled"}{" "}
-                      · {data.goals.find((g) => g.id === a.goalId)!.title}
-                    </span>
-                  </div>
-                  <ArrowUpRight size={17} />
-                </div>
-              ))}
-            </section>
-          )}
-          {previous.length > 0 && (
-            <div className="earlier-updates">
-              <button
-                onClick={() => setEarlier(!earlier)}
-                aria-expanded={earlier}
-              >
-                <Clock3 size={15} />
-                Earlier updates
-                <ChevronDown size={15} />
-              </button>
-              {earlier &&
-                previous.map((a) => (
-                  <div key={a.id} className="history-row">
-                    <span>{formatDate(a.date)}</span>
-                    <button onClick={() => setRecording(a)}>{a.title}</button>
-                    <Tag>{a.outcome ?? "Unknown"}</Tag>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-        {active.length > 0 && <aside className="today-aside">
-          <div className="goals-snapshot">
-            <div className="list-heading">
-              <h2>The bigger picture</h2>
-              <Link to="/app/goals" aria-label="See all goals">
-                <ArrowUpRight size={18} />
-              </Link>
-            </div>
-            {active.map((goal) => (
-              <Link
-                className="snapshot-goal"
-                key={goal.id}
-                to={`/app/goals/${goal.id}/progress`}
-              >
-                <GoalIcon kind={goal.kind} small />
-                <div>
-                  <b>{goal.title}</b>
-                  <span>{resultLabel(goal)}</span>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </aside>}
-      </div>
-      {recording && (
-        <RecordAction action={recording} onClose={() => setRecording(null)} />
-      )}
-    </>
-  );
-}
+export { RecordAction } from "./ActionCheckIn";
 
 const draftDefaults = {
   title: "",
@@ -544,7 +105,11 @@ export function NewGoal() {
             action: draft.action.trim(),
             criterion: draft.criterion.trim(),
             timing: draft.timing,
-            ...(draft.timing === "Today" ? { actionDate: dateInZone(d.timeZone) } : draft.timing === "Tomorrow" ? { actionDate: addDays(dateInZone(d.timeZone), 1) } : {}),
+            ...(draft.timing === "Today"
+              ? { actionDate: dateInZone(d.timeZone) }
+              : draft.timing === "Tomorrow"
+                ? { actionDate: addDays(dateInZone(d.timeZone), 1) }
+                : {}),
           },
           localDate(),
           id,
@@ -674,8 +239,12 @@ export function NewGoal() {
             ))}
             <div className="form-row">
               <div className="form-field">
-                <label htmlFor="goal-area">Area <span>optional</span></label>
-                <p className="field-hint">A broad grouping for your goals. You can change it later.</p>
+                <label htmlFor="goal-area">
+                  Area <span>optional</span>
+                </label>
+                <p className="field-hint">
+                  A broad grouping for your goals. You can change it later.
+                </p>
                 <select
                   id="goal-area"
                   value={draft.area}
@@ -699,8 +268,12 @@ export function NewGoal() {
               </div>
             </div>
             <div className="form-field">
-              <label htmlFor="goal-tags">Tags, separated by commas <span>optional</span></label>
-              <p className="field-hint">Create your own labels by typing them here.</p>
+              <label htmlFor="goal-tags">
+                Tags, separated by commas <span>optional</span>
+              </label>
+              <p className="field-hint">
+                Create your own labels by typing them here.
+              </p>
               <input
                 id="goal-tags"
                 maxLength={160}
@@ -888,172 +461,7 @@ export function NewGoal() {
   );
 }
 
-export function WeeklyReview() {
-  const { data, commit } = useStore();
-  const schedule = reviewSchedule(data);
-  const review = schedule.completed ?? schedule.current;
-  const navigate = useNavigate();
-  const actions = data.actions.filter(
-    (a) => !a.unplanned && a.date >= schedule.periodStart && a.date <= schedule.today,
-  );
-  return (
-    <div className="form-page">
-      <Link to="/app/today" className="back-link">
-        <ArrowLeft size={15} />
-        Back to Today
-      </Link>
-      <div className="page-heading">
-        <div>
-          <span className="section-kicker">
-            {formatDate(schedule.periodStart)} — {formatDate(schedule.periodEnd)}
-          </span>
-          <h1>Review & plan your week</h1>
-          <p>
-            Take a few minutes to see what happened, decide what to keep or change, and choose your next actions. Your results and notes are available to Adler.
-          </p>
-        </div>
-      </div>
-      <section className="panel review-schedule">
-        <div><b>Next review: {formatDate(schedule.nextDate)} at {data.automation.reviewTime}</b><p className="field-hint">{data.timeZone} · A weekly starting point. Choose a time that fits your life.</p></div>
-        <label>Review day<select value={data.reviewDay} onChange={(event) => commit((d) => reviseProgram(d, currentProgram(d).version, { reviewDay: event.target.value, reason: "Changed weekly review day." }))}>{["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"].map((day) => <option key={day}>{day}</option>)}</select></label>
-        <label>Review time<input type="time" value={data.automation.reviewTime} onChange={(event) => { if (event.target.value) commit((d) => { d.automation.reviewTime = event.target.value; }); }} /></label>
-      </section>
-      {review.completedAt ? (
-        <div className="panel review-complete">
-          <CheckCircle2 size={35} />
-          <h2>Your review is saved.</h2>
-          <p>{review.note || "You took a moment to review your week."}</p>
-          <Tag tone="sage">{review.decision}</Tag>
-          <p className="muted small-text">
-            Saved {new Date(review.completedAt).toLocaleDateString()}
-          </p>
-          <Link className="button primary" to="/app/today">
-            Back to Today <ArrowRight size={17} />
-          </Link>
-          <button
-            className="button text-button"
-            onClick={() =>
-              commit((d) => {
-                d.review = { step: 0, note: "", decision: "", periodStart: schedule.periodStart, periodEnd: schedule.periodEnd };
-              })
-            }
-          >
-            Start another review
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="panel review-panel">
-            {data.goals
-              .filter((g) => g.status === "Active")
-              .map((g) => (
-                <Link className="review-goal" key={g.id} to={`/app/goals/${g.id}/progress`}>
-                  <GoalIcon kind={g.kind} small />
-                  <div>
-                    <b>{g.title}</b>
-                    <p>{resultLabel(g)}</p>
-                  </div>
-                  <ArrowUpRight size={16} />
-                </Link>
-              ))}
-            <p className="field-label">This week’s scheduled actions</p>
-            <div className="review-counts">
-              {(["Done", "Partly", "Didn’t happen", "Unknown"] as const).map((o) => (
-                <div key={o}>
-                  <strong>
-                    {actions.filter((a) => (a.outcome ?? "Unknown") === o).length}
-                  </strong>
-                  <span>{o === "Unknown" ? "No update" : o}</span>
-                </div>
-              ))}
-            </div>
-            <label className="field-label" htmlFor="review-note">
-              What helped or got in the way? <span>optional</span>
-            </label>
-            <textarea
-              id="review-note"
-              value={review.note}
-              onChange={(e) => {
-                const note = e.target.value;
-                commit((d) => { d.review = { ...schedule.current, note }; });
-              }}
-              rows={3}
-              maxLength={2000}
-              placeholder="This week, I noticed…"
-            />
-            <button
-              className="review-choice"
-              onClick={() =>
-                commit((d) => {
-                  d.review = {
-                    ...schedule.current,
-                    note: review.note,
-                    decision: "Keep the current plans",
-                    completedAt: new Date().toISOString(),
-                  };
-                  d.reviews.push({ ...d.review });
-                }, "Review saved. Your plans stay as they are.")
-              }
-            >
-              <CheckCircle2 size={22} />
-              <span>
-                <b>Keep my current plans</b>
-                <small>Save this review with no plan changes.</small>
-              </span>
-              <ArrowRight size={18} />
-            </button>
-            <Link className="review-choice" to={`/app/coach?goal=general&prompt=${encodeURIComponent(`Guide my weekly review for ${schedule.periodStart} through ${schedule.today}. Use the review note and recorded actions and results. Compare each plan with its review question, discuss what to keep or change, and help schedule the next actions. Save the completed review when we agree.`)}`}>
-              <Asterisk size={22} />
-              <span>
-                <b>Review changes with Adler</b>
-                <small>Your results and this note are available to the coach.</small>
-              </span>
-              <ArrowRight size={18} />
-            </Link>
-            <Link className="button text-button" to="/app/goals">
-              Edit a plan myself <ArrowRight size={16} />
-            </Link>
-          </div>
-          <button
-            className="button text-button muted"
-            onClick={() => {
-              if (
-                commit((d) => {
-                  d.review = {
-                    ...schedule.current,
-                    note: review.note,
-                    decision: "Skipped — plans unchanged",
-                    completedAt: new Date().toISOString(),
-                  };
-                  d.reviews.push({ ...d.review });
-                }, "Review skipped. Your plans are unchanged.")
-              )
-                navigate("/app/today");
-            }}
-          >
-            Skip this review
-          </button>
-        </>
-      )}
-      {data.reviews.length > 0 && (
-        <details className="panel review-history">
-          <summary>Previous reviews · {data.reviews.length}</summary>
-          {[...data.reviews].reverse().map((r, i) => (
-            <article key={`${r.completedAt}-${i}`}>
-              <b>
-                {r.completedAt
-                  ? new Date(r.completedAt).toLocaleDateString()
-                  : "Review"}
-              </b>
-              <p>{r.note || "No note recorded."}</p>
-              <span className="field-hint">{r.decision}</span>
-            </article>
-          ))}
-        </details>
-      )}
-    </div>
-  );
-}
+export { WeeklyReview } from "./WeeklyReview";
 
 export function SettingsPage() {
   const { data, commit, logout } = useStore();
@@ -1168,9 +576,7 @@ export function SettingsPage() {
         <div className="settings-row">
           <div>
             <h3>Integrations</h3>
-            <p>
-              Connect your calendar, phone, and AI provider.
-            </p>
+            <p>Connect your calendar, phone, and AI provider.</p>
           </div>
           <Link
             className="button secondary small-button"

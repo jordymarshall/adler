@@ -12,7 +12,6 @@ import {
   useLocation,
 } from "react-router-dom";
 import {
-  ArrowUpRight,
   CalendarDays,
   Asterisk,
   ChevronRight,
@@ -21,14 +20,15 @@ import {
   Settings,
   Sun,
   Target,
-  Cable,
 } from "lucide-react";
 import { Footer, Logo } from "./components";
 import { Landing, PublicPage } from "./Landing";
 import { SignIn } from "./Auth";
 import { Connections, ProviderSettings } from "./Connections";
 import { useStore } from "./store";
-import { NewGoal, SettingsPage, Today, WeeklyReview } from "./Workspace";
+import { Today } from "./Today";
+import { todayStep } from "../shared/next-step";
+import { NewGoal, SettingsPage, WeeklyReview } from "./Workspace";
 import { GoalWorkspace } from "./GoalWorkspace";
 import { Coach, Memory } from "./Coach";
 import { Program } from "./Program";
@@ -50,8 +50,16 @@ function ScrollReset() {
 }
 function AppShell() {
   const location = useLocation();
-  const inCoach = /\/app\/(coach|insights|reviews)/.test(location.pathname);
-  const { user, loading, saving, saveError } = useStore();
+  const { data, user, loading, saving, saveError } = useStore();
+  const today = todayStep(data);
+  const requestedGoal =
+    location.pathname.match(/\/goals\/([^/]+)/)?.[1] ??
+    (location.pathname === "/app/today"
+      ? (new URLSearchParams(location.search).get("goal") ??
+        (!today.review ? today.step?.goal.id : undefined))
+      : undefined);
+  const contextGoal =
+    data.goals.find((g) => g.id === requestedGoal)?.id ?? "general";
   const label = location.pathname.includes("/integrations")
     ? "Integrations"
     : location.pathname.includes("/insights")
@@ -71,7 +79,6 @@ function AppShell() {
     { to: "/app/today", label: "Today", Icon: Sun },
     { to: "/app/goals", label: "Goals", Icon: Target },
     { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
-    { to: "/app/coach", label: "Coach", Icon: MessageCircle },
   ];
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
   if (!user) return <SignIn />;
@@ -88,7 +95,7 @@ function AppShell() {
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) => isActive || (label === "Coach" && inCoach) ? "active" : ""}
+              className={({ isActive }) => (isActive ? "active" : "")}
             >
               <Icon size={20} strokeWidth={1.7} />
               {label}
@@ -97,10 +104,6 @@ function AppShell() {
           ))}
         </nav>
         <div className="sidebar-bottom">
-          <NavLink to="/app/integrations" className="sidebar-setting">
-            <Cable size={19} />
-            Integrations
-          </NavLink>
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
             Settings
@@ -122,18 +125,16 @@ function AppShell() {
       <div className="app-body">
         <header className="app-topbar">
           <div className="breadcrumb">
-            <span>My workspace</span>
-            <ChevronRight size={13} />
             <b>{label}</b>
           </div>
-          <Link className="preview-badge" to="/support">
-            <span className="status-dot" />
-            {saving
-              ? "Saving…"
-              : saveError
-                ? "Sync needs attention"
-                : "Workspace synced"}{" "}
-            <ArrowUpRight size={12} />
+          <span className="sync-state" role="status">
+            {saving ? "Saving…" : saveError ? "Sync needs attention" : ""}
+          </span>
+          <Link
+            className="ask-adler-link"
+            to={`/app/coach?goal=${encodeURIComponent(contextGoal)}`}
+          >
+            Ask Adler <MessageCircle size={16} />
           </Link>
           <Link className="mobile-logo" to="/" aria-label="Adler home">
             <Asterisk size={27} />
@@ -147,19 +148,13 @@ function AppShell() {
           )}
           <Outlet />
         </main>
-        <footer className="app-footer">
-          <Asterisk size={16} /> Your goals. Your records. Your decisions.
-          <Link to="/">
-            Back to Adler <ArrowUpRight size={12} />
-          </Link>
-        </footer>
       </div>
       <nav className="mobile-nav" aria-label="Mobile app navigation">
         {nav.map(({ to, label, Icon }) => (
           <NavLink
             key={to}
             to={to}
-            className={({ isActive }) => isActive || (label === "Coach" && inCoach) ? "active" : ""}
+            className={({ isActive }) => (isActive ? "active" : "")}
           >
             <Icon size={21} />
             <span>{label}</span>
@@ -171,23 +166,6 @@ function AppShell() {
         </NavLink>
       </nav>
     </div>
-  );
-}
-function CoachSection() {
-  const { pathname } = useLocation();
-  return (
-    <>
-      <nav className="coaching-nav" aria-label="Coaching navigation">
-        <NavLink to="/app/coach" end>Chat</NavLink>
-        <NavLink
-          to="/app/reviews/current"
-          className={pathname.includes("/reviews/") ? "active" : ""}
-        >Review & plan your week</NavLink>
-        <NavLink to="/app/insights">Insights</NavLink>
-        <NavLink to="/app/coach/program">Program</NavLink>
-      </nav>
-      <Outlet />
-    </>
   );
 }
 export function App() {
@@ -216,7 +194,7 @@ export function App() {
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />
-          <Route element={<CoachSection />}>
+          <Route element={<Outlet />}>
             <Route path="insights" element={<Insights />} />
             <Route path="coach" element={<Coach />} />
             <Route path="coach/program" element={<Program />} />

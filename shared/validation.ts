@@ -108,6 +108,7 @@ export const actionSchema = z
     timing: text,
     date: z.union([date, z.literal("")]),
     planVersion: z.number().int().positive(),
+    startedAt: z.iso.datetime().optional(),
     outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
     amount: z.number().min(0).max(1000000).optional(),
     note: text.optional(),

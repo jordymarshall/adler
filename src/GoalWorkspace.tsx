@@ -1,7 +1,9 @@
+import { dateInZone, reviewSchedule } from "../shared/journey";
+import { LiveCoach } from "./LiveCoach";
 import { GoalOverview } from "./GoalOverview";
 import { PlanExplanation } from "./PlanExplanation";
 import { useState, type FormEvent } from "react";
-import { Link, Navigate, NavLink, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   ArrowRight,
@@ -10,9 +12,7 @@ import {
   CheckCircle2,
   ChevronDown,
   Circle,
-  Clock3,
   History,
-  Pencil,
   Plus,
   Settings2,
 } from "lucide-react";
@@ -30,7 +30,7 @@ import {
 } from "./store";
 import { ProgressChart } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
-import { RecordAction } from "./Workspace";
+import { RecordAction } from "./ActionCheckIn";
 
 function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   const { commit } = useStore();
@@ -92,7 +92,8 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
             onChange={(e) => setTiming(e.target.value)}
           />
           <p className="field-hint">
-            Choose a cue, or use “Unscheduled”. Choose a calendar time after saving.
+            Choose a cue, or use “Unscheduled”. Choose a calendar time after
+            saving.
           </p>
         </div>
         <div className="modal-actions">
@@ -112,8 +113,19 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   );
 }
 
-export function GoalWorkspace() {
-  const { goalId, tab = "overview" } = useParams();
+export function GoalWorkspace({
+  focusedGoalId,
+  actionId,
+  home = false,
+}: {
+  focusedGoalId?: string;
+  actionId?: string;
+  home?: boolean;
+}) {
+  const params = useParams();
+  const goalId = focusedGoalId ?? params.goalId;
+  const tab = params.tab;
+
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
   const [editing, setEditing] = useState(false);
@@ -133,10 +145,32 @@ export function GoalWorkspace() {
         </Link>
       </EmptyState>
     );
+  if (tab === "learning")
+    return (
+      <Navigate
+        to={`/app/insights?goal=${encodeURIComponent(goal.id)}`}
+        replace
+      />
+    );
   const plan = currentPlan(goal);
   const actions = data.actions
     .filter((a) => a.goalId === goal.id)
     .sort((a, b) => b.date.localeCompare(a.date));
+  const actionMeasure = plan.basis?.actionMeasure;
+  const observationPeriod = reviewSchedule(data);
+  const observations = actions.filter(
+    (a) =>
+      a.planVersion === plan.version &&
+      a.outcome &&
+      (actionMeasure?.period === "action" ||
+        (actionMeasure?.period === "day"
+          ? a.date === dateInZone(data.timeZone)
+          : a.date >= observationPeriod.periodStart &&
+            a.date <= observationPeriod.today)),
+  );
+  const amounts = (
+    actionMeasure?.period === "action" ? observations.slice(0, 1) : observations
+  ).filter((a) => a.amount !== undefined);
   function saveResult(e: FormEvent) {
     e.preventDefault();
     if (!confirmed) return;
@@ -175,17 +209,20 @@ export function GoalWorkspace() {
   const statusOptions: GoalStatus[] =
     goal.status === "Active"
       ? ["Paused", "Completed", "Set aside"]
-      : goal.status === "Draft" ? ["Set aside"] : ["Active"];
+      : goal.status === "Draft"
+        ? ["Set aside"]
+        : ["Active"];
   return (
     <>
-      <Link className="back-link" to="/app/goals">
-        <ArrowLeft size={15} />
-        All goals
-      </Link>
-      <div className="goal-page-heading">
+      {!home && (
+        <Link className="back-link" to="/app/goals">
+          <ArrowLeft size={15} /> Goals
+        </Link>
+      )}
+      <div className="goal-page-heading journey-goal-heading">
         <GoalIcon kind={goal.kind} />
         <div>
-          <div className="goal-title-tags">
+          <div className="goal-title-tags" hidden>
             <span className="section-kicker">
               {goal.kind === "project"
                 ? "PROJECT GOAL"
@@ -196,12 +233,11 @@ export function GoalWorkspace() {
             <Tag tone="sage">{goal.status}</Tag>
           </div>
           <h1>{goal.title}</h1>
-          <p>{goal.why || goal.success}</p>
         </div>
         <details className="goal-options">
           <summary aria-label="Goal options">
             <Settings2 size={18} />
-            <span>Manage goal</span>
+            <span>Goal settings</span>
             <ChevronDown size={13} />
           </summary>
           <div>
@@ -225,65 +261,24 @@ export function GoalWorkspace() {
           </div>
         </details>
       </div>
-      {goal.status === "Draft" && tab !== "overview" && <Link className="button primary" to={`/app/goals/${goal.id}`}>Review & start plan <ArrowRight size={16} /></Link>}
-      <nav className="goal-tabs" aria-label="Goal views">
-        <NavLink to={`/app/goals/${goal.id}`} end>Overview</NavLink>
-        <NavLink to={`/app/goals/${goal.id}/progress`}>Progress</NavLink>
-        <NavLink to={`/app/goals/${goal.id}/plan`}>Plan</NavLink>
-        <Link to={`/app/coach?goal=${goal.id}`}>Chats</Link>
-        <Link to={`/app/insights?goal=${goal.id}`}>Insights</Link>
-      </nav>
-      {tab === "overview" ? <GoalOverview goal={goal} onRecord={setRecording} /> : tab === "plan" ? (
+      <GoalOverview key={goal.id} goal={goal} actionId={actionId} />
+      <details
+        className="journey-disclosure"
+        open={tab === "plan" || undefined}
+      >
+        <summary>Why this plan?</summary>
         <div className="goal-content">
-          <section className="panel current-plan">
-            <div className="list-heading">
-              <h2>A workable next step.</h2>
-              <Tag>
-                Plan {plan.version} · {formatDate(plan.date)}
-              </Tag>
-            </div>
-            <div className="plan-detail">
-              <span>NEXT ACTION</span>
-              <h3>{plan.action}</h3>
-            </div>
-            <div className="plan-two-columns">
-              <div className="plan-detail">
-                <span>WHEN IT FITS</span>
-                <p>
-                  <Clock3 size={17} />
-                  {plan.timing}
-                </p>
-              </div>
-              <div className="plan-detail">
-                <span>FINISHED WHEN</span>
-                <p>
-                  <CheckCircle2 size={17} />
-                  {plan.criterion}
-                </p>
-              </div>
-            </div>
-            <div className="plan-actions">
-              <button
-                className="button primary small-button"
-                disabled={goal.status !== "Active" && goal.status !== "Draft"}
-                onClick={() => setEditing(true)}
-              >
-                <Pencil size={15} />
-                Edit future plan
-              </button>
-              <Link
-                className="button text-button small-button"
-                to={`/app/coach?goal=${goal.id}`}
-              >
-                Discuss this plan <ArrowUpRight size={15} />
-              </Link>
-            </div>
-          </section>
+          <p>{goal.success}</p>
+          <button
+            className="text-link"
+            disabled={goal.status !== "Active" && goal.status !== "Draft"}
+            onClick={() => setEditing(true)}
+          >
+            Edit the next action
+          </button>
           {plan.basis && <PlanExplanation basis={plan.basis} />}
-          <section className="panel plan-history">
-            <h2>
-              <History size={20} /> How the plan has changed
-            </h2>
+          <details className="quiet-disclosure plan-history">
+            <summary>Earlier plans</summary>
             {[...goal.plans].reverse().map((p) => (
               <div key={p.version}>
                 <span className="version-dot" />
@@ -298,7 +293,12 @@ export function GoalWorkspace() {
                   <span>
                     {p.timing} · {formatDate(p.date)}
                   </span>
-                  {p.basis && p.version !== plan.version && <details className="explanation-details"><summary>Why this version?</summary><PlanExplanation basis={p.basis} /></details>}
+                  {p.basis && p.version !== plan.version && (
+                    <details className="explanation-details">
+                      <summary>Why this version?</summary>
+                      <PlanExplanation basis={p.basis} />
+                    </details>
+                  )}
                 </div>
               </div>
             ))}
@@ -306,17 +306,64 @@ export function GoalWorkspace() {
               Each action retains the plan and finished criterion it started
               with.
             </p>
-          </section>
+          </details>
         </div>
-      ) : tab === "learning" ? (
-        <Navigate to={`/app/insights?goal=${goal.id}`} replace />
-      ) : (
-        <div className="goal-progress-layout">
+      </details>
+      <details
+        className="journey-disclosure"
+        open={tab === "progress" || undefined}
+      >
+        <summary>
+          Progress & history · {goal.results.at(-1)?.value ?? "—"} /{" "}
+          {goal.target ?? goal.milestones.length} {goal.unit ?? "milestones"}
+        </summary>
+        <div className="goal-progress-layout journey-progress">
           <div>
             <section className="panel">
               <ProgressChart goal={goal} />
+              {actionMeasure && (
+                <div className="action-observations">
+                  <b>
+                    {actionMeasure.label} ·{" "}
+                    {actionMeasure.period === "action"
+                      ? "Latest action"
+                      : actionMeasure.period === "day"
+                        ? "Today"
+                        : "This review week"}
+                  </b>
+                  <p>
+                    {amounts.length
+                      ? `${amounts.reduce((sum, a) => sum + a.amount!, 0)} ${actionMeasure.unit} recorded`
+                      : "No amount recorded yet"}
+                    {actionMeasure.target !== null
+                      ? ` · Target ${actionMeasure.target} per ${actionMeasure.period}`
+                      : ""}
+                  </p>
+                  <p className="field-hint">
+                    From this plan’s actions. Missing amounts are unknown.
+                  </p>
+                </div>
+              )}
               <GoalOrganization goal={goal} />
-              {!!goal.measurementHistory?.length && <details className="chart-data"><summary>Previous measurements</summary>{goal.measurementHistory.map((history, i) => <article key={i}><b>{history.label} · {history.unit}</b><p>{history.reason}</p>{history.results.map((record) => <p key={record.id}>{formatDate(record.date)}: {record.value} {history.unit} · {record.source}</p>)}</article>)}</details>}
+              {!!goal.measurementHistory?.length && (
+                <details className="chart-data">
+                  <summary>Previous measurements</summary>
+                  {goal.measurementHistory.map((history, i) => (
+                    <article key={i}>
+                      <b>
+                        {history.label} · {history.unit}
+                      </b>
+                      <p>{history.reason}</p>
+                      {history.results.map((record) => (
+                        <p key={record.id}>
+                          {formatDate(record.date)}: {record.value}{" "}
+                          {history.unit} · {record.source}
+                        </p>
+                      ))}
+                    </article>
+                  ))}
+                </details>
+              )}
               {!!goal.checkpointHistory?.length && (
                 <details className="chart-data">
                   <summary>Previous checkpoint schedules</summary>
@@ -380,7 +427,11 @@ export function GoalWorkspace() {
                             : "Not started"}
                       </Tag>
                       <p>{m.criterion}</p>
-                      {m.dueDate && <p className="field-hint">Due {formatDate(m.dueDate)}</p>}
+                      {m.dueDate && (
+                        <p className="field-hint">
+                          Due {formatDate(m.dueDate)}
+                        </p>
+                      )}
                     </div>
                     <button
                       className="button text-button small-button"
@@ -444,29 +495,33 @@ export function GoalWorkspace() {
               ))}
             </section>
           </div>
-          <aside className="goal-progress-aside">
-            <div className="panel success-note">
-              <GoalIcon kind={goal.kind} />
-              <span className="section-kicker">WHAT SUCCESS LOOKS LIKE</span>
-              <p>{goal.success}</p>
-            </div>
-            <Link
-              className="next-step-link panel"
-              to={`/app/goals/${goal.id}/plan`}
-            >
-              <span className="section-kicker">YOUR CURRENT NEXT STEP</span>
-              <h3>{plan.action}</h3>
-              <span>
-                <Clock3 size={15} />
-                {plan.timing}
-              </span>
-              <b>
-                Open your plan <ArrowUpRight size={16} />
-              </b>
-            </Link>
-          </aside>
         </div>
+      </details>
+      {data.decisions.some(
+        (d) => d.goalId === goal.id && d.insights?.length,
+      ) && (
+        <details className="journey-disclosure">
+          <summary>What Adler has noticed</summary>
+          {data.decisions
+            .filter((d) => d.goalId === goal.id && d.insights?.length)
+            .slice(-3)
+            .reverse()
+            .map((decision) => (
+              <article className="review-history-entry" key={decision.id}>
+                {decision.insights!.map((insight, i) => (
+                  <p key={i}>{insight.finding}</p>
+                ))}
+              </article>
+            ))}
+          <Link className="text-link" to={`/app/insights?goal=${goal.id}`}>
+            See observations & sources →
+          </Link>
+        </details>
       )}
+      <details className="journey-disclosure">
+        <summary>Questions & conversations</summary>
+        <LiveCoach embedded goalId={goal.id} />
+      </details>
       {editing && <EditPlan goal={goal} onClose={() => setEditing(false)} />}
       {recording && (
         <RecordAction action={recording} onClose={() => setRecording(null)} />

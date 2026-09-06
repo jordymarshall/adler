@@ -121,7 +121,7 @@ export function CheckInPreview() {
               Saved: {outcome}
             </div>
           </div>
-            <nav className="phone-app-nav" aria-label="App preview"><b>Today</b><span>Goals</span><span>Coach</span></nav>
+            <nav className="phone-app-nav" aria-label="App preview"><b>Today</b><span>Goals</span><span>Calendar</span></nav>
             <div className="phone-home" aria-hidden="true" />
           </div>
         )}

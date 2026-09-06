@@ -183,7 +183,8 @@ export function ProposalChanges({
         );
         const fields = Object.entries(values).filter(
           ([key, value]) =>
-            key !== "reason" && key !== "basis" &&
+            key !== "reason" &&
+            key !== "basis" &&
             !(
               change.entity === "goal" &&
               change.operation === "create" &&
@@ -278,7 +279,9 @@ export function ProposalChanges({
                 </dl>
               )}
               <ChangeReason>{reason}</ChangeReason>
-              {Boolean(values.basis) && <PlanExplanation basis={values.basis as PlanningBasis} />}
+              {Boolean(values.basis) && (
+                <PlanExplanation basis={values.basis as PlanningBasis} />
+              )}
             </details>
           </li>
         );
@@ -310,5 +313,68 @@ export function goalsToSchedule(changes: Change[], data: Data) {
       goal.status === "Active" &&
       ids.includes(goal.id) &&
       !scheduled.has(goal.id),
+  );
+}
+
+export function ProposalEssentials({
+  changes,
+  data,
+}: {
+  changes: Change[];
+  data: Data;
+}) {
+  return (
+    <div className="proposal-essentials">
+      {changes.map((change, index) => {
+        const values = JSON.parse(change.values) as Record<string, unknown>;
+        const before = currentRecord(change, data);
+        const basis = values.basis as PlanningBasis | undefined;
+        if (change.operation === "delete")
+          return (
+            <p key={index}>
+              Remove {recordLabels[change.entity].toLowerCase()}:{" "}
+              {String(
+                before?.title ??
+                  before?.action ??
+                  before?.text ??
+                  recordLabels[change.entity],
+              )}
+              .
+              {change.entity === "goal" &&
+                " This also removes its plans and recorded history."}
+            </p>
+          );
+        if (change.entity === "workBlock")
+          return (
+            <p key={index}>
+              {change.operation === "create" ? "Book" : "Update"}:{" "}
+              {String(values.action ?? before?.action ?? "Work session")} ·{" "}
+              <Value
+                value={values.start ?? before?.start}
+                field="start"
+                data={data}
+              />
+              –
+              <Value
+                value={values.end ?? before?.end}
+                field="end"
+                data={data}
+              />{" "}
+              · {String(values.provider ?? before?.provider ?? "local")}{" "}
+              calendar{values.checkIn === true ? " · with a check-in" : ""}
+            </p>
+          );
+        if (change.entity === "goal" || change.entity === "plan")
+          return (
+            <div key={index}>
+              {typeof values.action === "string" && (
+                <p>Next step: {values.action}</p>
+              )}
+              {basis && <p>{basis.decisionNote ?? basis.uncertainty}</p>}
+            </div>
+          );
+        return null;
+      })}
+    </div>
   );
 }

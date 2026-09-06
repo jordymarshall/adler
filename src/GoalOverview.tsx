@@ -1,284 +1,245 @@
-import { Link } from "react-router-dom";
-import { ArrowRight, CalendarDays, Check, Play } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Check, Play } from "lucide-react";
+import { beginAction, goalStep } from "../shared/next-step";
 import {
   currentPlan,
   startGoal,
-  formatDate,
-  resultLabel,
   useStore,
+  formatDate,
   type Goal,
-  type Action,
 } from "./store";
-import { dateInZone, reviewSchedule } from "../shared/journey";
-import { PlanExplanation } from "./PlanExplanation";
-import { GoalOrganization } from "./GoalOrganization";
+import { RecordAction } from "./ActionCheckIn";
+import { Calendar, savedPending } from "./Calendar";
+import { LiveCoach } from "./LiveCoach";
 
 export function GoalOverview({
   goal,
-  onRecord,
+  actionId,
 }: {
   goal: Goal;
-  onRecord: (action: Action) => void;
+  actionId?: string;
 }) {
   const { data, commit } = useStore();
-  const plan = currentPlan(goal);
-  const draft = goal.status === "Draft";
-  const active = goal.status === "Active";
-  const action = data.actions
-    .filter((a) => a.goalId === goal.id && !a.outcome)
-    .sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"))[0];
-  const block = data.workBlocks.find((b) => b.id === action?.id);
-  const review = reviewSchedule(data);
-  const measure = plan.basis?.actionMeasure;
-  const observations = data.actions
-    .filter(
-      (a) =>
-        a.goalId === goal.id &&
-        a.planVersion === plan.version &&
-        a.outcome &&
-        (measure?.period === "action"
-          ? true
-          : measure?.period === "day"
-            ? a.date === review.today
-            : a.date >= review.periodStart && a.date <= review.today),
-    )
-    .sort(
-      (a, b) =>
-        a.date.localeCompare(b.date) ||
-        (a.history.at(-1)?.at ?? "").localeCompare(b.history.at(-1)?.at ?? ""),
+  const [now, setNow] = useState(() => new Date());
+  const [mode, setMode] = useState<"step" | "schedule" | "checkin" | "chat">(
+    "step",
+  );
+  const [prompt, setPrompt] = useState("");
+  const [deferred, setDeferred] = useState<string[]>([]);
+  const [saved, setSaved] = useState(false);
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(timer);
+  }, []);
+  const step = goalStep(
+    { ...data, actions: data.actions.filter((a) => !deferred.includes(a.id)) },
+    goal,
+    now,
+    actionId,
+  );
+  const { action, block, phase } = step;
+  const plan =
+    goal.plans.find((p) => p.version === action?.planVersion) ??
+    currentPlan(goal);
+  function ask(text = "") {
+    setPrompt(text);
+    setMode("chat");
+  }
+  if (mode === "chat")
+    return (
+      <LiveCoach
+        embedded
+        goalId={goal.id}
+        initialPrompt={prompt}
+        onContinue={() => setMode("step")}
+      />
     );
-  const amounts = (
-    measure?.period === "action" ? observations.slice(-1) : observations
-  ).filter((a) => a.amount !== undefined);
-  const milestone = goal.milestones.find((m) => !m.done);
-  const coach = `/app/coach?goal=${encodeURIComponent(goal.id)}`;
-  const schedule = `/app/calendar?goal=${encodeURIComponent(goal.id)}${action ? `&action=${encodeURIComponent(action.id)}` : ""}`;
+  if (action && (mode === "checkin" || phase === "checkin"))
+    return (
+      <div className="next-step-card panel" data-phase="checkin">
+        <RecordAction
+          key={action.id}
+          action={action}
+          inline
+          onClose={() => {
+            setSaved(true);
+            setMode("step");
+          }}
+        />
+        <button
+          className="button text-button"
+          onClick={() => {
+            setDeferred((ids) => [...ids, action.id]);
+            setMode("step");
+          }}
+        >
+          Leave this for later
+        </button>
+      </div>
+    );
+  if (
+    action &&
+    (mode === "schedule" ||
+      phase === "schedule" ||
+      savedPending()?.id === action.id)
+  )
+    return (
+      <section className="next-step-card panel" data-phase="schedule">
+        <span className="section-kicker">MAKE ROOM FOR THE FIRST STEP</span>
+        <h2>{action.title}</h2>
+        <Calendar
+          embedded
+          goalId={goal.id}
+          actionId={action.id}
+          onDone={() => {
+            setMode("step");
+            setNow(new Date());
+          }}
+        />
+        <button
+          className="button text-button"
+          onClick={() => {
+            commit((d) => beginAction(d, action.id), "You’re ready to begin.");
+            setMode("step");
+          }}
+        >
+          I’ll do it now
+        </button>
+      </section>
+    );
   return (
-    <div className="goal-overview">
-      {draft && (
-        <section className="plan-launch panel">
-          <div>
-            <span className="section-kicker">YOUR PLAN IS READY TO REVIEW</span>
-            <h2>Make this your starting point.</h2>
-            <p>
-              Review the result and first action below. Start when you’re ready,
-              then choose when to do the work.
+    <section
+      className="next-step-card panel"
+      data-phase={phase}
+      aria-label="Your next step"
+    >
+      <span className="section-kicker">
+        {phase === "draft"
+          ? "YOUR PLAN IS READY"
+          : phase === "waiting"
+            ? "YOU’RE SET"
+            : phase === "working"
+              ? "ONE THING TO FOCUS ON"
+              : phase === "next"
+                ? "CHECK-IN SAVED"
+                : phase === "inactive"
+                  ? goal.status.toUpperCase()
+                  : "YOUR NEXT STEP"}
+      </span>
+      <h2>
+        {phase === "next"
+          ? saved
+            ? "That’s enough for now."
+            : "Ready for the next step?"
+          : phase === "inactive"
+            ? "Pick this up when you’re ready."
+            : (action?.title ?? plan.action)}
+      </h2>
+      {action && (
+        <>
+          <p className="next-step-criterion">
+            Finished when{" "}
+            {action.criterion.charAt(0).toLowerCase() +
+              action.criterion.slice(1)}
+          </p>
+          <p className="next-step-meta">
+            {block
+              ? new Date(block.start).toLocaleString(undefined, {
+                  timeZone: data.timeZone,
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                })
+              : action.date && phase === "waiting"
+                ? formatDate(action.date)
+                : `${plan.durationMinutes ?? data.programs.at(-1)!.sessionMinutes} minutes`}
+          </p>
+        </>
+      )}
+      {phase === "draft" && (
+        <>
+          <p className="goal-outcome-summary">Working toward: {goal.success}</p>
+          {plan.basis && (
+            <p className="decision-limit">
+              {plan.basis.decisionNote ?? plan.basis.uncertainty}
             </p>
-          </div>
+          )}
           <button
             className="button primary"
-            onClick={() =>
-              commit(
-                (d) => startGoal(d, goal.id),
-                "Plan started. Choose when to do your first action.",
-              )
-            }
+            onClick={() => {
+              commit((d) => startGoal(d, goal.id), "Plan started.");
+              setSaved(false);
+            }}
           >
             <Play size={16} /> Start plan
           </button>
-        </section>
+        </>
       )}
-      <div className="overview-columns">
-        <div>
-          <section className="panel goal-destination">
-            <span className="section-kicker">WHAT SUCCESS LOOKS LIKE</span>
-            <h2>{goal.success}</h2>
-            <p>
-              {goal.targetDate
-                ? `Target ${formatDate(goal.targetDate, { month: "long", day: "numeric", year: "numeric" })}`
-                : "Target date not chosen"}
-            </p>
-            <b>{resultLabel(goal)}</b>
-            <GoalOrganization goal={goal} />
-          </section>
-          <section className="panel next-action-panel" id="next-action">
-            <span className="section-kicker">
-              {draft ? "YOUR FIRST ACTION" : "YOUR NEXT ACTION"}
-            </span>
-            {plan.durationMinutes && (
-              <span className="action-duration">
-                {plan.durationMinutes} min
-              </span>
-            )}
-            <h2>{action?.title ?? "Choose the next useful step."}</h2>
-            {action ? (
-              <>
-                <p className="criterion">
-                  <Check size={17} />
-                  <span>
-                    <b>Finished when</b>
-                    {action.criterion}
-                  </span>
-                </p>
-                <p className="next-action-time">
-                  <CalendarDays size={17} />{" "}
-                  {block
-                    ? new Date(block.start).toLocaleString(undefined, {
-                        timeZone: data.timeZone,
-                        weekday: "long",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      }) + ` · ${data.timeZone}`
-                    : action.date
-                      ? `${formatDate(action.date)} · ${action.timing}`
-                      : "Time not chosen"}
-                </p>
-                {!block && !action.date && action.timing !== "Unscheduled" && (
-                  <p className="field-hint">
-                    Suggested cue: {action.timing}. No time has been booked.
-                  </p>
-                )}
-                {active && (
-                  <div className="button-row">
-                    {!action.date && (
-                      <button
-                        className="button primary"
-                        onClick={() =>
-                          commit((d) => {
-                            const next = d.actions.find(
-                              (a) => a.id === action.id,
-                            )!;
-                            next.date = dateInZone(d.timeZone);
-                            next.timing = "Today · start when ready";
-                          }, "Your next action is on Today. Record what happened when you finish.")
-                        }
-                      >
-                        <Play size={16} /> Do now
-                      </button>
-                    )}
-                    {!block && (
-                      <Link
-                        className={`button ${action.date ? "primary" : "secondary"}`}
-                        to={schedule}
-                      >
-                        Choose a time <CalendarDays size={16} />
-                      </Link>
-                    )}
-                    {(!action.date ||
-                      action.date <= dateInZone(data.timeZone)) && (
-                      <button
-                        className="button secondary"
-                        onClick={() => onRecord(action)}
-                      >
-                        Record what happened <Check size={16} />
-                      </button>
-                    )}
-                  </div>
-                )}
-                {draft && (
-                  <p className="field-hint">
-                    Start the plan to put this action on Today or choose a
-                    calendar slot.
-                  </p>
-                )}
-              </>
-            ) : (
-              <Link
-                className="button primary"
-                to={`${coach}&prompt=${encodeURIComponent("Review what I completed and help me choose the next action for this goal.")}`}
-              >
-                Plan the next step with Adler <ArrowRight size={16} />
-              </Link>
-            )}
-          </section>
-          {measure && (
-            <section className="panel action-observations">
-              <span className="section-kicker">
-                THE WORK YOU RECORDED ·{" "}
-                {measure.period === "day"
-                  ? "TODAY"
-                  : measure.period === "week"
-                    ? "THIS REVIEW WEEK"
-                    : "LATEST ACTION"}
-              </span>
-              <h3>{measure.label}</h3>
-              <p>
-                {amounts.length
-                  ? `${amounts.reduce((total, a) => total + a.amount!, 0)} ${measure.unit} recorded`
-                  : "No amount recorded yet"}
-                {measure.target !== null
-                  ? ` · Suggested target ${measure.target} per ${measure.period}`
-                  : ""}
-              </p>
-              <p className="field-hint">
-                From actions using this plan. Missing amounts are unknown.
-                Compare the work with the goal result during your review.
-              </p>
-            </section>
+      {phase === "ready" && action && (
+        <button
+          className="button primary"
+          onClick={() =>
+            commit((d) => beginAction(d, action.id), "You’re ready to begin.")
+          }
+        >
+          <Play size={16} /> Start action
+        </button>
+      )}
+      {phase === "working" && action && (
+        <>
+          <p>
+            You can close Adler and do the work. Check in here when you finish.
+          </p>
+          <button className="button primary" onClick={() => setMode("checkin")}>
+            <Check size={16} /> I’m finished
+          </button>
+        </>
+      )}
+      {phase === "waiting" && (
+        <p>
+          You can leave things here. Your check-in will appear after the
+          session.
+        </p>
+      )}
+      {phase === "next" && (
+        <>
+          <p>
+            {saved
+              ? "Your update is saved. Adler can help when you’re ready to continue."
+              : "Adler can help you choose the next useful step."}
+          </p>
+          <button
+            className="button primary"
+            onClick={() =>
+              ask(
+                "Use my latest check-in and goal results to help me choose one next action. Ask only what you need; explain any proposed change briefly.",
+              )
+            }
+          >
+            Plan the next step <ArrowRight size={16} />
+          </button>
+        </>
+      )}
+      {phase !== "inactive" && (
+        <details className="quiet-disclosure step-options">
+          <summary>Something doesn’t fit?</summary>
+          <button className="text-link" onClick={() => ask()}>
+            Ask Adler
+          </button>
+          {action && !block && !action.startedAt && phase !== "draft" && (
+            <button className="text-link" onClick={() => setMode("schedule")}>
+              Choose a time
+            </button>
           )}
-          {plan.basis ? (
-            <PlanExplanation basis={plan.basis} />
-          ) : (
-            <section className="panel">
-              <h2>Understand your approach.</h2>
-              <p>
-                This plan has no saved research explanation. Adler can evaluate
-                the measurement and approach using your context and scientific
-                literature.
-              </p>
-              <Link
-                className="button secondary"
-                to={`${coach}&prompt=${encodeURIComponent("Evaluate this goal’s measurement and approach using relevant scientific literature. Explain alternatives, limitations, and what we should test; propose a revised plan if appropriate.")}`}
-              >
-                Evaluate this plan with Adler <ArrowRight size={16} />
-              </Link>
-            </section>
+          {action && phase !== "draft" && phase !== "waiting" && (
+            <button className="text-link" onClick={() => setMode("checkin")}>
+              Already did it? Check in
+            </button>
           )}
-        </div>
-        <aside className="goal-overview-aside">
-          {milestone && (
-            <section className="panel">
-              <span className="section-kicker">NEXT MILESTONE</span>
-              <h3>{milestone.title}</h3>
-              {milestone.dueDate && (
-                <p className="field-hint">
-                  Due {formatDate(milestone.dueDate)}
-                </p>
-              )}
-              <p>{milestone.criterion}</p>
-              <Link className="text-link" to={`/app/goals/${goal.id}/progress`}>
-                View progress <ArrowRight size={15} />
-              </Link>
-            </section>
-          )}
-          <section className="panel">
-            <span className="section-kicker">REVIEW & PLAN YOUR WEEK</span>
-            <h3>
-              {draft ? (
-                "After you start the plan"
-              ) : (
-                <>
-                  {formatDate(review.nextDate, {
-                    weekday: "long",
-                    month: "short",
-                    day: "numeric",
-                  })}{" "}
-                  · {data.automation.reviewTime}
-                </>
-              )}
-            </h3>
-            <p>
-              Look at what happened across your goals, decide what to keep or
-              change, and make room for the next steps.
-            </p>
-            <p className="field-hint">
-              {data.timeZone} · Change the day and time in your review.
-            </p>
-            <Link className="text-link" to="/app/reviews/current">
-              Open weekly review <ArrowRight size={15} />
-            </Link>
-          </section>
-          <section className="panel">
-            <span className="section-kicker">THIS GOAL’S CONVERSATIONS</span>
-            <p>Keep questions, planning, and check-ins together.</p>
-            <Link className="button secondary" to={coach}>
-              Open goal chats <ArrowRight size={16} />
-            </Link>
-          </section>
-        </aside>
-      </div>
-    </div>
+        </details>
+      )}
+    </section>
   );
 }

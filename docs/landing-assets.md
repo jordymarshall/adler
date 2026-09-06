@@ -1,5 +1,7 @@
 # Landing page assets
 
+The active landing page uses the V2 code-rendered artwork and DM Sans font. Its expanded walkthrough reflects the current single-column app journey. The video assets below belong to the earlier landing page and are retained as source assets; the active landing does not load them.
+
 The background video is generated footage, not a recording of Adler users. Generated September 6, 2026 using the Gemini API, `veo-3.1-fast-generate-preview`, two 6-second, 720p, 16:9 clips. The clips are joined with a 1-second dissolve, muted, desaturated slightly, and encoded as H.264 for the browser. No API keys or provider URLs are sent to the browser.
 
 - Video: `public/media/personal-goals.mp4` (11 seconds; audio removed).

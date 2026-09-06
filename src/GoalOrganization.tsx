@@ -15,8 +15,6 @@ import {
   useStore,
   type Goal,
 } from "./store";
-import { progressStatus } from "./progress";
-import { ProgressChart } from "./ProgressChart";
 import type { GoalArea } from "./program-types";
 
 export function OrganizedGoals() {
@@ -25,7 +23,6 @@ export function OrganizedGoals() {
   const [status, setStatus] = useState("All");
   const [area, setArea] = useState("All areas");
   const [tag, setTag] = useState("All tags");
-  const [groupBy, setGroupBy] = useState("Area");
   const tags = [...new Set(data.goals.flatMap((g) => g.tags ?? []))].sort();
   const goals = data.goals.filter(
     (g) =>
@@ -36,140 +33,123 @@ export function OrganizedGoals() {
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
-  const groups =
-    groupBy === "Area"
-      ? ["Unassigned", "Career", "Learning", "Personal"]
-      : ["Focus", "Maintain", "Later"];
   return (
     <div className="organized-goals">
       <div className="page-heading">
         <div>
-          <span className="section-kicker">OUTCOMES, NOT JUST TO-DOS</span>
-          <h1>Your goals, in view.</h1>
-          <p>
-            See what’s due, what’s moving, and where your plan needs attention.
-          </p>
+          <h1>Your goals</h1>
         </div>
         <Link className="button primary" to="/app/goals/new">
           <Plus size={17} /> New goal
         </Link>
       </div>
-      {data.goals.length > 0 && <>
-      <div className="goal-toolbar">
-        <label className="goal-search">
-          <Search size={17} />
-          <input
-            aria-label="Search goals"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search goals or tags"
-          />
-        </label>
-        <select
-          aria-label="Filter by area"
-          value={area}
-          onChange={(e) => setArea(e.target.value)}
-        >
-          {["All areas", "Unassigned", "Career", "Learning", "Personal"].map((v) => (
-            <option key={v}>{v}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Filter by tag"
-          value={tag}
-          onChange={(e) => setTag(e.target.value)}
-        >
-          {["All tags", ...tags].map((v) => (
-            <option key={v}>{v}</option>
-          ))}
-        </select>
-        <label className="group-select">
-          Group by{" "}
-          <select
-            aria-label="Group goals by"
-            value={groupBy}
-            onChange={(e) => setGroupBy(e.target.value)}
-          >
-            <option>Area</option>
-            <option>Priority</option>
-          </select>
-        </label>
-      </div>
-      <div className="filter-tabs" aria-label="Filter goals">
-        {["Active", "Draft", "Paused", "Completed", "Set aside", "All"].map((v) => (
-          <button
-            key={v}
-            className={status === v ? "active" : ""}
-            aria-pressed={status === v}
-            onClick={() => setStatus(v)}
-          >
-            {v}
-            <span>
-              {data.goals.filter((g) => v === "All" || g.status === v).length}
-            </span>
-          </button>
-        ))}
-      </div>
-      </>}
+      {data.goals.length > 0 && (
+        <>
+          <details className="quiet-disclosure">
+            <summary>Find or filter a goal</summary>
+            <div className="goal-toolbar">
+              <label className="goal-search">
+                <Search size={17} />
+                <input
+                  aria-label="Search goals"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search goals or tags"
+                />
+              </label>
+              <select
+                aria-label="Filter by area"
+                value={area}
+                onChange={(e) => setArea(e.target.value)}
+              >
+                {[
+                  "All areas",
+                  "Unassigned",
+                  "Career",
+                  "Learning",
+                  "Personal",
+                ].map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter by tag"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
+              >
+                {["All tags", ...tags].map((v) => (
+                  <option key={v}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div className="filter-tabs" aria-label="Filter goals">
+              {[
+                "Active",
+                "Draft",
+                "Paused",
+                "Completed",
+                "Set aside",
+                "All",
+              ].map((v) => (
+                <button
+                  key={v}
+                  className={status === v ? "active" : ""}
+                  aria-pressed={status === v}
+                  onClick={() => setStatus(v)}
+                >
+                  {v}
+                  <span>
+                    {
+                      data.goals.filter((g) => v === "All" || g.status === v)
+                        .length
+                    }
+                  </span>
+                </button>
+              ))}
+            </div>
+          </details>
+        </>
+      )}
       <div className="goal-groups">
-        {groups.map((group) => {
-          const items = goals.filter(
-            (g) => (groupBy === "Area" ? (g.area ?? "Unassigned") : g.priority) === group,
-          );
-          return items.length ? (
-            <section className="goal-group" key={group}>
-              <h2>
-                {group}
-                <span>{items.length}</span>
-              </h2>
-              <div className="organized-grid">
-                {items.map((goal) => {
-                  const pace = progressStatus(goal, localDate());
-                  return (
-                    <Link
-                      className="organized-card"
-                      to={`/app/goals/${goal.id}`}
-                      key={goal.id}
-                    >
-                      <div className="goal-card-top">
-                        <GoalIcon kind={goal.kind} />
-                        <span className={`pace-badge ${pace.tone}`}>
-                          {pace.label}
-                        </span>
-                        <ArrowUpRight size={18} />
-                      </div>
-                      <div className="goal-tags">
-                        {goal.tags?.map((t) => (
-                          <span key={t}>#{t}</span>
-                        ))}
-                        <b>{goal.priority}</b>
-                      </div>
-                      <h3>{goal.title}</h3>
-                      <p className="goal-deadline">
-                        {goal.targetDate
-                          ? `Target ${formatDate(goal.targetDate, { month: "short", day: "numeric", year: "numeric" })}`
-                          : "Target date not set"}
-                      </p>
-                      <p className="goal-measure">{goal.unit}</p>
-                      <ProgressChart goal={goal} compact />
-                      <div className="organized-next">
-                        <span>NEXT ACTION</span>
-                        <p>{currentPlan(goal).action}</p>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          ) : null;
-        })}
+        {goals.map((goal) => (
+          <Link
+            className="goal-list-row"
+            key={goal.id}
+            to={`/app/goals/${goal.id}`}
+          >
+            <GoalIcon kind={goal.kind} small />
+            <div>
+              <h2>{goal.title}</h2>
+              <p>
+                {goal.status === "Draft"
+                  ? "Ready to start"
+                  : goal.status !== "Active"
+                    ? goal.status
+                    : currentPlan(goal).action}
+              </p>
+            </div>
+            <ArrowUpRight size={17} />
+          </Link>
+        ))}
       </div>
       {!goals.length && (
         <div className="empty-state">
           <Target size={30} />
-          <h2>{data.goals.length ? "No goals match these filters." : "What would you like to achieve?"}</h2>
-          <p>{data.goals.length ? "Try another tag or clear your search." : "Start with one goal. Adler can help you define the result and choose a first step."}</p>
-          {!data.goals.length && <Link className="button secondary" to="/app/coach">Plan it with Adler <ArrowUpRight size={16} /></Link>}
+          <h2>
+            {data.goals.length
+              ? "No goals match these filters."
+              : "What would you like to achieve?"}
+          </h2>
+          <p>
+            {data.goals.length
+              ? "Try another tag or clear your search."
+              : "Start with one goal. Adler can help you define the result and choose a first step."}
+          </p>
+          {!data.goals.length && (
+            <Link className="button secondary" to="/app/coach">
+              Plan it with Adler <ArrowUpRight size={16} />
+            </Link>
+          )}
         </div>
       )}
     </div>
@@ -290,7 +270,11 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
                 {error}
               </p>
             )}
-            <p className="field-hint">Areas group your goals. Tags are labels you create. Adler may suggest a grouping during setup; you can edit it here. Priority describes your focus now.</p>
+            <p className="field-hint">
+              Areas group your goals. Tags are labels you create. Adler may
+              suggest a grouping during setup; you can edit it here. Priority
+              describes your focus now.
+            </p>
             <div className="form-row">
               <label>
                 Area

@@ -30,6 +30,7 @@ export type ResearchSearch = z.infer<typeof researchSearchSchema>;
 export const planningBasisSchema = z
   .object({
     interpretation: explanation,
+    decisionNote: z.string().trim().min(1).max(320).optional(),
     strategy: explanation,
     outcomeRationale: explanation,
     alternatives: z

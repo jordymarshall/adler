@@ -9,7 +9,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "playwright test",
     "start": "tsx server/main.ts",
-    "test:server": "tsx --test tests/server.test.ts tests/linq.test.ts tests/research.test.ts"
+    "test:server": "tsx --test tests/server.test.ts tests/linq.test.ts tests/research.test.ts tests/next-step.test.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

@@ -1,27 +1,38 @@
 import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowUp, CalendarDays, Check } from "lucide-react";
+import { ArrowUp, Check, X } from "lucide-react";
 import { AdlerAvatar } from "./persona";
 import { api, type ServiceStatus } from "./api";
-import {
-  useStore,
-  reactionTypes,
-  reactionEmoji,
-} from "./store";
+import { useStore, reactionTypes, reactionEmoji } from "./store";
 import { METHODS } from "./methods";
 import type { Proposal } from "../server/service";
-import { ProposalChanges, goalsToSchedule } from "./ProposalChanges";
-export function LiveCoach() {
+import { ProposalChanges, ProposalEssentials } from "./ProposalChanges";
+export function LiveCoach({
+  goalId,
+  initialPrompt,
+  autoSend = false,
+  onContinue,
+  embedded = false,
+}: {
+  goalId?: string;
+  initialPrompt?: string;
+  autoSend?: boolean;
+  onContinue?: (goalId?: string) => void;
+  embedded?: boolean;
+}) {
   const { data, flush, refresh } = useStore(),
     [params, setParams] = useSearchParams();
-  const requestedGoal = params.get("goal") ?? "general";
-  const conversation = params.get("chat")
-    ? data.conversations.find((c) => c.id === params.get("chat"))
+  const [localChat, setLocalChat] = useState("");
+  const requestedGoal = goalId ?? params.get("goal") ?? "general";
+  const selectedChat = embedded ? localChat : params.get("chat");
+  const conversation = selectedChat
+    ? data.conversations.find((c) => c.id === selectedChat)
     : data.conversations.filter((c) => c.goalId === requestedGoal).at(-1);
   const selected = conversation?.goalId ?? requestedGoal;
   function selectChat(id: string, goalId: string) {
-    setParams(id ? { chat: id, goal: goalId } : { goal: goalId });
+    if (embedded) setLocalChat(id);
+    else setParams(id ? { chat: id, goal: goalId } : { goal: goalId });
   }
   const belongsHere = (p: Proposal) =>
     p.conversationId
@@ -29,7 +40,14 @@ export function LiveCoach() {
       : p.goalId === selected;
   const goal = data.goals.find((g) => g.id === selected);
   const key = `adler-coach-draft-${conversation?.id ?? selected}`;
-  const [text, setText] = useState(() => params.get("prompt") ?? sessionStorage.getItem(key) ?? ""),
+  const initialKey = useRef(key);
+  const [text, setText] = useState(
+      () =>
+        initialPrompt ??
+        params.get("prompt") ??
+        sessionStorage.getItem(key) ??
+        "",
+    ),
     [sending, setSending] = useState(false),
     [error, setError] = useState(""),
     [service, setService] = useState<ServiceStatus | null>(null),
@@ -37,9 +55,15 @@ export function LiveCoach() {
   const latestApplied = proposals.find(
     (p) => p.status === "applied" && belongsHere(p),
   );
-  const calendarGoals = latestApplied
-    ? goalsToSchedule(latestApplied.changes, data)
-    : [];
+  const continuedGoal =
+    data.goals.find((g) =>
+      latestApplied?.changes.some(
+        (c) => c.entity === "goal" && c.operation === "create" && c.id === g.id,
+      ),
+    ) ?? goal;
+  const hasPending = proposals.some(
+    (p) => p.status === "pending" && belongsHere(p),
+  );
   const bottom = useRef<HTMLDivElement>(null),
     request = useRef<{ text: string; goal: string; id: string } | null>(null);
   const messages = data.messages.filter((m) =>
@@ -59,7 +83,13 @@ export function LiveCoach() {
     void reloadProposals().catch((e) => setError(e.message));
   }, [data]);
   useEffect(() => {
-    const draft = params.get("prompt") ?? sessionStorage.getItem(key) ?? "";
+    const draft =
+      (key === initialKey.current && !submitted.current
+        ? initialPrompt
+        : undefined) ??
+      params.get("prompt") ??
+      sessionStorage.getItem(key) ??
+      "";
     setText(draft);
     if (draft) sessionStorage.setItem(key, draft);
     setError("");
@@ -68,8 +98,8 @@ export function LiveCoach() {
     if (messages.length)
       bottom.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [messages.length, sending]);
-  async function send(e: FormEvent) {
-    e.preventDefault();
+  async function send(e?: FormEvent) {
+    e?.preventDefault();
     if (!text.trim() || sending) return;
     setSending(true);
     setError("");
@@ -85,7 +115,11 @@ export function LiveCoach() {
       };
     try {
       await flush();
-      const result = await api<{ conversationId: string }>("coach", {
+      const result = await api<{
+        conversationId: string;
+        data: typeof data;
+        proposal?: Proposal;
+      }>("coach", {
         message: value,
         goalId: selected,
         conversationId: conversation?.id,
@@ -97,6 +131,12 @@ export function LiveCoach() {
       setText("");
       sessionStorage.removeItem(key);
       request.current = null;
+      const created = result.data?.goals.find(
+        (g) =>
+          g.status === "Draft" &&
+          !data.goals.some((before) => before.id === g.id),
+      );
+      if (created && onContinue) onContinue(created.id);
     } catch (e) {
       setError(
         e instanceof Error
@@ -112,48 +152,72 @@ export function LiveCoach() {
     setError("");
     try {
       await flush();
-      await api(`proposals/${id}/${action}`, {});
+      const result = await api<{ data?: typeof data }>(
+        `proposals/${id}/${action}`,
+        {},
+      );
       await refresh();
       await reloadProposals();
+      if (action === "approve" && onContinue)
+        onContinue(
+          result.data?.goals.find(
+            (g) =>
+              g.status === "Draft" &&
+              !data.goals.some((before) => before.id === g.id),
+          )?.id,
+        );
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setSending(false);
     }
   }
-  const suggestions = data.goals.length
-    ? [
-        "Review my progress and suggest one change.",
-        "My schedule changed. Help me replan.",
-        "Walk me through my weekly review.",
-      ]
-    : [
-        "Help me set up my first goal.",
-        "I know what I want, but not how to measure it.",
-        "Help me make a plan that fits my week.",
-      ];
+  const submitted = useRef(false);
+  useEffect(() => {
+    if (
+      autoSend &&
+      initialPrompt &&
+      service?.coach.configured &&
+      !submitted.current
+    ) {
+      submitted.current = true;
+      void send();
+    }
+  }, [autoSend, initialPrompt, service?.coach.configured]);
   return (
-    <div className="coach-workspace">
-      <Conversations
-        selected={conversation?.id}
-        goalId={selected}
-        disabled={sending}
-        onSelect={selectChat}
-        onError={setError}
-      />
+    <div
+      className={`coach-workspace ${embedded ? "embedded-coach" : "focused-coach"}`}
+    >
+      {!embedded && (
+        <details className="chat-library-disclosure">
+          <summary>Conversations</summary>
+          <Conversations
+            selected={conversation?.id}
+            goalId={selected}
+            disabled={sending}
+            onSelect={selectChat}
+            onError={setError}
+          />
+        </details>
+      )}
       <div className="live-coach">
         <div className="coach-topline">
           <div className="coach-identity">
-            <div>
-              <h1>Adler</h1>
-            </div>
+            <div>{embedded ? <h2>Ask Adler</h2> : <h1>Ask Adler</h1>}</div>
           </div>
+          {embedded && onContinue && (
+            <button
+              className="icon-button"
+              aria-label="Close conversation"
+              onClick={() => onContinue()}
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
         <div className="coach-context-strip">
           {goal ? (
-            <Link to={`/app/goals/${goal.id}/plan`}>
-              {goal.title} · Open plan ↗
-            </Link>
+            <Link to={`/app/goals/${goal.id}`}>{goal.title}</Link>
           ) : (
             <span>Across goals</span>
           )}
@@ -167,7 +231,7 @@ export function LiveCoach() {
           aria-label="Conversation with Adler"
           aria-live="polite"
         >
-          {!messages.length && (
+          {!messages.length && !autoSend && (
             <div className="coach-welcome">
               <h2>
                 {data.goals.length
@@ -177,22 +241,8 @@ export function LiveCoach() {
               <p>
                 {goal
                   ? `We’re working toward: ${goal.title}. Tell me what happened or what needs to change.`
-                  : "We’ll define a result you can verify, choose a first milestone, and find a next action that fits your time."}
+                  : "Tell me what you want to achieve. We’ll work out the next step."}
               </p>
-              <div className="coach-starters">
-                {suggestions.map((prompt) => (
-                  <button
-                    key={prompt}
-                    disabled={sending}
-                    onClick={() => {
-                      setText(prompt);
-                      sessionStorage.setItem(key, prompt);
-                    }}
-                  >
-                    {prompt} →
-                  </button>
-                ))}
-              </div>
             </div>
           )}
           {messages.map((m) => {
@@ -207,7 +257,22 @@ export function LiveCoach() {
                       ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
                       : ""}
                   </span>
-                  <p>{m.text}</p>
+                  {m.text.length > 650 ? (
+                    <details className="message-expansion">
+                      <summary>
+                        {m.text.slice(
+                          0,
+                          m.text.lastIndexOf(" ", 260) > 0
+                            ? m.text.lastIndexOf(" ", 260)
+                            : 260,
+                        )}
+                        … <span>Read more</span>
+                      </summary>
+                      <p>{m.text}</p>
+                    </details>
+                  ) : (
+                    <p>{m.text}</p>
+                  )}
                   {decision?.status === "Accepted" && (
                     <span className="insight-change-status">
                       Saved to your workspace
@@ -215,19 +280,26 @@ export function LiveCoach() {
                   )}
                   {!!m.links?.length && (
                     <div className="message-record-links">
-                      {m.links
-                        .filter((l) =>
-                          data.goals.some((g) => g.id === l.goalId),
-                        )
-                        .map((l) => (
-                          <Link
-                            key={`${l.goalId}-${l.tab}`}
-                            to={l.tab === "plan" ? `/app/goals/${encodeURIComponent(l.goalId)}` : `/app/goals/${encodeURIComponent(l.goalId)}/${l.tab}`}
-                          >
-                            {data.goals.find((g) => g.id === l.goalId)!.title} ·{" "}
-                            {l.tab === "plan" ? "Open plan" : "View progress"} ↗
-                          </Link>
-                        ))}
+                      {!embedded &&
+                        m.links
+                          .filter((l) =>
+                            data.goals.some((g) => g.id === l.goalId),
+                          )
+                          .map((l) => (
+                            <Link
+                              key={`${l.goalId}-${l.tab}`}
+                              to={
+                                l.tab === "plan"
+                                  ? `/app/goals/${encodeURIComponent(l.goalId)}`
+                                  : `/app/goals/${encodeURIComponent(l.goalId)}/${l.tab}`
+                              }
+                            >
+                              {data.goals.find((g) => g.id === l.goalId)!.title}{" "}
+                              ·{" "}
+                              {l.tab === "plan" ? "Open plan" : "View progress"}{" "}
+                              ↗
+                            </Link>
+                          ))}
                     </div>
                   )}
                   <div className="message-reactions">
@@ -281,9 +353,7 @@ export function LiveCoach() {
                   </div>
                   {decision && (
                     <details className="decision-inspector">
-                      <summary>
-                        Context & rationale · Program v{decision.programVersion}
-                      </summary>
+                      <summary>Why this suggestion?</summary>
                       <p>{decision.summary}</p>
                       <div className="decision-checks">
                         {decision.checks.map((c) => (
@@ -325,11 +395,15 @@ export function LiveCoach() {
               <article className="live-proposal shared-proposal" key={p.id}>
                 <span className="section-kicker">PROPOSED CHANGES</span>
                 <h3>{p.summary}</h3>
-                <ProposalChanges
-                  changes={p.changes}
-                  data={data}
-                  beforeRecords={p.before}
-                />
+                <ProposalEssentials changes={p.changes} data={data} />
+                <details className="quiet-disclosure">
+                  <summary>What changes & why</summary>
+                  <ProposalChanges
+                    changes={p.changes}
+                    data={data}
+                    beforeRecords={p.before}
+                  />
+                </details>
                 <div className="button-row">
                   <button
                     className="button primary"
@@ -339,7 +413,7 @@ export function LiveCoach() {
                     Confirm changes <Check size={15} />
                   </button>
                   <button
-                    className="button secondary"
+                    className="button text-button"
                     disabled={sending}
                     onClick={() => void review(p.id, "dismiss")}
                   >
@@ -353,32 +427,20 @@ export function LiveCoach() {
                 </p>
               </article>
             ))}
-          {latestApplied && data.goals.filter((g) => g.status === "Draft" && latestApplied.changes.some((change) => change.entity === "goal" && change.id === g.id)).map((g) => <aside className="coach-plan-ready panel" key={g.id}><span className="section-kicker">YOUR PLAN IS SAVED</span><h3>{g.title}</h3><p>Review the approach and first action, then start when you’re ready.</p><Link className="button primary" to={`/app/goals/${g.id}`}>Review & start plan →</Link></aside>)}
-          {calendarGoals.length > 0 && (
-            <aside className="coach-calendar-next">
-              <CalendarDays size={19} />
-              <div>
-                <span className="section-kicker">OPTIONAL NEXT STEP</span>
-                <h3>Give the updated plan a place in your week.</h3>
-                <p>Choose a time and calendar, then confirm the booking.</p>
-                {calendarGoals.map((goal) => (
-                  <Link
-                    className="button secondary"
-                    key={goal.id}
-                    to={`/app/calendar?goal=${encodeURIComponent(goal.id)}`}
-                  >
-                    Add to calendar
-                    {calendarGoals.length > 1 ? ` · ${goal.title}` : ""}{" "}
-                    <CalendarDays size={14} />
-                  </Link>
-                ))}
-              </div>
-            </aside>
+          {!embedded && latestApplied && !hasPending && (
+            <Link
+              className="button primary coach-continue"
+              to={
+                continuedGoal ? `/app/goals/${continuedGoal.id}` : `/app/today`
+              }
+            >
+              Continue →
+            </Link>
           )}
           {sending && (
             <div className="coach-working">
               <AdlerAvatar small />
-              <span>Reviewing your context and relevant research. This can take a moment…</span>
+              <span>Working through this…</span>
             </div>
           )}
           <div ref={bottom} />
@@ -420,10 +482,6 @@ export function LiveCoach() {
               <ArrowUp size={21} />
             </button>
           </div>
-          <p>
-            Ask Adler to create a goal, update your plan, or record progress.{" "}
-            <Link to="/app/coach/program">See the coaching program</Link>
-          </p>
         </form>
       </div>
     </div>

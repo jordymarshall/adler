@@ -98,7 +98,7 @@ test("provider choices save without returning the key and phone setup reports mi
   await page
     .getByRole("button", { name: "Save provider", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText(
+  await expect(page.locator(".form-notice")).toContainText(
     "Provider settings saved",
   );
   await expect(page.getByLabel("API key", { exact: true })).toHaveValue("");
@@ -119,17 +119,19 @@ test("local scheduling creates a synced work block without an external booking c
 }) => {
   await register(page, true);
   await page.goto("/app/calendar");
-  await expect(page.locator(".calendar-availability-note")).toContainText(
-    "External calendar conflicts have not been checked",
+  await page.getByRole("button", { name: "Add time", exact: true }).click();
+  await expect(page.locator(".scheduler-form")).toContainText(
+    "External calendars haven’t been checked",
   );
-  await page.locator(".slot-grid button").first().click();
-  await page
-    .getByRole("button", { name: "Save in Adler", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Next week", exact: true }).click();
+  await page.getByRole("button", { name: "Save time", exact: true }).click();
   await synced(page);
   await page.reload();
-  await expect(page.locator(".work-block")).toHaveCount(1);
-  await expect(page.locator(".work-block")).toContainText("Adler only");
+  await page.getByRole("button", { name: "Next week", exact: true }).click();
+  await expect(page.locator(".calendar-entry.entry-work")).toHaveCount(1);
+  await expect(page.locator(".calendar-entry.entry-work")).toContainText(
+    "Adler only",
+  );
   const { data } = await snapshot(page);
   expect(data.actions.some((a) => a.id === data.workBlocks[0].id)).toBeTruthy();
   expect(data.workBlocks[0].eventId).toBeUndefined();
@@ -261,6 +263,7 @@ test("a coordinated adjustment saves goal, approach, timing, and memory before o
   expect(await proposal.text()).not.toContain('"error"');
   await page.goto("/app/coach");
   const adjustment = page.locator(".shared-proposal");
+  await adjustment.getByText("What changes & why", { exact: true }).click();
   await expect(
     adjustment
       .getByRole("list", { name: "Proposed changes" })
@@ -298,17 +301,16 @@ test("a coordinated adjustment saves goal, approach, timing, and memory before o
   expect(approved.goals[0].results).toEqual(initial.data.goals[0].results);
   expect(approved.workBlocks).toHaveLength(0);
   await page.reload();
-  await page
-    .getByRole("link", { name: "Add to calendar", exact: true })
-    .click();
-  await expect(page).toHaveURL(/calendar\?goal=essays/);
-  await expect(
-    page.getByLabel("Goal to schedule", { exact: true }),
-  ).toHaveValue("essays");
-  expect((await snapshot(page)).data.workBlocks).toHaveLength(0);
-  await expect(page.locator(".calendar-action")).toContainText(
+  await page.getByRole("link", { name: "Continue", exact: false }).click();
+  await expect(page.locator(".next-step-card")).toContainText(
     "Write the whole outline before editing",
   );
+  await page.getByText("Something doesn’t fit?", { exact: true }).click();
+  await page
+    .getByRole("button", { name: "Choose a time", exact: true })
+    .click();
+  await expect(page.locator(".inline-scheduler")).toBeVisible();
+  expect((await snapshot(page)).data.workBlocks).toHaveLength(0);
 });
 
 test("chats can be renamed, filed under a goal, and deleted without removing the goal", async ({
@@ -316,6 +318,7 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
 }) => {
   await register(page, true);
   await page.goto("/app/coach");
+  await page.getByText("Conversations", { exact: true }).click();
   await page.getByRole("button", { name: "New chat", exact: true }).click();
   await expect(page.locator(".conversation-item.selected")).toContainText(
     "New conversation",
@@ -326,17 +329,20 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
   await page.getByLabel("Chat name").fill("A plan for my essays");
   await page.getByLabel("Goal folder").selectOption("essays");
   await page.getByRole("button", { name: "Save chat", exact: true }).click();
-  await expect(page.locator(".coach-context-strip")).toContainText("Open plan");
+  await expect(page.locator(".coach-context-strip")).toContainText(
+    "Publish two essays",
+  );
   await expect(page.locator(".conversation-item.selected")).toContainText(
     "A plan for my essays",
   );
   await page.reload();
+  await page.getByText("Conversations", { exact: true }).click();
   await expect(page.locator(".conversation-item.selected")).toContainText(
     "A plan for my essays",
   );
   await page.getByRole("button", { name: "New chat", exact: true }).click();
   await expect(page.locator(".coach-context-strip")).toContainText(
-    "Open plan",
+    "Publish two essays",
   );
   await page
     .getByRole("button", {
@@ -420,9 +426,9 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   });
   await save(page, state.data, state.revision);
   await page.goto("/app/goals/essays/progress");
+  await page.getByText("What Adler has noticed", { exact: true }).click();
   await page
-    .getByRole("navigation", { name: "Goal views" })
-    .getByRole("link", { name: "Insights" })
+    .getByRole("link", { name: "See observations & sources", exact: false })
     .click();
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await expect(page.getByRole("combobox")).toHaveValue("essays");
