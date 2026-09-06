@@ -816,6 +816,28 @@ test("the opening animation gathers the cards into one usable next step", async 
   await expect(hero).toHaveAttribute("data-scene", "intro");
   await expect(page.locator(".hero-objects")).toBeVisible();
   await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
+  const labelPixels = await page
+    .locator(".floating-progress .progress-viz > svg")
+    .evaluate((el) => {
+      const svg = el as unknown as SVGSVGElement;
+      return (
+        parseFloat(getComputedStyle(svg.querySelector("text")!).fontSize) *
+        svg.getScreenCTM()!.a
+      );
+    });
+  expect(labelPixels).toBeGreaterThanOrEqual(8.5);
+  await hero.evaluate((node) =>
+    window.scrollTo(
+      0,
+      (node.getBoundingClientRect().height - innerHeight) * 0.5,
+    ),
+  );
+  await expect(hero).toHaveAttribute("data-scene", "transition");
+  await expect(page.locator(".hero-buttons")).toHaveAttribute("inert", "");
+  await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
+  const hiddenAction = page.locator(".hero-buttons .dark");
+  await hiddenAction.focus();
+  await expect(hiddenAction).not.toBeFocused();
   await hero.evaluate((node) =>
     window.scrollTo(
       0,

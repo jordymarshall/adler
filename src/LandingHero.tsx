@@ -8,7 +8,9 @@ import { demoGoal } from "./landing-data";
 
 export function LandingHero() {
   const section = useRef<HTMLElement>(null);
-  const [scene, setScene] = useState<"intro" | "plan" | "static">("intro");
+  const [scene, setScene] = useState<
+    "intro" | "transition" | "plan" | "static"
+  >("intro");
   useEffect(() => {
     const motion = matchMedia(
       "(min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)",
@@ -23,7 +25,13 @@ export function LandingHero() {
         : 0;
       node.style.setProperty("--journey", String(progress));
       setScene(
-        !motion.matches ? "static" : progress >= 0.65 ? "plan" : "intro",
+        !motion.matches
+          ? "static"
+          : progress >= 0.85
+            ? "plan"
+            : progress >= 0.2
+              ? "transition"
+              : "intro",
       );
     }
     function scroll() {
@@ -62,7 +70,10 @@ export function LandingHero() {
             <br className="desktop-break" /> and keep it working as life
             changes.
           </p>
-          <div className="hero-buttons" inert={scene === "plan"}>
+          <div
+            className="hero-buttons"
+            inert={scene === "plan" || scene === "transition"}
+          >
             <Link className="btn dark" to="/app/goals/new">
               Find your way forward <ArrowUpRight size={17} />
             </Link>
@@ -126,8 +137,8 @@ export function LandingHero() {
         </div>
         <div
           className="hero-assembled"
-          inert={scene === "intro"}
-          aria-hidden={scene === "intro"}
+          inert={scene === "intro" || scene === "transition"}
+          aria-hidden={scene === "intro" || scene === "transition"}
         >
           <h2>
             A clear <em>next step.</em>

@@ -1986,6 +1986,9 @@
     width: 310px;
     transform: rotate(calc(-6deg + var(--journey) * 6deg));
   }
+  .v2-landing .floating-progress .progress-viz svg text {
+    font-size: 22px;
+  }
   .v2-landing .floating-progress h3 span {
     color: #626957;
     font-size: 12px;
