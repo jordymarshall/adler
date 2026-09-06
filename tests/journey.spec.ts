@@ -323,7 +323,7 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the landing uses Adler Warm and one disclosed four-part journey", async ({
+test("the landing uses Adler Warm and one disclosed six-step journey", async ({
   page,
 }) => {
   await page.goto("/");
@@ -332,7 +332,7 @@ test("the landing uses Adler Warm and one disclosed four-part journey", async ({
   await expect(page.locator("#the-path .section-intro h2")).toHaveText(
     "Reach your goals with a planthat adapts to you.",
   );
-  await expect(page.locator(".adapt-copy h3")).toHaveText(
+  await expect(page.locator("#step-6 .chapter-copy h3")).toHaveText(
     /Life moves\.Your planshould, too\./,
   );
   expect(
@@ -344,23 +344,36 @@ test("the landing uses Adler Warm and one disclosed four-part journey", async ({
   expect(
     await page.evaluate(() => document.fonts.check('450 16px "Adler Warm"')),
   ).toBeTruthy();
-  await expect(page.locator(".chapter-panel")).toHaveCount(4);
-  await expect(
-    page.locator(".walk-step, .floating-progress, .landing-walkthrough"),
-  ).toHaveCount(0);
+  await expect(page.locator(".chapter-panel")).toHaveCount(6);
+  await expect(page.locator(".walk-step, .landing-walkthrough")).toHaveCount(0);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const preview = page.locator(".landing-plan-preview");
   await expect(preview.locator(".primary:visible")).toHaveCount(1);
-  await expect(preview.locator("details[open]")).toHaveCount(0);
-  await expect(preview.locator(".progress-viz")).not.toBeVisible();
+  await expect(
+    page.locator("#step-1 details[open], #step-2 details[open]"),
+  ).toHaveCount(0);
   await preview.getByRole("link", { name: "Start plan" }).click();
   await expect(page.locator("#step-2")).toBeInViewport();
-  await expect(page.locator("#step-2 .suggested-time")).toContainText("6:30 pm");
   await page
     .locator("#step-2")
+    .getByRole("link", { name: "Start plan" })
+    .click();
+  await expect(page.locator("#step-3")).toBeInViewport();
+  await expect(page.locator("#step-3 .suggested-time")).toContainText(
+    "6:30 pm",
+  );
+  await page
+    .locator("#step-3")
     .getByRole("button", { name: "Save time" })
     .click();
-  await expect(page.locator("#step-2")).toContainText(
+  await expect(page.locator("#step-3")).toContainText(
     "Check in after the session",
+  );
+  await expect(page.locator("#step-3 .chapter-copy")).toContainText(
+    "automatically revises its timing suggestions",
+  );
+  await expect(page.locator("#step-3 .chapter-copy")).toContainText(
+    "You confirm changes",
   );
   await expect(page.locator(".chapter-connected .text-phone")).toHaveCount(1);
   await expect(page.locator(".connection-brands img")).toHaveCount(3);
@@ -373,7 +386,7 @@ test("the landing uses Adler Warm and one disclosed four-part journey", async ({
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
-test("the disclosed graph fills its container and has readable labels on desktop and phone", async ({
+test("the progress and proposal graph fills its container and has readable labels on desktop and phone", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -381,8 +394,9 @@ test("the disclosed graph fills its container and has readable labels on desktop
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    await page.locator(".preview-progress > summary").click();
-    const chart = page.locator(".preview-progress svg");
+    const chart = page.locator(
+      ".progress-proposal-preview .progress-viz > svg",
+    );
     const size = await chart.evaluate((el) => {
       const svg = el as unknown as SVGSVGElement;
       const box = svg.getBoundingClientRect();
@@ -399,7 +413,7 @@ test("the disclosed graph fills its container and has readable labels on desktop
     const graphBottom =
       (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
     const nextRow = await page
-      .locator(".preview-progress + details > summary")
+      .locator(".proposed-checkpoint-note")
       .boundingBox();
     expect(nextRow!.y).toBeGreaterThan(graphBottom);
   }
@@ -411,8 +425,7 @@ test("landing chart details stay available while hovered or keyboard focused", a
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
-  await page.locator(".preview-progress > summary").click();
-  const chart = page.locator(".preview-progress .graph-only");
+  const chart = page.locator(".progress-proposal-preview .graph-only");
   const graph = chart.locator("svg");
   const details = chart.locator(".chart-tooltip");
   await graph.hover();
@@ -757,13 +770,13 @@ test("latest action observations use the last check-in when records share a date
   );
 });
 
-test("the four-part story follows normal scrolling and uses the app chart throughout", async ({
+test("the six-step story follows normal scrolling and uses the app chart throughout", async ({
   page,
 }) => {
   await page.goto("/");
   const panels = page.locator(".chapter-flow .chapter-panel");
-  await expect(panels).toHaveCount(4);
-  for (let index = 0; index < 4; index++) {
+  await expect(panels).toHaveCount(6);
+  for (let index = 0; index < 6; index++) {
     const panel = panels.nth(index);
     await panel.evaluate((node) =>
       window.scrollTo({
@@ -775,20 +788,49 @@ test("the four-part story follows normal scrolling and uses the app chart throug
       "aria-current",
       "step",
     );
-    await expect(panel.locator(".chapter-visual, .adapt-inner")).toBeVisible();
+    await expect(panel.locator(".chapter-visual")).toBeVisible();
   }
   const paths = await page
     .locator(".v2-landing .chart-actual")
     .evaluateAll((elements) => elements.map((el) => el.getAttribute("d")));
   expect(paths).toHaveLength(2);
   expect(new Set(paths).size).toBe(1);
-  await page.goto("/#step-4");
+  await page.goto("/#step-6");
   await page.locator(".remembered-context > summary").click();
-  await expect(page.locator("#step-4")).toContainText("Adler remembers");
+  await expect(page.locator("#step-6")).toContainText("Adler remembers");
   await expect(page.locator(".remembered-context")).toBeInViewport();
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(panels.nth(1).locator(".chapter-visual")).toHaveCSS(
     "transform",
     "none",
   );
+});
+
+test("the opening animation gathers the cards into one usable next step", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const hero = page.locator(".journey-hero");
+  await expect(hero).toHaveAttribute("data-scene", "intro");
+  await expect(page.locator(".hero-objects")).toBeVisible();
+  await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
+  await hero.evaluate((node) =>
+    window.scrollTo(
+      0,
+      (node.getBoundingClientRect().height - innerHeight) * 0.95,
+    ),
+  );
+  await expect(hero).toHaveAttribute("data-scene", "plan");
+  const preview = page.locator(".hero-assembled");
+  await expect(preview).not.toHaveAttribute("inert", "");
+  await expect(preview.locator(".primary")).toBeInViewport({ ratio: 1 });
+  await expect(page.locator(".hero-buttons")).toHaveAttribute("inert", "");
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await preview.getByRole("link", { name: "Start plan" }).click();
+  await expect(page.locator("#step-2")).toBeInViewport();
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(hero).toHaveAttribute("data-scene", "static");
+  await expect(page.locator(".hero-sticky")).toHaveCSS("position", "relative");
 });

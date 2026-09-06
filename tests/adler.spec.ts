@@ -9,21 +9,46 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toContainText("Big goals.");
-  await page.locator(".adaptation-progress > summary").click();
-  const chart = page.locator("#step-4 .progress-viz svg");
+  const chart = page.locator("#step-5 .progress-viz svg");
   await expect(chart.locator(".chart-recorded-label")).toHaveText(
     "Recorded: 2 km",
   );
   await chart.focus();
   await page.keyboard.press("End");
-  await expect(page.locator("#step-4 .chart-tooltip")).toContainText(
+  await expect(page.locator("#step-5 .chart-tooltip")).toContainText(
     "Last recorded: 2 km",
   );
   const recordedPath = await chart.locator(".chart-actual").getAttribute("d");
-  await page.getByRole("button", { name: "Try the morning plan" }).click();
-  await expect(page.locator("#step-4 .week-visual")).toHaveClass(/adjusted/);
-  await expect(chart.locator(".chart-actual")).toHaveAttribute("d", recordedPath!);
-  await expect(chart.locator(".chart-proposed")).toHaveCount(0);
+  await expect(chart.locator(".chart-proposed")).toHaveCount(1);
+  await expect(page.locator("#step-5 [role=tab]")).toHaveCount(0);
+  const review = page.locator("#step-6");
+  await expect(review.locator(".plan-change")).toHaveCount(4);
+  await expect(review.locator(".plan-change[open]")).toHaveCount(0);
+  await expect(review.locator(".change-after").first()).toHaveText(
+    "Two 15-minute sessions, then review",
+  );
+  await review
+    .locator(".plan-change")
+    .filter({ hasText: "Preparation" })
+    .locator("summary")
+    .click();
+  await expect(review).toContainText("This is a hypothesis to check next week");
+  await review.locator(".remembered-context summary").click();
+  await expect(review.locator(".remembered-context")).toContainText(
+    "You reported:",
+  );
+  await expect(review.locator(".remembered-context")).toContainText("To test:");
+  await review.getByRole("button", { name: "Confirm revised plan" }).click();
+  await expect(review.getByRole("status")).toContainText(
+    "Review how it went on October 25",
+  );
+  await expect(chart.locator(".chart-actual")).toHaveAttribute(
+    "d",
+    recordedPath!,
+  );
+  await expect(page.locator("#step-5 .proposal-metrics")).toContainText(
+    "2 km recorded",
+  );
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
     .first()

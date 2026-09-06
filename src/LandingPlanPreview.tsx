@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { ArrowRight, CalendarDays, Check } from "lucide-react";
 import { Mark } from "./LandingArt";
-import { ProgressChart } from "./ProgressChart";
-import { demoGoal } from "./landing-data";
 
 export function LandingPlanPreview() {
   return (
@@ -18,7 +16,7 @@ export function LandingPlanPreview() {
       </div>
       <div className="preview-content">
         <header className="preview-goal">
-          <h4>Run my first 5 km.</h4>
+          <h3>Run my first 5 km.</h3>
           <p>Without stopping · By November 15</p>
         </header>
         <div className="preview-next-step">
@@ -30,36 +28,17 @@ export function LandingPlanPreview() {
             Start plan <ArrowRight size={16} />
           </a>
         </div>
-        <details className="preview-disclosure">
-          <summary>Why this plan?</summary>
-          <p>
-            Adler uses your starting point, constraints, and relevant research
-            to propose a strategy. You can inspect its evidence, assumptions,
-            and alternatives before starting.
-          </p>
-        </details>
-        <details className="preview-disclosure preview-progress">
-          <summary>
-            Progress & history <span>2 / 5 km</span>
-          </summary>
-          <div className="preview-progress-content">
-            <h4>Longest run without stopping</h4>
-            <p>2 km recorded · 3 km due October 15</p>
-            <ProgressChart
-              goal={demoGoal}
-              today="2026-10-17"
-              compact
-              graphOnly
-            />
-          </div>
-        </details>
-        <details className="preview-disclosure">
-          <summary>Questions & conversations</summary>
-          <p>
-            Ask Adler about this goal whenever you need help. The conversation
-            stays with the goal, so your plan and context stay together.
-          </p>
-        </details>
+        <nav className="preview-depth" aria-label="Explore the example plan">
+          <a href="#step-2">
+            Why this plan? <ArrowRight size={14} />
+          </a>
+          <a href="#step-5">
+            Progress & history <ArrowRight size={14} />
+          </a>
+          <a href="#step-4">
+            Questions & conversations <ArrowRight size={14} />
+          </a>
+        </nav>
       </div>
     </div>
   );
@@ -74,12 +53,34 @@ export function LandingSchedulePreview() {
         {saved ? "YOU’RE SET" : "MAKE TIME FOR YOUR NEXT STEP"}
       </span>
       <h4>Go for my next planned run.</h4>
-      <div className="suggested-time">
-        <CalendarDays size={20} />
-        <div>
-          <b>{time}</b>
-          <span>25 minutes</span>
+      <div className="schedule-day">
+        <span>Tuesday, October 13</span>
+        <small>Your day</small>
+      </div>
+      <div className="schedule-slots">
+        {!time.includes("7:00") && (
+          <div className="schedule-busy">
+            <time>9 am–5 pm</time>
+            <span>Work</span>
+          </div>
+        )}
+        <div className="suggested-time">
+          <CalendarDays size={20} />
+          <div>
+            <b>{time}</b>
+            <span>25-minute run · Then a 5-minute check-in</span>
+          </div>
         </div>
+        <div className="schedule-open">
+          <time>{time.includes("7:00") ? "7:30 am" : "7:00 pm"}</time>
+          <span>Time for the rest of life</span>
+        </div>
+        {time.includes("7:00") && (
+          <div className="schedule-busy">
+            <time>9 am–5 pm</time>
+            <span>Work</span>
+          </div>
+        )}
       </div>
       {!saved ? (
         <button className="button primary" onClick={() => setSaved(true)}>
@@ -107,6 +108,10 @@ export function LandingSchedulePreview() {
           ))}
         </div>
       </details>
+      <p className="schedule-learning">
+        Texts and check-ins help Adler find times that fit better. Calendar
+        updates wait for your confirmation.
+      </p>
       <p className="demo-footnote">
         Illustration only. No calendar booking is made here.
       </p>

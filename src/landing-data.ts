@@ -13,7 +13,12 @@ export const demoGoal: Goal = {
     "Complete the full 5 km route without a walking break and record the distance.",
   target: 5,
   unit: "km",
-  measure: { label: "Longest run without stopping", unit: "km", target: 5, baseline: 1 },
+  measure: {
+    label: "Longest run without stopping",
+    unit: "km",
+    target: 5,
+    baseline: 1,
+  },
   targetDate: "2026-11-15",
   outcomeUpdatedAt: "2026-10-17",
   milestones: [3, 4, 5].map((distance) => ({
@@ -85,3 +90,41 @@ export const demoGoal: Goal = {
     },
   ],
 };
+
+export const demoProposedCheckpoints = [
+  { date: "2026-10-17", value: 2 },
+  { date: "2026-11-01", value: 3 },
+  { date: "2026-11-08", value: 4 },
+  { date: "2026-11-15", value: 5 },
+];
+
+export const demoPlanChanges = [
+  {
+    label: "Approach",
+    before: "Three 25-minute sessions",
+    after: "Two 15-minute sessions, then review",
+    reason:
+      "You have 15 minutes free in the morning. Test a smaller commitment before adding more sessions.",
+  },
+  {
+    label: "Preparation",
+    before: "Get ready when it’s time to leave",
+    after: "Lay your kit out the night before",
+    reason:
+      "Getting ready earlier may make it easier to start. This is a hypothesis to check next week.",
+  },
+  {
+    label: "Milestones",
+    before: "3 km · Oct 15 / 4 km · Nov 1",
+    after: "3 km · Nov 1 / 4 km · Nov 8",
+    reason:
+      "Your longest continuous run is still 2 km. Revisit the intermediate checkpoints while keeping the 5 km goal visible.",
+  },
+  {
+    label: "Timing",
+    before: "Weekdays at 6:30 pm",
+    after: "Weekdays at 7:00 am",
+    reason:
+      "Work interrupted both evening runs, and you’ve said mornings are usually free.",
+  },
+];

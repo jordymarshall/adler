@@ -4,84 +4,65 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  CalendarDays,
-  Check,
   Footprints,
   Menu,
   PenLine,
-  Play,
   Plus,
   Sun,
   X,
 } from "lucide-react";
-import { Logo, Mark } from "./LandingArt";
+import { Logo } from "./LandingArt";
 
-import { ProgressChart } from "./ProgressChart";
-import { demoGoal } from "./landing-data";
+import { LandingHero } from "./LandingHero";
+import { LandingSchedulePreview } from "./LandingPlanPreview";
 import {
-  LandingPlanPreview,
-  LandingSchedulePreview,
-} from "./LandingPlanPreview";
+  GoalDefinitionPreview,
+  WeeklyPlanPreview,
+  ProgressProposalPreview,
+  AdaptivePlanPreview,
+} from "./LandingJourneyPreviews";
 import { CheckInPreview } from "./CheckInPreview";
 import "./landing-core.css";
 
-function Hero() {
-  return (
-    <section className="journey-hero" aria-label="From a goal to a way forward">
-      <div className="hero-atmosphere" />
-      <div className="hero-intro-v2">
-        <h1>
-          Big goals.
-          <br />
-          <em>A way forward.</em>
-        </h1>
-        <p>
-          Personal coaching, grounded in behavioural science.
-          <br />
-          Adler helps you find a strategy, make a plan,
-          <br className="desktop-break" /> and keep it working as life changes.
-        </p>
-        <div className="hero-buttons">
-          <Link className="btn dark" to="/app/goals/new">
-            Find your way forward <ArrowUpRight size={17} />
-          </Link>
-          <a className="btn quiet" href="#the-path">
-            <span className="play-icon">
-              <Play size={11} fill="currentColor" />
-            </span>
-            See it take shape
-          </a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 const chapters = [
   {
-    label: "Find your direction",
+    label: "Set your goal",
     title: (
       <>
-        Give your someday
+        Decide exactly what
         <br />
-        <em>a starting point.</em>
+        <em>you want to achieve.</em>
       </>
     ),
-    body: "Bring the goal. Adler asks what it needs, researches approaches, and proposes a plan with one clear next action. The reasoning and progress are there when you want them.",
+    body: "Tell Adler what you want and why it matters. Together, define what success looks like, where you’re starting, and the milestones along the way.",
+    visual: <GoalDefinitionPreview />,
   },
   {
-    label: "Make room for it",
+    label: "Plan your week",
     title: (
       <>
-        Big things happen
+        Know what to do.
         <br />
-        <em>in small windows.</em>
+        <em>And how to tell it’s working.</em>
       </>
     ),
-    body: "Start the plan, then choose when to act. Save a suggested time or choose another. Connecting a calendar is optional; your next step stays in one place.",
+    body: "Adler proposes a strategy and turns it into actions that fit your available time. Know what to do, what result to check, and when to review it. Start with one clear next step.",
+    visual: <WeeklyPlanPreview />,
   },
   {
-    label: "Stay connected",
+    label: "Make time",
+    title: (
+      <>
+        Give your next step
+        <br />
+        <em>a place in your day.</em>
+      </>
+    ),
+    body: "Choose a time or connect your calendar to find room. As you text, check in, and share more, Adler automatically revises its timing suggestions. You confirm changes before they reach your calendar.",
+    visual: <LandingSchedulePreview />,
+  },
+  {
+    label: "Check in",
     title: (
       <>
         A little closer.
@@ -89,79 +70,36 @@ const chapters = [
         <em>Even when you’re away.</em>
       </>
     ),
-    body: "After the session, send a quick check-in by text or in the app. Your goals, conversations, and calendar stay connected, so Adler can help wherever you reply.",
+    body: "After your session, send a quick check-in by text or in Adler: what happened, what helped, and what got in the way. Your reply stays with the goal and informs what comes next.",
+    visual: <ConnectedPreview />,
   },
-  { label: "Review and adapt", title: null, body: "" },
+  {
+    label: "See progress",
+    title: (
+      <>
+        See where you stand.
+        <br />
+        <em>And what could change.</em>
+      </>
+    ),
+    body: "Compare your results with the plan. When the approach needs adjusting, see the proposed checkpoints alongside your progress, with a clear explanation of what changes and why.",
+    visual: <ProgressProposalPreview />,
+  },
+  {
+    label: "Learn and adapt",
+    title: (
+      <>
+        Life moves.
+        <br />
+        Your plan
+        <br />
+        should, <em>too.</em>
+      </>
+    ),
+    body: "Adler remembers what you share and keeps reassessing the strategy. At your weekly review, it brings together your check-ins, results, and relevant research to propose changes to the approach, actions, and milestones. You choose what to accept, then test it the following week.",
+    visual: <AdaptivePlanPreview />,
+  },
 ];
-
-export function Week({
-  adjusted = false,
-  detailed = false,
-}: {
-  adjusted?: boolean;
-  detailed?: boolean;
-}) {
-  return (
-    <div
-      className={`week-visual ${adjusted ? "adjusted" : ""} ${detailed ? "detailed" : ""}`}
-    >
-      <div className="week-top">
-        <span>YOUR WEEK, WITH A LITTLE ROOM</span>
-        <span>
-          Oct 19—23 <CalendarDays size={14} />
-        </span>
-      </div>
-      <div className="week-grid">
-        <div className="week-times">
-          <span>7 am</span>
-          <span>12 pm</span>
-          <span>6 pm</span>
-        </div>
-        {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
-          <div className={`week-day day-${i}`} key={day}>
-            <div className="week-date">
-              {day}
-              <b>{19 + i}</b>
-            </div>
-            <div className="week-lines" />
-            {[0, 2, 4].includes(i) && (
-              <div className="calendar-obligation">
-                <span>
-                  {i === 0
-                    ? "Team meeting"
-                    : i === 2
-                      ? "Lunch with Sam"
-                      : "Weekly catch-up"}
-                </span>
-              </div>
-            )}
-            {[1, 3].includes(i) && (
-              <>
-                <div className="calendar-late">Work ran late</div>
-                <div className="calendar-run">
-                  <Footprints size={14} />
-                  <b>Easy run</b>
-                  <span>{adjusted ? "7:00" : "6:30"} · 25 min</span>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
-      </div>
-      <div className="week-legend">
-        <span>
-          <i />
-          Time for your goal
-        </span>
-        <span>
-          <i />
-          The rest of life
-        </span>
-        <span>50 min this week</span>
-      </div>
-    </div>
-  );
-}
 
 function ConnectedPreview() {
   return (
@@ -253,7 +191,7 @@ function ThePath() {
         </div>
         {chapters.map((chapter, index) => (
           <article
-            className={`chapter-panel ${index === 2 ? "chapter-connected" : index === 3 ? "chapter-adaptation" : ""}`}
+            className={`chapter-panel ${index === 3 ? "chapter-connected" : ""}`}
             id={`step-${index + 1}`}
             aria-labelledby={`chapter-title-${index}`}
             key={chapter.label}
@@ -264,131 +202,18 @@ function ThePath() {
             >
               0{index + 1}
             </span>
-            {index === 3 ? (
-              <Adaptation />
-            ) : (
-              <>
-                <div className="chapter-copy">
-                  <h3 id={`chapter-title-${index}`}>{chapter.title}</h3>
-                  <p>{chapter.body}</p>
-                </div>
-                <div className={`chapter-visual chapter-${index}`}>
-                  {index === 0 ? (
-                    <LandingPlanPreview />
-                  ) : index === 1 ? (
-                    <LandingSchedulePreview />
-                  ) : (
-                    <ConnectedPreview />
-                  )}
-                </div>
-              </>
-            )}
+            <div className="chapter-copy">
+              <span className="chapter-label">{chapter.label}</span>
+              <h3 id={`chapter-title-${index}`}>{chapter.title}</h3>
+              <p>{chapter.body}</p>
+            </div>
+            <div className={`chapter-visual chapter-${index}`}>
+              {chapter.visual}
+            </div>
           </article>
         ))}
       </div>
     </section>
-  );
-}
-
-function Adaptation() {
-  const [adjusted, setAdjusted] = useState(false);
-  return (
-    <div className="adapt-inner" id="a-plan-that-adapts">
-      <div className="adapt-copy reveal">
-        <h3 id="chapter-title-3">
-          Life moves.
-          <br />
-          Your plan
-          <br />
-          should, <em>too.</em>
-        </h3>
-        <p>
-          At your weekly review, Adler compares your check-ins with the plan. It
-          remembers your preferences and what you’ve tried, then proposes an
-          adjustment. You choose what to accept.
-        </p>
-        <div className="adapt-message">
-          <span>A</span>
-          <p>
-            “Work ran late again.
-            <br />I missed both evening runs.”
-          </p>
-        </div>
-        <div className="adapt-coach">
-          <Mark />
-          <p>
-            You mentioned mornings are usually free.
-            <br />
-            Shall we give them a try next week?
-          </p>
-        </div>
-        <details className="preview-disclosure remembered-context">
-          <summary>What Adler remembers</summary>
-          <p>Mornings are usually free. Work can run late.</p>
-          <p>
-            Saved context informs later conversations and reviews. You can
-            review, correct, or remove it.
-          </p>
-        </details>
-        <button
-          className={`btn ${adjusted ? "accepted" : "lime"}`}
-          onClick={() => setAdjusted(!adjusted)}
-        >
-          {adjusted ? (
-            <>
-              <Check size={17} /> A little more room to move
-            </>
-          ) : (
-            <>
-              Try the morning plan <ArrowRight size={17} />
-            </>
-          )}
-        </button>
-        <span className="adapt-helper" aria-live="polite">
-          {adjusted
-            ? "The future changes. Your progress stays yours. Click to replay."
-            : "Try it. Watch the week find a new rhythm."}
-        </span>
-      </div>
-      <div className="adapt-stage">
-        <div className="adapt-stage-heading">
-          <span className="tiny-label">THE SAME GOAL. A BETTER FIT.</span>
-          <span className={`proposal-status ${adjusted ? "is-approved" : ""}`}>
-            {adjusted ? <Check size={12} /> : <span className="outline-dot" />}
-            {adjusted ? "Plan adjusted" : "Proposed adjustment"}
-          </span>
-        </div>
-        <Week adjusted={adjusted} />
-        <div className="adapt-change">
-          <span>{adjusted ? "YOUR NEW RHYTHM" : "ONE SMALL CHANGE"}</span>
-          <div>
-            <b className={adjusted ? "crossed" : ""}>6:30 pm</b>
-            <ArrowRight size={21} />
-            <b className={adjusted ? "new-time" : ""}>7:00 am</b>
-          </div>
-          <p>
-            Tuesday & Thursday · The same 25 minutes.
-            <br />A little less life in the way.
-          </p>
-        </div>
-        <div className="adapt-preserved">
-          <span className="destination-diamond" />
-          <div>
-            Still heading toward your first 5 km.
-            <small>Your recorded 2 km hasn’t changed.</small>
-          </div>
-          <Mark />
-        </div>
-        <details className="preview-disclosure adaptation-progress">
-          <summary>Progress & history</summary>
-          <ProgressChart goal={demoGoal} today="2026-10-17" compact />
-          <p>
-            Changing the session time leaves your recorded results and agreed
-            checkpoints intact.
-          </p>
-        </details>
-      </div>
-    </div>
   );
 }
 
@@ -436,7 +261,7 @@ export function Landing() {
         </button>
       </header>
       <main id="main-content">
-        <Hero />
+        <LandingHero />
         <div className="possibility-strip">
           <span>FOR WHATEVER FORWARD MEANS TO YOU.</span>
           <div>
