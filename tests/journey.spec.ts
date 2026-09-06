@@ -323,7 +323,7 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the landing keeps the existing font and shows the detailed walkthrough below the core story", async ({
+test("the landing uses Adler Warm and shows the detailed walkthrough below the core story", async ({
   page,
 }) => {
   await page.goto("/");
@@ -342,7 +342,11 @@ test("the landing keeps the existing font and shows the detailed walkthrough bel
     await page
       .locator(".hero-intro-v2 h1")
       .evaluate((el) => getComputedStyle(el).fontFamily),
-  ).toContain("DM Sans");
+  ).toContain("Adler Warm");
+  await page.evaluate(() => document.fonts.ready);
+  expect(
+    await page.evaluate(() => document.fonts.check('450 16px "Adler Warm"')),
+  ).toBeTruthy();
   await expect(page.locator(".walk-step")).toHaveCount(7);
   await expect(page.locator("#step-2")).toContainText("Start plan");
   expect(

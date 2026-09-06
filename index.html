@@ -36,12 +36,19 @@
   <body>
     <div id="root"></div>
     <noscript
-      ><main
+      ><style>
+        @font-face {
+          font-family: "Adler Warm";
+          src: url("/fonts/adler-warm-400.woff2") format("woff2");
+          font-weight: 400;
+          font-display: swap;
+        }
+      </style><main
         style="
           max-width: 680px;
           margin: 80px auto;
           padding: 24px;
-          font-family: system-ui;
+          font-family: 'Adler Warm', ui-rounded, system-ui, sans-serif;
         "
       >
         <h1>Make progress on the goals that matter.</h1>

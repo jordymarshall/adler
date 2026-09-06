@@ -1,5 +1,5 @@
 .v2-landing {
-  font-family: "DM Sans", sans-serif;
+  font-family: var(--body-font);
   color: #293a2d;
   background: #f8f8f2;
   font-synthesis: none;
@@ -2554,10 +2554,8 @@
   }
 }
 
-/* V2 composition, Adler's existing type, and the current product journey. */
+/* V2 composition, Adler Warm type, and the current product journey. */
 .v2-landing {
-  --heading-font: "DM Sans", sans-serif;
-  font-family: "DM Sans", sans-serif;
   overflow-x: clip;
 }
 .v2-landing h1,

@@ -581,7 +581,7 @@ details > summary:focus-visible {
   font-size: 67px;
   line-height: 1;
   transform: rotate(9deg);
-  font-family: Georgia, serif;
+  font-family: var(--body-font);
   font-weight: 400;
 }
 .hero-copy > p {
