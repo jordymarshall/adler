@@ -833,6 +833,11 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
   for (const call of calls) {
     assert.deepEqual(call.config, calls[0].config);
     assert.equal(call.instructions, calls[0].instructions);
+    const frameworkContext = call.context as typeof call.context & { coachingFramework: { version: string }; behavioralResearch: { synthesis: string }; researchLibrary: { id: string }[] };
+    assert.equal(frameworkContext.coachingFramework.version, "besci-coaching-v1");
+    assert.match(frameworkContext.behavioralResearch.synthesis, /P24. Structural constraints/);
+    assert.match(frameworkContext.behavioralResearch.synthesis, /P29. Health rules do not export/);
+    assert.ok(frameworkContext.researchLibrary.some(document => document.id === "deep/idiographic-inference.md"));
     assert.deepEqual(call.context.program, data.programs.at(-1));
     assert.deepEqual(call.context.confirmedContext, data.memories);
     assert.deepEqual(call.context.activeGoals, data.goals);
@@ -1108,7 +1113,8 @@ test("unavailable research can produce an explicitly provisional plan without fa
   }), async (queries) => ({ queries, sources: [], unavailable: queries, searchedAt: new Date().toISOString() }));
   const result = await service.chat(user.id, "Help me plan the essays");
   const values = JSON.parse(result.proposal.changes[0].values);
-  assert.deepEqual(values.basis.sources, []);
+  assert.deepEqual(values.basis.sources.map((s: { id: string }) => s.id), ["method:implementation", "adler:P2"]);
+  assert.ok(values.basis.sources.every((s: { access: string }) => s.access === "method summary"));
   assert.match(values.basis.uncertainty, /unavailable/);
 });
 

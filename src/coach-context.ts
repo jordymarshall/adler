@@ -5,6 +5,7 @@ import type { DecisionCheck } from "./program-types.ts";
 import { METHODS } from "./methods.ts";
 import { planProgress } from "../shared/adaptive-plan.ts";
 import { executionSummary, cycleEvidence } from "../shared/goal-execution.ts";
+import { goalProjection } from "../shared/goal-projection.ts";
 
 export function coachingGoal(goal: Data["goals"][number]) {
   const { forecasts: _forecasts, ...rest } = goal;
@@ -57,7 +58,7 @@ export function coachingContext(
       id: "outcome",
       label: "Outcome & checkpoint",
       finding: goal
-        ? `${goal.success} Outcome observations are supporting evidence, not a pace estimate.`
+        ? `${goal.success} Use the saved input–outcome model to distinguish observed progress, conditional projections and unknown relationships.`
         : `${goals.length} active goals. No single goal selected.`,
       sources: goal
         ? [goal.id, ...goal.results.slice(-2).map((r) => r.id)]
@@ -117,6 +118,7 @@ export function coachingContext(
     behaviorEvidence: goal ? planProgress(data, goal).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })) : [],
     execution: goal ? executionSummary(data, goal, today) : null,
     learningEvidence: goal ? cycleEvidence(data, goal, today) : null,
+    goalProjection: goal ? goalProjection(data, goal, today) : null,
     timeZone: data.timeZone,
     message,
     selectedGoalId: goalId,
@@ -125,7 +127,7 @@ export function coachingContext(
     activeGoals: goals,
     allGoalContexts: data.goals.map(g => ({ id: g.id, title: g.title, status: g.status, plan: g.plans.at(-1),
       behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
-      execution: executionSummary(data, g, today), learningEvidence: cycleEvidence(data, g, today) })),
+      execution: executionSummary(data, g, today), learningEvidence: cycleEvidence(data, g, today), projection: goalProjection(data, g, today) })),
     recentActions: actions,
     confirmedContext: data.memories,
     checkInPrompts: actions.filter(a => !a.outcome && !a.retiredAt && a.date && a.date <= today).slice(-5)

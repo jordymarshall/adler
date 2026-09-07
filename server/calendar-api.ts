@@ -33,8 +33,8 @@ const rangeSchema = z
   .refine(
     (v) =>
       Date.parse(v.end) > Date.parse(v.start) &&
-      Date.parse(v.end) - Date.parse(v.start) <= 14 * 86400000,
-    "Choose a range of up to 14 days.",
+      Date.parse(v.end) - Date.parse(v.start) <= 43 * 86400000,
+    "Choose a range of up to six calendar weeks.",
   );
 const bookingSchema = z
   .object({

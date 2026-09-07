@@ -1,8 +1,10 @@
+import { BehavioralRationale } from "./BehavioralRationale";
+import type { BehavioralReasoning } from "../shared/behavioral-reasoning";
 import { BookOpen, FlaskConical } from "lucide-react";
 import type { PlanningBasis } from "../shared/planning";
 import { formatDate } from "./store";
 
-export function PlanExplanation({ basis }: { basis: PlanningBasis }) {
+export function PlanExplanation({ basis, reasoning }: { basis: PlanningBasis; reasoning?: BehavioralReasoning }) {
   return (
     <section className="panel plan-explanation" aria-label="Why this plan">
       <div className="list-heading">
@@ -12,6 +14,7 @@ export function PlanExplanation({ basis }: { basis: PlanningBasis }) {
         <span className="tag">A testable approach</span>
       </div>
       <p>{basis.interpretation}</p>
+      {reasoning && <BehavioralRationale reasoning={reasoning} sources={basis.sources} />}
       <div className="explanation-grid">
         <div>
           <span className="section-kicker">THE APPROACH</span>

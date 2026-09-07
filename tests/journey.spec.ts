@@ -95,7 +95,7 @@ test("scheduling stays with the action and ends at a clear stopping point", asyn
   ).toBe(35 * 60000);
   expect(data.actions[0].outcome).toBeUndefined();
   await page.goto("/app/calendar");
-  await expect(page.getByRole("region", { name: "Your week" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Your calendar" })).toBeVisible();
   await expect(
     page.getByRole("combobox", { name: "Goal to schedule" }),
   ).not.toBeVisible();
@@ -233,6 +233,7 @@ test("calendar reservations recur and controls cannot switch during availability
     });
   });
   await page.goto("/app/calendar");
+  await page.getByRole("button", { name: "Week", exact: true }).click();
   await page.getByRole("button", { name: "Next week", exact: true }).click();
   await expect(page.locator(".calendar-entry.entry-review")).toHaveCount(1);
   await page.getByRole("button", { name: "Add time", exact: true }).click();
@@ -589,13 +590,14 @@ test("calendar day selection books that day and a block opens its own action", a
   await page.goto("/app/calendar");
   await page
     .getByRole("button", {
-      name: "Choose calendars & check availability",
+      name: "Manage calendars",
       exact: false,
     })
     .click();
   await expect(
     page.getByRole("combobox", { name: "Book in", exact: true }),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Week", exact: true }).click();
   await page.getByRole("button", { name: "Next week", exact: true }).click();
   const today = dateInZone("America/Toronto");
   const day = addDays(
@@ -619,7 +621,8 @@ test("calendar day selection books that day and a block opens its own action", a
     date: dateInZone(saved.data.timeZone),
   });
   await save(page, saved.data, saved.revision);
-  await page.locator(".calendar-entry.entry-work a").click();
+  await page.locator(".calendar-entry.entry-work button").click();
+  await page.getByRole("dialog").getByRole("link", { name: /↗/ }).click();
   await expect(page).toHaveURL(new RegExp(`action=${original.id}`));
   await expect(page.locator('[data-phase="waiting"]')).toContainText(
     original.title,

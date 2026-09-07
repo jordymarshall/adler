@@ -9,6 +9,7 @@ import { api, type ServiceStatus } from "./api";
 import type { Proposal } from "../server/service";
 import { recordLink } from "../shared/record-links";
 import { ProposalChanges } from "./ProposalChanges";
+import { GoalProjection } from "./GoalProjection";
 
 export function GoalPlan({
   goal,
@@ -136,6 +137,7 @@ export function GoalPlan({
           </small>
         </div>
       </section>
+      <GoalProjection data={data} goal={goal} today={today} />
       <CycleTimeline data={data} goal={goal} today={today} />
       <section className="plan-approach" aria-label="Behavioral approach">
         <h2>How you’ll make room for the work</h2>

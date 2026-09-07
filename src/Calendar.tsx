@@ -1,5 +1,5 @@
 import { actionReady, actionStep } from "../shared/adaptive-plan";
-import { WeekCalendar, weekOf } from "./WeekCalendar";
+import { WeekCalendar, weekOf, monthRange } from "./WeekCalendar";
 import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
@@ -60,6 +60,8 @@ export function Calendar({
 }) {
   const { data, commit, flush, refresh: refreshWorkspace } = useStore();
   const baseProgram = currentProgram(data);
+  const [calendarView, setCalendarView] = useState<"month" | "week">("month");
+  const [month, setMonth] = useState(() => dateInZone(data.timeZone));
   const [week, setWeek] = useState(() =>
     weekOf(
       data.actions.find((a) => a.id === actionId)?.date ||
@@ -208,8 +210,9 @@ export function Calendar({
     setSlot(null);
     setCheckedAt("");
     try {
-      const start = zonedTime(week, "00:00", timezone)!;
-      const end = zonedTime(addDays(week, 7), "00:00", timezone)!;
+      const range = !embedded && calendarView === "month" ? monthRange(month) : { start: week, end: addDays(week, 7) };
+      const start = zonedTime(range.start, "00:00", timezone)!;
+      const end = zonedTime(range.end, "00:00", timezone)!;
       const result = await api<{ busy: BusyInterval[]; checkedAt: string }>(
         "availability",
         {
@@ -387,6 +390,10 @@ export function Calendar({
             )}
           </div>
           <WeekCalendar
+            month={month}
+            view={calendarView}
+            onMonth={date => { setMonth(date); setWeek(weekOf(date)); setBusy([]); setCheckedAt(""); setRequestedDate(""); setSlot(null); }}
+            onView={view => { setCalendarView(view); setBusy([]); setCheckedAt(""); setSlot(null); }}
             working={working}
             week={week}
             onWeek={(date) => {
@@ -409,6 +416,7 @@ export function Calendar({
               }
             }}
             onChoose={(date) => {
+              setWeek(weekOf(date));
               setCustomDate(date);
               setRequestedDate(date);
               setSlot(null);

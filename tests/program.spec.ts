@@ -123,14 +123,16 @@ test("local scheduling creates a synced work block without an external booking c
   await expect(page.locator(".scheduler-form")).toContainText(
     "External calendars haven’t been checked",
   );
+  await page.getByRole("button", { name: "Week", exact: true }).click();
   await page.getByRole("button", { name: "Next week", exact: true }).click();
   await page.getByRole("button", { name: "Save time", exact: true }).click();
   await synced(page);
   await page.reload();
+  await page.getByRole("button", { name: "Week", exact: true }).click();
   await page.getByRole("button", { name: "Next week", exact: true }).click();
   await expect(page.locator(".calendar-entry.entry-work")).toHaveCount(1);
   await expect(page.locator(".calendar-entry.entry-work")).toContainText(
-    "Adler only",
+    "Adler",
   );
   const { data } = await snapshot(page);
   expect(data.actions.some((a) => a.id === data.workBlocks[0].id)).toBeTruthy();

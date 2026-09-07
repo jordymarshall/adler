@@ -1,5 +1,7 @@
 # How Adler's coach works
 
+Current behavioral contract: [the Adler Method](method/adler-method.md). The shared service supplies the recovered research synthesis on every turn, supports bounded reading of its deep dives, and validates/reviews framework-grounded recommendations. The projection and older architecture discussion below is historical where it differs from that contract.
+
 Adler has one owned coach service, `Service.chat` in `server/service.ts`. Web chat, iMessage, SMS, scheduled coaching, and MCP's `coach_message` call that service. Goal setup through chat uses it too. Switching between Gemini, GPT, and Claude changes the model adapter, not the saved program or coaching instructions. This is a structured agent loop implemented in the application; it does not use an ADK or a separate agent for each interface.
 
 ```mermaid

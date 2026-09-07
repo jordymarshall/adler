@@ -1,10 +1,15 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { api } from "./api";
 import { formatDate, useStore, type Data } from "./store";
 import type { Proposal } from "../server/service";
+import { BehavioralRationale } from "./BehavioralRationale";
 import { ProposalChanges } from "./ProposalChanges";
+import type { CoachInsight } from "./program-types";
+import type { ResearchSource } from "../shared/planning";
+import { recordLink } from "../shared/record-links";
+import "./learning-loops.css";
 
 export interface InsightRow {
   id: string;
@@ -12,42 +17,51 @@ export interface InsightRow {
   status: string;
   sources: { label: string; text: string; href?: string }[];
   effect: ReactNode;
+  learning?: CoachInsight["learning"];
+  resultSources: InsightRow["sources"];
+  research: ResearchSource[];
+  date: string;
+  goalTitle: string;
 }
 export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
-  return (
-    <div className="insights-matrix" aria-label="Insights and their effects">
-      <div className="insights-column-heads" aria-hidden="true">
-        <span>What we’ve learned</span>
-        <span>Where it came from</span>
-        <span>What changes as a result</span>
-      </div>
-      {rows.map((row) => (
-        <article className="insight-row" key={row.id}>
-          <div>
-            <span
-              className={`insight-status ${row.status === "To test" ? "hypothesis" : ""}`}
-            >
-              {row.status}
-            </span>
-            <h3>{row.finding}</h3>
-          </div>
-          <div className="insight-sources">
-            {row.sources.map((source, i) => (
-              <details key={i}>
-                <summary>
-                  {source.label}
-                  <ChevronDown size={13} />
-                </summary>
-                <p>{source.text}</p>
-                {source.href && <Link to={source.href}>Open source ↗</Link>}
-              </details>
-            ))}
-          </div>
-          <div className="insight-effect">{row.effect}</div>
-        </article>
-      ))}
-    </div>
-  );
+  return <div className="learning-loops" aria-label="Learning experiments and their evidence">
+    {rows.map(row => <article className="insight-row learning-loop" id={`learning-${row.id}`} key={row.id}>
+      <header><span>{row.goalTitle} · {formatDate(row.date)}</span><span className="insight-status">{row.learning?.result ? "Feedback received" : row.learning ? "Experiment in progress" : row.status}</span></header>
+      {row.learning?.previousInsightId && <a className="previous-loop" href={`#learning-${row.learning.previousInsightId}`}>↳ Builds on an earlier learning cycle</a>}
+      <ol className="learning-canvas" role="list" aria-label="Coaching reasoning from evidence to the next test">
+        <li className="learning-node observation-node">
+          <div className="learning-stage"><b>01</b><span>OBSERVATION<small>Your reports</small></span></div>
+          <div className="deduction-claim"><h3>What you reported</h3><p>{row.status === "Reported" ? row.finding : "Your check-ins provide the starting evidence."}</p></div>
+          <aside className="deduction-evidence insight-sources" aria-label="Observation sources">{row.sources.map((source, index) => <details key={index}><summary>{source.label} <span>+</span></summary><p>{source.text}</p>{source.href && <Link to={source.href}>Open source ↗</Link>}</details>)}</aside>
+        </li>
+        <li className="learning-node hypothesis-node">
+          <div className="learning-stage"><b>02</b><span>HYPOTHESIS<small>Possible explanation</small></span></div>
+          <div className="deduction-claim"><h3>Based on that, Adler suspects…</h3><p>{row.learning?.hypothesis ?? (row.status === "To test" ? row.finding : "An explanation to explore with Adler.")}</p></div>
+          <aside className="deduction-evidence">{row.learning?.reasoning && <BehavioralRationale reasoning={row.learning.reasoning} sources={row.research} />}{row.research.length > 0 ? <details className="learning-research"><summary>Research basis · {row.research.length} <span>+</span></summary>{row.research.map(source => <div key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a><p>{source.authors} · {source.year} · {source.access}</p><p>{source.summary}</p></div>)}</details> : <p>No literature linked yet.</p>}<small>Research informs the idea; it does not prove it applies to you.</small></aside>
+        </li>
+        <li className="learning-node experiment-node">
+          <div className="learning-stage"><b>03</b><span>TEST<small>One change to try</small></span></div>
+          <div className="deduction-claim"><h3>To test that explanation…</h3><p>{row.learning?.experiment ?? "Review a proposed adjustment with Adler."}</p></div>
+          <aside className="deduction-evidence"><details className="loop-plan-change"><summary>Plan changes <span>+</span></summary>{row.effect}</details></aside>
+        </li>
+        <li className={`learning-node result-node ${row.learning?.result ? "has-feedback" : "awaiting-feedback"}`}>
+          <div className="learning-stage"><b>04</b><span>RESULT<small>{row.learning?.result ? "Your follow-up" : "Awaiting feedback"}</small></span></div>
+          <div className="deduction-claim"><h3>{row.learning?.result ? "What actually happened" : "The test needs your feedback"}</h3><p>{row.learning?.result?.summary ?? "A saved plan is not a result. Your next check-ins will provide the evidence."}</p></div>
+          <aside className="deduction-evidence" aria-label="Experiment results">{row.resultSources.map((source, index) => <details key={index}><summary>{source.label} <span>+</span></summary><p>{source.text}</p>{source.href && <Link to={source.href}>Open result ↗</Link>}</details>)}</aside>
+        </li>
+        <li className="learning-node conclusion-node">
+          <div className="learning-stage"><b>05</b><span>INFERENCE<small>Working insight</small></span></div>
+          <div className="deduction-claim"><h3>What this evidence suggests</h3><p>{row.learning?.insight ?? "No conclusion yet. First, compare the feedback with the hypothesis."}</p></div>
+          <aside className="deduction-evidence"><small>{row.learning?.insight ? "Tentative: other explanations may fit. Further reports can strengthen or change this interpretation." : "Pending evidence from the experiment."}</small></aside>
+        </li>
+        <li className="learning-node next-hypothesis-node">
+          <div className="learning-stage"><b>06</b><span>NEXT QUESTION<small>Refine the hypothesis</small></span></div>
+          <div className="deduction-claim"><h3>What to investigate next</h3><p>{row.learning?.nextHypothesis ?? "The next question follows from what we learn."}</p></div>
+          <aside className="deduction-evidence"><small>The next experiment builds on this evidence. Earlier reasoning stays available.</small></aside>
+        </li>
+      </ol>
+    </article>)}
+  </div>;
 }
 function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
   const memory = data.memories.find((m) => m.id === id);
@@ -69,7 +83,7 @@ function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
     return {
       label: `Check-in${action.date ? ` · ${formatDate(action.date)}` : ""}`,
       text: `${action.title}: ${action.outcome ?? "No outcome yet"}. ${action.note ?? ""}`,
-      href: `/app/goals/${action.goalId}/plan`,
+      href: recordLink(data, id),
     };
   const block = data.workBlocks.find((b) => b.id === id);
   if (block)
@@ -151,6 +165,11 @@ export function Insights() {
         return {
           id: `${decision.id}-${i}`,
           finding: insight.finding,
+          learning: insight.learning,
+          resultSources: insight.learning?.result?.sourceIds.map(id => resolveSource(id, data)) ?? [],
+          research: (decision.researchSources ?? []).filter(source => insight.learning?.researchSourceIds.includes(source.id)),
+          date: decision.date,
+          goalTitle: data.goals.find(g => g.id === decision.goalId)?.title ?? "Across your goals",
           status: insight.status,
           sources: insight.sourceIds.map((id) => resolveSource(id, data)),
           effect: (
@@ -220,8 +239,7 @@ export function Insights() {
           <span className="section-kicker">LEARN FROM WHAT HAPPENED</span>
           <h1>Insights</h1>
           <p>
-            What Adler has learned, the records behind it, and the changes that
-            followed.
+            Your check-ins become observations. Adler uses behavioural research to form hypotheses, test changes, and learn from the results.
           </p>
         </div>
         <Link className="button secondary" to={coachLink}>

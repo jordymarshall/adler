@@ -313,3 +313,100 @@ test("legacy proposal forecasts leave model inputs without mutating stored comma
   assert.ok(proposal.before[0].forecasts);
   assert.ok(JSON.parse(proposal.changes[0].values).adaptive.forecast);
 });
+
+test("learning reviews repair unsupported results and retain the research and prior-cycle link", async t => {
+  const { db, user, today, input, adaptive } = fixture(t);
+  const saved = db.snapshot(user.id);
+  createGoal(saved.data, { ...input, adaptive }, today, "essay");
+  saved.data.actions[0].outcome = "Done";
+  saved.data.actions[0].note = "The outline helped me start.";
+  const actionId = saved.data.actions[0].id;
+  db.save(user.id, saved.data, saved.revision, "web", "Reported experiment feedback");
+  let previousInsightId: string | null = null;
+  let attempts = 0;
+  const source = (await literature(["monitoring"])).sources[0];
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    attempts++;
+    if (attempts === 2) assert.match(context.validationError, /user-reported evidence/);
+    return schema.parse({ reply: "The outline may help you start. Let’s test it again.", summary: "Learn from your report", methods: [], changes: [], insights: [{
+      finding: "You reported that the outline helped you start.", status: "Reported", sourceIds: [actionId], changeIndexes: [],
+      learning: { reasoning: { ...adaptive.reasoning!, researchSourceIds: ["method:implementation", "adler:P2", source.id] }, hypothesis: "A visible starting point may reduce hesitation.", experiment: "Write the outline before drafting.",
+        result: { summary: "You started drafting after the outline.", sourceIds: [attempts === 1 ? "essay" : actionId] },
+        insight: "The outline may make starting easier; we need further reports.", nextHypothesis: "Would a shorter outline help on busy days?",
+        previousInsightId, researchSourceIds: ["method:implementation", "adler:P2", source.id] },
+    }] });
+  }), literature);
+  const first = await service.chat(user.id, "Review my outline experiment", "essay", "web", "first-learning");
+  assert.equal(attempts, 2);
+  const decision = first.data.decisions.at(-1)!;
+  assert.ok(decision.researchSources!.some(s => s.id === source.id && s.summary === source.summary));
+  assert.ok(decision.researchSources!.some(s => s.id === "method:implementation"));
+  assert.equal(decision.frameworkVersion, "besci-coaching-v1");
+  assert.deepEqual(decision.insights![0].learning!.result!.sourceIds, [actionId]);
+  previousInsightId = `${decision.id}-0`;
+  const second = await service.chat(user.id, "Keep the next question linked to this experiment", "essay", "web", "next-learning");
+  assert.equal(second.data.decisions.at(-1)!.insights![0].learning!.previousInsightId, previousInsightId);
+  assert.equal(second.data.decisions.filter(d => d.insights?.[0].learning).length, 2);
+});
+
+for (const invalid of ["research", "conclusion", "predecessor"] as const) test(`learning reviews reject a fabricated ${invalid} and allow genuinely pending stages`, async t => {
+  const { db, user, today, input, adaptive } = fixture(t);
+  const saved = db.snapshot(user.id);
+  createGoal(saved.data, { ...input, adaptive }, today, "essay");
+  const actionId = saved.data.actions[0].id;
+  saved.data.actions[0].outcome = "Partly";
+  db.save(user.id, saved.data, saved.revision, "web", "Reported starting friction");
+  let attempts = 0;
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    attempts++;
+    if (attempts === 2) assert.match(context.validationError, invalid === "research" ? /research sources/ : invalid === "conclusion" ? /user-reported evidence/ : /existing insight/);
+    return schema.parse({ reply: "Let’s test a smaller starting point.", summary: "A question to test", methods: [], changes: [], insights: [{
+      finding: "You started but did not finish.", status: "Reported", sourceIds: [actionId], changeIndexes: [],
+      learning: { reasoning: adaptive.reasoning, hypothesis: "A smaller start may help.", experiment: "Try three points.", result: null,
+        insight: attempts === 1 && invalid === "conclusion" ? "This worked." : null, nextHypothesis: null,
+        previousInsightId: attempts === 1 && invalid === "predecessor" ? "invented-0" : null,
+        researchSourceIds: attempts === 1 && invalid === "research" ? ["method:implementation", "adler:P2", "invented-study"] : ["method:implementation", "adler:P2"] },
+    }] });
+  }), literature);
+  const result = await service.chat(user.id, "Review what to try", "essay", "web", `pending-${invalid}`);
+  assert.equal(attempts, 2);
+  assert.equal(result.data.decisions.at(-1)!.insights![0].learning!.result, null);
+  assert.equal(result.data.decisions.at(-1)!.insights![0].learning!.insight, null);
+});
+
+test("the shared coach reads the research and repairs a recommendation whose valid citations do not support its mechanism", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  let recommendations = 0, reviews = 0;
+  const service = new Service(db, async (_config, instructions, context: any, schema) => {
+    if (context.task === "review-plan") {
+      reviews++;
+      assert.match(context.behavioralResearch.synthesis, /P24. Structural constraints/);
+      assert.ok(context.methodologyReadings.some((reading: { id: string }) => reading.id === "deep/structural-limits.md"));
+      return schema.parse({ issues: reviews === 1 ? [{ changeIndex: 0, issue: "The source does not show that reminders overcome a fixed time constraint.", correction: "Check for a viable opportunity or offer to park the work; do not infer low motivation." }] : [] });
+    }
+    assert.match(instructions, /BEHAVIORAL SCIENCE IS AN INPUT/);
+    assert.equal(context.coachingFramework.researchCommit, "472e979");
+    if (!context.methodologyReadings.length) return schema.parse({ reply: "I’m checking the research on fixed constraints.", summary: "Read the structural constraints evidence", methods: [], changes: [], methodologyRequests: ["deep/structural-limits.md"], researchQueries: ["implementation intentions structural constraints"] });
+    assert.equal(context.researchSearches.length, 1, "Owned research and literature can be read in the same turn");
+    recommendations++;
+    if (recommendations === 2) assert.match(context.validationError, /fixed time constraint/);
+    const reasoning = { ...adaptive.reasoning!, principleIds: ["P2", "P24"], researchSourceIds: ["method:implementation", "adler:P2", "adler:P24"],
+      barrier: { domain: "opportunity", status: "reported", explanation: "Caregiving displaced the intended work time.", sourceIds: [context.currentMessageId] },
+      mechanism: recommendations === 1 ? "Reminders solve the missing time." : "A cue helps initiation only if the chosen opportunity is viable.",
+      fit: "First establish whether an available window exists; parking the goal is a valid option.",
+    };
+    return schema.parse({ reply: "Caregiving displaced the window. Is there another window you would choose, or would parking the work fit better?", summary: "Check the opportunity before changing the cue", methods: ["implementation"], changes: [], insights: [{ finding: "Caregiving took the time set aside for writing.", status: "Reported", sourceIds: [context.currentMessageId], changeIndexes: [], learning: {
+      reasoning, hypothesis: "A reliable cue may help only after a viable window is identified.", experiment: "First check whether a different opportunity exists.", result: null, insight: null, nextHypothesis: null, previousInsightId: null, researchSourceIds: reasoning.researchSourceIds,
+    } }] });
+  }, literature);
+  const result = await service.chat(user.id, "Caregiving took the time I had set aside for writing.", "essay", "web", "framework-fit");
+  assert.equal(recommendations, 2);
+  assert.equal(reviews, 2);
+  assert.match(result.data.decisions.at(-1)!.insights![0].learning!.reasoning!.mechanism, /only if/);
+  assert.ok(result.data.decisions.at(-1)!.researchSources!.some(source => source.id === "adler:P24"));
+  assert.deepEqual(result.data.decisions.at(-1)!.methodologyReadings, ["deep/structural-limits.md"]);
+  assert.equal(result.data.goals[0].plans.length, 1, "Reading and reflection must not change chosen work");
+});

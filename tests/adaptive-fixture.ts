@@ -4,6 +4,16 @@ import { initialData } from "../shared/workspace.ts";
 
 export function adaptiveFixture(start = "2026-09-07", end = "2026-09-11"): AdaptivePlan {
   return {
+    reasoning: {
+      principleIds: ["P2"], goalRoute: "session", ruleExceptions: ["Use a short drafting trial rather than a daily habit or automaticity target."],
+      barrier: { domain: "uncertain", status: "unknown", explanation: "The person's starting obstacle is not established yet.", sourceIds: [] },
+      methodId: "implementation", researchSourceIds: ["method:implementation", "adler:P2"],
+      mechanism: "An agreed cue can connect an intention to a concrete start.",
+      fit: "The outline trial has a concrete first step and an after-breakfast cue; its usefulness is provisional.",
+      prediction: "The person reports whether the cue made starting easier.",
+      reviewRule: "Keep the cue if it helps; otherwise ask what prevented starting before increasing work.",
+      limitation: "Available time and the writing task may differ between attempts; a cue cannot remove a time conflict.",
+    },
     approach: "Test whether a short outline makes drafting easier.",
     window: { start, end, label: "Outline experiment", rationale: "Three attempts will inform the next drafting decision.", capacityMinutes: 90, capacityStatus: "confirmed" },
     steps: [{

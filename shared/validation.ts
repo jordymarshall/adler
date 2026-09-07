@@ -1,5 +1,6 @@
-import { planningBasisSchema, researchSearchSchema } from "./planning.ts";
+import { planningBasisSchema, researchSearchSchema, researchSourceSchema } from "./planning.ts";
 import { z } from "zod";
+import { behavioralReasoningSchema } from "./behavioral-reasoning.ts";
 import type { Data, Goal, Action } from "./workspace.ts";
 import { reactionTypes } from "./workspace.ts";
 import { METHODS } from "../src/methods.ts";
@@ -177,6 +178,16 @@ export const reviewSchema = z
   .strict();
 export const insightSchema = z
   .object({
+    learning: z.object({
+      reasoning: behavioralReasoningSchema.optional(),
+      hypothesis: z.string().trim().min(1).max(1800),
+      experiment: z.string().trim().min(1).max(1800),
+      result: z.object({ summary: z.string().trim().min(1).max(1800), sourceIds: z.array(id).min(1).max(10) }).strict().nullable(),
+      insight: z.string().trim().min(1).max(1800).nullable(),
+      nextHypothesis: z.string().trim().min(1).max(1800).nullable(),
+      previousInsightId: z.string().max(150).nullable(),
+      researchSourceIds: z.array(z.string().min(1).max(150)).max(8),
+    }).strict().optional(),
     finding: z.string().trim().min(1).max(1000),
     status: z.enum(["Reported", "To test"]),
     sourceIds: z.array(id).min(1).max(10),
@@ -189,6 +200,9 @@ const decisionSchema = z
     date: text,
     goalId: z.string(),
     insights: z.array(insightSchema).max(6).optional(),
+    researchSources: z.array(researchSourceSchema).max(8).optional(),
+    frameworkVersion: z.string().min(1).max(80).optional(),
+    methodologyReadings: z.array(z.string().min(1).max(150)).max(4).optional(),
     research: z.array(researchSearchSchema.omit({ sources: true }).extend({ sourceCount: z.number().int().min(0).max(18) })).max(2).optional(),
     programVersion: z.number(),
     planVersion: z.number(),

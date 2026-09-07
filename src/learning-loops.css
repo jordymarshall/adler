@@ -1,0 +1,51 @@
+.learning-loops { margin-top: 28px; }
+.insight-row.learning-loop { display: block; border-block: 1px solid var(--line); margin: 22px 0; }
+.learning-loop > header { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.learning-loop .previous-loop { display: block; padding: 14px 0; font-size: 12px; text-decoration: underline; }
+.insight-row.learning-loop > .learning-canvas { padding: 0; margin: 0; border: 0; list-style: none; }
+.learning-node { display: grid; grid-template-columns: 178px minmax(0, 1fr) minmax(160px, .56fr); gap: 26px; position: relative; padding: 22px 0; --stage-color: #496274; }
+.learning-node + .learning-node { border-top: 1px solid var(--line); }
+.learning-node::after { content: "↓"; position: absolute; left: 9px; bottom: -11px; z-index: 1; padding: 0 4px; background: var(--paper); color: #819077; font-size: 17px; line-height: 20px; }
+.learning-node:last-child::after { content: none; }
+.learning-stage { display: flex; align-items: flex-start; gap: 14px; padding-top: 2px; color: var(--stage-color); }
+.learning-stage b { font-size: 20px; font-weight: 600; line-height: 1; letter-spacing: -.04em; }
+.learning-stage > span { padding-top: 2px; font-size: 10px; font-weight: 750; letter-spacing: .06em; line-height: 1.4; }
+.learning-stage small { display: block; margin-top: 7px; font-size: 10px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.insight-row .learning-node h3 { margin: 0 0 8px; font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--muted); }
+.learning-node .deduction-claim p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--ink); }
+.hypothesis-node, .conclusion-node, .next-hypothesis-node { --stage-color: #786329; }
+.experiment-node { --stage-color: #47613e; }
+.conclusion-node .deduction-claim p { font-weight: 650; }
+.learning-node .deduction-evidence { min-width: 0; align-self: start; border-left: 2px solid color-mix(in srgb, var(--stage-color) 30%, transparent); padding-left: 16px; }
+.learning-node .deduction-evidence:empty { border: 0; }
+.learning-node .deduction-evidence p, .learning-node .deduction-evidence small { display: block; margin: 8px 0 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.learning-node .deduction-evidence > small:first-child { margin-top: 0; }
+.learning-node details { font-size: 11px; }
+.learning-node details + details { margin-top: 12px; }
+.learning-node summary { display: flex; justify-content: space-between; gap: 8px; line-height: 1.5; font-size: 11px; }
+.learning-node a { font-size: 11px; text-decoration: underline; }
+.learning-research > div { padding-top: 14px; }
+.learning-loop .insight-status { font-size: 11px; }
+.learning-node .insight-sources::before { content: none; }
+@media (max-width: 1100px) {
+  .learning-node { grid-template-columns: 153px minmax(0, 1fr) minmax(140px, .5fr); gap: 20px; }
+}
+@media (max-width: 750px) {
+  .insight-row.learning-loop { padding: 0; }
+  .learning-loop > header { align-items: flex-start; }
+  .learning-node { grid-template-columns: 28px minmax(0, 1fr); gap: 12px 14px; padding: 24px 0; }
+  .learning-stage { display: contents; }
+  .learning-stage b { grid-column: 1; grid-row: 1 / 4; padding-top: 2px; }
+  .learning-stage > span { grid-column: 2; display: flex; align-items: baseline; gap: 10px; }
+  .learning-stage small { display: inline; margin-top: 0; }
+  .deduction-claim, .learning-node .deduction-evidence { grid-column: 2; }
+  .learning-node::after { left: 1px; }
+  .learning-node .deduction-claim p { font-size: 14px; }
+}
+
+.behavioral-rationale { margin: 12px 0; font-size: 12px; }
+.behavioral-rationale p { line-height: 1.7; }
+.rationale-sources { display: flex; flex-direction: column; gap: 10px; }
+.rationale-sources a { text-decoration: underline; }
+.learning-node .behavioral-rationale { margin-top: 0; }
+[data-theme="dark"] .learning-stage { color: var(--ink); }

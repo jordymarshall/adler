@@ -197,10 +197,10 @@ test("a second signed-in tab receives confirmed changes and stale saves are reje
   await page.request.post(`/api/proposals/${proposal.id}/approve`, {
     data: {},
   });
-  await expect(other.locator(".goal-chart-row")).toContainText(
+  await expect(other.locator(".goal-table-row")).toContainText(
     "Publish two design essays",
   );
-  await expect(page.locator(".goal-chart-row")).toContainText(
+  await expect(page.locator(".goal-table-row")).toContainText(
     "Publish two design essays",
   );
   const stale = await page.request.post("/api/workspace", {

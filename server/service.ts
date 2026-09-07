@@ -15,6 +15,9 @@ import { METHODS } from "../src/methods.ts";
 import { methodSources, planningInstructions, searchLiterature, researchReviewInstructions, researchReviewSchema } from "./research.ts";
 import { planningBasisSchema, type ResearchSearch } from "../shared/planning.ts";
 import { adaptivePlanSchema, assessmentDue, assessmentEvidence, maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
+import { behavioralResearch, researchLibrary, readBehavioralResearch, synthesisSources } from "./behavioral-research.ts";
+import { COACHING_FRAMEWORK } from "../shared/coaching-framework.ts";
+import { behavioralMethodologyInstructions, validateBehavioralReasoning } from "./behavioral-methodology.ts";
 import { adaptiveInstructions } from "./adaptive-instructions.ts";
 import { executionSummary } from "../shared/goal-execution.ts";
 import {
@@ -40,6 +43,7 @@ const replySchema = z
     researchQueries: z.array(z.string().trim().min(1).max(300)).max(3).default([]),
     summary: z.string().max(1200),
     methods: z.array(z.enum(METHODS.map((m) => m.id))).max(7),
+    methodologyRequests: z.array(z.string().min(1).max(150)).max(2).default([]),
     changes: z
       .array(
         changeSchema.extend({ reason: changeSchema.shape.reason.unwrap() }),
@@ -563,6 +567,13 @@ export class Service {
         ]),
         ...snapshot.data.programs.map((p) => `program-v${p.version}`),
       ]);
+      const reportedSourceIds = new Set([
+        ...snapshot.data.actions.filter(a => a.outcome).map(a => a.id),
+        ...snapshot.data.goals.flatMap(g => g.results.map(r => r.id)),
+        ...snapshot.data.memories.map(m => m.id),
+        ...snapshot.data.messages.filter(m => m.role === "user").map(m => m.id),
+        ...(!background ? [userMessageId] : []),
+      ]);
       const turn = {
         ...context,
         currentMessageId: userMessageId,
@@ -572,22 +583,26 @@ export class Service {
         pendingProposals: pendingProposals.map(coachingProposal),
         connectedCalendars,
         commandCatalog,
-        evidenceCatalog: METHODS,
+        evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)),
+        coachingFramework: COACHING_FRAMEWORK, behavioralResearch, researchLibrary,
         ...(background ? { automaticAssessment: true, task: "assess-plan", instruction: "Assess saved evidence without inventing a user report. Propose substantive changes; return nextAssessmentAt as a future time or null when waiting for user input/new evidence. Do not confirm proposals, record outcomes, or save personal memories." } : {}),
       };
       const researchSearches: ResearchSearch[] = [];
       let planningChecks: unknown;
-      const researchSources = methodSources().filter((source) => context.program.enabledMethods.includes(source.id.slice(7)));
+      const researchSources = [...methodSources().filter((source) => context.program.enabledMethods.includes(source.id.slice(7))), ...synthesisSources()];
+      const methodologyReadings: ReturnType<typeof readBehavioralResearch> = [];
+      let methodologyRounds = 0;
       let result!: z.infer<typeof replySchema>;
       let validationError: string | undefined;
       let repairs = 0;
       let ready = false;
-      for (let attempt = 0; attempt < 6; attempt++) {
+      for (let attempt = 0; attempt < 8; attempt++) {
         result = await this.runner(
           config,
-          instructions + planningInstructions + adaptiveInstructions,
+          instructions + planningInstructions + adaptiveInstructions + behavioralMethodologyInstructions,
           {
             ...turn,
+            methodologyReadings,
             researchSources,
             researchSearches,
             planningChecks,
@@ -600,7 +615,7 @@ export class Service {
         );
         try {
           if (result.planCheck.length) {
-            if (planningChecks || result.changes.length || result.confirmProposalId || result.researchQueries.length)
+            if (planningChecks || result.changes.length || result.confirmProposalId || result.researchQueries.length || result.methodologyRequests.length)
               throw new Error("Request one planCheck separately from research, changes, or confirmation.");
             try {
               const preview = applyChanges(snapshot.data, result.planCheck, dayInZone(snapshot.data));
@@ -608,6 +623,16 @@ export class Service {
               planningChecks = { feasible: true, execution: preview.goals.map(g => ({ goalId: g.id, ...executionSummary(preview, g) })) };
             } catch (error) { planningChecks = { feasible: false, issue: error instanceof Error ? error.message : "Invalid plan" }; }
             continue;
+          }
+          if (result.methodologyRequests.length) {
+            if (result.changes.length || result.confirmProposalId)
+              throw new Error("Read the behavioral research before returning recommendations or confirmation.");
+            if (methodologyRounds >= 2) throw new Error("Use the methodology readings already supplied; ask a clarification if evidence is still insufficient.");
+            const readings = readBehavioralResearch(result.methodologyRequests);
+            methodologyRounds++;
+            for (const reading of readings) if (!methodologyReadings.some(previous => previous.id === reading.id)) methodologyReadings.push(reading);
+            validationError = undefined;
+            if (!result.researchQueries.length) continue;
           }
           if (result.researchQueries.length) {
             if (result.changes.length || result.confirmProposalId)
@@ -663,7 +688,8 @@ export class Service {
               if (!values.basis) throw new Error(`The ${command.entity} command for ${command.parentId ?? command.id ?? "the new goal"} needs its own basis (interpretation, strategy, alternatives, evidence, assumptions and review). Include it in every recommended goal/plan change, not just another command in the bundle.`);
               const basis = planningBasisSchema.parse(values.basis);
               const available = [...researchSources, ...researchSearches.flatMap((search) => search.sources)];
-              const used = [...new Set(basis.evidence.map((e) => e.sourceId))];
+              validateBehavioralReasoning(values.adaptive?.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(available.map(source => source.id)) });
+              const used = [...new Set([...basis.evidence.map((e) => e.sourceId), ...(values.adaptive?.reasoning.researchSourceIds ?? [])])];
               if (used.some((id) => !available.some((source) => source.id === id)))
                 throw new Error("Every research citation must use a source ID retrieved in this turn. Do not invent citations.");
               if (basis.review.date < dayInZone(snapshot.data))
@@ -689,12 +715,33 @@ export class Service {
             throw new Error(
               `Every insight must cite an existing source ID${background ? "" : ` or the actual current message ID ${userMessageId}`}, and valid zero-based changeIndexes. Use the ID value, never the literal string currentMessageId.`,
             );
-          if (result.changes.some((change) => JSON.parse(change.values).basis)) {
+          const literature = [...researchSources, ...researchSearches.flatMap(search => search.sources),
+            ...snapshot.data.goals.flatMap(g => g.plans.flatMap(p => p.basis?.sources ?? [])),
+            ...snapshot.data.decisions.flatMap(d => d.researchSources ?? [])];
+          if (new Set(result.insights.flatMap(insight => insight.learning?.researchSourceIds ?? [])).size > 8)
+            throw new Error("Use at most eight distinct research sources across this learning review so every citation can be retained.");
+          for (const insight of result.insights) {
+            const loop = insight.learning;
+            if (!loop) {
+              if (insight.status === "To test") throw new Error("A tentative personal explanation needs insights.learning with a behavioral framework and testable rationale.");
+              continue;
+            }
+            const reasoning = validateBehavioralReasoning(loop.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(literature.map(source => source.id)) });
+            if (reasoning.researchSourceIds.some(id => !loop.researchSourceIds.includes(id)))
+              throw new Error("Include the behavioral rationale’s research IDs in the learning record so its sources are retained.");
+            if (loop.researchSourceIds.some(id => !literature.some(source => source.id === id)))
+              throw new Error("Learning hypotheses must cite retrieved or saved research sources, not invented literature IDs.");
+            if (loop.result?.sourceIds.some(id => !reportedSourceIds.has(id)) || (loop.insight && !loop.result))
+              throw new Error("An experiment result needs user-reported evidence. Keep the result and new insight null until feedback is available.");
+            if (loop.previousInsightId && !snapshot.data.decisions.some(d => d.insights?.some((_, index) => `${d.id}-${index}` === loop.previousInsightId)))
+              throw new Error("Link a learning loop only to an existing insight ID from a previous decision.");
+          }
+          if (result.changes.some((change) => JSON.parse(change.values).basis) || result.insights.some(insight => insight.learning)) {
             const reviewedData = applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data));
             const review = await this.runner(config, researchReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              changes: result.changes, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
+              changes: result.changes, insights: result.insights, coachingFramework: COACHING_FRAMEWORK, behavioralResearch, methodologyReadings, evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)), researchSources: literature, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
               executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...executionSummary(reviewedData, g) })),
             }, researchReviewSchema, 2200);
             if (review.issues.length)
@@ -826,6 +873,13 @@ export class Service {
         planVersion: data.goals.find(g => g.id === relatedGoalId)?.plans.at(-1)?.version ?? 0,
         mode: "live",
         insights: result.insights,
+        frameworkVersion: COACHING_FRAMEWORK.version,
+        methodologyReadings: methodologyReadings.map(reading => reading.id),
+        researchSources: [...new Map([
+          ...snapshot.data.goals.flatMap(g => g.plans.flatMap(p => p.basis?.sources ?? [])),
+          ...snapshot.data.decisions.flatMap(d => d.researchSources ?? []),
+          ...researchSources, ...researchSearches.flatMap(search => search.sources),
+        ].filter(source => result.insights.some(i => i.learning?.researchSourceIds.includes(source.id))).map(source => [source.id, source])).values()].slice(0, 8),
         checks: context.checks,
         methods: result.methods,
         summary: result.summary,

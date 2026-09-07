@@ -11,6 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --omit=dev && mkdir /data && chown node:node /data
 COPY --from=build /app/dist ./dist
+COPY docs/research ./docs/research
 COPY server ./server
 COPY shared ./shared
 COPY src ./src

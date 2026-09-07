@@ -1,5 +1,7 @@
 # Coaching through controllable actions and testable learning
 
+Update: [Input–outcome coaching](input-outcome-coaching.md) supersedes this document’s prohibition on outcome projections, its goals-row presentation, and its earlier landing chart mockup. Use the newer contract for conditional attainment models, real app captures, the goals table, calendar and persisted learning loop.
+
 Review base: `470dee7`. This records the user's latest direction, superseding the outcome forecasting parts of the earlier adaptive-plan proposal. Keep branch `reengineeredv2`; commit and push when verified.
 
 ## Landing page

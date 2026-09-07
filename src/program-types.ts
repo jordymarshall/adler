@@ -1,4 +1,5 @@
-import type { ResearchSearch } from "../shared/planning";
+import type { BehavioralReasoning } from "../shared/behavioral-reasoning";
+import type { ResearchSearch, ResearchSource } from "../shared/planning";
 export type GoalArea = "Unassigned" | "Career" | "Learning" | "Personal";
 export interface Checkpoint {
   id: string;
@@ -46,12 +47,25 @@ export interface DecisionCheck {
   sources: string[];
 }
 export interface CoachInsight {
+  learning?: {
+    reasoning?: BehavioralReasoning;
+    hypothesis: string;
+    experiment: string;
+    result: { summary: string; sourceIds: string[] } | null;
+    insight: string | null;
+    nextHypothesis: string | null;
+    previousInsightId: string | null;
+    researchSourceIds: string[];
+  };
   finding: string;
   status: "Reported" | "To test";
   sourceIds: string[];
   changeIndexes: number[];
 }
 export interface CoachDecision {
+  frameworkVersion?: string;
+  methodologyReadings?: string[];
+  researchSources?: ResearchSource[];
   research?: (Omit<ResearchSearch, "sources"> & { sourceCount: number })[];
   insights?: CoachInsight[];
   id: string;

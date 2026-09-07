@@ -4,10 +4,10 @@ import { Modal } from "./components";
 import points from "./landing-capture-points.json";
 
 const screens = {
-  goals: { title: "Your goals", alt: "Adler’s Goals screen with portfolio, reading, and career goals and their weekly action records." },
-  calendar: { title: "Your calendar", alt: "Adler’s weekly calendar with time reserved for portfolio work, reading, and a career goal." },
-  progress: { title: "Goal progress", alt: "The portfolio goal in Adler, with action completion on the vertical axis, weeks on the horizontal axis, and a dashed projection with shaded rate uncertainty and error bars." },
-  insights: { title: "Insights", alt: "Adler’s Insights screen connecting reported patterns and hypotheses to their sources and saved plan changes." },
+  goals: { title: "Your goals", alt: "Adler’s categorized goals table with activity heatmaps, goal attainment, and projected finish dates." },
+  calendar: { title: "Your calendar", alt: "Adler’s full month calendar with goal colours and highlighted plan sessions. Selecting a session shows its full details." },
+  progress: { title: "Goal progress", alt: "A goal to read 30 books, with a 100 percent target line and projected goal attainment fan based on measured pages per day and assumed book lengths." },
+  insights: { title: "Insights", alt: "Adler’s learning loop: check-in observations, a research-informed hypothesis, a behavioral experiment, observed results, a new insight, and the next hypothesis." },
 };
 
 export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) {

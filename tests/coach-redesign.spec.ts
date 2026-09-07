@@ -37,44 +37,7 @@ test("weekly completion lines distinguish zero from unknown and retain the repor
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
-test("weekly completion projection shows a dashed estimate, uncertainty band and error bars", async ({ page }) => {
-  await register(page);
-  const state = await snapshot(page);
-  const today = dateInZone("UTC");
-  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 21)));
-  data.goals[0].plans[0].adaptive!.window.capacityMinutes = 300;
-  data.goals[0].plans[0].adaptive!.steps[0].recurrence!.until = addDays(weekStart(today), 20);
-  data.programs.at(-1)!.weeklyMinutes = 300;
-  data.actions = Array.from({ length: 10 }, (_, index) => ({
-    id: `reported-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points",
-    criterion: "Five points are written", timing: "After breakfast", date: addDays(today, -index),
-    planVersion: 1, outcome: index % 2 ? "Didn’t happen" : "Done", history: [],
-  }));
-  for (const offset of [7, 14]) data.actions.push({ ...data.actions[0], id: `future-${offset}`, date: addDays(weekStart(today), offset), outcome: undefined });
-  await save(page, data, state.revision);
-  await page.goto("/app/goals/essay");
-  const chart = page.locator(".weekly-actions");
-  await expect(chart.locator(".execution-projection")).toHaveCount(2);
-  await expect(chart.locator(".execution-projection title")).toHaveText([
-    /projected rate 50% · approximate 95% rate interval 24–76%/,
-    /projected rate 50% · approximate 95% rate interval 24–76%/,
-  ]);
-  expect(Number(await chart.locator(".execution-projection-band").first().getAttribute("height"))).toBeGreaterThan(0);
-  await expect(chart.locator(".execution-projection-error")).toHaveCount(2);
-  expect(await chart.locator(".execution-projection-line").first().evaluate(el => getComputedStyle(el).strokeDasharray)).not.toBe("none");
-  await expect(chart.getByLabel("Chart legend")).toContainText("Rate uncertainty");
-  const future = chart.getByRole("button", { name: /No reports, [1-9]\d* planned, 0 done.*[1-9]\d* upcoming/ }).first();
-  await future.click();
-  await expect(chart.locator(".execution-week-summary")).toContainText(/0 \/ \d+ actions done/);
-  await chart.locator(".execution-projection-note summary").click();
-  await expect(chart.locator(".execution-projection-note")).toContainText(/10 of \d+ due actions reported/);
-  await expect(chart.locator(".execution-projection-note")).toContainText("It does not predict the goal’s outcome.");
-  await page.setViewportSize({ width: 390, height: 844 });
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-});
-
-test("goals use full-width chart rows and show reporting coverage without invented completion", async ({
+test("goals use a full-width categorized table and show reporting coverage without invented completion", async ({
   page,
 }) => {
   await register(page);
@@ -101,20 +64,18 @@ test("goals use full-width chart rows and show reporting coverage without invent
   await save(page, data, state.revision);
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto("/app/goals");
-  await expect(page.locator(".goal-chart-row")).toHaveCount(1);
+  await expect(page.locator(".goal-table-row")).toHaveCount(1);
   await expect(page.locator(".behavior-overview")).toContainText("0 reported");
   await expect(page.locator(".behavior-overview h2")).toContainText("—");
-  await expect(page.locator(".goal-chart-row .weekly-actions")).toBeVisible();
+  await expect(page.locator(".goal-table-row .activity-cells")).toBeVisible();
+  await expect(page.locator(".activity-day")).toHaveCount(84);
   const width = await page
     .locator(".organized-goals")
     .evaluate((el) => el.getBoundingClientRect().width);
   expect(width).toBeGreaterThan(1200);
   expect(
-    (await page.locator(".goal-chart-row").boundingBox())!.width,
+    (await page.locator(".goal-table-row").boundingBox())!.width,
   ).toBeGreaterThan(1200);
-  expect(
-    (await page.locator(".goal-chart-row .weekly-actions").boundingBox())!.width,
-  ).toBeGreaterThan(650);
   await expect(page.locator(".app-topbar .ask-adler-link")).toHaveCount(0);
   await page.screenshot({
     path: ".context/redesign-goals-desktop.png",

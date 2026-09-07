@@ -241,7 +241,7 @@ export function GoalWorkspace({
           >
             Edit the next action
           </button>
-          {plan.basis && <PlanExplanation basis={plan.basis} />}
+          {plan.basis && <PlanExplanation basis={plan.basis} reasoning={plan.adaptive?.reasoning} />}
           <details className="quiet-disclosure plan-history">
             <summary>Earlier plans</summary>
             {[...goal.plans].reverse().map((p) => (
@@ -261,7 +261,7 @@ export function GoalWorkspace({
                   {p.basis && p.version !== plan.version && (
                     <details className="explanation-details">
                       <summary>Why this version?</summary>
-                      <PlanExplanation basis={p.basis} />
+                      <PlanExplanation basis={p.basis} reasoning={p.adaptive?.reasoning} />
                     </details>
                   )}
                 </div>

@@ -1,6 +1,9 @@
 import { z } from "zod";
 import type { Action, Data, Goal } from "./workspace.ts";
 import { addDays, dateInZone } from "./journey.ts";
+import { behavioralReasoningSchema } from "./behavioral-reasoning.ts";
+import { projectionModelSchema } from "./projection-model.ts";
+import { COACHING_FRAMEWORK } from "./coaching-framework.ts";
 
 const description = z.string().trim().min(1).max(1800);
 const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
@@ -11,6 +14,8 @@ export const behaviorMeasureSchema = z.object({
   target: z.number().positive().max(1000000).nullable(),
 }).strict();
 export const adaptivePlanSchema = z.object({
+  projection: projectionModelSchema.optional(),
+  reasoning: behavioralReasoningSchema.optional(),
   approach: description,
   window: z.object({
     start: z.iso.date(), end: z.iso.date(), label: description, rationale: description,
@@ -78,7 +83,8 @@ export function assessmentEvidence(data: Data, goal: Goal) {
   const triggers = plan?.assessment.triggers;
   const watches = (event: NonNullable<typeof triggers>[number]) => !triggers || triggers.includes(event);
   return JSON.stringify({
-    methodology: "controllable-experiments-v1",
+    methodology: "input-outcome-learning-v2",
+    coachingFramework: COACHING_FRAMEWORK.version,
     version: goal.plans.at(-1)!.version,
     outcome: [goal.title, goal.success, goal.targetDate, goal.deadline, goal.measure],
     commitments: data.goals.map(g => [g.id, g.status, g.plans.at(-1)!.version]),
@@ -108,7 +114,7 @@ export function assessmentDue(data: Data, goalId: string, now = new Date()) {
   return {
     key: JSON.stringify({ evidence, due: timed ? nextAt : null, windowEnded: Boolean(expired) }),
     reason: !version.adaptive ? "Prepare an adaptive-plan upgrade for this existing goal using its saved context. Keep it reviewable; ask only for essential missing information."
-      : changed ? "Review saved evidence and constraints using the current behavioral coaching method. Establish a sourced learning experiment if this plan does not yet have one; preserve the user’s chosen work and keep revisions reviewable."
+      : changed ? "Review saved evidence and constraints using the current behavioral coaching method. Establish a sourced learning loop and, where measurable, an input–outcome projection model. Preserve the user’s chosen work and keep model and strategy revisions reviewable."
         : expired ? "The concrete planning window ended. Assess the evidence and prepare the next useful window."
           : "The plan's chosen assessment time has arrived. Check its question against actual observations.",
   };
@@ -239,6 +245,19 @@ export function validateAdaptiveWork(data: Data, previous?: Data) {
       throw new Error("A reported starting comparison needs source records. Otherwise keep the comparison unknown.");
     if (plan.experiment?.inputStepIds.some(id => !plan.steps.some(step => step.id === id)))
       throw new Error("The learning experiment must reference steps in this plan.");
+    const projection = plan.projection;
+    if (projection) {
+      const driver = plan.steps.find(step => step.id === projection.driverStepId);
+      if (!driver || driver.type !== "behavior" || (projection.inputMetric === "amount" && !driver.measure))
+        throw new Error("A projection needs a repeating input step and its measured quantity or actual hours.");
+      if (!goal.measure || goal.measure.aggregation !== "cumulative" || goal.measure.unit !== projection.outcomeUnit)
+        throw new Error("Project a cumulative outcome in the goal’s current units. Period and level outcomes need a different model.");
+      const conversion = projection.inputPerOutcome;
+      if (projection.kind === "direct" && (!conversion || conversion.low > conversion.expected || conversion.expected > conversion.high))
+        throw new Error("A direct projection needs ordered low, expected and high input quantities per outcome.");
+      if (projection.kind === "learned" && conversion)
+        throw new Error("Learn the input–outcome relationship from reports; do not save an invented conversion for a learned model.");
+    }
     if (plan.forecast?.method === "behavior-rate" && !plan.steps.some(s =>
       s.id === plan.forecast?.driverStepId && s.type === "behavior" && s.measure?.target))
       throw new Error("A behavior forecast needs a repeating step with a measured target.");

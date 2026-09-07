@@ -7,7 +7,7 @@ import {
   SlidersHorizontal,
   Target,
 } from "lucide-react";
-import { GoalIcon, Modal } from "./components";
+import { Modal } from "./components";
 import {
   formatDate,
   localDate,
@@ -15,7 +15,11 @@ import {
   type Goal,
 } from "./store";
 import { BehaviorChart } from "./BehaviorChart";
-import { WeeklyActions } from "./ExecutionTimeline";
+import { GoalActivity } from "./GoalActivity";
+import { goalProjection } from "../shared/goal-projection";
+import { dateInZone } from "../shared/journey";
+import { projectionDate } from "./GoalProjection";
+import { goalColor } from "./goal-colors";
 import type { GoalArea } from "./program-types";
 
 export function OrganizedGoals() {
@@ -44,7 +48,7 @@ export function OrganizedGoals() {
           <Plus size={17} /> New goal
         </Link>
       </div>
-      {data.goals.length > 0 && <BehaviorChart data={data} />}
+      {data.goals.length > 0 && <details className="goal-overview-disclosure"><summary>{data.goals.filter(g => g.status === "Active").length} active goals · Explore activity across goals <span>+</span></summary><BehaviorChart data={data} /></details>}
       {data.goals.length > 0 && (
         <>
           <details className="quiet-disclosure">
@@ -112,13 +116,17 @@ export function OrganizedGoals() {
           </details>
         </>
       )}
-      <div className="goal-groups">
-        {goals.map((goal) => (
-          <article className="goal-chart-row" key={goal.id}>
-            <div className="goal-row-summary"><GoalIcon kind={goal.kind} small /><span className="section-kicker">{goal.status}</span><Link to={`/app/goals/${goal.id}`}><h2>{goal.title} <ArrowUpRight size={17} /></h2></Link><p>{goal.success}</p><span className="small-text muted">{goal.targetDate ? `Target ${formatDate(goal.targetDate)}` : "No fixed deadline"}</span></div>
-            <WeeklyActions data={data} goal={goal} compact />
-          </article>
-        ))}
+      <div className="goal-groups goal-table-scroll">
+        {goals.length > 0 && <table className="goals-table"><caption>Goals, activity and projected outcomes</caption><thead><tr><th scope="col">Goal</th><th scope="col">Last 12 weeks</th><th scope="col">Goal attained</th><th scope="col">Projected finish</th></tr></thead>
+          {[...new Set(goals.map(g => g.area ?? "Unassigned"))].map(category => <tbody key={category}><tr className="goal-category"><th colSpan={4} scope="rowgroup">{category} <span>{goals.filter(g => (g.area ?? "Unassigned") === category).length}</span></th></tr>
+            {goals.filter(g => (g.area ?? "Unassigned") === category).map(goal => { const progress = goalProjection(data, goal, dateInZone(data.timeZone)); return <tr className="goal-table-row" key={goal.id}>
+              <th scope="row"><Link to={`/app/goals/${goal.id}`}><i style={{ background: goalColor(goal.id) }} /><span>{goal.title} <ArrowUpRight size={14}/></span></Link><small>{goal.status} · {goal.priority ?? "Maintain"}</small><p>{goal.success}</p></th>
+              <td><GoalActivity data={data} goal={goal} /></td>
+              <td><strong>{progress.progress === null ? "—" : `${Math.round(progress.progress)}%`}</strong><small>{progress.current === null ? "Starting point unknown" : `${progress.current} / ${progress.target} ${goal.measure?.unit ?? goal.unit ?? "milestones"}`}</small></td>
+              <td><strong>{progress.projection ? projectionDate(progress.projection.expectedDate) : progress.status}</strong><small>{progress.projection ? `${projectionDate(progress.projection.earliestDate)} – ${projectionDate(progress.projection.latestDate)}` : "Review the model in Check-in"}</small><small>{goal.targetDate ? `Target ${projectionDate(goal.targetDate)}` : "Flexible timeline"}</small></td>
+            </tr>; })}
+          </tbody>)}
+        </table>}
       </div>
       {!goals.length && (
         <div className="empty-state">
