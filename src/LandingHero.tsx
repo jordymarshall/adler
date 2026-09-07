@@ -89,7 +89,7 @@ export function LandingHero() {
         <div className="hero-atmosphere" />
         <div className="hero-intro-v2">
           <h1>
-            Reach your goals with a plan <em>that adapts to you.</em>
+            Reach your goals with a system <em>that adapts to you.</em>
           </h1>
           <p>
             Adler turns your goals into a manageable plan, then uses behavioural

@@ -139,7 +139,7 @@ test("landing keeps the floating scroll hero, five chapters, shared goal plan, a
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "intro");
-  await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that adapts to you.");
   await expect(page.locator(".hero-intro-v2 > p")).toContainText("behavioural science and your check-ins");
   await expect(page.locator(".focus-chapter")).toHaveCount(5);
   await expect(page.getByText("A clear next step.", { exact: true })).toHaveCount(0);

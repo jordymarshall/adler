@@ -69,10 +69,10 @@ const chapters = [
     label: "Adler connects to your life",
     title: (
       <>
-        Your life spans different apps. <em>Keep your coach connected.</em>
+        Message your coach anywhere. <em>Let Adler schedule your next step.</em>
       </>
     ),
-    body: "Your schedule is in one place, your ideas in another. Connect Adler to your calendar and AI tools so your plan travels with you. A quick text brings your coach up to speed.",
+    body: "Check in here, by text, or through connected AI tools like Claude and ChatGPT. Adler keeps the context together, finds time around your commitments, and books your next steps in your calendar with your approval.",
     visual: <ConnectionsPreview />,
   },
 ];

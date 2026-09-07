@@ -8,7 +8,7 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that adapts to you.");
   const recordedMetrics = page.locator("#step-3 .proposal-metrics");
   await expect(recordedMetrics).toContainText("4 sessions recorded");
   const recorded = (await recordedMetrics.textContent())!;
