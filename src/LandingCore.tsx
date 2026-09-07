@@ -16,10 +16,11 @@ import { Logo } from "./LandingArt";
 import { LandingHero } from "./LandingHero";
 import {
   GoalDefinitionPreview,
-  WeeklyPlanPreview,
+  MultiGoalPlanPreview,
   ProgressProposalPreview,
   AdaptivePlanPreview,
 } from "./LandingJourneyPreviews";
+import { ConnectionsPreview } from "./LandingConnectionsPreview";
 import "./landing-core.css";
 
 const chapters = [
@@ -41,7 +42,7 @@ const chapters = [
       </>
     ),
     body: "Adler turns your intentions into manageable actions and habits. It helps you decide when to start, what to focus on, and when to review—whether your goal takes a day or a year.",
-    visual: <WeeklyPlanPreview />,
+    visual: <MultiGoalPlanPreview />,
   },
   {
     label: "Track and visualize your progress",
@@ -50,7 +51,7 @@ const chapters = [
         See where you stand. <em>And where you’re heading.</em>
       </>
     ),
-    body: "Text your coach or check in through the app. Your plan, reported progress, and timeline come together in one place, so you can see how your actions and results change the outlook.",
+    body: "Text your coach or check in through the app. See your weekly actions, planning cycles, and milestones in one place. What you report helps Adler adjust the next cycle and discuss changes to your timeline.",
     visual: <ProgressProposalPreview />,
   },
   {
@@ -74,69 +75,6 @@ const chapters = [
     visual: <ConnectionsPreview />,
   },
 ];
-function ConnectionsPreview() {
-  return (
-    <div className="journey-preview life-connections">
-      <span className="section-kicker">YOUR LIFE, CONNECTED</span>
-      <h3>Fits around you.</h3>
-      {[
-        {
-          title: "Your calendar",
-          description:
-            "Find room and manage scheduled work. You confirm changes to connected calendars.",
-          icon: "google-calendar",
-          status: "Available",
-        },
-        {
-          title: "Claude, ChatGPT & other AI tools",
-          description:
-            "Bring your Adler workspace into compatible AI tools through MCP.",
-          icon: "claude",
-          status: "Available",
-        },
-        {
-          title: "Text your coach",
-          description:
-            "Check in through a configured messaging connection. Your context stays with you.",
-          icon: "imessage",
-          status: "Available",
-        },
-        {
-          title: "Apple Health",
-          description: "Bring health context into your check-in.",
-          status: "Coming soon",
-        },
-        {
-          title: "Shared goals & stakes",
-          description:
-            "Work toward something together, with commitments that matter to you.",
-          status: "Coming soon",
-        },
-      ].map((item) => (
-        <div className="life-connection" key={item.title}>
-          {item.icon ? (
-            <img
-              src={`/brands/${item.icon}.${item.icon === "claude" ? "svg" : "png"}`}
-              alt=""
-            />
-          ) : (
-            <span className="connection-placeholder" aria-hidden="true">
-              +
-            </span>
-          )}
-          <div>
-            <h4>{item.title}</h4>
-            <p>{item.description}</p>
-          </div>
-          <span className="connection-availability">{item.status}</span>
-        </div>
-      ))}
-      <Link className="text-link" to="/integrations">
-        Explore connections <ArrowUpRight size={14} />
-      </Link>
-    </div>
-  );
-}
 function ThePath() {
   const flow = useRef<HTMLDivElement>(null);
   useEffect(() => {

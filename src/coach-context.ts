@@ -2,9 +2,19 @@ import { checkInContext } from "../shared/check-in-context.ts";
 import { reviewSchedule } from "../shared/journey.ts";
 import type { Data } from "../shared/workspace.ts";
 import type { DecisionCheck } from "./program-types.ts";
-import { progressStatus } from "./progress.ts";
 import { METHODS } from "./methods.ts";
 import { planProgress } from "../shared/adaptive-plan.ts";
+import { goalExecution, cycleEvidence } from "../shared/goal-execution.ts";
+
+export function coachingGoal(goal: Data["goals"][number]) {
+  const { forecasts: _forecasts, ...rest } = goal;
+  return { ...rest, plans: goal.plans.map(p => {
+    if (!p.adaptive) return p;
+    const { forecast: _forecast, ...adaptive } = p.adaptive;
+    return { ...p, adaptive };
+  }) };
+}
+
 export function coachingContext(
   data: Data,
   goalId: string,
@@ -12,6 +22,7 @@ export function coachingContext(
   today: string,
   conversationId?: string,
 ) {
+  data = { ...data, goals: data.goals.map(coachingGoal) };
   const program = data.programs.at(-1)!;
   const goal = data.goals.find((g) => g.id === goalId);
   const goals = data.goals.filter((g) => g.status === "Active");
@@ -35,7 +46,6 @@ export function coachingContext(
     Date.now() - Date.parse(data.calendarSnapshot.checkedAt) < 5 * 60000
       ? data.calendarSnapshot
       : null;
-  const pace = goal ? progressStatus(goal, today) : null;
   const eligibleMethods = METHODS.filter(
     (method) =>
       program.enabledMethods.includes(method.id) &&
@@ -47,7 +57,7 @@ export function coachingContext(
       id: "outcome",
       label: "Outcome & checkpoint",
       finding: goal
-        ? `${goal.success} ${pace!.detail}`
+        ? `${goal.success} Outcome observations are supporting evidence, not a pace estimate.`
         : `${goals.length} active goals. No single goal selected.`,
       sources: goal
         ? [goal.id, ...goal.results.slice(-2).map((r) => r.id)]
@@ -105,7 +115,8 @@ export function coachingContext(
     planningBasis: goal?.plans.at(-1)?.basis ?? null,
     adaptivePlan: goal?.plans.at(-1)?.adaptive ?? null,
     behaviorEvidence: goal ? planProgress(data, goal).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })) : [],
-    forecast: goal?.forecasts?.at(-1) ? { ...goal.forecasts.at(-1), inputKey: undefined } : null,
+    execution: goal ? goalExecution(data, goal, today) : null,
+    learningEvidence: goal ? cycleEvidence(data, goal, today) : null,
     timeZone: data.timeZone,
     message,
     selectedGoalId: goalId,
@@ -114,7 +125,7 @@ export function coachingContext(
     activeGoals: goals,
     allGoalContexts: data.goals.map(g => ({ id: g.id, title: g.title, status: g.status, plan: g.plans.at(-1),
       behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
-      forecast: g.forecasts?.at(-1) ? { ...g.forecasts.at(-1), inputKey: undefined } : null })),
+      execution: goalExecution(data, g, today), learningEvidence: cycleEvidence(data, g, today) })),
     recentActions: actions,
     confirmedContext: data.memories,
     checkInPrompts: actions.filter(a => !a.outcome && !a.retiredAt && a.date && a.date <= today).slice(-5)

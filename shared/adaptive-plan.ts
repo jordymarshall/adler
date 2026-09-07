@@ -1,7 +1,6 @@
 import { z } from "zod";
 import type { Action, Data, Goal } from "./workspace.ts";
 import { addDays, dateInZone } from "./journey.ts";
-import { refreshForecasts } from "./forecast.ts";
 
 const description = z.string().trim().min(1).max(1800);
 const identifier = z.string().regex(/^[a-zA-Z0-9_-]{1,80}$/);
@@ -45,6 +44,16 @@ export const adaptivePlanSchema = z.object({
     feedbackDelayDays: z.number().int().min(0).max(3660),
     triggers: z.array(z.enum(["check-in", "result", "blocker", "milestone", "window-end"])).max(5),
   }).strict(),
+  experiment: z.object({
+    hypothesis: description,
+    inputStepIds: z.array(identifier).min(1).max(30),
+    outcomeSignal: description,
+    comparison: description,
+    comparisonStatus: z.enum(["unknown", "reported"]),
+    comparisonSourceIds: z.array(z.string().min(1).max(100)).max(6),
+    decisionRule: description,
+    alternativeExplanations: z.array(description).max(5),
+  }).strict().optional(),
   forecast: z.object({
     method: z.enum(["none", "observed-rate", "behavior-rate"]),
     rationale: description,
@@ -54,7 +63,7 @@ export const adaptivePlanSchema = z.object({
     minimumObservations: z.number().int().min(3).max(100),
     horizonDays: z.number().int().min(1).max(3660),
     freshnessDays: z.number().int().min(1).max(366),
-  }).strict(),
+  }).strict().optional(),
 }).strict();
 export type AdaptivePlan = z.infer<typeof adaptivePlanSchema>;
 export type PlanStep = AdaptivePlan["steps"][number];
@@ -216,6 +225,8 @@ export function validateAdaptiveWork(data: Data, previous?: Data) {
       if (!completed && (step.scheduledDate < plan.window.start || step.scheduledDate > plan.window.end ||
         (step.recurrence && step.recurrence.until < step.scheduledDate) || !stepDates(plan, step).length))
         throw new Error("Each step needs an occurrence inside its planning window.");
+      if (step.recurrence && step.recurrence.everyDays % 7 === 0 && (step.recurrence.weekdays?.length ?? 0) > 1)
+        throw new Error("An every-seven-days recurrence visits only one weekday. For multiple weekdays each week, use everyDays=1 and filter by weekdays.");
       if (step.dependsOn.some(id => plan.steps.find(s => s.id === id)?.type === "behavior"))
         throw new Error("A prerequisite must be a verifiable task, not an ongoing behavior.");
     }
@@ -225,8 +236,12 @@ export function validateAdaptiveWork(data: Data, previous?: Data) {
     }, 0);
     if (minutes > plan.window.capacityMinutes)
       throw new Error(`${goal.title}: ${minutes} minutes of work exceeds the ${plan.window.capacityMinutes}-minute capacity. Reduce the commitment or ask to change capacity.`);
-    if (plan.forecast.method === "behavior-rate" && !plan.steps.some(s =>
-      s.id === plan.forecast.driverStepId && s.type === "behavior" && s.measure?.target))
+    if (plan.experiment?.comparisonStatus === "reported" && !plan.experiment.comparisonSourceIds.length)
+      throw new Error("A reported starting comparison needs source records. Otherwise keep the comparison unknown.");
+    if (plan.experiment?.inputStepIds.some(id => !plan.steps.some(step => step.id === id)))
+      throw new Error("The learning experiment must reference steps in this plan.");
+    if (plan.forecast?.method === "behavior-rate" && !plan.steps.some(s =>
+      s.id === plan.forecast?.driverStepId && s.type === "behavior" && s.measure?.target))
       throw new Error("A behavior forecast needs a repeating step with a measured target.");
   }
   if (!data.goals.some(g => g.plans.at(-1)?.adaptive && (g.status === "Active" || g.status === "Draft"))) return;
@@ -282,5 +297,4 @@ export function maintainAdaptivePlans(data: Data, now = new Date()) {
       planVersion: version.version, evidenceKey: assessmentEvidence(data, goal), nextAt: version.adaptive.assessment.at,
     };
   }
-  refreshForecasts(data, now);
 }

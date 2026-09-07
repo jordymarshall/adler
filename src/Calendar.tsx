@@ -398,7 +398,7 @@ export function Calendar({
             }}
             busy={busy}
             checked={Boolean(checkedAt)}
-            onRecord={action => navigate(`/app/coach?goal=${action.goalId}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`)}
+            onRecord={action => navigate(`/app/check-in?goal=${action.goalId}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`)}
             onCalendars={() => {
               if (options.current) {
                 options.current.open = true;
@@ -794,7 +794,7 @@ export function Calendar({
             </div>
           ))}
         </div>
-        <Link className="text-link" to="/app/coach/program">
+        <Link className="text-link" to="/app/settings/coaching">
           Edit available hours
         </Link>
       </details>

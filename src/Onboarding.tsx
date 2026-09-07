@@ -8,7 +8,7 @@ export function Onboarding() {
     event.preventDefault();
     if (goal.trim())
       navigate(
-        `/app/coach?intent=new-goal&prompt=${encodeURIComponent(`Help me develop this goal and a plan around how I work: ${goal.trim()}`)}`,
+        `/app/check-in?intent=new-goal&prompt=${encodeURIComponent(`Help me develop this goal and a plan around how I work: ${goal.trim()}`)}`,
       );
   }
   return (

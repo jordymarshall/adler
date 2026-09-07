@@ -6,11 +6,11 @@ export function resolveRecord(
 ): { href: string; goalId?: string } | undefined {
   const anchor = `#record-${encodeURIComponent(id)}`;
   if (data.memories.some((m) => m.id === id))
-    return { href: `/app/coach/about-you${anchor}` };
+    return { href: `/app/insights${anchor}` };
   const message = data.messages.find((m) => m.id === id);
   if (message)
     return {
-      href: `/app/coach?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}${anchor}`,
+      href: `/app/check-in?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}${anchor}`,
       goalId: message.goalId,
     };
   const action = data.actions.find((a) => a.id === id);

@@ -1,0 +1,366 @@
+.execution-status {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 1fr;
+  gap: 32px;
+  padding: 12px 0 30px;
+  border-bottom: 1px solid var(--line);
+}
+.execution-status > div {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.execution-status > div > span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.execution-status strong {
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.execution-status small {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.execution-horizon {
+  padding: 24px 0;
+}
+.execution-axis {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 2% 26px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.execution-date-grid {
+  position: relative;
+  border-top: 1px solid var(--line);
+}
+.execution-today {
+  position: absolute;
+  top: -5px;
+  bottom: 0;
+  width: 1px;
+  background: #62766a55;
+  pointer-events: none;
+}
+.execution-today > span {
+  position: absolute;
+  right: 4px;
+  top: -19px;
+  font-size: 10px;
+  color: var(--muted);
+}
+.execution-cycle,
+.execution-marker {
+  position: relative;
+  padding: 20px 2% 10px;
+  min-height: 62px;
+  border-bottom: 1px solid var(--line);
+}
+.execution-cycle-span {
+  position: absolute;
+  top: 5px;
+  height: 7px;
+  border-radius: 4px;
+  background: #b9c5b6;
+}
+.execution-cycle-span.current {
+  background: #426547;
+}
+.execution-cycle p,
+.execution-marker p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.execution-cycle span,
+.execution-marker p span,
+.execution-marker summary span,
+.execution-undated span {
+  color: var(--muted);
+  font-size: 12px;
+}
+.execution-diamond {
+  position: absolute;
+  top: 5px;
+  width: 9px;
+  height: 9px;
+  transform: translateX(-50%) rotate(45deg);
+  border: 1.5px solid #8a7254;
+  background: var(--paper);
+}
+.execution-diamond.verified {
+  background: #426547;
+  border-color: #426547;
+}
+.execution-marker summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+.execution-marker details p {
+  padding-top: 12px;
+  color: var(--muted);
+}
+.execution-target .execution-diamond {
+  background: #8a7254;
+}
+.execution-undated {
+  margin: 14px 2%;
+  font-size: 13px;
+}
+.execution-undated summary {
+  cursor: pointer;
+}
+.execution-horizon > p {
+  margin: 18px 0 0;
+}
+.weekly-actions {
+  padding: 22px 0;
+  min-width: 0;
+}
+.weekly-actions h2 {
+  font-size: 20px;
+  font-weight: 500;
+}
+.execution-pagination {
+  display: flex;
+  gap: 4px;
+}
+.execution-pagination button {
+  border: 1px solid var(--line);
+  color: var(--ink);
+  background: transparent;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.execution-pagination button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.execution-weeks {
+  display: flex;
+  gap: 8px;
+  margin: 22px 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.execution-week {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 2px 12px;
+  background: transparent;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--muted);
+}
+.execution-week.selected {
+  background: var(--sage);
+  border-bottom-color: var(--green);
+  color: var(--ink);
+}
+.execution-total {
+  font-size: 12px;
+}
+.execution-bar-area {
+  width: 100%;
+  height: 104px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+.execution-bar {
+  width: min(60%, 48px);
+  display: flex;
+  flex-direction: column-reverse;
+  overflow: hidden;
+  border-radius: 4px 4px 0 0;
+}
+.execution-segment {
+  min-height: 2px;
+}
+.execution-segment.done,
+.execution-legend i.done {
+  background: #426547;
+}
+.execution-segment.partial,
+.execution-legend i.partial {
+  background: #acb895;
+}
+.execution-segment.missed,
+.execution-legend i.missed {
+  background: #b48364;
+}
+.execution-segment.unknown,
+.execution-legend i.unknown {
+  background: repeating-linear-gradient(
+    135deg,
+    #f9faf6,
+    #f9faf6 3px,
+    #b6bbae 3px,
+    #b6bbae 4px
+  );
+}
+.execution-segment.upcoming,
+.execution-legend i.upcoming {
+  background: #e3e6dd;
+}
+.execution-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 14px 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.execution-legend > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.execution-legend i {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 2px;
+}
+.execution-week-summary {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 18px 0;
+}
+.execution-week-summary b {
+  color: var(--ink);
+  font-weight: 500;
+}
+.execution-action {
+  border-top: 1px solid var(--line);
+}
+.execution-action summary {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 16px;
+  padding: 18px 0;
+  cursor: pointer;
+  align-items: center;
+}
+.execution-action time,
+.execution-outcome {
+  font-size: 12px;
+  color: var(--muted);
+}
+.execution-action b {
+  font-size: 14px;
+  font-weight: 500;
+}
+.execution-action > div {
+  padding: 0 0 20px 96px;
+  font-size: 13px;
+}
+.execution-next {
+  margin: 12px 0 28px;
+}
+.goal-chart-row .weekly-actions {
+  padding: 0;
+}
+.goal-chart-row .weekly-actions h2 {
+  font-size: 14px;
+}
+.goal-chart-row .execution-bar-area {
+  height: 85px;
+}
+.goal-chart-row .execution-legend {
+  gap: 6px 12px;
+}
+.insights-page + .memory-page {
+  margin-top: 56px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.cycle-evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin: 20px 0;
+  padding-block: 20px;
+  border-block: 1px solid var(--line);
+}
+.cycle-evidence p,
+.learning-method p {
+  font-size: 13px;
+}
+.cycle-evidence a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.learning-method {
+  margin: 20px 0;
+}
+.progress-proposal-preview .execution-pagination {
+  display: none;
+}
+.progress-proposal-preview .execution-weeks {
+  margin-top: 8px;
+}
+.progress-proposal-preview .execution-bar-area {
+  height: 60px;
+}
+.progress-proposal-preview .weekly-actions {
+  padding: 8px 0;
+}
+.progress-proposal-preview .weekly-actions h2 {
+  font-size: 15px;
+}
+.progress-proposal-preview .execution-week-summary {
+  margin: 8px 0;
+}
+@media (max-width: 700px) {
+  .execution-status,
+  .cycle-evidence {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .execution-status strong {
+    font-size: 20px;
+  }
+  .execution-action summary {
+    grid-template-columns: 64px 1fr;
+    gap: 8px;
+  }
+  .execution-outcome {
+    grid-column: 2;
+  }
+  .execution-action > div {
+    padding-left: 0;
+  }
+  .execution-weeks {
+    gap: 2px;
+  }
+  .execution-week {
+    font-size: 9px;
+  }
+  .execution-cycle p > span,
+  .execution-marker summary > span {
+    display: block;
+  }
+  .mobile-nav {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.execution-chart-note {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 6px 0;
+}

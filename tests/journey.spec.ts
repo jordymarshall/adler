@@ -49,8 +49,8 @@ test("one first goal starts locally and hands off checking in to shared Coach", 
     .getByRole("button", { name: "I’ll do it now", exact: true })
     .click();
   await expect(page.locator('[data-phase="working"]')).toBeVisible();
-  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Coach" }).click();
-  await expect(page).toHaveURL(/\/app\/coach/);
+  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
+  await expect(page).toHaveURL(/\/app\/check-in/);
   await expect(page.getByLabel("Message Adler")).toContainText("Sketch three thumbnails");
   const { data } = await snapshot(page);
   expect(data.actions).toHaveLength(1);
@@ -135,7 +135,7 @@ test("evidence is disclosed on request and action observations stay separate fro
   );
   await page.getByRole("button", { name: "Start action", exact: true }).click();
   await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 4 }) }]);
-  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Coach" }).click();
+  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
   await page.getByLabel("Message Adler").fill("Done today, four outline points.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
@@ -148,7 +148,7 @@ test("conversations open on request, inherit the goal and can move to General", 
   page,
 }) => {
   await register(page, true);
-  await page.goto("/app/coach?goal=essays");
+  await page.goto("/app/check-in?goal=essays");
   await expect(
     page.getByRole("button", { name: "New chat", exact: true }),
   ).not.toBeVisible();
@@ -297,12 +297,13 @@ test("the simplified journey works on a phone with accessible disclosure control
 
 test("the landing uses Adler Warm and five focused chapters on desktop and mobile", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".adaptive-hero h1")).toHaveText("Reach your goals with a plan that adapts to you.");
-  expect(await page.locator(".adaptive-hero h1").evaluate(el => getComputedStyle(el).fontFamily)).toContain("Adler Warm");
+  await expect(page.locator(".journey-hero h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  expect(await page.locator(".journey-hero h1").evaluate(el => getComputedStyle(el).fontFamily)).toContain("Adler Warm");
   await expect(page.locator(".focus-chapter")).toHaveCount(5);
-  await expect(page.locator(".hero-assembled")).toHaveCount(0);
+  await expect(page.locator(".hero-assembled")).toHaveCount(1);
   await expect(page.locator("#step-5")).toContainText("Apple Health");
-  await expect(page.locator("#step-5 .connection-availability").filter({ hasText: "Coming soon" })).toHaveCount(2);
+  await expect(page.locator("#step-5 .connections-upcoming")).toContainText("Shared goals & stakes");
+  await expect(page.locator("#step-5 .connections-upcoming")).toContainText("Coming soon");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -316,21 +317,9 @@ test("the progress and proposal graph fills its container and has readable label
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    const chart = page.locator(
-      ".progress-proposal-preview .progress-viz > svg",
-    );
-    const size = await chart.evaluate((el) => {
-      const svg = el as unknown as SVGSVGElement;
-      const box = svg.getBoundingClientRect();
-      const plot = svg.querySelector(".chart-grid")!.getBoundingClientRect();
-      return {
-        coverage: plot.width / box.width,
-        labelPixels:
-          parseFloat(getComputedStyle(svg.querySelector("text")!).fontSize) *
-          svg.getScreenCTM()!.a,
-      };
-    });
-    expect(size.coverage).toBeGreaterThan(0.8);
+    const chart = page.locator(".progress-proposal-preview .execution-weeks");
+    const size = await chart.evaluate(el => ({ width: el.getBoundingClientRect().width, labelPixels: parseFloat(getComputedStyle(el.querySelector("button")!).fontSize) }));
+    expect(size.width).toBeGreaterThan(width === 390 ? 250 : 380);
     expect(size.labelPixels).toBeGreaterThanOrEqual(8.5);
     const graphBottom =
       (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
@@ -341,31 +330,16 @@ test("the progress and proposal graph fills its container and has readable label
   }
 });
 
-test("landing chart details stay available while hovered or keyboard focused", async ({
-  page,
-}) => {
+test("landing weekly commitments are selectable with the keyboard", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  await page.evaluate(() => document.fonts.ready);
-  const chart = page.locator(".progress-proposal-preview .graph-only");
-  const graph = chart.locator("svg");
-  const details = chart.locator(".chart-tooltip");
-  await graph.hover();
-  await expect(details).toBeVisible();
-  const bounds = (await details.boundingBox())!;
-  await page.mouse.move(
-    bounds.x + bounds.width / 2,
-    bounds.y + bounds.height / 2,
-  );
-  await expect(details).toBeVisible();
-  await graph.focus();
-  await page.mouse.move(0, 0);
-  await expect(details).toBeVisible();
-  await page.keyboard.press("Tab");
-  await expect(details).toHaveCount(0);
-  await graph.hover();
-  await page.mouse.move(0, 0);
-  await expect(details).toHaveCount(0);
+  const chart = page.locator(".progress-proposal-preview .weekly-actions");
+  await chart.getByRole("button", { name: /Week of Oct 19/ }).focus();
+  await page.keyboard.press("Enter");
+  await expect(chart.locator(".execution-week-summary")).toContainText("0 / 2 actions done");
+  await expect(chart.locator(".execution-week-summary")).toContainText("2 upcoming");
+  await chart.getByRole("button", { name: /Week of Oct 12/ }).click();
+  await expect(chart.locator(".execution-week-summary")).toContainText("2 / 2 actions done");
 });
 
 test("onboarding submits once, clarifies in place, then opens the researched draft", async ({
@@ -444,7 +418,7 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
     "What would you like to publish?",
   );
   expect(requests).toHaveLength(1);
-  await expect(page).toHaveURL(/\/app\/coach/);
+  await expect(page).toHaveURL(/\/app\/check-in/);
   await expect(page.getByLabel("Message Adler")).toHaveValue("");
   await page
     .getByLabel("Message Adler")
@@ -459,7 +433,7 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
   expect((await snapshot(page)).data.conversations.at(-1)?.goalId).toBe(
     "general",
   );
-  await page.goto("/app/coach");
+  await page.goto("/app/check-in");
   await expect(page.locator(".coach-thread:visible")).toContainText(
     "What would you like to publish?",
   );
@@ -715,10 +689,11 @@ test("each of the five chapters holds its own viewport and remains readable with
 
 test("the opening animation uses a concrete nonfitness goal and respects reduced motion", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".hero-plan-story")).toContainText("Publish my portfolio");
-  await expect(page.locator(".hero-plan-story")).toContainText("25 minutes after breakfast");
-  await expect(page.locator(".hero-story-card")).toHaveCount(3);
+  await expect(page.locator(".hero-objects")).toContainText("Publish my portfolio");
+  await expect(page.locator(".hero-objects")).toContainText("25 focused minutes");
+  await expect(page.locator(".hero-float")).toHaveCount(4);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".hero-story-card").first()).toHaveCSS("animation-name", "none");
+  await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "static");
+  await expect(page.locator(".hero-sticky")).not.toHaveCSS("position", "sticky");
   await expect(page.getByRole("heading", { name: "A clear next step." })).toHaveCount(0);
 });

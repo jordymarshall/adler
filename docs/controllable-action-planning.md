@@ -1,0 +1,33 @@
+# Coaching through controllable actions and testable learning
+
+Review base: `470dee7`. This records the user's latest direction, superseding the outcome forecasting parts of the earlier adaptive-plan proposal. Keep branch `reengineeredv2`; commit and push when verified.
+
+## Landing page
+
+Keep the five focused scroll chapters: goals; organizing and managing multiple goals; progress and check-ins; behavioral learning and adaptation; life connections. Restore the floating-card hero and scroll transition from `08c565e`, retaining the requested headline “Reach your goals with a plan that adapts to you.” Use the subheadline “Adler is a behavioural science coach that learns about you to create adaptable plans that help you achieve your goals.” Use a relatable portfolio example, not the old fitness or “A clear next step” scene.
+
+Chapter 02 must show multiple goals and their commitments in one plan. Chapter 05 must show three phone mockups: Claude chat, calendar, and text check-in. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
+
+## App and coaching contract
+
+- The goal is direction. Controllable actions and behavioral execution are the primary measures. Outcome observations stay visible as evidence for whether the user's chosen work helps.
+- Do not infer revenue pace, outcome per session, achievement probabilities, or expected finish dates from sparse reports. Target and milestone dates are commitments. Discuss and propose changes explicitly.
+- The input–outcome relationship is an uncertainty to investigate over time. Each repeating coaching plan saves a testable hypothesis, linked input steps, an observable outcome signal, starting comparison, decision rule, and alternative explanations. Feedback delay and review timing fit the signal and person's constraints; there is no universal weekly cycle or three-observation threshold.
+- Separate whether a coaching intervention improves execution from whether execution helps the goal. Use dated reports, missing evidence, delayed feedback, changing circumstances and competing explanations. Keep uncertainty visible. Do not diagnose a trait or prescribe domain strategies based on behavioral research. Make changes reviewable and preserve earlier plans, evidence and sourced insights.
+- One conversation destination named Check-in handles planning, reporting, outcome updates, and reviews. All goals are in context; inline mentions link to owned records. Old Coach routes preserve query/anchors through redirects. Remove duplicate sidebar check-in and redundant top-right actions.
+- Insights is primary; saved confirmed context appears below implications and evidence. Preferences stay in Settings.
+- Each full-width goal screen shows goal success, target flexibility, current cycle, action status, a date-scaled cycle/milestone timeline, selectable weekly action commitments, and learning/adaptations. Unanswered actions are unknown; future work is upcoming. Unsaved future cycles are not fabricated.
+- Goals overview remains wide rows with per-goal action charts and overall completion rate plus a line for each goal. Completion rate is Done / reported actions, with coverage visible.
+- Historical forecast records remain readable but leave active maintenance, model context, previews, and UI. New plans omit the legacy field.
+
+## Methodological grounding and limits
+
+The repository's method catalog supplies goal-setting, implementation intentions, monitoring, COM-B, and structured debriefing principles. This change turns those into an explicit personal learning loop; it does not establish that Adler itself has been validated.
+
+The [MRC complex-intervention framework (2021)](https://www.bmj.com/content/374/bmj.n2061) emphasizes explicit theory, context, key uncertainties, refinement and evaluation. Adler's saved hypothesis and review rule adapt those principles to coaching; that application is a product design inference, not evidence of efficacy.
+
+The [AHRQ N-of-1 design guide](https://effectivehealthcare.ahrq.gov/products/n-1-trials/research-2014-5) describes prospective comparisons in individuals; its [analysis chapter](https://effectivehealthcare.ahrq.gov/products/n-1-trials/research-2014-1) discusses timing and carryover. Adler's observations are not randomized N-of-1 trials. The system must not label an observed association as a causal effect or impose clinical-trial methods on ordinary goal check-ins.
+
+## Verification
+
+Unit/service checks cover weekly grouping, partial/missed/unknown/upcoming separation, preserved reports and revisions, short/long cycles, undated milestones, legacy compatibility, delayed feedback, experiment step references, all-goal context, and preview immutability. Browser checks cover canonical navigation/deep links, Insights, weekly details and timelines, full width/mobile/accessibility, five landing chapters and scroll animation, multiple goals and three phones. Run live synthetic coaching evaluations, build, server/browser suites, then standards/spec review before pushing.

@@ -15,8 +15,7 @@ import {
   type Goal,
 } from "./store";
 import { BehaviorChart } from "./BehaviorChart";
-import { ProgressChart } from "./ProgressChart";
-import { forecastGoal } from "../shared/forecast";
+import { WeeklyActions } from "./ExecutionTimeline";
 import type { GoalArea } from "./program-types";
 
 export function OrganizedGoals() {
@@ -117,7 +116,7 @@ export function OrganizedGoals() {
         {goals.map((goal) => (
           <article className="goal-chart-row" key={goal.id}>
             <div className="goal-row-summary"><GoalIcon kind={goal.kind} small /><span className="section-kicker">{goal.status}</span><Link to={`/app/goals/${goal.id}`}><h2>{goal.title} <ArrowUpRight size={17} /></h2></Link><p>{goal.success}</p><span className="small-text muted">{goal.targetDate ? `Target ${formatDate(goal.targetDate)}` : "No fixed deadline"}</span></div>
-            <ProgressChart goal={goal} compact graphOnly forecast={goal.forecasts?.at(-1) ?? forecastGoal(data, goal)} />
+            <WeeklyActions data={data} goal={goal} compact />
           </article>
         ))}
       </div>
@@ -135,7 +134,7 @@ export function OrganizedGoals() {
               : "Start with one goal. Adler can help you define the result and choose a first step."}
           </p>
           {!data.goals.length && (
-            <Link className="button secondary" to="/app/coach">
+            <Link className="button secondary" to="/app/check-in">
               Plan it with Adler <ArrowUpRight size={16} />
             </Link>
           )}
@@ -310,7 +309,7 @@ export function GoalOrganization({ goal }: { goal: Goal }) {
             <h3>Dated checkpoints</h3>
             <p className="field-hint">
               Set the cumulative result expected by each date, in {goal.unit}.
-              These checkpoints determine the pace label. Changing them
+              These are agreed result checkpoints. Changing them
               preserves the previous schedule below.
             </p>
             {checkpoints.map((p, i) => (

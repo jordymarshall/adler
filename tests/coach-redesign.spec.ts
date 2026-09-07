@@ -34,7 +34,7 @@ test("goals use full-width chart rows and show reporting coverage without invent
   await expect(page.locator(".goal-chart-row")).toHaveCount(1);
   await expect(page.locator(".behavior-overview")).toContainText("0 reported");
   await expect(page.locator(".behavior-overview h2")).toContainText("—");
-  await expect(page.getByTestId("required-pace-line")).toBeVisible();
+  await expect(page.locator(".goal-chart-row .weekly-actions")).toBeVisible();
   const width = await page
     .locator(".organized-goals")
     .evaluate((el) => el.getBoundingClientRect().width);
@@ -43,7 +43,7 @@ test("goals use full-width chart rows and show reporting coverage without invent
     (await page.locator(".goal-chart-row").boundingBox())!.width,
   ).toBeGreaterThan(1200);
   expect(
-    (await page.locator(".goal-chart-row .progress-viz").boundingBox())!.width,
+    (await page.locator(".goal-chart-row .weekly-actions").boundingBox())!.width,
   ).toBeGreaterThan(650);
   await expect(page.locator(".app-topbar .ask-adler-link")).toHaveCount(0);
   await page.screenshot({
@@ -92,7 +92,7 @@ test("a focused check-in keeps shared history and links directly to confirmed me
     },
   ];
   await save(page, state.data, state.revision);
-  await page.goto("/app/coach?goal=essays&intent=checkin");
+  await page.goto("/app/check-in?goal=essays&intent=checkin");
   await expect(page.locator(".coach-thread")).toContainText(
     "try after breakfast",
   );
@@ -105,13 +105,10 @@ test("a focused check-in keeps shared history and links directly to confirmed me
     .click();
   await expect(page.locator("#record-breakfast")).toBeInViewport();
   await expect(
-    page.getByRole("heading", { name: "What this means for your plan" }),
+    page.getByRole("heading", { name: "Insights", exact: true }),
   ).toBeVisible();
-  await expect(
-    page
-      .getByRole("navigation", { name: "Coaching navigation" })
-      .getByRole("link"),
-  ).toHaveCount(2);
+  await expect(page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Check-in", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Saved context" })).toBeVisible();
   await page.goBack();
   await page
     .getByRole("link", { name: "your last action", exact: true })
@@ -123,4 +120,46 @@ test("a focused check-in keeps shared history and links directly to confirmed me
   await expect(
     page.getByRole("heading", { name: "Time & coaching", exact: true }),
   ).toBeVisible();
+});
+
+test("legacy Coach and context links preserve their focus and source anchor", async ({ page }) => {
+  await register(page, true);
+  const state = await snapshot(page);
+  state.data.memories.push({ id: "remember", text: "I prefer quiet mornings.", date: dateInZone(state.data.timeZone) });
+  await save(page, state.data, state.revision);
+  await page.goto("/app/coach?goal=essays&intent=checkin");
+  await expect(page).toHaveURL(/\/app\/check-in\?goal=essays&intent=checkin/);
+  await expect(page.getByRole("heading", { name: "Check-in", exact: true })).toBeVisible();
+  await page.goto("/app/coach/about-you?goal=essays#record-remember");
+  await expect(page).toHaveURL(/\/app\/insights\?goal=essays#record-remember/);
+  await expect(page.locator("#record-remember")).toBeInViewport();
+});
+
+test("landing keeps the floating scroll hero, five chapters, shared goal plan, and three phones", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "intro");
+  await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  await expect(page.locator(".hero-intro-v2 > p")).toContainText("Adler is a behavioural science coach");
+  await expect(page.locator(".focus-chapter")).toHaveCount(5);
+  await expect(page.getByText("A clear next step.", { exact: true })).toHaveCount(0);
+  await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
+  await page.evaluate(() => { const el = document.querySelector(".journey-hero")!; window.scrollTo(0, el.getBoundingClientRect().top + scrollY + el.clientHeight - innerHeight); });
+  await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "plan");
+  await expect(page.locator(".hero-buttons")).toHaveAttribute("inert", "");
+  await expect(page.locator(".hero-assembled")).not.toHaveAttribute("inert", "");
+  const chapter = page.locator("#step-2");
+  await expect(chapter.locator(".demo-goal-row")).toHaveCount(3);
+  await chapter.getByRole("button", { name: /Read for enjoyment/ }).click();
+  await expect(chapter.locator(".demo-selected-action")).toContainText("15 minutes with my book");
+  const connections = page.locator("#step-5");
+  await expect(connections.locator(".connection-phone")).toHaveCount(3);
+  await connections.getByRole("button", { name: "Try the example text check-in" }).click();
+  await expect(connections.locator(".phone-messages")).toContainText("check how it feels after two sessions");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "static");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

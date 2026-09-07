@@ -10,13 +10,13 @@ import {
   type Change,
 } from "./commands.ts";
 import { configuration, generate } from "./providers.ts";
-import { coachingContext } from "../src/coach-context.ts";
+import { coachingContext, coachingGoal } from "../src/coach-context.ts";
 import { METHODS } from "../src/methods.ts";
 import { methodSources, planningInstructions, searchLiterature, researchReviewInstructions, researchReviewSchema } from "./research.ts";
 import { planningBasisSchema, type ResearchSearch } from "../shared/planning.ts";
 import { adaptivePlanSchema, assessmentDue, assessmentEvidence, maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 import { adaptiveInstructions } from "./adaptive-instructions.ts";
-import { forecastGoal } from "../shared/forecast.ts";
+import { goalExecution } from "../shared/goal-execution.ts";
 import {
   reactionTypes,
   type Data,
@@ -178,7 +178,7 @@ export class Service {
       const previous = JSON.stringify(snapshot.data);
       maintainAdaptivePlans(snapshot.data);
       if (JSON.stringify(snapshot.data) !== previous) {
-        snapshot.revision = this.db.save(userId, snapshot.data, snapshot.revision, "job", "Updated plan occurrences and forecast.");
+        snapshot.revision = this.db.save(userId, snapshot.data, snapshot.revision, "job", "Updated plan occurrences.");
         this.changed(userId);
       }
       return snapshot;
@@ -190,7 +190,7 @@ export class Service {
     const snapshot = this.db.snapshot(userId);
     const preview = applyChanges(snapshot.data, proposal.changes, dayInZone(snapshot.data));
     maintainAdaptivePlans(preview);
-    return { forecasts: preview.goals.filter(g => g.plans.at(-1)?.adaptive).map(g => ({ goalId: g.id, forecast: forecastGoal(preview, g) })) };
+    return { execution: preview.goals.map(g => ({ goalId: g.id, ...goalExecution(preview, g) })) };
   }
   propose(
     userId: string,
@@ -558,7 +558,7 @@ export class Service {
         ...context,
         currentMessageId: userMessageId,
         channel,
-        workspace: { ...snapshot.data, messages: undefined, goals: snapshot.data.goals.map(g => ({ ...g, forecasts: g.forecasts?.slice(-2).map(f => ({ ...f, inputKey: undefined })), assessment: g.assessment ? { ...g.assessment, evidenceKey: undefined } : undefined })) },
+        workspace: { ...snapshot.data, messages: undefined, goals: snapshot.data.goals.map(g => ({ ...coachingGoal(g), assessment: g.assessment ? { ...g.assessment, evidenceKey: undefined } : undefined })) },
         conversationId: conversation.id,
         pendingProposals,
         connectedCalendars,
@@ -596,7 +596,7 @@ export class Service {
             try {
               const preview = applyChanges(snapshot.data, result.planCheck, dayInZone(snapshot.data));
               maintainAdaptivePlans(preview);
-              planningChecks = { feasible: true, forecasts: preview.goals.filter(g => g.plans.at(-1)?.adaptive).map(g => ({ goalId: g.id, ...forecastGoal(preview, g), inputKey: undefined })) };
+              planningChecks = { feasible: true, execution: preview.goals.map(g => ({ goalId: g.id, ...goalExecution(preview, g) })) };
             } catch (error) { planningChecks = { feasible: false, issue: error instanceof Error ? error.message : "Invalid plan" }; }
             continue;
           }
@@ -636,8 +636,12 @@ export class Service {
             if (!creating && !revising) continue;
             const values = JSON.parse(command.values);
             if (creating || values.adaptive || (revising && result.execution === "propose")) {
-              if (!values.adaptive) throw new Error("Include an adaptive plan: choose a concrete planning window, executable steps, feedback and assessment timing, and an honest forecast method.");
+              if (!values.adaptive) throw new Error("Include an adaptive plan: choose a concrete planning window, executable steps, feedback and assessment timing.");
               values.adaptive = adaptivePlanSchema.parse(values.adaptive);
+              if (values.adaptive.experiment?.comparisonSourceIds.some((id: string) => !sourceIds.has(id)))
+                throw new Error("A starting comparison must cite existing source records or the actual current message ID; keep unreported history unknown.");
+              if (values.adaptive.steps.some((step: { type: string }) => step.type === "behavior") && !values.adaptive.experiment)
+                throw new Error("A repeating plan needs a learning experiment: hypothesis, inputStepIds, outcomeSignal, comparison, decisionRule, and alternativeExplanations. Keep execution and outcome evidence distinct.");
             }
             if (creating || result.execution === "propose" || values.basis) {
               if (!researchSearches.length)
@@ -672,10 +676,12 @@ export class Service {
               `Every insight must cite an existing source ID${background ? "" : ` or the actual current message ID ${userMessageId}`}, and valid zero-based changeIndexes. Use the ID value, never the literal string currentMessageId.`,
             );
           if (result.changes.some((change) => JSON.parse(change.values).basis)) {
+            const reviewedData = applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data));
             const review = await this.runner(config, researchReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              changes: result.changes, researchSearches, effectiveGoals: applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data)).goals,
+              changes: result.changes, researchSearches, effectiveGoals: reviewedData.goals,
+              executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...goalExecution(reviewedData, g) })),
             }, researchReviewSchema, 2200);
             if (review.issues.length)
               throw new Error(`Correct the evidence or consistency issues before saving: ${JSON.stringify(review.issues)}`);

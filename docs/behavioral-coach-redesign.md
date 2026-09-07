@@ -1,5 +1,7 @@
 # Behavioral coach and product redesign
 
+Historical design. The [current contract](controllable-action-planning.md) replaces outcome forecasting, restores the scrolling hero, and specifies Check-in, Insights and explicit learning experiments.
+
 Base: 7de6c57. The coach helps people execute their own goals. It does not substitute generic research for domain expertise.
 
 - One shared Coach interface accepts goal updates, action outcomes, blockers and periodic reviews. A focused goal is additional context, never a boundary on available goals or memory. Existing conversations remain accessible.

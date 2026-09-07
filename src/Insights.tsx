@@ -55,14 +55,14 @@ function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
     return {
       label: `Saved context · ${formatDate(memory.date)}`,
       text: memory.text,
-      href: `/app/coach/about-you#record-${encodeURIComponent(id)}`,
+      href: `/app/insights#record-${encodeURIComponent(id)}`,
     };
   const message = data.messages.find((m) => m.id === id);
   if (message)
     return {
       label: `${message.role === "user" ? "You said" : "Adler replied"}${message.at ? ` · ${formatDate(message.at)}` : ""}`,
       text: message.text,
-      href: `/app/coach?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}`,
+      href: `/app/check-in?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}`,
     };
   const action = data.actions.find((a) => a.id === id);
   if (action)
@@ -121,7 +121,7 @@ export function Insights() {
   const [error, setError] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
   const goalId = searchParams.get("goal") ?? "all";
-  const coachLink = goalId === "all" ? "/app/coach" : `/app/coach?goal=${goalId}`;
+  const coachLink = goalId === "all" ? "/app/check-in" : `/app/check-in?goal=${goalId}`;
   useEffect(() => {
     api<Proposal[]>("proposals")
       .then(setProposals)
@@ -196,7 +196,7 @@ export function Insights() {
                   </details>
                   {proposal?.status === "pending" && (
                     <Link
-                      to={`/app/coach?${proposal.conversationId ? `chat=${proposal.conversationId}` : `goal=${proposal.goalId}`}`}
+                      to={`/app/check-in?${proposal.conversationId ? `chat=${proposal.conversationId}` : `goal=${proposal.goalId}`}`}
                     >
                       Review in chat ↗
                     </Link>
@@ -218,7 +218,7 @@ export function Insights() {
       <div className="page-heading">
         <div>
           <span className="section-kicker">LEARN FROM WHAT HAPPENED</span>
-          <h2>What this means for your plan</h2>
+          <h1>Insights</h1>
           <p>
             What Adler has learned, the records behind it, and the changes that
             followed.

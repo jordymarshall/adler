@@ -41,7 +41,7 @@ export function GoalOverview({
     goal.plans.find((p) => p.version === action?.planVersion) ??
     currentPlan(goal);
   function ask(text = "") {
-    navigate(`/app/coach?goal=${goal.id}${text ? `&prompt=${encodeURIComponent(text)}` : ""}`);
+    navigate(`/app/check-in?goal=${goal.id}${text ? `&prompt=${encodeURIComponent(text)}` : ""}`);
   }
   const pending = savedPending();
   if (pending?.goalId === goal.id)
@@ -172,7 +172,7 @@ export function GoalOverview({
           <p>
             When you’re ready, tell your coach what happened. Your update can include results, blockers, or a change of plan.
           </p>
-          <Link className="text-link" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`}>Continue in Coach <ArrowRight size={16} /></Link>
+          <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`}>Continue in Check-in <ArrowRight size={16} /></Link>
         </>
       )}
       {phase === "waiting" && (

@@ -1,27 +1,8 @@
 import { useState } from "react";
-import { ArrowRight, Check, PenLine, Flag, RotateCcw } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Mark } from "./LandingArt";
-import { ProgressChart } from "./ProgressChart";
-import { demoGoal, demoPlanChanges } from "./landing-data";
-import type { Forecast } from "../shared/forecast";
-const demoForecast: Forecast = {
-  at: "2026-10-17T12:00:00Z",
-  asOf: "2026-10-17",
-  anchorDate: "2026-10-17",
-  planVersion: 1,
-  status: "provisional",
-  method: "observed-rate",
-  reason: "Illustrative scenario if the recorded pace continues.",
-  inputKey: "demo",
-  sourceIds: ["r0", "r1", "r2"],
-  inputs: [],
-  current: 1,
-  probability: null,
-  expectedDate: "2026-11-26",
-  earliestDate: "2026-11-06",
-  horizonDate: "2026-12-01",
-  rates: { low: 0, typical: 0.05, high: 0.1 },
-};
+import { WeeklyActions } from "./ExecutionTimeline";
+import { demoGoal, demoExecutionData, demoPlanChanges } from "./landing-data";
 export function GoalDefinitionPreview() {
   return (
     <div className="journey-preview goal-definition-preview">
@@ -62,71 +43,21 @@ export function GoalDefinitionPreview() {
     </div>
   );
 }
-export function WeeklyPlanPreview() {
-  return (
-    <div className="journey-preview weekly-plan-preview">
-      <span className="section-kicker">A PLAN FOR HOW YOU WORK</span>
-      <h3>A rhythm you can actually try.</h3>
-      <ol className="week-plan-steps">
-        <li>
-          <PenLine size={20} />
-          <div>
-            <b>Give the work a reliable start</b>
-            <p>Tuesday & Thursday · 25 minutes after breakfast</p>
-            <small>
-              Open the draft before email. Work on the project you chose.
-            </small>
-          </div>
-        </li>
-        <li>
-          <Flag size={20} />
-          <div>
-            <b>Make the finish line small</b>
-            <p>Choose what “enough for this session” means.</p>
-            <small>
-              Busy day? Leave a five-minute note to make the next start easier.
-            </small>
-          </div>
-        </li>
-        <li>
-          <RotateCcw size={20} />
-          <div>
-            <b>Learn before planning further</b>
-            <p>Review after two sessions.</p>
-            <small>
-              Did the cue help you start? Did the stopping point help you
-              finish?
-            </small>
-          </div>
-        </li>
-      </ol>
-      <p className="weekly-time">
-        Later steps stay flexible as we learn what works.
-      </p>
-    </div>
-  );
-}
 export function ProgressProposalPreview() {
   const [channel, setChannel] = useState("In Adler");
   return (
     <div className="journey-preview progress-proposal-preview">
       <span className="section-kicker">YOUR PROGRESS, WITH CONTEXT</span>
-      <h3>One published. A clearer picture.</h3>
+      <h3>See the work you can control.</h3>
       <div className="proposal-metrics">
         <span>
-          <b>1 of 3</b> case studies published
+          <b>2 of 2</b> sessions completed
         </span>
         <span>
-          <b>Nov 26</b> if this pace continues
+          <b>Oct 25</b> cycle review
         </span>
       </div>
-      <ProgressChart
-        goal={demoGoal}
-        today="2026-10-17"
-        compact
-        graphOnly
-        forecast={demoForecast}
-      />
+      <WeeklyActions data={demoExecutionData} goal={demoGoal} today="2026-10-17" compact />
       <div className="preview-chat">
         <div className="preview-channel" aria-label="Example check-in channel">
           {["In Adler", "By text"].map((value) => (
@@ -147,8 +78,8 @@ export function ProgressProposalPreview() {
         </p>
       </div>
       <p className="demo-footnote">
-        Illustrative pace scenario, not a probability. Your check-ins explain
-        the work; published results inform the outcome projection.
+        The sessions happened; the draft still needs work. Review the stopping
+        point together before committing to the next cycle.
       </p>
     </div>
   );
@@ -200,4 +131,25 @@ export function AdaptivePlanPreview() {
       </p>
     </div>
   );
+}
+
+export function MultiGoalPlanPreview() {
+  const [selected, setSelected] = useState("portfolio");
+  const goals = [
+    { id: "portfolio", title: "Publish my portfolio", cue: "Tuesday & Thursday · After breakfast", action: "25 minutes on the draft I chose", note: "Choose a stopping point before opening the draft.", done: 2, total: 2, days: [1, 3], color: "sage" },
+    { id: "reading", title: "Read for enjoyment", cue: "Monday & Wednesday · After dinner", action: "15 minutes with my book", note: "Leave the book where I usually sit after dinner.", done: 1, total: 2, days: [0, 2], color: "clay" },
+    { id: "career", title: "Prepare for my next role", cue: "Friday · Before email", action: "20 minutes on the application I chose", note: "Start with the next unfinished part, then leave a note.", done: 0, total: 1, days: [4], color: "blue" },
+  ];
+  const goal = goals.find(g => g.id === selected)!;
+  return <div className="journey-preview multi-goal-preview">
+    <span className="section-kicker">ONE WEEK · ROOM FOR WHAT MATTERS</span>
+    <h3>Your goals, working together.</h3>
+    <div className="demo-week-labels"><span>Your goals</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span></div>
+    <div className="demo-goal-rows">{goals.map(g => <button key={g.id} className={`demo-goal-row ${g.color}`} aria-pressed={g.id === selected} onClick={() => setSelected(g.id)}>
+      <span><b>{g.title}</b><small>{g.done} of {g.total} actions done</small></span>
+      {[0,1,2,3,4].map(day => <span className={`demo-day ${g.days.includes(day) ? "committed" : ""}`} key={day}>{g.days.indexOf(day) >= 0 && g.days.indexOf(day) < g.done ? <Check size={12} /> : g.days.includes(day) ? "·" : ""}</span>)}
+    </button>)}</div>
+    <div className="demo-selected-action" aria-live="polite"><small>{goal.cue}</small><h4>{goal.action}</h4><p>{goal.note}</p></div>
+    <p className="demo-footnote">100 minutes planned across your goals. Review what fits before adding more.</p>
+  </div>;
 }

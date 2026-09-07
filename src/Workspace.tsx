@@ -192,7 +192,7 @@ export function NewGoal() {
                 proposes a goal for you to review.
               </p>
             </div>
-            <Link className="button secondary" to="/app/coach?goal=general">
+            <Link className="button secondary" to="/app/check-in?goal=general">
               Plan my goal with Adler →
             </Link>
           </div>
@@ -604,7 +604,7 @@ export function SettingsPage() {
           </div>
           <Link
             className="button secondary small-button"
-            to="/app/coach/about-you"
+            to="/app/insights"
           >
             About you <ArrowUpRight size={15} />
           </Link>

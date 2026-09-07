@@ -153,7 +153,7 @@ export function LiveCoach() {
         <div className="coach-topline">
           <div className="coach-identity">
             <div>
-              <h1>Your coach</h1>
+              <h1>Check-in</h1>
             </div>
           </div>
         </div>

@@ -225,7 +225,7 @@ export function ProviderSettings() {
           changes; scheduled check-ins have their own setting in Connections.
         </p>
       </section>
-      <Link className="button secondary" to="/app/coach">
+      <Link className="button secondary" to="/app/check-in">
         Talk to Adler →
       </Link>
     </div>

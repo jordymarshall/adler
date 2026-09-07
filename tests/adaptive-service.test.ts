@@ -181,7 +181,9 @@ test("previewing an upgrade is read-only, and stale worker jobs can be scheduled
   }], "An adaptive plan", "web", "essay");
   const before = db.snapshot(user.id);
   const preview = service.previewPlan(user.id, proposal.id);
-  assert.equal(preview.forecasts[0].forecast.method, "none");
+  assert.equal(preview.execution[0].current?.label, adaptive.window.label);
+  assert.ok(preview.execution[0].summary.planned > 0);
+  assert.equal("forecasts" in preview, false);
   assert.deepEqual(db.snapshot(user.id), before);
   assert.equal(service.listProposals(user.id)[0].status, "pending");
 });
@@ -263,4 +265,24 @@ test("switching goals within shared chat attributes learning to the affected rec
   assert.equal(discussion.data.decisions.at(-1).goalId, "collection");
   assert.equal(discussion.data.messages.at(-1).goalId, "collection");
   assert.equal(discussion.data.decisions.at(-1).planVersion, 2);
+});
+
+test("an invented comparison source receives repair feedback before a repeating plan is saved", async t => {
+  const { db, user, input, adaptive } = fixture(t);
+  let attempts = 0;
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    attempts++;
+    if (attempts === 2) assert.match(context.validationError, /starting comparison must cite existing source/);
+    const candidate = structuredClone(adaptive);
+    if (attempts === 1) {
+      candidate.experiment!.comparisonStatus = "reported";
+      candidate.experiment!.comparisonSourceIds = ["foreign-source"];
+    }
+    return schema.parse({ reply: "Review the trial with an unknown starting comparison.", summary: "An outline trial", execution: "apply", methods: [], changes: [{
+      entity: "goal", operation: "create", id: "essay", parentId: null, values: JSON.stringify({ ...input, adaptive: candidate }), reason: "You asked for this goal.",
+    }] });
+  }), literature);
+  const result = await service.chat(user.id, "Create a trial", "general", "web", "comparison-source");
+  assert.equal(attempts, 2);
+  assert.equal(result.data.goals[0].plans[0].adaptive.experiment.comparisonStatus, "unknown");
 });

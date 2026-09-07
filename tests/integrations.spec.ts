@@ -49,13 +49,13 @@ test("the integration catalog distinguishes plans from working setup paths", asy
 test("texting and the app share the same example update without changing outcome evidence", async ({ page }) => {
   await page.goto("/");
   const step = page.locator("#step-3");
-  const recorded = await step.locator(".chart-actual").getAttribute("d");
+  const recorded = await step.locator(".execution-week-summary").innerText();
   await step.getByRole("button", { name: "By text", exact: true }).click();
   await expect(step.getByRole("button", { name: "By text" })).toHaveAttribute("aria-pressed", "true");
   await expect(step.locator(".preview-user")).toContainText("Both sessions happened");
   await step.getByRole("button", { name: "In Adler", exact: true }).click();
-  await expect(step.locator(".chart-actual")).toHaveAttribute("d", recorded!);
-  await expect(step.locator(".proposal-metrics")).toContainText("1 of 3");
+  await expect(step.locator(".execution-week-summary")).toHaveText(recorded);
+  await expect(step.locator(".proposal-metrics")).toContainText("2 of 2");
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({
@@ -83,7 +83,7 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.locator(".adaptive-hero")).toHaveCSS("position", "relative");
+  await expect(page.locator(".journey-hero")).toHaveCSS("position", "relative");
   await expect(page.locator(".reveal").first()).toHaveCSS(
     "animation-name",
     "none",

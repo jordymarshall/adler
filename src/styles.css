@@ -12259,7 +12259,6 @@ input[type="checkbox"] {
 /* The workspace uses the available canvas; Coach is the shared reporting surface. */
 .app-shell .app-main, .app-main:has(> .goal-plan), .app-main:has(> .journey-goal-heading) { width: 100%; max-width: none; margin: 0; }
 .organized-goals, .journey-page, .journey-page:has(.goal-plan) { width: 100%; max-width: none; }
-.app-sidebar .sidebar-checkin { margin: 24px 0; justify-content: center; min-height: 44px; }
 .organized-goals .goal-groups { display: block; }
 .goal-chart-row { display: grid; grid-template-columns: minmax(240px, .7fr) minmax(0, 1.5fr); gap: 45px; align-items: center; padding: 30px 0; border-top: 1px solid var(--line); }
 .goal-row-summary > .goal-icon { margin-bottom: 16px; }

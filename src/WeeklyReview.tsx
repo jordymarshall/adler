@@ -1,7 +1,7 @@
 import { Link, Navigate } from "react-router-dom";
 export function WeeklyReview({ embedded = false }: { embedded?: boolean }) {
   const href =
-    "/app/coach?intent=review&prompt=" +
+    "/app/check-in?intent=review&prompt=" +
     encodeURIComponent(
       "Let’s review how things went across my goals. Help me reflect on what happened, what got in the way, and what to adjust.",
     );
@@ -13,7 +13,7 @@ export function WeeklyReview({ embedded = false }: { embedded?: boolean }) {
         previous check-ins.
       </p>
       <Link className="text-link" to={href}>
-        Continue in Coach →
+        Continue in Check-in →
       </Link>
     </section>
   ) : (

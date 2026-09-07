@@ -9,17 +9,14 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
-  const chart = page.locator("#step-3 .progress-viz svg");
-  await chart.focus();
-  await page.keyboard.press("End");
-  await expect(page.locator("#step-3 .chart-tooltip")).toContainText("Last recorded: 1 case studies");
-  await expect(chart.locator(".chart-forecast")).toHaveCount(1);
-  const recordedPath = await chart.locator(".chart-actual").getAttribute("d");
+  const chart = page.locator("#step-3 .weekly-actions");
+  await expect(chart).toContainText("2 / 2 actions done");
+  const recorded = await chart.locator(".execution-week-summary").innerText();
   const review = page.locator("#step-4");
   await expect(review.locator(".plan-change")).toHaveCount(3);
   await review.getByRole("button", { name: "Try this adjustment" }).click();
   await expect(review.getByRole("status")).toContainText("Review after two sessions");
-  await expect(chart.locator(".chart-actual")).toHaveAttribute("d", recordedPath!);
+  await expect(chart.locator(".execution-week-summary")).toHaveText(recorded);
   await expect(page.locator("#step-5")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
@@ -38,7 +35,7 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
     name: "App navigation",
     exact: true,
   });
-  await expect(navigation.getByRole("link")).toHaveCount(4);
+  await expect(navigation.getByRole("link")).toHaveCount(5);
   await expect(
     navigation.getByRole("link", { name: "Today", exact: true }),
   ).toBeVisible();
@@ -88,8 +85,8 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   expect(data.goals[0].results[0].value).toBe(0);
   expect(data.actions[0].date).toBe("");
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
-  await expect(page.getByTestId("recorded-line")).toBeVisible();
-  await expect(page.locator(".plan-timeline .pace-badge")).toHaveText("Draft");
+  await expect(page.getByRole("region", { name: "Cycles and milestones" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("Choose the first cycle");
   await page.goto("/app/goals");
   await page.getByText("Find or filter a goal", { exact: true }).click();
   await expect(page.getByLabel("Search goals", { exact: true })).toBeVisible();
@@ -103,7 +100,7 @@ test("chat reports preserve the distinction between actions and goal results", a
   await register(page, true);
   const state = await snapshot(page);
   await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done" }) }]);
-  await page.goto("/app/coach?goal=essays");
+  await page.goto("/app/check-in?goal=essays");
   await page.getByLabel("Message Adler").fill("I finished drafting the five points today.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
@@ -112,8 +109,8 @@ test("chat reports preserve the distinction between actions and goal results", a
   expect(saved.data.goals[0].milestones.filter(m => m.done)).toHaveLength(0);
   expect(saved.data.goals[0].results.at(-1)?.value).toBe(0);
   await page.goto("/app/goals/essays/progress");
-  await page.getByRole("link", { name: "Discuss in Coach" }).first().click();
-  await expect(page).toHaveURL(/\/app\/coach/);
+  await page.getByRole("link", { name: "Discuss in Check-in" }).first().click();
+  await expect(page).toHaveURL(/\/app\/check-in/);
   await expect(page.getByLabel("Message Adler")).toContainText("milestone");
 });
 
@@ -149,9 +146,9 @@ test("a learning goal records results in one chart with its own target", async (
   );
   await save(page, state.data, state.revision);
   await page.goto("/app/goals/algebra/progress");
-  await expect(page.locator(".progress-viz")).toHaveCount(1);
-  await expect(page.getByRole("region", { name: "Goal status" })).toContainText("Six correct answers");
-  await expect(page.locator(".pace-badge")).toHaveText("Estimate unavailable");
+  await expect(page.locator(".weekly-actions")).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("Six correct answers");
+  await expect(page.getByTestId("forecast-line")).toHaveCount(0);
   await expect(page.locator(".app-main")).not.toContainText("8/10");
   await coachReply(page, [{ entity: "result", operation: "create", id: null, parentId: "algebra", values: JSON.stringify({ value: 4, date: localDate(), source: "Practice set B" }) }]);
   await page.getByRole("link", { name: "Review progress with Adler" }).click();
@@ -160,10 +157,7 @@ test("a learning goal records results in one chart with its own target", async (
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
   await page.goto("/app/goals/algebra/progress");
   expect((await snapshot(page)).data.goals[0].results.at(-1)?.value).toBe(4);
-  await expect(page.getByRole("region", { name: "Goal status" })).toContainText(
-    "4 correct answers / 10",
-  );
-  await expect(page.locator(".pace-badge")).toHaveText("Estimate unavailable");
+  await expect(page.getByTestId("forecast-line")).toHaveCount(0);
   await page
     .getByText("View checkpoints and evidence", { exact: true })
     .click();
@@ -174,7 +168,7 @@ test("weekly review uses shared chat and archives the reported reflection", asyn
   await register(page, true);
   await coachReply(page, [{ entity: "review", operation: "update", id: null, parentId: null, values: JSON.stringify({ note: "Drafting worked best before email.", decision: "Keep", complete: true }) }]);
   await page.goto("/app/reviews/current");
-  await expect(page).toHaveURL(/\/app\/coach\?intent=review/);
+  await expect(page).toHaveURL(/\/app\/check-in\?intent=review/);
   await page.getByLabel("Message Adler").fill("I’ve reviewed my week. Drafting worked best before email. Keep my plans.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
@@ -231,8 +225,8 @@ test("progress and preferences remain usable on mobile with no serious accessibi
     "/",
     "/app/today",
     "/app/goals/essays/progress",
-    "/app/coach",
-    "/app/coach/program",
+    "/app/check-in",
+    "/app/settings/coaching",
     "/app/reviews/current",
     "/app/settings/provider",
     "/app/connections",

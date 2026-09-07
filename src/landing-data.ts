@@ -1,4 +1,4 @@
-import type { Goal } from "./store";
+import { initialData, type Goal } from "./store";
 export const demoGoal: Goal = {
   id: "demo-portfolio",
   title: "Publish my portfolio with 3 case studies by November 15",
@@ -25,6 +25,7 @@ export const demoGoal: Goal = {
     title: `Publish case study ${value}`,
     criterion: `Case study ${value} is live on my portfolio.`,
     done: value === 1,
+    dueDate: ["2026-10-15", "2026-11-01", "2026-11-15"][value - 1],
   })),
   plans: [
     {
@@ -35,6 +36,12 @@ export const demoGoal: Goal = {
         "Spend 25 focused minutes on my draft and note where I stopped.",
       timing: "Tuesday & Thursday, after breakfast",
       durationMinutes: 25,
+      adaptive: {
+        approach: "Use the breakfast cue to start and a small finish line to stop.",
+        window: { start: "2026-10-12", end: "2026-10-25", label: "Try a reliable start", rationale: "Two weeks to try the cue and review what happened.", capacityMinutes: 100, capacityStatus: "confirmed" },
+        steps: [{ id: "portfolio-session", type: "behavior", title: "Work on the case study I chose", criterion: "Spend 25 focused minutes on my draft and note where I stopped.", reason: "Make starting easier.", durationMinutes: 25, cue: "After breakfast", scheduledDate: "2026-10-13", recurrence: { everyDays: 1, weekdays: [2, 4], until: "2026-10-25" }, dependsOn: [], fallback: "Leave a five-minute note for tomorrow." }],
+        assessment: { at: "2026-10-25T18:00:00Z", question: "Did the cue help you start and the stopping point help you finish?", adaptation: "Adjust the cue or session size based on your experience.", feedbackDelayDays: 0, triggers: ["check-in", "window-end"] },
+      },
     },
   ],
   checkpoints: [
@@ -93,3 +100,12 @@ export const demoPlanChanges = [
       "Keep an easy way back into the work, without pretending a smaller session means a published case study.",
   },
 ];
+
+export const demoExecutionData = initialData();
+demoExecutionData.timeZone = "UTC";
+demoExecutionData.goals = [demoGoal];
+demoExecutionData.actions = ["2026-10-13", "2026-10-15", "2026-10-20", "2026-10-22"].map((date, i) => ({
+  id: `demo-session-${i}`, goalId: demoGoal.id, title: demoGoal.plans[0].action, criterion: demoGoal.plans[0].criterion,
+  timing: "After breakfast", date, history: [], planVersion: 1, stepId: "portfolio-session", occurrence: `portfolio-session:${date}`,
+  ...(i < 2 ? { outcome: "Done" as const, note: "Both sessions happened. Still polishing the same draft." } : {}),
+}));

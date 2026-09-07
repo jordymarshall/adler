@@ -29,7 +29,7 @@ test("coach has only small message avatars and shows cross-channel proposals for
       ],
     },
   });
-  await page.goto("/app/coach");
+  await page.goto("/app/check-in");
   await expect(page.locator(".coach-topline .adler-avatar")).toHaveCount(0);
   await expect(page.locator(".live-message .adler-avatar")).toHaveCount(1);
   await expect(page.locator(".message-author")).toContainText("SMS");
@@ -72,7 +72,7 @@ test("failed coaching preserves the draft without manufacturing a reply", async 
       json: { error: "The account needs API credits." },
     }),
   );
-  await page.goto("/app/coach");
+  await page.goto("/app/check-in");
   await page.getByLabel("Message Adler").fill("Review my progress");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.getByRole("alert")).toContainText("API credits");
@@ -135,7 +135,7 @@ test("local scheduling creates a synced work block without an external booking c
   const { data } = await snapshot(page);
   expect(data.actions.some((a) => a.id === data.workBlocks[0].id)).toBeTruthy();
   expect(data.workBlocks[0].eventId).toBeUndefined();
-  await page.goto("/app/coach/program");
+  await page.goto("/app/settings/coaching");
   const marker = page
     .locator(".plan-timeline")
     .getByRole("button", { name: new RegExp(data.workBlocks[0].action) });
@@ -153,7 +153,7 @@ test("program views preserve edits and show the context and settings behind each
   page,
 }) => {
   await register(page, true);
-  await page.goto("/app/coach/program");
+  await page.goto("/app/settings/coaching");
   await expect(page.locator(".program-roadmap")).toContainText(
     "Publish two essays",
   );
@@ -261,7 +261,7 @@ test("a coordinated adjustment saves goal, approach, timing, and memory before o
     },
   });
   expect(await proposal.text()).not.toContain('"error"');
-  await page.goto("/app/coach");
+  await page.goto("/app/check-in");
   const adjustment = page.locator(".shared-proposal");
   await adjustment.getByText("What changes & why", { exact: true }).click();
   await expect(
@@ -317,7 +317,7 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
   page,
 }) => {
   await register(page, true);
-  await page.goto("/app/coach");
+  await page.goto("/app/check-in");
   await page.getByText("Conversations", { exact: true }).click();
   await page.getByRole("button", { name: "New chat", exact: true }).click();
   await expect(page.locator(".conversation-item.selected")).toContainText(
@@ -426,7 +426,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await page
     .getByRole("link", { name: "See observations & sources", exact: false })
     .click();
-  await expect(page).toHaveURL(/\/app\/coach\/about-you\?goal=essays$/);
+  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await expect(page.getByRole("combobox")).toHaveValue("essays");
   await expect(page.locator(".insight-row")).toHaveCount(1);
   await expect(page.locator(".insight-row")).toContainText(
@@ -443,7 +443,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await page.locator(".message-record-links a").click();
   await expect(page).toHaveURL(/\/app\/goals\/essays$/);
   await page.goto("/app/goals/essays/learning");
-  await expect(page).toHaveURL(/\/app\/coach\/about-you\?goal=essays$/);
+  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await page.getByRole("combobox").selectOption("all");
   await expect(page.locator(".insight-row")).toHaveCount(1);
   await expect(page.locator(".memory-card")).toContainText("I prefer short sessions.");

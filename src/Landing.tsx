@@ -65,7 +65,7 @@ export function PublicPage({
               freshness threshold are product choices you can inspect, not
               claims of a scientifically optimal schedule.
             </p>
-            <Link className="button primary" to="/app/coach/program">
+            <Link className="button primary" to="/app/settings/coaching">
               Open the editable program <ArrowRight size={15} />
             </Link>
           </>
@@ -116,7 +116,7 @@ export function PublicPage({
             <p>
               Export or clear workspace records in{" "}
               <Link to="/app/settings">Settings</Link>, edit{" "}
-              <Link to="/app/coach/about-you">confirmed context</Link>, and
+              <Link to="/app/insights">confirmed context</Link>, and
               disconnect calendars in <Link to="/app/calendar">Calendar</Link>.
               Fonts load from Google Fonts. No analytics or email service is
               configured.
@@ -161,7 +161,7 @@ export function PublicPage({
             </p>
             <h2>Inspect Adler</h2>
             <p>
-              The <Link to="/app/coach/program">coaching program</Link> contains
+              The <Link to="/app/settings/coaching">coaching program</Link> contains
               the sprint, capacity, enabled methods, context checks, and version
               history. Choose your model and API key in AI provider settings.
               Use Connections to pair a phone or create an MCP token.

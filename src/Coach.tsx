@@ -1,7 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
 import {
-  ArrowLeft,
   Check,
   Pencil,
   Plus,
@@ -39,14 +37,10 @@ export function Memory() {
   }
   return (
     <div className="memory-page">
-      <Link to="/app/coach" className="back-link">
-        <ArrowLeft size={15} />
-        Back to Coach
-      </Link>
       <div className="page-heading">
         <div>
           <span className="section-kicker">ONLY WHAT YOU CHOOSE TO SHARE</span>
-          <h1>About you</h1>
+          <h2>Saved context</h2>
           <p>Context you’ve confirmed. Yours to correct or remove.</p>
         </div>
         <button

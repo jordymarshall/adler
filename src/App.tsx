@@ -18,6 +18,7 @@ import {
   ChevronRight,
   CircleHelp,
   MessageCircle,
+  Lightbulb,
   Settings,
   Sun,
   Target,
@@ -66,8 +67,8 @@ function AppShell() {
         ? "Calendar"
         : location.pathname.includes("/goals")
           ? "Goals"
-          : location.pathname.includes("/coach")
-            ? "Coach"
+          : location.pathname.includes("/check-in")
+            ? "Check-in"
             : location.pathname.includes("/settings")
               ? "Settings"
               : location.pathname.includes("/reviews")
@@ -77,7 +78,8 @@ function AppShell() {
     { to: "/app/today", label: "Today", Icon: Sun },
     { to: "/app/goals", label: "Goals", Icon: Target },
     { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
-    { to: "/app/coach", label: "Coach", Icon: MessageCircle },
+    { to: `/app/check-in${focusGoal ? `?goal=${encodeURIComponent(focusGoal.id)}` : ""}`, label: "Check-in", Icon: MessageCircle },
+    { to: "/app/insights", label: "Insights", Icon: Lightbulb },
   ];
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
   if (!user) return <SignIn />;
@@ -102,7 +104,6 @@ function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <Link className="button primary sidebar-checkin" to={`/app/coach?intent=checkin${focusGoal ? `&goal=${encodeURIComponent(focusGoal.id)}` : ""}`}><MessageCircle size={17} /> Check in</Link>
         <div className="sidebar-bottom">
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
@@ -162,15 +163,9 @@ function AppShell() {
     </div>
   );
 }
-function AboutYouRedirect() {
+function LegacyCoachRedirect({ to }: { to: string }) {
   const { search, hash } = useLocation();
-  return <Navigate to={`/app/coach/about-you${search}${hash}`} replace />;
-}
-function CoachSection() {
-  return <><nav className="coaching-nav" aria-label="Coaching navigation">
-    <NavLink to="/app/coach" end>Chat</NavLink>
-    <NavLink to="/app/coach/about-you">About you</NavLink>
-  </nav><Outlet /></>;
+  return <Navigate to={`${to}${search}${hash}`} replace />;
 }
 export function App() {
   const { toast } = useStore();
@@ -198,13 +193,12 @@ export function App() {
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />
-          <Route element={<CoachSection />}>
-            <Route path="insights" element={<AboutYouRedirect />} />
-            <Route path="coach" element={<Coach />} />
-            <Route path="coach/program" element={<Navigate to="/app/settings/coaching" replace />} />
-            <Route path="coach/about-you" element={<><Memory /><Insights /></>} />
-            <Route path="reviews/:reviewId" element={<WeeklyReview />} />
-          </Route>
+          <Route path="check-in" element={<Coach />} />
+          <Route path="insights" element={<><Insights /><Memory /></>} />
+          <Route path="coach" element={<LegacyCoachRedirect to="/app/check-in" />} />
+          <Route path="coach/about-you" element={<LegacyCoachRedirect to="/app/insights" />} />
+          <Route path="coach/program" element={<LegacyCoachRedirect to="/app/settings/coaching" />} />
+          <Route path="reviews/:reviewId" element={<WeeklyReview />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/coaching" element={<Program />} />

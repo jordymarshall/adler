@@ -348,7 +348,7 @@ export function GoalWorkspace({
                 </details>
               )}
               <div className="plan-actions">
-                <Link className="text-link" to={`/app/coach?goal=${goal.id}`}>
+                <Link className="text-link" to={`/app/check-in?goal=${goal.id}`}>
                   Review progress with Adler <ArrowRight size={15} />
                 </Link>
               </div>
@@ -387,7 +387,7 @@ export function GoalWorkspace({
                         </p>
                       )}
                     </div>
-                    <Link className="text-link" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to discuss the milestone: ${m.title}`)}`}>Discuss in Coach <ArrowUpRight size={14} /></Link>
+                    <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent(`I want to discuss the milestone: ${m.title}`)}`}>Discuss in Check-in <ArrowUpRight size={14} /></Link>
                   </article>
                 ))}
               </div>
@@ -410,7 +410,7 @@ export function GoalWorkspace({
                     )}
                   </span>
                   <div>
-                    <Link to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${a.title} (${a.date || "unscheduled"}).`)}`}>{a.title}</Link>
+                    <Link to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${a.title} (${a.date || "unscheduled"}).`)}`}>{a.title}</Link>
                     <span>
                       {a.unplanned ? "Unplanned · " : ""}
                       {a.date ? formatDate(a.date) : "Unscheduled"} · Plan{" "}

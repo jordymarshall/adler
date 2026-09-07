@@ -14,8 +14,8 @@ export function adaptiveFixture(start = "2026-09-07", end = "2026-09-11"): Adapt
       measure: { id: "outline-points", label: "Outline points", unit: "points", target: 5 },
       fallback: "Write one point if time is short.",
     }],
+    experiment: { hypothesis: "A short outline may make starting the draft easier.", inputStepIds: ["outline"], outcomeSignal: "User reports whether a draft exists and whether starting feels easier.", comparison: "Compare with the user's reported starting experience; unknown until the first check-in.", comparisonStatus: "unknown", comparisonSourceIds: [], decisionRule: "If outlining happens but drafting remains blocked, inspect the obstacle before changing the commitment.", alternativeExplanations: ["Available time or the writing task may differ between attempts."] },
     assessment: { at: `${end}T20:00:00.000Z`, question: "Did outlining help the draft?", adaptation: "Inspect the obstacle before changing the approach.", feedbackDelayDays: 0, triggers: ["check-in", "window-end"] },
-    forecast: { method: "none", rationale: "Outline points alone do not predict publication.", minimumObservations: 3, horizonDays: 90, freshnessDays: 14 },
   };
 }
 

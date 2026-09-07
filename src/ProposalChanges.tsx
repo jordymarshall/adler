@@ -292,6 +292,7 @@ export function ProposalChanges({
                 </li>)}</ol>
                 <p><b>Next assessment:</b> {new Date(adaptive.assessment.at).toLocaleString(undefined, { timeZone: data.timeZone })} · {adaptive.assessment.question}</p>
                 <p>{adaptive.assessment.adaptation}</p>
+                {adaptive.experiment && <><p><b>What we’re testing:</b> {adaptive.experiment.hypothesis}</p><p><b>Signal to watch:</b> {adaptive.experiment.outcomeSignal}</p><p><b>Starting comparison{adaptive.experiment.comparisonStatus === "unknown" ? " · not yet known" : " · reported"}:</b> {adaptive.experiment.comparison}</p><p><b>Review rule:</b> {adaptive.experiment.decisionRule}</p><p><b>Other explanations:</b> {adaptive.experiment.alternativeExplanations.join("; ") || "To establish together"}</p></>}
               </div>}
               {Boolean(values.basis) && (
                 <PlanExplanation basis={values.basis as PlanningBasis} />

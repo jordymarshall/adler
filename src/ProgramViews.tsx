@@ -69,7 +69,7 @@ function Sources({ data, ids }: { data: Data; ids: string[] }) {
           : action
             ? `/app/goals/${action.goalId}/progress`
             : memory
-              ? "/app/coach/about-you"
+              ? "/app/insights"
               : block
                 ? "/app/calendar"
                 : null;
@@ -355,10 +355,10 @@ export function ProgramContext({ data }: { data: Data }) {
             className="text-link"
             to={
               check.id === "memory"
-                ? "/app/coach/about-you"
+                ? "/app/insights"
                 : check.id === "capacity"
                   ? "/app/calendar"
-                  : `/app/coach?goal=${context.selectedGoalId}`
+                  : `/app/check-in?goal=${context.selectedGoalId}`
             }
           >
             {check.id === "memory"
@@ -408,7 +408,7 @@ export function ProgramDecisions({
             afterward.
           </p>
         </div>
-        <Link className="text-link" to="/app/coach">
+        <Link className="text-link" to="/app/check-in">
           Talk to Adler <ArrowRight size={14} />
         </Link>
       </div>
@@ -463,7 +463,7 @@ export function ProgramDecisions({
             <div className="decision-record-actions">
               <Link
                 className="text-link"
-                to={`/app/coach?goal=${decision.goalId}`}
+                to={`/app/check-in?goal=${decision.goalId}`}
               >
                 Open conversation <ArrowRight size={14} />
               </Link>
@@ -488,7 +488,7 @@ export function ProgramDecisions({
             Bring a goal or an obstacle to Adler. The recommendation, its
             evidence, and your choice will be saved together.
           </p>
-          <Link className="button primary" to="/app/coach">
+          <Link className="button primary" to="/app/check-in">
             Review a goal with Adler <ArrowRight size={15} />
           </Link>
         </div>

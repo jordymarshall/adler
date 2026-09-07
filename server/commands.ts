@@ -70,7 +70,7 @@ export const commandCatalog = {
     "create: " +
     JSON.stringify(z.toJSONSchema(createGoalSchema)) +
     "; update: title,why,success,area,tags,priority,targetDate,status,target (measured goals only),measure (label,unit,target,baseline; changing measurement archives prior results); delete removes the goal and its actions/results. id identifies goal.",
-  plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?,adaptive?}; basis and adaptive use the same schemas as goal creation. New approaches must include adaptive: a concrete window, linked tasks/behaviors, assessment timing, and forecast method. Creates a new plan version and preserves recorded and booked work. Retain step and measure IDs when their meaning is unchanged.",
+  plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?,adaptive?}; basis and adaptive use the same schemas as goal creation. New approaches must include adaptive: a concrete window, linked tasks/behaviors, behavioral completion criteria, and assessment timing. Creates a new plan version and preserves recorded and booked work. Retain step and measure IDs when their meaning is unchanged.",
   milestone:
     "parentId=goal ID. create/update: {title,criterion,done,dueDate?}. id for existing milestone. Toggling done records the verified outcome. delete removes milestone and revises future target.",
   checkpoint:
