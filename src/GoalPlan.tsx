@@ -259,7 +259,7 @@ export function GoalPlan({
                       </Link>
                     </>
                   ) : (
-                    "Starting outcome is unknown."
+                    "No outcome recorded before this cycle."
                   )}
                 </p>
                 {learning.results.length ? (

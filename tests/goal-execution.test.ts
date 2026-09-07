@@ -148,7 +148,7 @@ test("review evidence respects delayed feedback and keeps observations distinct 
   );
 });
 
-test("multiple weekly weekdays cannot silently collapse to one, and reported comparisons need sources", () => {
+test("older recurrences stay reportable and reported comparisons need sources", () => {
   const data = adaptiveWorkspace();
   const plan = data.goals[0].plans[0].adaptive!;
   plan.steps[0].recurrence = {
@@ -156,7 +156,16 @@ test("multiple weekly weekdays cannot silently collapse to one, and reported com
     weekdays: [1, 3],
     until: plan.window.end,
   };
-  assert.throws(() => validateWorkspace(data), /visits only one weekday/);
+  assert.doesNotThrow(
+    () => validateWorkspace(data),
+    "Previously accepted recurrences remain readable",
+  );
+  const previous = structuredClone(data);
+  recordAction(data, data.actions[0].id, "Done");
+  assert.doesNotThrow(
+    () => validateWorkspace(data, previous),
+    "Reporting on an older recurrence remains possible",
+  );
   plan.steps[0].recurrence = {
     everyDays: 1,
     weekdays: [1, 3],
@@ -188,4 +197,26 @@ test("qualitative check-in notes remain reviewable without manufacturing numeric
   );
   assert.equal(evidence.results.length, 0);
   assert.equal(data.goals[0].results.at(-1)?.value, 0);
+});
+
+test("a cycle-start result remains an observation rather than an assumed pre-cycle baseline", () => {
+  const data = adaptiveWorkspace();
+  const goal = data.goals[0];
+  goal.results = [
+    { id: "before", date: "2026-09-06", value: 0, source: "Before starting" },
+    {
+      id: "after",
+      date: "2026-09-07",
+      value: 1,
+      source: "After the first session",
+    },
+  ];
+  recordAction(data, data.actions[0].id, "Done");
+  const evidence = cycleEvidence(data, goal, "2026-09-07")!;
+  assert.equal(evidence.baseline?.id, "before");
+  assert.deepEqual(
+    evidence.results.map((r) => r.id),
+    ["after"],
+  );
+  assert.equal(evidence.status, "Observations available to review");
 });

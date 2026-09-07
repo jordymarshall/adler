@@ -4,7 +4,7 @@ import type { Data } from "../shared/workspace.ts";
 import type { DecisionCheck } from "./program-types.ts";
 import { METHODS } from "./methods.ts";
 import { planProgress } from "../shared/adaptive-plan.ts";
-import { goalExecution, cycleEvidence } from "../shared/goal-execution.ts";
+import { executionSummary, cycleEvidence } from "../shared/goal-execution.ts";
 
 export function coachingGoal(goal: Data["goals"][number]) {
   const { forecasts: _forecasts, ...rest } = goal;
@@ -115,7 +115,7 @@ export function coachingContext(
     planningBasis: goal?.plans.at(-1)?.basis ?? null,
     adaptivePlan: goal?.plans.at(-1)?.adaptive ?? null,
     behaviorEvidence: goal ? planProgress(data, goal).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })) : [],
-    execution: goal ? goalExecution(data, goal, today) : null,
+    execution: goal ? executionSummary(data, goal, today) : null,
     learningEvidence: goal ? cycleEvidence(data, goal, today) : null,
     timeZone: data.timeZone,
     message,
@@ -125,7 +125,7 @@ export function coachingContext(
     activeGoals: goals,
     allGoalContexts: data.goals.map(g => ({ id: g.id, title: g.title, status: g.status, plan: g.plans.at(-1),
       behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
-      execution: goalExecution(data, g, today), learningEvidence: cycleEvidence(data, g, today) })),
+      execution: executionSummary(data, g, today), learningEvidence: cycleEvidence(data, g, today) })),
     recentActions: actions,
     confirmedContext: data.memories,
     checkInPrompts: actions.filter(a => !a.outcome && !a.retiredAt && a.date && a.date <= today).slice(-5)

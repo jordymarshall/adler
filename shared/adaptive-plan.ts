@@ -78,6 +78,7 @@ export function assessmentEvidence(data: Data, goal: Goal) {
   const triggers = plan?.assessment.triggers;
   const watches = (event: NonNullable<typeof triggers>[number]) => !triggers || triggers.includes(event);
   return JSON.stringify({
+    methodology: "controllable-experiments-v1",
     version: goal.plans.at(-1)!.version,
     outcome: [goal.title, goal.success, goal.targetDate, goal.deadline, goal.measure],
     commitments: data.goals.map(g => [g.id, g.status, g.plans.at(-1)!.version]),
@@ -107,7 +108,7 @@ export function assessmentDue(data: Data, goalId: string, now = new Date()) {
   return {
     key: JSON.stringify({ evidence, due: timed ? nextAt : null, windowEnded: Boolean(expired) }),
     reason: !version.adaptive ? "Prepare an adaptive-plan upgrade for this existing goal using its saved context. Keep it reviewable; ask only for essential missing information."
-      : changed ? "New reported evidence or constraints are available. Assess whether the current work remains useful and feasible."
+      : changed ? "Review saved evidence and constraints using the current behavioral coaching method. Establish a sourced learning experiment if this plan does not yet have one; preserve the user’s chosen work and keep revisions reviewable."
         : expired ? "The concrete planning window ended. Assess the evidence and prepare the next useful window."
           : "The plan's chosen assessment time has arrived. Check its question against actual observations.",
   };
@@ -225,8 +226,6 @@ export function validateAdaptiveWork(data: Data, previous?: Data) {
       if (!completed && (step.scheduledDate < plan.window.start || step.scheduledDate > plan.window.end ||
         (step.recurrence && step.recurrence.until < step.scheduledDate) || !stepDates(plan, step).length))
         throw new Error("Each step needs an occurrence inside its planning window.");
-      if (step.recurrence && step.recurrence.everyDays % 7 === 0 && (step.recurrence.weekdays?.length ?? 0) > 1)
-        throw new Error("An every-seven-days recurrence visits only one weekday. For multiple weekdays each week, use everyDays=1 and filter by weekdays.");
       if (step.dependsOn.some(id => plan.steps.find(s => s.id === id)?.type === "behavior"))
         throw new Error("A prerequisite must be a verifiable task, not an ongoing behavior.");
     }

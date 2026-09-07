@@ -164,7 +164,7 @@ export function cycleEvidence(
     .filter((r) => r.date <= today)
     .sort((a, b) => a.date.localeCompare(b.date));
   const baseline =
-    observations.filter((r) => r.date <= plan.window.start).at(-1) ?? null;
+    observations.filter((r) => r.date < plan.window.start).at(-1) ?? null;
   const results = observations.filter(
     (r) => r.date >= plan.window.start && r.id !== baseline?.id,
   );
@@ -201,5 +201,27 @@ export function cycleEvidence(
           : notes.length || records.some((a) => a.note)
             ? "Check-in notes available to review"
             : "Outcome observations still needed",
+  };
+}
+
+// Model calls need counts and references; full action histories already live in workspace.
+export function executionSummary(
+  data: Data,
+  goal: Goal,
+  today = dateInZone(data.timeZone),
+) {
+  const { actions, unscheduled, weeks, ...summary } = goalExecution(
+    data,
+    goal,
+    today,
+  );
+  return {
+    ...summary,
+    actionIds: actions.map((a) => a.id),
+    unscheduledIds: unscheduled.map((a) => a.id),
+    weeks: weeks.map(({ actions, ...week }) => ({
+      ...week,
+      actionIds: actions.map((a) => a.id),
+    })),
   };
 }

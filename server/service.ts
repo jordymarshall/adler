@@ -16,7 +16,7 @@ import { methodSources, planningInstructions, searchLiterature, researchReviewIn
 import { planningBasisSchema, type ResearchSearch } from "../shared/planning.ts";
 import { adaptivePlanSchema, assessmentDue, assessmentEvidence, maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 import { adaptiveInstructions } from "./adaptive-instructions.ts";
-import { goalExecution } from "../shared/goal-execution.ts";
+import { executionSummary } from "../shared/goal-execution.ts";
 import {
   reactionTypes,
   type Data,
@@ -75,6 +75,15 @@ export interface Proposal {
   conversationId?: string;
   before?: (Record<string, unknown> | null)[];
   createdAt?: string;
+}
+function omitForecastField(key: string, value: unknown) {
+  return key === "forecast" || key === "forecasts" ? undefined : value;
+}
+export function coachingProposal(proposal: Proposal): Proposal {
+  const changes = proposal.changes.map(change => ({ ...change,
+    values: JSON.stringify(JSON.parse(change.values), omitForecastField),
+  }));
+  return JSON.parse(JSON.stringify({ ...proposal, changes }, omitForecastField));
 }
 const instructions = `You are Adler, a warm, candid, practical goal coach. Speak naturally and concisely in plain text, without Markdown headings or asterisks. When proposing changes, summarize the result briefly; the interface separately displays the proposal details. No mascot voice, motivational filler, diagnoses, or claims of human identity. You work through an editable coaching program and a shared application command system.
 Read the current workspace and deterministic checks. In order, consider the goal result and dated checkpoint, actual observations, sprint focus and competing goals, available time, reported obstacle, applicable enabled methods, and a concrete next step. Use only enabled methods. A method is a research-informed guide, not proof the app works. Never invent a baseline, completed work, calendar availability, memories, or a scientifically guaranteed result. Do not expose private chain-of-thought; provide a short explanation grounded in the records.
@@ -190,7 +199,7 @@ export class Service {
     const snapshot = this.db.snapshot(userId);
     const preview = applyChanges(snapshot.data, proposal.changes, dayInZone(snapshot.data));
     maintainAdaptivePlans(preview);
-    return { execution: preview.goals.map(g => ({ goalId: g.id, ...goalExecution(preview, g) })) };
+    return { execution: preview.goals.map(g => ({ goalId: g.id, ...executionSummary(preview, g) })) };
   }
   propose(
     userId: string,
@@ -560,7 +569,7 @@ export class Service {
         channel,
         workspace: { ...snapshot.data, messages: undefined, goals: snapshot.data.goals.map(g => ({ ...coachingGoal(g), assessment: g.assessment ? { ...g.assessment, evidenceKey: undefined } : undefined })) },
         conversationId: conversation.id,
-        pendingProposals,
+        pendingProposals: pendingProposals.map(coachingProposal),
         connectedCalendars,
         commandCatalog,
         evidenceCatalog: METHODS,
@@ -596,7 +605,7 @@ export class Service {
             try {
               const preview = applyChanges(snapshot.data, result.planCheck, dayInZone(snapshot.data));
               maintainAdaptivePlans(preview);
-              planningChecks = { feasible: true, execution: preview.goals.map(g => ({ goalId: g.id, ...goalExecution(preview, g) })) };
+              planningChecks = { feasible: true, execution: preview.goals.map(g => ({ goalId: g.id, ...executionSummary(preview, g) })) };
             } catch (error) { planningChecks = { feasible: false, issue: error instanceof Error ? error.message : "Invalid plan" }; }
             continue;
           }
@@ -638,6 +647,11 @@ export class Service {
             if (creating || values.adaptive || (revising && result.execution === "propose")) {
               if (!values.adaptive) throw new Error("Include an adaptive plan: choose a concrete planning window, executable steps, feedback and assessment timing.");
               values.adaptive = adaptivePlanSchema.parse(values.adaptive);
+              if (values.adaptive.forecast) throw new Error("Omit legacy forecast settings. Define the controllable inputs and learning experiment instead.");
+              for (const step of values.adaptive.steps) {
+                if (step.recurrence && step.recurrence.everyDays % 7 === 0 && (step.recurrence.weekdays?.length ?? 0) > 1)
+                  throw new Error("An every-seven-days recurrence visits only one weekday. For multiple weekdays each week, use everyDays=1 and filter by weekdays.");
+              }
               if (values.adaptive.experiment?.comparisonSourceIds.some((id: string) => !sourceIds.has(id)))
                 throw new Error("A starting comparison must cite existing source records or the actual current message ID; keep unreported history unknown.");
               if (values.adaptive.steps.some((step: { type: string }) => step.type === "behavior") && !values.adaptive.experiment)
@@ -680,8 +694,8 @@ export class Service {
             const review = await this.runner(config, researchReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              changes: result.changes, researchSearches, effectiveGoals: reviewedData.goals,
-              executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...goalExecution(reviewedData, g) })),
+              changes: result.changes, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
+              executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...executionSummary(reviewedData, g) })),
             }, researchReviewSchema, 2200);
             if (review.issues.length)
               throw new Error(`Correct the evidence or consistency issues before saving: ${JSON.stringify(review.issues)}`);

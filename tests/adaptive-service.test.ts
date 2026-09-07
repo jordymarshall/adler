@@ -286,3 +286,30 @@ test("an invented comparison source receives repair feedback before a repeating 
   assert.equal(attempts, 2);
   assert.equal(result.data.goals[0].plans[0].adaptive.experiment.comparisonStatus, "unknown");
 });
+
+test("new coach recurrences receive repair feedback without changing older plan validation", async t => {
+  const { db, user, input, adaptive } = fixture(t);
+  let attempts = 0;
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    attempts++;
+    if (attempts === 2) assert.match(context.validationError, /visits only one weekday/);
+    const candidate = structuredClone(adaptive);
+    if (attempts === 1) candidate.steps[0].recurrence = { everyDays: 7, weekdays: [1, 3], until: candidate.window.end };
+    return schema.parse({ reply: "Review the actual dated work.", summary: "A dated trial", execution: "apply", methods: [], changes: [{ entity: "goal", operation: "create", id: "essay", parentId: null, values: JSON.stringify({ ...input, adaptive: candidate }), reason: "You asked for this trial." }] });
+  }), literature);
+  await service.chat(user.id, "Create my trial", "general", "web", "recurrence-repair");
+  assert.equal(attempts, 2);
+});
+
+test("legacy proposal forecasts leave model inputs without mutating stored commands or snapshots", async () => {
+  const { coachingProposal } = await import("../server/service.ts");
+  const proposal = { id: "legacy", summary: "Old plan", status: "pending", expires: Date.now() + 1000, channel: "web" as const, goalId: "essay",
+    changes: [{ entity: "plan" as const, operation: "update" as const, id: null, parentId: "essay", reason: "Earlier proposal", values: JSON.stringify({ adaptive: { forecast: { method: "observed-rate" }, approach: "Make starting easier" } }) }],
+    before: [{ plans: [{ adaptive: { forecast: { method: "observed-rate" } } }], forecasts: [{ expectedDate: "2026-12-01" }] }],
+  };
+  const clean = coachingProposal(proposal);
+  assert.equal(JSON.stringify(clean).includes("forecast"), false);
+  assert.equal(JSON.parse(clean.changes[0].values).adaptive.approach, "Make starting easier");
+  assert.ok(proposal.before[0].forecasts);
+  assert.ok(JSON.parse(proposal.changes[0].values).adaptive.forecast);
+});
