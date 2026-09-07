@@ -31,6 +31,9 @@ test("goal attainment has a full-horizon fan and its measured input evidence, se
   await page.goto("/app/goals/reading");
   const chart = page.getByRole("region", { name: "Goal timeline for Read 30 books" });
   await expect(chart).toContainText("1 / 30 books");
+  await expect(chart.getByRole("heading", { name: "Read 30 books" })).toBeVisible();
+  await expect(chart.locator(".projection-heading")).toContainText("Last reported");
+  await expect(chart.locator(".projection-heading")).toContainText("Scenario range:");
   await expect(chart.getByRole("img", { name: /Goal attainment from 0 to 100/ })).toBeVisible();
   await expect(chart.locator(".outcome-fan")).toHaveCount(1);
   await expect(chart.locator(".outcome-error")).toHaveCount(5);
@@ -39,6 +42,10 @@ test("goal attainment has a full-horizon fan and its measured input evidence, se
   expect(whiskers.at(-1)).toMatch(/100–100% of goal/);
   await chart.getByText("Explore the input and the evidence").click();
   await expect(chart.getByRole("img", { name: /Measured pages per day/ })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(chart.locator(".outcome-timeline svg")).toHaveAttribute("viewBox", "0 0 400 295");
+  expect((await chart.locator(".outcome-timeline svg").boundingBox())!.height).toBeGreaterThan(200);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await chart.getByRole("link", { name: /Input ·/ }).first().click();
   await expect(page).toHaveURL(/progress#record-reading-/);
   await expect(page.getByRole("heading", { level: 1 })).toContainText(data.goals[1].title);
@@ -70,6 +77,8 @@ test("the reasoning path distinguishes evidence, hypotheses, experiments and fee
   await page.goto("/app/insights");
   await expect(page.locator(".insight-overview-summary")).toHaveCount(3);
   await expect(page.locator(".learning-loop[open]")).toHaveCount(0);
+  await expect(page.locator(".insight-overview-finding strong").first()).toContainText("we need more observations");
+  await expect(page.locator(".insight-kind")).toHaveText(["Working insight", "Your observation", "Your observation"]);
   await expect(page.locator(".insight-overview-implication").first()).toContainText("In the saved plan");
   await expect(page.locator(".insight-overview-implication").first()).toContainText("Choose a finish line");
   await page.locator(".insight-overview-summary").first().click();
@@ -79,6 +88,8 @@ test("the reasoning path distinguishes evidence, hypotheses, experiments and fee
   await expect(loop.locator(".result-node")).toContainText("You reported completing two sessions");
   await expect(loop.locator(".next-hypothesis-node")).toContainText("Could a smaller fallback help on crowded days?");
   await expect(loop.locator(".behavioral-rationale summary")).toContainText("Specific goals with feedback");
+  await expect(loop.locator(".research-input-label")).toHaveText("Behavioural science informs this hypothesis");
+  await expect(loop.locator(".hypothesis-node .deduction-evidence > p")).toContainText("A specific finish criterion");
   await loop.locator(".behavioral-rationale summary").click();
   await expect(loop.locator(".behavioral-rationale")).toContainText("A specific finish criterion");
   await expect(loop.locator(".behavioral-rationale")).toContainText("Two self-reports do not establish causation");

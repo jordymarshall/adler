@@ -48,7 +48,7 @@ const chapters = [
         It’s hard to see what’s working. <em>Make your progress visible.</em>
       </>
     ),
-    body: "See how your actions change week by week. Open a session to revisit what happened, notice where your rhythm breaks down, and connect those reports to your results and goal timeline.",
+    body: "See your reported progress, projected finish, and the range of possible timelines in one goal view. Open the inputs behind the projection to understand what it assumes and what your check-ins are showing.",
     visual: <LandingAppCapture screen="progress" />,
   },
   {
@@ -58,7 +58,7 @@ const chapters = [
         Your experience holds clues. <em>Build a plan that understands you.</em>
       </>
     ),
-    body: "Your check-ins build a picture of what helps you start, what gets in the way, and what’s worth trying next. See those insights together, how they shape your plan, and the behavioural science and observations behind each one.",
+    body: "See what Adler is learning about you and how each insight shapes your plan. Open an insight to follow your observations, the behavioural science behind a proposed change, and what your follow-up actually showed.",
     visual: <LandingAppCapture screen="insights" />,
   },
   {

@@ -39,13 +39,12 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
   }, [rows]);
   return <div className="learning-loops" aria-label="Learning experiments and their evidence">
     <header className="insights-overview-heading"><div><span className="section-kicker">WHAT SHAPES YOUR PLAN</span><h2>What we’re learning about you</h2></div><p>{rows.length} {rows.length === 1 ? "observation" : "observations"} · {feedbackCount} {feedbackCount === 1 ? "experiment" : "experiments"} with feedback</p></header>
-    <div className="insights-overview-labels" aria-hidden="true"><span>From your experience</span><span>How Adler adapts the plan</span></div>
     {rows.map(row => <details className="insight-row learning-loop" id={`learning-${row.id}`} key={row.id}>
       <summary className="insight-overview-summary">
-        <span className="insight-overview-finding"><small>{row.goalTitle} · {formatDate(row.date)}</small><strong>{row.finding}</strong><span className="insight-status">{row.learning?.insight ? "Working insight · Feedback received" : row.learning?.result ? "Feedback received · Under review" : row.learning ? "Hypothesis · Testing" : row.status === "To test" ? "Hypothesis · To test" : "Your observation"} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</span></span>
+        <span className="insight-overview-finding"><span className="insight-kind">{row.learning?.insight ? "Working insight" : row.learning || row.status === "To test" ? "Hypothesis" : "Your observation"}</span><small>{row.goalTitle} · {formatDate(row.date)}</small><strong>{row.learning?.insight ?? row.learning?.hypothesis ?? row.finding}</strong><span className="insight-status">{row.learning?.result ? "Feedback received" : row.learning ? "Testing" : row.status === "To test" ? "To test" : "Reported by you"} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</span></span>
         <ArrowRight className="insight-implication-arrow" size={18} aria-hidden="true" />
         <span className="insight-overview-implication"><small>{row.implicationLabel}</small><span>{row.implication}</span></span>
-        <span className="insight-open-label"><span>View reasoning</span><ChevronDown size={17} aria-hidden="true" /></span>
+        <span className="insight-open-label"><span>View evidence & reasoning</span><ChevronDown size={17} aria-hidden="true" /></span>
       </summary>
       {row.learning?.previousInsightId && <a className="previous-loop" href={`#learning-${row.learning.previousInsightId}`}>↳ Builds on an earlier learning cycle</a>}
       <ol className="learning-canvas" role="list" aria-label="Coaching reasoning from evidence to the next test">
@@ -57,7 +56,7 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
         <li className="learning-node hypothesis-node">
           <div className="learning-stage"><b>02</b><span>HYPOTHESIS<small>Possible explanation</small></span></div>
           <div className="deduction-claim"><h3>Based on that, Adler suspects…</h3><p>{row.learning?.hypothesis ?? (row.status === "To test" ? row.finding : "An explanation to explore with Adler.")}</p></div>
-          <aside className="deduction-evidence">{row.learning?.reasoning && <BehavioralRationale reasoning={row.learning.reasoning} sources={row.research} />}{row.research.length > 0 ? <details className="learning-research"><summary>Research basis · {row.research.length} <span>+</span></summary>{row.research.map(source => <div key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a><p>{source.authors} · {source.year} · {source.access}</p><p>{source.summary}</p></div>)}</details> : <p>No literature linked yet.</p>}<small>Research informs the idea; it does not prove it applies to you.</small></aside>
+          <aside className="deduction-evidence"><b className="research-input-label">{row.learning?.reasoning || row.research.length ? "Behavioural science informs this hypothesis" : "Behavioural rationale not yet linked"}</b>{row.learning?.reasoning && <p>{row.learning.reasoning.mechanism}</p>}{row.learning?.reasoning && <BehavioralRationale reasoning={row.learning.reasoning} sources={row.research} />}{row.research.length > 0 ? <details className="learning-research"><summary>Research basis · {row.research.length} <span>+</span></summary>{row.research.map(source => <div key={source.id}><a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a><p>{source.authors} · {source.year} · {source.access}</p><p>{source.summary}</p></div>)}</details> : <p>No literature linked yet.</p>}<small>Research informs the idea; it does not prove it applies to you.</small></aside>
         </li>
         <li className="learning-node experiment-node">
           <div className="learning-stage"><b>03</b><span>TEST<small>One change to try</small></span></div>

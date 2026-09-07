@@ -1937,12 +1937,20 @@
 .v2-landing .app-capture-preview figcaption { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; font-size: 10px; color: #626957; }
 .v2-landing .app-capture-frames { position: relative; display: block; overflow: hidden; }
 .v2-landing .app-capture-preview .capture-detail { position: absolute; inset: 0; opacity: 0; animation: capture-detail 9s infinite; }
-.v2-landing .app-capture-preview .capture-followup { display: none; }
+.v2-landing .app-capture-preview .capture-followup { display: block; position: absolute; inset: 0; opacity: 0; animation: capture-followup 9s infinite; }
 .v2-landing .capture-cursor { position: absolute; left: 78%; top: 78%; color: #fffefa; fill: #293a2d; filter: drop-shadow(0 1px 2px #293a2d40); opacity: 0; animation: capture-cursor 9s infinite; pointer-events: none; }
 .v2-landing .capture-click { position: absolute; left: var(--cursor-x); top: var(--cursor-y); width: 28px; height: 28px; margin: -14px; border: 1px solid #677e48; border-radius: 50%; opacity: 0; animation: capture-click 9s infinite; pointer-events: none; }
 .v2-landing .app-capture-preview .capture-animation { animation-play-state: paused; }
 .v2-landing .focus-chapter.is-current .app-capture-preview[data-paused="false"] .capture-animation { animation-play-state: running; }
 .v2-landing .capture-playback { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 6px; margin: -4px 0 -4px auto; border: 0; background: transparent; color: inherit; font-size: inherit; }
+.v2-landing .app-capture-preview[data-guided="true"] .capture-animation { animation-duration: 18s; }
+.v2-landing .capture-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
+.v2-landing .capture-steps button { display: flex; align-items: center; gap: 6px; border: 1px solid #dce1d3; border-radius: 5px; padding: 9px 10px; background: #faf9f6; color: #43503b; font-size: 12px; }
+.v2-landing .capture-steps button > span { font-size: 10px; color: #626957; }
+.v2-landing .capture-steps button[aria-pressed="true"] { background: #e9eeda; border-color: #677e48; }
+.v2-landing .app-capture-preview:not([data-frame="auto"]) .capture-animation { animation: none; display: none; }
+.v2-landing .app-capture-preview[data-frame="1"] .capture-detail,
+.v2-landing .app-capture-preview[data-frame="2"] .capture-followup { display: block; opacity: 1; }
 @keyframes capture-detail { 0%, 29%, 91%, 100% { opacity: 0; } 32%, 83% { opacity: 1; } }
 @keyframes capture-cursor { 0%, 8%, 100% { opacity: 0; left: 78%; top: 78%; } 15% { opacity: 1; left: 78%; top: 78%; } 28%, 72% { opacity: 1; left: var(--cursor-x); top: var(--cursor-y); } 88%, 95% { opacity: 0; left: 78%; top: 78%; } }
 @keyframes capture-click { 0%, 28%, 37%, 100% { opacity: 0; transform: scale(.6); } 30% { opacity: .6; transform: scale(.6); } 36% { opacity: 0; transform: scale(1.4); } }
@@ -1959,10 +1967,6 @@
 @media (max-width: 650px) {
   .v2-landing .app-capture-preview { max-width: 320px; margin-inline: auto; --cursor-x: var(--cursor-mobile-x); --cursor-y: var(--cursor-mobile-y); }
   .v2-landing .app-capture-preview .modal { max-width: calc(100vw - 20px); padding: 12px; }
-  .v2-landing .app-capture-preview .capture-followup { display: block; position: absolute; inset: 0; opacity: 0; animation: capture-followup 9s infinite; animation-play-state: paused; }
-}
-@media (max-width: 650px) and (prefers-reduced-motion: reduce) {
-  .v2-landing .app-capture-preview .capture-followup { display: none; animation: none; }
 }
 
 /* Restore the floating-card hero while keeping the five focused chapters. */

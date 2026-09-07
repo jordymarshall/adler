@@ -325,7 +325,7 @@ test("landing app captures load the desktop and native mobile screens", async ({
       await expect.poll(() => capture.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
       const image = await capture.evaluate((el: HTMLImageElement) => ({ src: el.currentSrc, pixels: el.naturalWidth, width: el.getBoundingClientRect().width }));
       expect(image.src).toContain(`/media/app/${screen}-${width === 390 ? "mobile" : "desktop"}.webp`);
-      expect(image.pixels).toBe(width === 390 ? 780 : 2000);
+      expect(image.pixels).toBe(width === 390 ? 780 : index >= 2 ? 1680 : 2000);
       expect(image.width).toBeGreaterThan(width === 390 ? 300 : 600);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
@@ -346,7 +346,7 @@ test("landing capture interactions pause and respect reduced motion", async ({ p
   await preview.getByRole("button", { name: "Play Insights animation" }).click();
   await expect(cursor).toHaveCSS("animation-play-state", "running");
   await preview.locator(".capture-detail img").evaluate((el: HTMLImageElement) => el.decode());
-  await preview.locator(".capture-animation").evaluateAll(elements => elements.forEach(el => el.getAnimations().forEach(animation => { animation.currentTime = 4500; })));
+  await preview.locator(".capture-animation").evaluateAll(elements => elements.forEach(el => el.getAnimations().forEach(animation => { animation.currentTime = 9000; })));
   await expect(preview.locator(".capture-detail")).toHaveCSS("opacity", "1");
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(cursor).toHaveCSS("display", "none");
@@ -370,6 +370,35 @@ test("landing app screenshots enlarge with the keyboard and restore focus", asyn
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
     await expect(opener).toBeFocused();
+  }
+});
+
+test("progress and insights frames remain readable on demand with reduced motion", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1050 });
+    await page.goto("/");
+    const progress = page.locator("#step-3 .app-capture-preview");
+    await progress.getByRole("button", { name: "2 Inputs & assumptions" }).click();
+    await expect(progress.locator(".capture-detail")).toBeVisible();
+    await expect(progress.locator(".capture-detail")).toHaveCSS("opacity", "1");
+    await progress.getByRole("button", { name: "Enlarge Goal progress screenshot" }).click();
+    await expect(page.getByRole("dialog").locator("img")).toHaveAttribute("src", /progress-desktop-detail.webp/);
+    await page.keyboard.press("Escape");
+    await progress.getByRole("button", { name: "1 Goal projection" }).click();
+    await expect(progress.locator(".capture-detail")).toBeHidden();
+    const insights = page.locator("#step-4 .app-capture-preview");
+    for (const [label, selector] of [["2 Evidence & test", ".capture-detail"], ["3 Feedback & learning", ".capture-followup"]]) {
+      const control = insights.getByRole("button", { name: label });
+      await control.focus();
+      await page.keyboard.press("Enter");
+      await expect(control).toHaveAttribute("aria-pressed", "true");
+      await expect(insights.locator(selector)).toHaveCSS("opacity", "1");
+      await expect(insights.locator(selector)).toBeVisible();
+      await expect.poll(() => insights.locator(`${selector} img`).evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+    }
+    await expect(insights.locator(".capture-cursor")).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
 });
 

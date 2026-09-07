@@ -42,7 +42,7 @@ await page.clock.setFixedTime(new Date(captureDate));
 const screens = [
   { name: 'goals', route: '/app/goals', ready: '.goal-table-row' },
   { name: 'calendar', route: '/app/calendar', ready: '.week-calendar' },
-  { name: 'progress', route: '/app/goals/reading', ready: '.weekly-actions' },
+  { name: 'progress', route: '/app/goals/reading', ready: '.goal-projection' },
   { name: 'insights', route: '/app/insights', ready: '.insight-row' },
 ];
 const points: Record<string, Record<string, { x: number; y: number }>> = {};
@@ -62,8 +62,9 @@ async function capture(name: string, selector?: string) {
   await writeFile(`${directory}/${name}.webp`, Buffer.from(webp, 'base64'));
 }
 for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobile', width: 390, height: 1050 }]) {
-  await page.setViewportSize(size);
   for (const screen of screens) {
+    const viewport = { ...size, width: size.name === 'desktop' && ['progress', 'insights'].includes(screen.name) ? 840 : size.width };
+    await page.setViewportSize(viewport);
     await page.goto(new URL(screen.route, baseURL).href);
     await page.locator(screen.ready).first().waitFor();
     // Present the real content area without the app's surrounding navigation.
@@ -71,35 +72,34 @@ for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobi
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(150);
     await expect(page.locator('.save-error, [role="alert"]')).toHaveCount(0);
-    const focus = screen.name === 'progress' ? '.weekly-actions' : screen.name === 'calendar' ? '.full-calendar' : screen.name === 'insights' ? '.learning-loops' : null;
+    const focus = screen.name === 'progress' ? '.projection-heading' : screen.name === 'calendar' ? '.full-calendar' : screen.name === 'insights' ? '.learning-loops' : null;
     if (focus) await page.locator(focus).first().evaluate(element => {
       window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' });
     });
     await capture(`${screen.name}-${size.name}`);
     const target = screen.name === 'calendar' ? page.locator('.month-entry button').filter({ hasText: '25 minutes on my chosen draft' }).first()
       : screen.name === 'insights' ? page.locator('.insight-overview-summary').first()
-      : screen.name === 'progress' ? page.locator('.execution-action summary').filter({ hasText: 'Wed' }).first()
+      : screen.name === 'progress' ? page.locator('.projection-evidence > summary')
       : page.getByRole('link', { name: 'Read 30 books' });
     const box = (await target.boundingBox())!;
     if (box.y < 0 || box.y + box.height > size.height) throw new Error(`Interaction outside capture: ${screen.name}`);
-    (points[screen.name] ??= {})[size.name] = { x: Number(((box.x + box.width / 2) / size.width * 100).toFixed(2)), y: Number(((box.y + box.height / 2) / size.height * 100).toFixed(2)) };
+    (points[screen.name] ??= {})[size.name] = { x: Number(((box.x + box.width / 2) / viewport.width * 100).toFixed(2)), y: Number(((box.y + box.height / 2) / size.height * 100).toFixed(2)) };
     await target.click();
     if (screen.name === 'goals') {
       await page.locator('.goal-projection').waitFor();
       await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
       await page.locator('.goal-projection').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     }
+    if (screen.name === 'progress') await page.locator('.input-outcome-link').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     if (screen.name === 'insights') await page.locator('.learning-loop[open] .learning-canvas').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     await page.waitForTimeout(150);
     await capture(`${screen.name}-${size.name}-detail`);
     if (screen.name === 'insights') {
       await capture(`${screen.name}-${size.name}-reasoning`, '.learning-loop[open]');
-      if (size.name === 'mobile') {
-        await page.locator('.learning-loop[open] .result-node').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
-        await capture(`${screen.name}-${size.name}-followup`);
-      }
+      await page.locator('.learning-loop[open] .result-node').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
+      await capture(`${screen.name}-${size.name}-followup`);
     }
-    console.log(`Captured ${screen.name} and its interaction at ${size.width}×${size.height}`);
+    console.log(`Captured ${screen.name} and its interaction at ${viewport.width}×${viewport.height}`);
   }
 }
 await browser.close();

@@ -1,32 +1,35 @@
 .goal-projection { padding: 28px 0; }
 .projection-heading { display: flex; justify-content: space-between; gap: 24px; }
 .projection-heading h2 { margin: 12px 0 0; font-size: 24px; }
+.projection-heading > div:first-child { display: flex; flex-direction: column; align-items: start; gap: 8px; }
+.projection-heading .projection-current { font-size: 22px; }
 .projection-heading > div:last-child { display: flex; flex-direction: column; gap: 7px; text-align: right; }
-.projection-heading span, .projection-heading small { font-size: 11px; color: var(--muted); }
+.projection-heading span, .projection-heading small { font-size: 13px; color: var(--muted); }
 .projection-heading strong { font-size: 16px; font-weight: 600; }
 .outcome-timeline { margin: 28px 0; }
-.projection-axis-label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.projection-axis-label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
 .outcome-timeline svg, .input-evidence-plot svg { display: block; width: 100%; overflow: visible; }
-.outcome-timeline text, .input-evidence-plot text { fill: var(--muted); font-size: 11px; }
+.outcome-timeline text, .input-evidence-plot text { fill: var(--muted); font-size: 13px; }
+.outcome-boundary { stroke: var(--muted); stroke-dasharray: 2 4; opacity: .65; }
 .outcome-grid { stroke: var(--line); stroke-width: 1; }
 .outcome-target { stroke: #768d72; stroke-dasharray: 3 5; }
 .outcome-recorded, .outcome-projected { fill: none; stroke: var(--green); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
-.outcome-projected { stroke: #748b68; stroke-dasharray: 6 5; }
+.outcome-projected { stroke: #607a4f; stroke-dasharray: 6 5; }
 .outcome-fan { fill: #b3c89a55; }
-.outcome-error { fill: none; stroke: #819773; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.outcome-error { fill: none; stroke: #607a4f; stroke-width: 1; vector-effect: non-scaling-stroke; }
 .outcome-point { fill: var(--green); stroke: var(--paper); stroke-width: 1.5; }
-.outcome-timeline figcaption { display: flex; flex-wrap: wrap; gap: 12px 22px; font-size: 11px; color: var(--muted); margin-top: 10px; }
+.outcome-timeline figcaption { display: flex; flex-wrap: wrap; gap: 12px 22px; font-size: 13px; color: var(--muted); margin-top: 10px; }
 .outcome-timeline figcaption > span { display: flex; align-items: center; gap: 7px; }
 .outcome-timeline figcaption > span:last-child { margin-left: auto; }
 .outcome-key { width: 18px; border-top: 2px solid var(--green); }
-.outcome-key.projected { border-top: 2px dashed #748b68; }
+.outcome-key.projected { border-top: 2px dashed #607a4f; }
 .outcome-key.range { height: 10px; background: #b3c89a55; border: 0; }
 .input-outcome-link { display: grid; grid-template-columns: 1fr auto 1fr; gap: 22px; align-items: center; padding: 22px 0; border-block: 1px solid var(--line); margin-bottom: 18px; }
 .input-outcome-link > div { display: flex; flex-direction: column; gap: 8px; }
-.input-outcome-link span, .input-outcome-link small { font-size: 11px; color: var(--muted); line-height: 1.6; }
+.input-outcome-link span, .input-outcome-link small { font-size: 13px; color: var(--muted); line-height: 1.6; }
 .input-outcome-link strong { font-size: 17px; font-weight: 600; }
 .input-outcome-link .relation-arrow { font-size: 26px; }
-.projection-evidence { margin: 22px 0; font-size: 12px; }
+.projection-evidence { margin: 22px 0; font-size: 14px; }
 .projection-evidence summary { display: flex; justify-content: space-between; }
 .projection-evidence p { max-width: 800px; line-height: 1.7; }
 .input-evidence-plot { max-width: 780px; margin: 26px 0; }
@@ -71,7 +74,8 @@
   .goal-table-row td:last-child small { display: inline; margin-right: 8px; }
   .projection-heading { flex-direction: column; gap: 16px; }
   .projection-heading > div:last-child { text-align: left; }
-  .outcome-timeline text { font-size: 18px; }
+  .outcome-timeline text { font-size: 14px; }
+  .input-evidence-plot text { font-size: 24px; }
   .outcome-timeline { margin-inline: 3px; }
   .input-outcome-link { grid-template-columns: 1fr; gap: 10px; }
   .input-outcome-link .relation-arrow { transform: rotate(90deg); justify-self: start; }
