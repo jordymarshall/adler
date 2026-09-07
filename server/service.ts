@@ -1,3 +1,4 @@
+import { recordLink, resolveRecord } from "../shared/record-links.ts";
 import { currentRecord } from "../shared/change-record.ts";
 import { randomBytes, randomUUID } from "node:crypto";
 import { z } from "zod";
@@ -756,7 +757,13 @@ export class Service {
         (l, i, all) =>
           all.findIndex((x) => x.goalId === l.goalId && x.tab === l.tab) === i,
       );
-      const relatedGoalId = focusGoalId ?? (links.length && links.every(link => link.goalId === links[0].goalId) ? links[0].goalId : goalId);
+      const affectedGoals = this.goalLinks(result.changes, data);
+      const references = result.references.filter(r => (recordLink(data, r.recordId) || (!background && r.recordId === userMessageId)) && result.reply.includes(r.text));
+      const mentionedGoalIds = [...references.map(r => r.recordId), ...result.insights.flatMap(i => i.sourceIds)]
+        .map(id => resolveRecord(data, id)?.goalId).filter((id): id is string => data.goals.some(goal => goal.id === id));
+      const attributedGoalIds = [...new Set(affectedGoals.length ? affectedGoals.map(link => link.goalId) : [...links.map(link => link.goalId), ...mentionedGoalIds])];
+      const relatedGoalId = attributedGoalIds.length === 1 ? attributedGoalIds[0]
+        : attributedGoalIds.length > 1 ? "general" : focusGoalId ?? goalId;
       const decisionId = randomUUID();
       data.messages.push(
         ...(!background ? [{
@@ -784,7 +791,7 @@ export class Service {
           conversationId: conversation.id,
           role: "coach",
           text: result.reply,
-          references: result.references.filter(r => sourceIds.has(r.recordId) && result.reply.includes(r.text)),
+          references,
           links,
           decisionId,
           at: new Date().toISOString(),
@@ -796,7 +803,7 @@ export class Service {
         date: new Date().toISOString(),
         goalId: relatedGoalId,
         programVersion: context.program.version,
-        planVersion: context.goal?.plans.at(-1)?.version ?? 0,
+        planVersion: data.goals.find(g => g.id === relatedGoalId)?.plans.at(-1)?.version ?? 0,
         mode: "live",
         insights: result.insights,
         checks: context.checks,

@@ -1,3 +1,4 @@
+import { checkInContext } from "../shared/check-in-context.ts";
 import { reviewSchedule } from "../shared/journey.ts";
 import type { Data } from "../shared/workspace.ts";
 import type { DecisionCheck } from "./program-types.ts";
@@ -116,6 +117,8 @@ export function coachingContext(
       forecast: g.forecasts?.at(-1) ? { ...g.forecasts.at(-1), inputKey: undefined } : null })),
     recentActions: actions,
     confirmedContext: data.memories,
+    checkInPrompts: actions.filter(a => !a.outcome && !a.retiredAt && a.date && a.date <= today).slice(-5)
+      .map(a => ({ actionId: a.id, goalId: a.goalId, context: checkInContext(data, a), instruction: "Ask what happened; this context does not confirm an outcome or its cause." })),
     workBlocks: blocks,
     freshCalendarAvailability: calendar,
     previousDecisions: data.decisions
@@ -128,7 +131,7 @@ export function coachingContext(
           : goalId === "general" || m.goalId === goalId,
       )
       .slice(-12)
-      .map((m) => ({ role: m.role, text: m.text })),
+      .map((m) => ({ id: m.id, goalId: m.goalId, role: m.role, text: m.text, at: m.at })),
     checks,
   };
 }

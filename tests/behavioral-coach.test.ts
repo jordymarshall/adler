@@ -108,3 +108,13 @@ test("inline references resolve only account records and survive overlapping or 
     recordLink(data, data.actions[0].id)?.includes("/progress#record-"),
   );
 });
+
+test("shared chat receives relevant check-in context without inferring completion", () => {
+  const data = adaptiveWorkspace();
+  const action = data.actions[0];
+  data.goals[0].plans[0].adaptive!.steps[0].contextIds = ["morning"];
+  data.memories.push({ id: "morning", text: "Mornings are easier for me", date: "2026-09-06" });
+  const context = coachingContext(data, "general", "Check in", "2026-09-07");
+  assert.equal(context.checkInPrompts.find(p => p.actionId === action.id)?.context[0].text, "Mornings are easier for me");
+  assert.equal(action.outcome, undefined);
+});

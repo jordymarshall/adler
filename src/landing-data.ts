@@ -70,11 +70,6 @@ export const demoGoal: Goal = {
     },
   ],
 };
-export const demoProposedCheckpoints = [
-  { date: "2026-10-17", value: 1 },
-  { date: "2026-11-08", value: 2 },
-  { date: "2026-11-22", value: 3 },
-];
 export const demoPlanChanges = [
   {
     label: "Starting cue",

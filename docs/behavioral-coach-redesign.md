@@ -16,3 +16,9 @@ Validation: server regression tests for cross-goal context, record references, c
 ## Live model checks
 
 Synthetic Gemini evaluations exposed an older instruction to choose the domain strategy. The planning and review instructions now agree on the behavioral boundary, including examples of unsupported prospect quotas and channel choices. On rerun, the revenue case asks which acquisition work the person wants help executing; the reported scheduling-conflict case preserves the user's 60-minute budget and uses their stated morning windows. These checks sample behavior rather than guarantee every response. The deterministic regression suite also checks command persistence, cross-goal context, source ownership and forecast arithmetic.
+
+## Final review
+
+Standards and spec reviews are clear after fixes for cross-goal discussion ownership (including turns without commands), newly saved record links, and prior-message IDs. Shared Coach also receives the relevant confirmed-memory/calendar prompts previously available only in the separate check-in form. Retired embedded chat and reporting surfaces are removed.
+
+Validation: 77 server tests, 53 browser tests including mobile/accessibility checks, and the production build. Initial live-model failures were corrected and rerun as described above. Apple Health and shared goals/stakes remain labeled Coming soon.

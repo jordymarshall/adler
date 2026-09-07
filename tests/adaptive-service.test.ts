@@ -230,3 +230,37 @@ test("a shared conversation records a focused check-in while retaining other goa
   assert.equal(result.data.messages.at(-1).references.length, 2);
   assert.equal(result.data.messages.at(-1).references[1].recordId, "morning");
 });
+
+test("switching goals within shared chat attributes learning to the affected records and links newly saved evidence", async t => {
+  const { db, user, input, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, input, today, "essay");
+  createGoal(state.data, { ...input, title: "Publish a collection", measure: { label: "Published pieces", unit: "pieces", target: 10, baseline: 0, aggregation: "cumulative" } }, today, "collection");
+  const collection = state.data.goals[1];
+  collection.plans.push({ ...collection.plans[0], version: 2 });
+  state.data.conversations.push({ id: "shared", title: "Shared coach", goalId: "general", createdAt: new Date().toISOString() });
+  state.data.messages.push({ id: "earlier", conversationId: "shared", goalId: "general", role: "user", text: "I want to work on the collection." });
+  db.save(user.id, state.data, state.revision, "web", "Fixture");
+  let count = 0;
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    assert.equal(context.conversation.find((m: any) => m.text === "I want to work on the collection.")?.id, "earlier");
+    const mixed = count++ > 0;
+    const discussion = count > 2;
+    return schema.parse({ reply: "Your collection result is saved alongside your earlier note.", summary: "Save reported progress", methods: [], execution: "apply",
+      changes: discussion ? [] : mixed ? state.data.actions.map(a => ({ entity: "action", operation: "update", id: a.id, parentId: null, values: JSON.stringify({ outcome: "Done" }), reason: "You reported both actions done." })) : [{ entity: "result", operation: "create", id: "new-result", parentId: "collection", values: JSON.stringify({ value: 2, date: today, source: "User confirmed two pieces published" }), reason: "Your report" }],
+      references: [{ text: "collection result", recordId: "new-result" }, { text: "earlier note", recordId: "earlier" }],
+    });
+  });
+  const result = await service.chat(user.id, "For the collection, two pieces are published today.", "general", "web", "switch-goal", undefined, "shared", undefined, "essay");
+  assert.equal(result.data.messages.at(-1).goalId, "collection");
+  assert.equal(result.data.decisions.at(-1).goalId, "collection");
+  assert.equal(result.data.decisions.at(-1).planVersion, 2);
+  assert.deepEqual(result.data.messages.at(-1).references.map((r: any) => r.recordId), ["new-result", "earlier"]);
+  const mixed = await service.chat(user.id, "Both goals’ planned actions are done today.", "general", "web", "mixed-goal", undefined, "shared", undefined, "essay");
+  assert.equal(mixed.data.decisions.at(-1).goalId, "general");
+  assert.equal(mixed.data.decisions.at(-1).planVersion, 0);
+  const discussion = await service.chat(user.id, "Let’s discuss what is blocking the collection, without changing anything yet.", "general", "web", "discuss-other-goal", undefined, "shared", undefined, "essay");
+  assert.equal(discussion.data.decisions.at(-1).goalId, "collection");
+  assert.equal(discussion.data.messages.at(-1).goalId, "collection");
+  assert.equal(discussion.data.decisions.at(-1).planVersion, 2);
+});

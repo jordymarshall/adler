@@ -2,59 +2,47 @@ import { referencedText } from "../shared/record-links";
 import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowUp, Check, X } from "lucide-react";
+import { ArrowUp, Check } from "lucide-react";
 import { AdlerAvatar } from "./persona";
 import { api, type ServiceStatus } from "./api";
 import { useStore, reactionTypes, reactionEmoji } from "./store";
 import { METHODS } from "./methods";
 import type { Proposal } from "../server/service";
 import { ProposalChanges, ProposalEssentials } from "./ProposalChanges";
-export function LiveCoach({
-  goalId,
-  initialPrompt,
-  initialConversationId,
-  autoSend = false,
-  onContinue,
-  embedded = false,
-}: {
-  goalId?: string;
-  initialPrompt?: string;
-  initialConversationId?: string;
-  autoSend?: boolean;
-  onContinue?: (goalId?: string) => void | Promise<void>;
-  embedded?: boolean;
-}) {
+export function LiveCoach() {
   const { data, flush, refresh } = useStore(),
     [params, setParams] = useSearchParams();
-  const [localChat, setLocalChat] = useState(initialConversationId ?? "");
-  const requestedGoal = goalId ?? params.get("goal") ?? "general";
-  const selectedChat = embedded ? localChat : params.get("chat");
+  const requestedGoal = params.get("goal") ?? "general";
+  const selectedChat = params.get("chat");
   const conversation = selectedChat
     ? data.conversations.find((c) => c.id === selectedChat)
-    : data.conversations.filter((c) => c.goalId === (embedded ? requestedGoal : "general")).at(-1);
-  const selected = conversation?.goalId ?? (embedded ? requestedGoal : "general");
+    : data.conversations.filter((c) => c.goalId === "general").at(-1);
+  const selected = conversation?.goalId ?? "general";
   function selectChat(id: string, goalId: string) {
-    if (embedded) setLocalChat(id);
-    else setParams(id ? { chat: id, ...(requestedGoal !== "general" ? { goal: requestedGoal } : {}) } : { goal: goalId });
+    setParams(
+      id
+        ? {
+            chat: id,
+            ...(requestedGoal !== "general" ? { goal: requestedGoal } : {}),
+          }
+        : { goal: goalId },
+    );
   }
-  const belongsHere = (p: Proposal) =>
-    !embedded || (p.conversationId ? p.conversationId === conversation?.id : p.goalId === selected);
   const goal = data.goals.find((g) => g.id === requestedGoal);
   const key = `adler-coach-draft-${conversation?.id ?? selected}`;
-  const initialKey = useRef(key);
   const [text, setText] = useState(
-      () =>
-        initialPrompt ??
-        params.get("prompt") ??
-        sessionStorage.getItem(key) ??
-        "",
+      () => params.get("prompt") ?? sessionStorage.getItem(key) ?? "",
     ),
     [sending, setSending] = useState(false),
     [error, setError] = useState(""),
     [service, setService] = useState<ServiceStatus | null>(null),
     [proposals, setProposals] = useState<Proposal[]>([]);
   const latestApplied = proposals.find(
-    (p) => p.status === "applied" && belongsHere(p),
+    (p) =>
+      p.status === "applied" &&
+      (p.conversationId
+        ? p.conversationId === conversation?.id
+        : p.goalId === selected),
   );
   const continuedGoal =
     data.goals.find((g) =>
@@ -62,9 +50,7 @@ export function LiveCoach({
         (c) => c.entity === "goal" && c.operation === "create" && c.id === g.id,
       ),
     ) ?? goal;
-  const hasPending = proposals.some(
-    (p) => p.status === "pending" && belongsHere(p),
-  );
+  const hasPending = proposals.some((p) => p.status === "pending");
   const bottom = useRef<HTMLDivElement>(null),
     request = useRef<{ text: string; goal: string; id: string } | null>(null);
   const messages = data.messages.filter((m) =>
@@ -84,13 +70,7 @@ export function LiveCoach({
     void reloadProposals().catch((e) => setError(e.message));
   }, [data]);
   useEffect(() => {
-    const draft =
-      (key === initialKey.current && !submitted.current
-        ? initialPrompt
-        : undefined) ??
-      params.get("prompt") ??
-      sessionStorage.getItem(key) ??
-      "";
+    const draft = params.get("prompt") ?? sessionStorage.getItem(key) ?? "";
     setText(draft);
     if (draft) sessionStorage.setItem(key, draft);
     setError("");
@@ -133,20 +113,6 @@ export function LiveCoach({
       await refresh();
       await reloadProposals();
       request.current = null;
-      const created = result.data?.goals.find(
-        (g) =>
-          g.status === "Draft" &&
-          !data.goals.some((before) => before.id === g.id),
-      );
-      if (created && onContinue) await onContinue(created.id);
-      else if (
-        onContinue &&
-        result.proposal?.status === "applied" &&
-        result.proposal.changes.some((c) =>
-          ["goal", "plan", "action", "workBlock"].includes(c.entity),
-        )
-      )
-        await onContinue();
     } catch (e) {
       setError(
         e instanceof Error
@@ -162,68 +128,34 @@ export function LiveCoach({
     setError("");
     try {
       await flush();
-      const result = await api<{ data?: typeof data }>(
-        `proposals/${id}/${action}`,
-        {},
-      );
+      await api(`proposals/${id}/${action}`, {});
       await refresh();
       await reloadProposals();
-      if (action === "approve" && onContinue)
-        await onContinue(
-          result.data?.goals.find(
-            (g) =>
-              g.status === "Draft" &&
-              !data.goals.some((before) => before.id === g.id),
-          )?.id,
-        );
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setSending(false);
     }
   }
-  const submitted = useRef(false);
-  useEffect(() => {
-    if (
-      autoSend &&
-      initialPrompt &&
-      service?.coach.configured &&
-      !submitted.current
-    ) {
-      submitted.current = true;
-      void send();
-    }
-  }, [autoSend, initialPrompt, service?.coach.configured]);
   return (
-    <div
-      className={`coach-workspace ${embedded ? "embedded-coach" : "focused-coach"}`}
-    >
-      {!embedded && (
-        <details className="chat-library-disclosure">
-          <summary>Conversations</summary>
-          <Conversations
-            selected={conversation?.id}
-            goalId={selected}
-            disabled={sending}
-            onSelect={selectChat}
-            onError={setError}
-          />
-        </details>
-      )}
+    <div className="coach-workspace focused-coach">
+      <details className="chat-library-disclosure">
+        <summary>Conversations</summary>
+        <Conversations
+          selected={conversation?.id}
+          goalId={selected}
+          disabled={sending}
+          onSelect={selectChat}
+          onError={setError}
+        />
+      </details>
       <div className="live-coach">
         <div className="coach-topline">
           <div className="coach-identity">
-            <div>{embedded ? <h2>Adler</h2> : <h1>Your coach</h1>}</div>
+            <div>
+              <h1>Your coach</h1>
+            </div>
           </div>
-          {embedded && onContinue && (
-            <button
-              className="icon-button"
-              aria-label="Close conversation"
-              onClick={() => onContinue()}
-            >
-              <X size={18} />
-            </button>
-          )}
         </div>
         <div className="coach-context-strip">
           {!service?.coach.configured && (
@@ -236,7 +168,7 @@ export function LiveCoach({
           aria-label="Conversation with Adler"
           aria-live="polite"
         >
-          {!messages.length && !autoSend && (
+          {!messages.length && (
             <div className="coach-welcome">
               <h2>
                 {data.goals.length
@@ -253,7 +185,11 @@ export function LiveCoach({
           {messages.map((m) => {
             const decision = data.decisions.find((d) => d.id === m.decisionId);
             return (
-              <article className={`live-message ${m.role}`} key={m.id} id={`record-${m.id}`}>
+              <article
+                className={`live-message ${m.role}`}
+                key={m.id}
+                id={`record-${m.id}`}
+              >
                 {m.role === "coach" && <AdlerAvatar small />}
                 <div className="message-content">
                   <span className="message-author">
@@ -262,7 +198,18 @@ export function LiveCoach({
                       ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
                       : ""}
                   </span>
-                  <p>{referencedText(data, m.text, m.references).map((part, index) => part.href ? <Link key={index} to={part.href}>{part.text}</Link> : part.text)}</p>
+                  <p>
+                    {referencedText(data, m.text, m.references).map(
+                      (part, index) =>
+                        part.href ? (
+                          <Link key={index} to={part.href}>
+                            {part.text}
+                          </Link>
+                        ) : (
+                          part.text
+                        ),
+                    )}
+                  </p>
                   {decision?.status === "Accepted" && (
                     <span className="insight-change-status">
                       Saved to your workspace
@@ -270,26 +217,23 @@ export function LiveCoach({
                   )}
                   {!!m.links?.length && (
                     <div className="message-record-links">
-                      {!embedded &&
-                        m.links
-                          .filter((l) =>
-                            data.goals.some((g) => g.id === l.goalId),
-                          )
-                          .map((l) => (
-                            <Link
-                              key={`${l.goalId}-${l.tab}`}
-                              to={
-                                l.tab === "plan"
-                                  ? `/app/goals/${encodeURIComponent(l.goalId)}`
-                                  : `/app/goals/${encodeURIComponent(l.goalId)}/${l.tab}`
-                              }
-                            >
-                              {data.goals.find((g) => g.id === l.goalId)!.title}{" "}
-                              ·{" "}
-                              {l.tab === "plan" ? "Open plan" : "View progress"}{" "}
-                              ↗
-                            </Link>
-                          ))}
+                      {m.links
+                        .filter((l) =>
+                          data.goals.some((g) => g.id === l.goalId),
+                        )
+                        .map((l) => (
+                          <Link
+                            key={`${l.goalId}-${l.tab}`}
+                            to={
+                              l.tab === "plan"
+                                ? `/app/goals/${encodeURIComponent(l.goalId)}`
+                                : `/app/goals/${encodeURIComponent(l.goalId)}/${l.tab}`
+                            }
+                          >
+                            {data.goals.find((g) => g.id === l.goalId)!.title} ·{" "}
+                            {l.tab === "plan" ? "Open plan" : "View progress"} ↗
+                          </Link>
+                        ))}
                     </div>
                   )}
                   <div className="message-reactions">
@@ -380,7 +324,7 @@ export function LiveCoach({
             );
           })}
           {proposals
-            .filter((p) => p.status === "pending" && belongsHere(p))
+            .filter((p) => p.status === "pending")
             .map((p) => (
               <article className="live-proposal shared-proposal" key={p.id}>
                 <span className="section-kicker">PROPOSED CHANGES</span>
@@ -417,7 +361,7 @@ export function LiveCoach({
                 </p>
               </article>
             ))}
-          {!embedded && latestApplied && !hasPending && (
+          {latestApplied && !hasPending && (
             <Link
               className="button primary coach-continue"
               to={

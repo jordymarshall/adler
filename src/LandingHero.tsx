@@ -13,9 +13,8 @@ export function LandingHero() {
           Reach your goals with a plan <em>that adapts to you.</em>
         </h1>
         <p>
-          Adler learns what gets in your way and adjusts your plan to help you
-          build the behaviours that move you forward, guided by behavioural
-          science research.
+          Adler learns why you fail and adjusts the plan to help train you,
+          based on behavioural science research.
         </p>
         <div className="hero-buttons">
           <Link className="btn dark" to="/app/goals/new">

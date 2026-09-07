@@ -1,28 +1,49 @@
 import type { Data } from "./workspace.ts";
 
-export function recordLink(data: Data, id: string): string | undefined {
+export function resolveRecord(
+  data: Data,
+  id: string,
+): { href: string; goalId?: string } | undefined {
   const anchor = `#record-${encodeURIComponent(id)}`;
   if (data.memories.some((m) => m.id === id))
-    return `/app/coach/about-you${anchor}`;
+    return { href: `/app/coach/about-you${anchor}` };
   const message = data.messages.find((m) => m.id === id);
   if (message)
-    return `/app/coach?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}${anchor}`;
+    return {
+      href: `/app/coach?${message.conversationId ? `chat=${encodeURIComponent(message.conversationId)}` : `goal=${encodeURIComponent(message.goalId)}`}${anchor}`,
+      goalId: message.goalId,
+    };
   const action = data.actions.find((a) => a.id === id);
   if (action)
-    return `/app/goals/${encodeURIComponent(action.goalId)}/progress${anchor}`;
+    return {
+      href: `/app/goals/${encodeURIComponent(action.goalId)}/progress${anchor}`,
+      goalId: action.goalId,
+    };
   const block = data.workBlocks.find((b) => b.id === id);
-  if (block) return `/app/calendar?goal=${encodeURIComponent(block.goalId)}`;
+  if (block)
+    return {
+      href: `/app/calendar?goal=${encodeURIComponent(block.goalId)}`,
+      goalId: block.goalId,
+    };
   for (const goal of data.goals) {
-    if (goal.id === id) return `/app/goals/${encodeURIComponent(id)}`;
+    if (goal.id === id)
+      return { href: `/app/goals/${encodeURIComponent(id)}`, goalId: goal.id };
     if (
       goal.results.some((r) => r.id === id) ||
       goal.milestones.some((m) => m.id === id) ||
       goal.checkpoints?.some((c) => c.id === id)
     )
-      return `/app/goals/${encodeURIComponent(goal.id)}/progress${anchor}`;
+      return {
+        href: `/app/goals/${encodeURIComponent(goal.id)}/progress${anchor}`,
+        goalId: goal.id,
+      };
   }
   if (data.programs.some((p) => `program-v${p.version}` === id))
-    return "/app/settings/coaching";
+    return { href: "/app/settings/coaching" };
+}
+
+export function recordLink(data: Data, id: string) {
+  return resolveRecord(data, id)?.href;
 }
 
 export function referencedText(

@@ -2,13 +2,12 @@ import { actionReady, actionStep } from "../shared/adaptive-plan";
 import { WeekCalendar, weekOf } from "./WeekCalendar";
 import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { CalendarDays, Check, RefreshCw } from "lucide-react";
 import { api, type CalendarOption, type ServiceStatus } from "./api";
-import { currentPlan, currentProgram, useStore, type Action } from "./store";
+import { currentPlan, currentProgram, useStore } from "./store";
 import { Modal } from "./components";
 import { CalendarLogo } from "./CalendarLogo";
-import { RecordAction } from "./ActionCheckIn";
 import { findSlots, overlaps } from "./scheduling";
 import type { BusyInterval } from "./program-types";
 type Provider = "local" | "google" | "apple";
@@ -110,7 +109,7 @@ export function Calendar({
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pending, setPending] = useState<BookingInput | null>(savedPending);
-  const [recording, setRecording] = useState<Action | null>(null);
+  const navigate = useNavigate();
   const goal = data.goals.find(
     (g) => g.id === selected && g.status === "Active",
   );
@@ -399,7 +398,7 @@ export function Calendar({
             }}
             busy={busy}
             checked={Boolean(checkedAt)}
-            onRecord={setRecording}
+            onRecord={action => navigate(`/app/coach?goal=${action.goalId}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`)}
             onCalendars={() => {
               if (options.current) {
                 options.current.open = true;
@@ -833,9 +832,6 @@ export function Calendar({
             </button>
           </form>
         </Modal>
-      )}
-      {recording && (
-        <RecordAction action={recording} onClose={() => setRecording(null)} />
       )}
     </div>
   );

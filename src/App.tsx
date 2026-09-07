@@ -1,3 +1,4 @@
+import { todayStep } from "../shared/next-step";
 import { Onboarding } from "./Onboarding";
 import { AppIntegrations, Integrations } from "./Integrations";
 import { Insights } from "./Insights";
@@ -52,8 +53,12 @@ function ScrollReset() {
 }
 function AppShell() {
   const location = useLocation();
-  const { user, loading, saving, saveError } = useStore();
-  const label = location.pathname.includes("/integrations")
+  const { data, user, loading, saving, saveError } = useStore();
+  const viewedGoal = location.pathname.match(/\/goals\/([^/]+)/)?.[1] ?? (location.pathname === "/app/today" ? new URLSearchParams(location.search).get("goal") ?? todayStep(data).step?.goal.id : undefined);
+  const focusGoal = data.goals.find(g => g.id === viewedGoal);
+  const label = location.pathname.includes("/settings")
+    ? "Settings"
+    : location.pathname.includes("/integrations")
     ? "Integrations"
     : location.pathname.includes("/insights")
       ? "Insights"
@@ -97,7 +102,7 @@ function AppShell() {
             </NavLink>
           ))}
         </nav>
-        <Link className="button primary sidebar-checkin" to="/app/coach?intent=checkin"><MessageCircle size={17} /> Check in</Link>
+        <Link className="button primary sidebar-checkin" to={`/app/coach?intent=checkin${focusGoal ? `&goal=${encodeURIComponent(focusGoal.id)}` : ""}`}><MessageCircle size={17} /> Check in</Link>
         <div className="sidebar-bottom">
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
