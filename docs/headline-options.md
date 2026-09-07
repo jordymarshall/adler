@@ -1,6 +1,8 @@
 # Landing headline options
 
-Option 1 was selected and applied to the landing page. Other options are retained for reference.
+Current headline: **Reach your goals with a system that understands you.**
+
+The subheadline from option 1 remains in use. See [copy research and recommendation](research/landing-headline-copy.md). Earlier options are retained below for reference.
 
 1. **Reach your goals with a system that learns with you.**
    Adler turns your goals into manageable actions, then uses behavioural science and your check-ins to adapt the system as you go.
@@ -11,4 +13,4 @@ Option 1 was selected and applied to the landing page. Other options are retaine
 3. **Build a way forward that works for you.**
    Bring your goals together, see what your actions lead to, and work with a coach that learns from your experience.
 
-Option 1 preserves the current promise, introduces learning without claiming guaranteed results, and explains what the user actually does.
+The earlier option 1 preserves the goal promise, introduces learning without claiming guaranteed results, and explains what the user actually does.

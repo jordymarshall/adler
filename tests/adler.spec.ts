@@ -8,7 +8,7 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that learns with you.");
+  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
   await expect(page.locator(".app-capture-window .capture-still img")).toHaveCount(4);
   await expect(page.locator("#step-4 figcaption")).toContainText("Actual app · Example workspace");
   await expect(page.locator("#step-5")).toContainText("Coming soon");

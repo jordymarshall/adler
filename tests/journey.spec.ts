@@ -298,7 +298,7 @@ test("the simplified journey works on a phone with accessible disclosure control
 
 test("the landing uses Adler Warm and five focused chapters on desktop and mobile", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".journey-hero h1")).toHaveText("Reach your goals with a system that learns with you.");
+  await expect(page.locator(".journey-hero h1")).toHaveText("Reach your goals with a system that understands you.");
   const typography = await page.locator(".journey-hero h1, .chapter-copy h2, .mountain-finale h2").evaluateAll(elements =>
     elements.map(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight })),
   );

@@ -58,15 +58,20 @@ export function GoalProjection({ data, goal, today = dateInZone(data.timeZone) }
       <div><span>{evidence.model.kind === "direct" ? "Conversion assumption" : "Relationship being learned"}</span><strong>{evidence.model.kind === "direct" ? `${number(evidence.model.inputPerOutcome!.expected * model.target)} ${inputUnit} for ${number(model.target)} ${goal.measure!.unit}` : projection ? `${number(projection.yieldRange.expected)} ${goal.measure!.unit} / ${inputUnit}` : "Waiting for paired observations"}</strong><small>{evidence.model.kind === "learned" ? `${evidence.pairs.length} matched intervals · ${evidence.model.feedbackDelayDays}-day feedback delay` : evidence.model.rationale}</small></div>
     </div>}
     {evidence && <details className="projection-evidence"><summary>Explore the input and the evidence <span>+</span></summary>
-      <p>{evidence.model.rationale}</p>
+      {!projection && <p>{evidence.model.rationale}</p>}
       <div className="input-evidence-plot"><h3>{inputUnit} per day</h3><svg viewBox="0 0 760 130" role="img" aria-label={`Measured ${inputUnit} per day. Missing quantities leave gaps.`}>
         {(() => { const max = Math.max(1, ...evidence.daily.map(d => d.amount ?? 0)); const cx = (i: number) => 40 + i / Math.max(1, evidence.daily.length - 1) * 680; const cy = (v: number) => 95 - v / max * 75; return <><text x="5" y="24">{number(max)}</text><text x="5" y="98">0</text><line x1="40" x2="720" y1="95" y2="95" className="outcome-grid"/><path className="outcome-recorded" d={evidence.daily.map((d, i) => d.amount === null ? "" : `${i && evidence.daily[i - 1].amount !== null ? "L" : "M"}${cx(i)},${cy(d.amount)}`).join(" ")} /><text x="40" y="122">{formatDate(evidence.daily[0]?.date ?? today)}</text><text x="720" y="122" textAnchor="end">{formatDate(today)}</text></>; })()}
       </svg></div>
       {evidence.model.kind === "learned" && evidence.pairs.length > 0 && <div className="input-evidence-plot"><h3>Observed input → outcome</h3><svg viewBox="0 0 760 180" role="img" aria-label={`Association between ${inputUnit} and ${goal.measure!.unit} in matched intervals. Not proof of causation.`}>
         {(() => { const maxX = Math.max(1, ...evidence.pairs.map(p => p.input)), maxY = Math.max(1, ...evidence.pairs.map(p => p.outcome)); return <><text x="40" y="18">{goal.measure!.unit}</text><text x="30" y="39" textAnchor="end">{number(maxY)}</text><text x="30" y="143" textAnchor="end">0</text><line x1="40" x2="720" y1="140" y2="140" className="outcome-grid"/><text x="40" y="158">0</text><text x="690" y="158" textAnchor="middle">{number(maxX)}</text><text x="720" y="170" textAnchor="end">{inputUnit} →</text>{evidence.pairs.map(p => <circle className="outcome-point" key={p.end} cx={40 + 650 * p.input / maxX} cy={140 - 105 * p.outcome / maxY} r="5"><title>{p.start}–{p.end}: {number(p.input)} {inputUnit} → {number(p.outcome)} {goal.measure!.unit}</title></circle>)}</>; })()}
       </svg><p>These intervals can differ in duration and circumstances. Their observed return guides a scenario; it does not isolate the effect of your work.</p></div>}
-      {projection?.assumptions.map(note => <p key={note}>{note}</p>)}
-      <div className="projection-source-links">{evidence.sourceIds.slice(-6).map(id => <Link key={id} to={recordLink(data, id)!}>Input · {formatDate(data.actions.find(a => a.id === id)!.date)}</Link>)}{model.observations.slice(-3).map(r => <Link key={r.id} to={recordLink(data, r.id)!}>Outcome · {formatDate(r.date)}</Link>)}</div>
+      {projection && <section className="projection-assumptions" aria-label="Projection assumptions">
+        <h3>What this projection assumes</h3>
+        <dl>{projection.assumptions.map(note => <div key={note.label}><dt>{note.label}</dt><dd>{note.text}</dd></div>)}</dl>
+      </section>}
+      <div className="projection-sources"><h3>Reports behind the estimate</h3>
+        <div className="projection-source-links">{evidence.sourceIds.slice(-6).map(id => <Link key={id} to={recordLink(data, id)!}>Input · {formatDate(data.actions.find(a => a.id === id)!.date)}</Link>)}{model.observations.slice(-3).map(r => <Link key={r.id} to={recordLink(data, r.id)!}>Outcome · {formatDate(r.date)}</Link>)}</div>
+      </div>
     </details>}
     <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Let’s review the input I can control, its relationship to this goal, and the projection assumptions.")}`}>Review this model in Check-in ↗</Link>
   </section>;

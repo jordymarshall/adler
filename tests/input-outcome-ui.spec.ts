@@ -42,6 +42,11 @@ test("goal attainment has a full-horizon fan and its measured input evidence, se
   expect(whiskers.at(-1)).toMatch(/100–100% of goal/);
   await chart.getByText("Explore the input and the evidence").click();
   await expect(chart.getByRole("img", { name: /Measured pages per day/ })).toBeVisible();
+  const assumptions = chart.getByRole("region", { name: "Projection assumptions" });
+  await expect(assumptions.getByRole("heading")).toHaveText("What this projection assumes");
+  await expect(assumptions.locator("dt")).toContainText(["Model choice", "Future input pace", "Missing reports", "Input → outcome", "Feedback delay", "What the range means"]);
+  await expect(assumptions).toContainText("No additional delay between input and outcome is assumed.");
+  await expect(assumptions).toContainText("not a confidence interval or a guarantee");
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(chart.locator(".outcome-timeline svg")).toHaveAttribute("viewBox", "0 0 400 295");
   expect((await chart.locator(".outcome-timeline svg").boundingBox())!.height).toBeGreaterThan(200);

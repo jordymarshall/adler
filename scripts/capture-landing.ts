@@ -90,7 +90,7 @@ for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobi
       await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
       await page.locator('.goal-projection').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     }
-    if (screen.name === 'progress') await page.locator('.input-outcome-link').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
+    if (screen.name === 'progress') await page.locator('.projection-evidence').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     if (screen.name === 'insights') await page.locator('.learning-loop[open] .learning-canvas').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     await page.waitForTimeout(150);
     await capture(`${screen.name}-${size.name}-detail`);

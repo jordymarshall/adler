@@ -61,7 +61,7 @@ test("missing quantity is unknown even when an action was done, and a budget is 
   assert.equal(result.evidence!.measured, 0);
   assert.ok(result.evidence!.daily.every(day => day.amount === null));
   assert.equal(result.evidence!.paceSource, "Provisional input pace");
-  assert.ok(result.projection!.assumptions.some(note => note.includes("half to one-and-a-half")));
+  assert.ok(result.projection!.assumptions.some(note => note.text.includes("half to one-and-a-half")));
 });
 
 test("revenue has no invented hours-to-money factor; paired reports create a tentative observed return", () => {
@@ -81,7 +81,7 @@ test("revenue has no invented hours-to-money factor; paired reports create a ten
   assert.equal(result.evidence!.pairs.length, 3);
   assert.equal(result.projection!.yieldRange.expected, 250 / 19);
   assert.ok(result.evidence!.pairs.every(pair => pair.sourceIds.length > 2));
-  assert.ok(result.projection!.assumptions.some(note => note.includes("association does not establish cause")));
+  assert.ok(result.projection!.assumptions.some(note => note.text.includes("association does not establish cause")));
   const context = coachingContext(data, goal.id, "Review the relationship", today);
   assert.equal(context.goalProjection!.projection!.yieldRange.expected, 250 / 19);
 });

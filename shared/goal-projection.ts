@@ -96,10 +96,12 @@ export function goalProjection(data: Data, goal: Goal, today: string) {
   });
   return { ...base, status: model.kind === "direct" ? "Input-based projection" : pairs.length < 3 ? "Early observed association" : "Observed association", evidence,
     projection: { origin, horizon, points, expectedDate, earliestDate, latestDate, yieldRange,
-      assumptions: [model.rationale,
-        paceSource === "Provisional input pace" ? "Until two complete weeks are measured, the saved input budget is a scenario, with half to one-and-a-half times that pace." : "Future input pace stays within the range of complete weeks measured in the last eight weeks.",
-        "No unlogged work is assumed on days without scheduled records. Unanswered or unmeasured actions exclude a week from the pace estimate.",
-        model.kind === "direct" ? "The saved input-to-outcome conversion continues to apply." : pairs.length < 3 ? "With fewer than three matched intervals, the return scenario runs from zero to twice the observed return. This is a sensitivity range, not a calibrated probability." : "Future return stays within the observed range across matched intervals; association does not establish cause.",
-        model.kind === "learned" ? "The scenario continues the observed input pipeline. Feedback delay aligns past inputs with outcomes; it does not restart at each outcome report." : `New input is assumed to affect outcomes after ${model.feedbackDelayDays} days.`,
-        "The shaded fan is a conditional scenario range, not a confidence interval or a guarantee. Future cycles are not bookings."] } };
+      assumptions: [
+        { label: "Model choice", text: model.rationale },
+        { label: "Future input pace", text: paceSource === "Provisional input pace" ? "Until two complete weeks are measured, the saved input budget is a scenario, with half to one-and-a-half times that pace." : "Future input pace stays within the range of complete weeks measured in the last eight weeks." },
+        { label: "Missing reports", text: "No unlogged work is assumed on days without scheduled records. Unanswered or unmeasured actions exclude a week from the pace estimate." },
+        { label: "Input → outcome", text: model.kind === "direct" ? "The saved input-to-outcome conversion continues to apply." : pairs.length < 3 ? "With fewer than three matched intervals, the return scenario runs from zero to twice the observed return. This is a sensitivity range, not a calibrated probability." : "Future return stays within the observed range across matched intervals; association does not establish cause." },
+        { label: "Feedback delay", text: model.kind === "learned" ? "The scenario continues the observed input pipeline. Feedback delay aligns past inputs with outcomes; it does not restart at each outcome report." : model.feedbackDelayDays === 0 ? "No additional delay between input and outcome is assumed." : `New input is assumed to affect outcomes after ${model.feedbackDelayDays} days.` },
+        { label: "What the range means", text: "The shaded fan is a conditional scenario range, not a confidence interval or a guarantee. Future cycles are not bookings." },
+      ] } };
 }
