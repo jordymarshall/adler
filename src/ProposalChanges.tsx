@@ -6,10 +6,11 @@ import { formatDate, type Data } from "./store";
 import type { Change } from "../server/commands";
 import { METHODS } from "./methods";
 import { ChangeComparison, ChangeReason } from "./ChangeComparison";
+import type { AdaptivePlan } from "../shared/adaptive-plan";
 
 const recordLabels: Record<Change["entity"], string> = {
   goal: "Goal",
-  plan: "Next action",
+  plan: "Plan",
   milestone: "Milestone",
   checkpoint: "Progress check",
   action: "Action",
@@ -160,6 +161,7 @@ export function ProposalChanges({
     <ol className="adjustment-changes" aria-label="Proposed changes">
       {changes.map((change, i) => {
         const values = JSON.parse(change.values) as Record<string, unknown>;
+        const adaptive = values.adaptive as AdaptivePlan | undefined;
         const before = beforeRecords
           ? (beforeRecords[i] ?? undefined)
           : currentRecord(change, data);
@@ -170,7 +172,7 @@ export function ProposalChanges({
         const title = String(
           values.title ??
             (change.entity === "plan"
-              ? "Next action"
+              ? "Plan"
               : change.entity === "memory"
                 ? change.operation === "create"
                   ? "Save what you told Adler"
@@ -185,6 +187,7 @@ export function ProposalChanges({
           ([key, value]) =>
             key !== "reason" &&
             key !== "basis" &&
+            key !== "adaptive" &&
             !(
               change.entity === "goal" &&
               change.operation === "create" &&
@@ -279,6 +282,17 @@ export function ProposalChanges({
                 </dl>
               )}
               <ChangeReason>{reason}</ChangeReason>
+              {adaptive && <div className="adaptive-proposal">
+                <p><b>Approach:</b> {adaptive.approach}</p>
+                <p><b>{adaptive.window.label}</b> · {formatDate(adaptive.window.start)}–{formatDate(adaptive.window.end)} · {adaptive.window.capacityMinutes} minutes available</p>
+                <p>{adaptive.window.rationale}</p>
+                <ol>{adaptive.steps.map(step => <li key={step.id}><b>{step.title}</b><p>{step.criterion}</p>
+                  <p>{step.durationMinutes} minutes · {step.cue} · From {formatDate(step.scheduledDate)}{step.recurrence ? `, every ${step.recurrence.everyDays} day${step.recurrence.everyDays === 1 ? "" : "s"} until ${formatDate(step.recurrence.until)}` : ""}</p>
+                  <p>{step.reason}</p>{step.recurrence?.weekdays && <p>On {step.recurrence.weekdays.map(day => ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][day]).join(", ")}</p>}{step.dependsOn.length > 0 && <p>After: {step.dependsOn.map(id => adaptive.steps.find(s => s.id === id)?.title ?? id).join(", ")}</p>}{step.fallback && <p>Smaller option: {step.fallback}</p>}{step.measure && <p>{step.measure.label}{step.measure.target !== null ? `: ${step.measure.target} ${step.measure.unit} per occurrence` : ` (${step.measure.unit})`}</p>}
+                </li>)}</ol>
+                <p><b>Next assessment:</b> {new Date(adaptive.assessment.at).toLocaleString(undefined, { timeZone: data.timeZone })} · {adaptive.assessment.question}</p>
+                <p>{adaptive.assessment.adaptation}</p>
+              </div>}
               {Boolean(values.basis) && (
                 <PlanExplanation basis={values.basis as PlanningBasis} />
               )}

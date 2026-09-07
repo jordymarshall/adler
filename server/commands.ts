@@ -1,5 +1,6 @@
 import { dateInZone, reviewBlock, reviewSchedule } from "../shared/journey.ts";
 import { planningBasisSchema } from "../shared/planning.ts";
+import { adaptivePlanSchema } from "../shared/adaptive-plan.ts";
 import { z } from "zod";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -69,13 +70,13 @@ export const commandCatalog = {
     "create: " +
     JSON.stringify(z.toJSONSchema(createGoalSchema)) +
     "; update: title,why,success,area,tags,priority,targetDate,status,target (measured goals only),measure (label,unit,target,baseline; changing measurement archives prior results); delete removes the goal and its actions/results. id identifies goal.",
-  plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?}; basis uses the same schema as goal creation. Creates a new plan version and preserves recorded work.",
+  plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?,adaptive?}; basis and adaptive use the same schemas as goal creation. New approaches must include adaptive: a concrete window, linked tasks/behaviors, assessment timing, and forecast method. Creates a new plan version and preserves recorded and booked work. Retain step and measure IDs when their meaning is unchanged.",
   milestone:
     "parentId=goal ID. create/update: {title,criterion,done,dueDate?}. id for existing milestone. Toggling done records the verified outcome. delete removes milestone and revises future target.",
   checkpoint:
     "parentId=goal ID. create/update: {date,value,label}. id identifies checkpoint. Values are cumulative expected results.",
   action:
-    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?,amount?}. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
+    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?,amount?,actualMinutes?}. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
   result:
     "parentId=goal ID with measure or learning assessment. create/update: {value,date,source}; use the goal’s measurement and only user-reported values. Legacy assessments use 0–10. For milestone-count goals, change milestone.done instead. delete uses id.",
   memory:
@@ -165,6 +166,7 @@ export function applyChanges(
               tags: z.array(z.string().max(50)).max(8),
               priority: z.enum(["Focus", "Maintain", "Later"]),
               targetDate: str,
+              deadline: z.enum(["firm", "preferred", "none"]),
               target: z.number().positive().max(1000000),
               measure: measureSchema,
               status: z.enum(["Draft", "Active", "Paused", "Completed", "Set aside"]),
@@ -187,7 +189,7 @@ export function applyChanges(
             goal.measure = patch.measure;
             if (!changes.some((change) => change.entity === "plan" && change.parentId === goal.id)) {
               const previous = currentPlan(goal);
-              goal.plans.push({ action: previous.action, timing: previous.timing, criterion: previous.criterion, ...(previous.durationMinutes ? { durationMinutes: previous.durationMinutes } : {}), version: previous.version + 1, date: today });
+              goal.plans.push({ ...(previous.adaptive ? { adaptive: structuredClone(previous.adaptive) } : {}), action: previous.action, timing: previous.timing, criterion: previous.criterion, ...(previous.durationMinutes ? { durationMinutes: previous.durationMinutes } : {}), version: previous.version + 1, date: today });
             }
           }
           if (patch.target !== undefined) {
@@ -203,6 +205,11 @@ export function applyChanges(
           }
           if (patch.status === "Active") startGoal(data, goal.id);
           Object.assign(goal, patch);
+          if (patch.targetDate === "" || patch.deadline === "none") {
+            delete goal.targetDate;
+            goal.deadline = "none";
+            goal.checkpoints = goal.checkpoints?.filter(p => p.label !== "Target result");
+          }
           goal.organizationVersion = (goal.organizationVersion ?? 0) + 1;
         }
       }
@@ -214,7 +221,7 @@ export function applyChanges(
         goal.id,
         currentPlan(goal).version,
         z
-          .object({ action: str, criterion: str, timing: str, basis: planningBasisSchema.optional(), durationMinutes: z.number().int().min(5).max(240).optional() })
+          .object({ action: str, criterion: str, timing: str, basis: planningBasisSchema.optional(), adaptive: adaptivePlanSchema.optional(), durationMinutes: z.number().int().min(1).max(1440).optional() })
           .strict()
           .parse(values),
       );
@@ -313,8 +320,8 @@ export function applyChanges(
           .partial()
           .strict()
           .parse(values);
-        if (patch.outcome !== undefined || patch.note !== undefined)
-          recordAction(data, id, patch.outcome ?? existing.outcome, patch.note, patch.amount ?? existing.amount);
+        if (patch.outcome !== undefined || patch.note !== undefined || patch.amount !== undefined || patch.actualMinutes !== undefined)
+          recordAction(data, id, patch.outcome ?? existing.outcome, patch.note, patch.amount ?? existing.amount, patch.actualMinutes ?? existing.actualMinutes);
         Object.assign(existing, patch);
       }
     } else if (change.entity === "memory") {
@@ -465,5 +472,5 @@ export function applyChanges(
       }
     }
   }
-  return validateWorkspace(data);
+  return validateWorkspace(data, input);
 }

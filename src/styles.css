@@ -12177,3 +12177,77 @@ input[type="checkbox"] {
 
 .journey-goal-heading > div { min-width: 0; flex: 1; }
 .journey-goal-heading .goal-options { position: relative; top: auto; right: auto; }
+
+/* The goal plan keeps work, evidence, and adaptation in one place. */
+.app-main:has(> .goal-plan), .journey-page:has(.goal-plan) { max-width: 1120px; width: 100%; }
+.goal-plan { display: flex; flex-direction: column; gap: 24px; margin-bottom: 28px; }
+.goal-plan h2 { font-size: 23px; margin: 0 0 12px; }
+.goal-plan h3 { font-size: 18px; margin: 8px 0; }
+.goal-plan p { line-height: 1.55; }
+.plan-status { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border: 1px solid var(--line); border-radius: 16px; background: var(--paper); }
+.plan-status > div { padding: 22px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.plan-status > div + div { border-left: 1px solid var(--line); }
+.plan-status > div > span { font-size: 13px; color: var(--muted); }
+.plan-status strong { font-size: 23px; line-height: 1.2; overflow-wrap: anywhere; }
+.plan-status small { font-size: 13px; color: var(--muted); line-height: 1.5; }
+.plan-timeline { padding: 24px; min-width: 0; }
+.plan-timeline .progress-viz { width: 100%; }
+.plan-timeline .chart-tooltip { min-height: 42px; }
+.plan-timeline .chart-legend { flex-wrap: wrap; }
+.plan-approach { padding: 0 4px; }
+.plan-approach > p { max-width: 850px; }
+.plan-milestones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.plan-milestones button { border: 1px solid var(--line); border-radius: 12px; background: var(--paper); padding: 14px 18px; text-align: left; flex: 1 1 170px; color: var(--ink); }
+.plan-milestones button.selected { background: var(--sage); border-color: var(--green); }
+.plan-milestones span { display: flex; align-items: center; gap: 7px; }
+.plan-milestones small { display: block; margin-top: 6px; color: var(--muted); }
+.plan-milestone-detail { padding: 12px 4px; }
+.plan-work-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+.plan-work-layout.legacy-plan-work { grid-template-columns: minmax(0, 1fr); }
+.plan-next-action { min-width: 0; }
+.plan-next-action .next-step-card { margin: 0; }
+.plan-work { padding: 24px; min-width: 0; }
+.plan-work-item { padding: 20px 0; border-top: 1px solid var(--line); }
+.plan-work-item:last-child { padding-bottom: 0; }
+.plan-work-item > p { margin: 8px 0; }
+.plan-work-count { font-weight: 600; }
+.plan-occurrence { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; }
+.plan-occurrence a { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
+.plan-learning { padding: 26px; min-width: 0; }
+.plan-adaptation, .plan-insight { padding: 18px 0; border-top: 1px solid var(--line); }
+.plan-adaptation .plan-actions { flex-wrap: wrap; }
+.plan-inline-coach { margin-top: 20px; }
+.plan-insight > small { color: var(--muted); }
+.plan-scenario { background: var(--sage); padding: 16px; border-radius: 10px; margin-top: 14px; }
+.chart-forecast { fill: none; stroke: #467381; stroke-width: 2.5; stroke-dasharray: 7 4; }
+.chart-forecast-range { fill: #65929f; opacity: .16; stroke: none; }
+.chart-alternative { fill: none; stroke: #9c6434; stroke-width: 2.5; stroke-dasharray: 3 4; }
+.chart-deadline { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 2 5; }
+.chart-legend .chart-forecast-key i { background: #467381; border: 0; }
+.chart-legend .chart-alternative-key i { background: #9c6434; border: 0; }
+.checkin-context { padding: 16px; margin: 16px 0; background: var(--sage); border: 1px solid var(--line); border-radius: 12px; }
+.checkin-context p { font-size: 14px; margin: 9px 0; }
+.checkin-context small { display: block; color: var(--muted); }
+.checkin-context button { margin-top: 8px; }
+.adaptive-proposal { padding: 16px; background: var(--sage); border-radius: 10px; }
+.adaptive-proposal ol { padding-left: 20px; }
+.adaptive-proposal li { margin: 12px 0; }
+[data-theme="dark"] .chart-forecast { stroke: #8ebdcd; }
+[data-theme="dark"] .chart-alternative { stroke: #dfaf7e; }
+@media (max-width: 760px) {
+  .plan-status { grid-template-columns: 1fr; }
+  .plan-status > div { padding: 16px 18px; }
+  .plan-status > div + div { border-left: 0; border-top: 1px solid var(--line); }
+  .plan-status strong { font-size: 21px; }
+  .plan-work-layout { display: contents; }
+  .plan-next-action { order: 1; }
+  .plan-timeline { order: 2; }
+  .plan-approach { order: 3; }
+  .plan-work { order: 4; }
+  .plan-learning { order: 5; }
+  .plan-timeline, .plan-work, .plan-learning { padding: 18px; }
+  .plan-milestones button { flex-basis: 100%; }
+  .plan-learning .plan-actions { align-items: stretch; flex-direction: column; }
+  .coaching-nav { overflow-x: auto; white-space: nowrap; }
+  .mobile-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}

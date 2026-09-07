@@ -3,6 +3,8 @@ import { Check } from "lucide-react";
 import { dateInZone } from "../shared/journey";
 import { recordAction, useStore, type Action, type Outcome } from "./store";
 import { Modal } from "./components";
+import { actionStep } from "../shared/adaptive-plan";
+import { checkInContext } from "../shared/check-in-context";
 
 export function RecordAction({
   action,
@@ -17,7 +19,10 @@ export function RecordAction({
   const [outcome, setOutcome] = useState<Outcome | undefined>(action.outcome);
   const [note, setNote] = useState(action.note ?? "");
   const [amount, setAmount] = useState(action.amount?.toString() ?? "");
-  const measure = data.goals
+  const [minutes, setMinutes] = useState(action.actualMinutes?.toString() ?? "");
+  const step = actionStep(data, action);
+  const context = checkInContext(data, action);
+  const measure = step?.measure ?? data.goals
     .find((g) => g.id === action.goalId)
     ?.plans.find((p) => p.version === action.planVersion)?.basis?.actionMeasure;
   function save(value: Outcome) {
@@ -30,6 +35,7 @@ export function RecordAction({
             value,
             note,
             amount === "" ? undefined : Number(amount),
+            minutes === "" ? undefined : Number(minutes),
           ),
         "Check-in saved.",
       )
@@ -40,6 +46,14 @@ export function RecordAction({
     <div className="checkin-content">
       <p className="checkin-action-name">{action.title}</p>
       <p className="field-hint">Finished when: {action.criterion}</p>
+      {context.length > 0 && <aside className="checkin-context" aria-label="Relevant context">
+        <b>Context for this check-in</b>
+        {context.map((item, i) => <div key={i}>
+          <p>{item.text}</p><small>{item.source} · {new Date(item.observedAt.includes("T") ? item.observedAt : `${item.observedAt}T12:00:00`).toLocaleDateString()}</small>
+          <button type="button" className="text-link" onClick={() => setNote(previous => previous ? `${previous}\n${item.text}` : item.text)}>Use in my note</button>
+        </div>)}
+        <p className="field-hint">Confirm what happened below. Context does not record an outcome.</p>
+      </aside>}
       <div className="outcome-buttons" role="group" aria-label="How did it go?">
         {(["Done", "Partly", "Didn’t happen"] as Outcome[]).map((value) => (
           <button
@@ -49,7 +63,7 @@ export function RecordAction({
             disabled={action.date > dateInZone(data.timeZone)}
             onClick={() => {
               setOutcome(value);
-              if (!measure && value === "Done" && !action.outcome) save(value);
+              if (!step && !context.length && !measure && value === "Done" && !action.outcome) save(value);
             }}
           >
             {value}
@@ -93,6 +107,11 @@ export function RecordAction({
               />
             </label>
           </details>
+          {step && <details className="quiet-disclosure"><summary>Time spent · optional</summary>
+            <label className="form-field">Actual minutes
+              <input type="number" min="0" max="1440" step="any" value={minutes} onChange={e => setMinutes(e.target.value)} placeholder="Leave blank if unknown" />
+            </label>
+          </details>}
           <button className="button primary">
             Save check-in <Check size={16} />
           </button>

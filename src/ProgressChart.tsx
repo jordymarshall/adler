@@ -2,6 +2,7 @@ import { useId, useState } from "react";
 import type { Goal } from "./store";
 import { formatDate, localDate } from "./store";
 import { progressStatus } from "./progress";
+import type { Forecast } from "../shared/forecast";
 
 export function ProgressChart({
   goal,
@@ -9,12 +10,16 @@ export function ProgressChart({
   compact = false,
   graphOnly = false,
   proposedCheckpoints = [],
+  forecast,
+  alternativeForecast,
 }: {
   goal: Goal;
   today?: string;
   compact?: boolean;
   graphOnly?: boolean;
   proposedCheckpoints?: { date: string; value: number }[];
+  forecast?: Forecast;
+  alternativeForecast?: Forecast;
 }) {
   const id = useId();
   const Heading = compact ? "h3" : "h2";
@@ -31,7 +36,8 @@ export function ProgressChart({
   );
   const dates = [...planned, ...actual, ...proposed]
     .map((p) => p.date)
-    .concat(today)
+    .concat(today, ...(goal.targetDate ? [goal.targetDate] : []))
+    .concat([forecast, alternativeForecast].flatMap(f => f?.rates ? [f.expectedDate, f.earliestDate, f.latestDate ?? f.horizonDate].filter((d): d is string => Boolean(d)) : []))
     .sort();
   const points = [...new Set(dates)].sort();
   const selected =
@@ -63,6 +69,17 @@ export function ProgressChart({
   const path = planned
     .map((p, i) => `${i ? `H${x(p.date)} V` : `M${x(p.date)},`}${y(p.value)}`)
     .join(" ");
+  function projected(f: Forecast, rate: number, date: string) {
+    return Math.min(max, (f.current ?? 0) + rate * Math.max(0, (Date.parse(date) - Date.parse(f.asOf)) / 86400000));
+  }
+  function forecastPoints(f: Forecast, rate: number) {
+    const endDate = [f.horizonDate, dates.at(-1)!].sort()[0];
+    const duration = rate > 0 ? Math.max(0, max - (f.current ?? 0)) / rate : Infinity;
+    const finish = duration < (Date.parse(endDate) - Date.parse(f.asOf)) / 86400000
+      ? new Date(Date.parse(f.asOf) + duration * 86400000).toISOString() : endDate;
+    return [[x(f.asOf), y(f.current ?? 0)], [x(finish), y(projected(f, rate, finish))], [x(endDate), y(projected(f, rate, endDate))]];
+  }
+  const pointPath = (points: number[][]) => points.map(([x, y], i) => `${i ? "L" : "M"}${x},${y}`).join(" ");
   return (
     <div
       className={`progress-viz ${compact ? "compact" : ""} ${graphOnly ? "graph-only" : ""}`}
@@ -158,6 +175,7 @@ export function ProgressChart({
         <title id={id}>
           {status.detail} Solid points show recorded results; the dashed step
           line shows your dated plan. Future checkpoints are planned outcomes.
+          {forecast?.rates ? " The blue line and shaded range show conditional scenarios, not a success probability." : ""}
         </title>
         <rect
           x={x(today)}
@@ -188,6 +206,12 @@ export function ProgressChart({
           className="chart-today"
         />
         {planned.length > 0 && <path d={path} className="chart-plan" />}
+        {forecast?.rates && <g data-testid="forecast-line">
+          <path className="chart-forecast-range" d={`${pointPath([...forecastPoints(forecast, forecast.rates.high), ...forecastPoints(forecast, forecast.rates.low).reverse()])} Z`} />
+          <path className="chart-forecast" d={pointPath(forecastPoints(forecast, forecast.rates.typical))} />
+        </g>}
+        {alternativeForecast?.rates && <path className="chart-alternative" d={pointPath(forecastPoints(alternativeForecast, alternativeForecast.rates.typical))} />}
+        {forecast && goal.targetDate && <line x1={x(goal.targetDate)} x2={x(goal.targetDate)} y1="20" y2="176" className="chart-deadline"><title>Your target date: {formatDate(goal.targetDate)}</title></line>}
         {planned.map((p) => (
           <circle
             key={p.id}
@@ -305,6 +329,7 @@ export function ProgressChart({
                 {proposed.length > 0 &&
                   selected >= today &&
                   ` · Proposed: ${proposed.filter((p) => p.date <= selected).at(-1)?.value ?? "—"}`}
+                {forecast?.rates && selected >= forecast.asOf && selected <= forecast.horizonDate && ` · Conditional forecast: ${projected(forecast, forecast.rates.typical, selected).toFixed(1)}`}
               </span>
               <small>
                 {selectedActual
@@ -337,6 +362,8 @@ export function ProgressChart({
             <i /> Proposed plan
           </span>
         )}
+        {forecast?.rates && <span className="chart-forecast-key"><i /> Conditional forecast and pace range</span>}
+        {alternativeForecast?.rates && <span className="chart-alternative-key"><i /> Proposed plan scenario</span>}
       </div>
       {proposed.length > 0 && (
         <p className="chart-scenario-note">
@@ -348,6 +375,16 @@ export function ProgressChart({
         <p className="chart-explanation">{status.detail}</p>
       )}
       {!compact && !graphOnly && (
+        <ProgressRecords goal={goal} today={today} />
+      )}
+    </div>
+  );
+}
+
+export function ProgressRecords({ goal, today = localDate() }: { goal: Goal; today?: string }) {
+  const planned = goal.checkpoints ?? [];
+  const actual = goal.results.filter(r => r.date <= today);
+  return (
         <details className="chart-data">
           <summary>View checkpoints and evidence</summary>
           <p className="field-hint">
@@ -385,7 +422,5 @@ export function ProgressChart({
             </tbody>
           </table>
         </details>
-      )}
-    </div>
   );
 }

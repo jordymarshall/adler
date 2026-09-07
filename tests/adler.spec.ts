@@ -66,7 +66,7 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
     name: "App navigation",
     exact: true,
   });
-  await expect(navigation.getByRole("link")).toHaveCount(3);
+  await expect(navigation.getByRole("link")).toHaveCount(4);
   await expect(
     navigation.getByRole("link", { name: "Today", exact: true }),
   ).toBeVisible();
@@ -117,7 +117,7 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   expect(data.actions[0].date).toBe("");
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
   await expect(page.getByTestId("recorded-line")).toBeVisible();
-  await expect(page.locator(".progress-viz .pace-badge")).toHaveText("Draft");
+  await expect(page.locator(".plan-timeline .pace-badge")).toHaveText("Draft");
   await page.goto("/app/goals");
   await page.getByText("Find or filter a goal", { exact: true }).click();
   await expect(page.getByLabel("Search goals", { exact: true })).toBeVisible();
@@ -195,8 +195,8 @@ test("a learning goal records results in one chart with its own target", async (
   await save(page, state.data, state.revision);
   await page.goto("/app/goals/algebra/progress");
   await expect(page.locator(".progress-viz")).toHaveCount(1);
-  await expect(page.locator(".viz-target")).toContainText("Target: 6");
-  await expect(page.locator(".pace-badge")).toHaveText("On plan");
+  await expect(page.getByRole("region", { name: "Goal status" })).toContainText("Six correct answers");
+  await expect(page.locator(".pace-badge")).toHaveText("Estimate unavailable");
   await expect(page.locator(".app-main")).not.toContainText("8/10");
   await page.getByRole("button", { name: "Record an assessment" }).click();
   await page.getByLabel("Problems solved correctly", { exact: true }).fill("4");
@@ -205,10 +205,10 @@ test("a learning goal records results in one chart with its own target", async (
   await page.getByRole("button", { name: "Save result", exact: true }).click();
   await synced(page);
   expect((await snapshot(page)).data.goals[0].results.at(-1)?.value).toBe(4);
-  await expect(page.locator(".viz-numbers")).toContainText(
-    "4 correct answers / 10 recorded",
+  await expect(page.getByRole("region", { name: "Goal status" })).toContainText(
+    "4 correct answers / 10",
   );
-  await expect(page.locator(".pace-badge")).toHaveText("Ahead of plan");
+  await expect(page.locator(".pace-badge")).toHaveText("Estimate unavailable");
   await page
     .getByText("View checkpoints and evidence", { exact: true })
     .click();

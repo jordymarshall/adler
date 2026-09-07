@@ -18,6 +18,7 @@ import {
 } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { initialData, enrichData, type Data } from "../shared/workspace.ts";
+import { maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 
 export const digest = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -25,6 +26,7 @@ export const fingerprint = (data: Data) =>
   digest(
     JSON.stringify({
       ...data,
+      goals: data.goals.map(({ forecasts: _forecasts, assessment: _assessment, ...goal }) => goal),
       messages: [],
       decisions: [],
       conversations: [],
@@ -192,6 +194,7 @@ export class Database {
     channel: string,
     summary: string,
   ) {
+    maintainAdaptivePlans(data);
     const result = this.sql
       .prepare(
         "UPDATE state SET revision=revision+1,json=? WHERE user_id=? AND revision=?",
@@ -268,7 +271,7 @@ export class Database {
   claim() {
     return this.sql
       .prepare(
-        "UPDATE jobs SET status='running', attempts=attempts+1, lease=? WHERE id=(SELECT id FROM jobs WHERE status='pending' AND due<=? ORDER BY due LIMIT 1) RETURNING *",
+        "UPDATE jobs SET status='running', attempts=attempts+1, lease=? WHERE id=(SELECT id FROM jobs WHERE status='pending' AND kind!='plan-review' AND due<=? ORDER BY due LIMIT 1) RETURNING *",
       )
       .get(Date.now() + 120000, Date.now()) as
       | {

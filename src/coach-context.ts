@@ -3,6 +3,7 @@ import type { Data } from "../shared/workspace.ts";
 import type { DecisionCheck } from "./program-types.ts";
 import { progressStatus } from "./progress.ts";
 import { METHODS } from "./methods.ts";
+import { planProgress } from "../shared/adaptive-plan.ts";
 export function coachingContext(
   data: Data,
   goalId: string,
@@ -101,6 +102,9 @@ export function coachingContext(
     today,
     weeklyReview: reviewSchedule(data),
     planningBasis: goal?.plans.at(-1)?.basis ?? null,
+    adaptivePlan: goal?.plans.at(-1)?.adaptive ?? null,
+    behaviorEvidence: goal ? planProgress(data, goal).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })) : [],
+    forecast: goal?.forecasts?.at(-1) ? { ...goal.forecasts.at(-1), inputKey: undefined } : null,
     timeZone: data.timeZone,
     message,
     selectedGoalId: goalId,

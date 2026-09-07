@@ -13,7 +13,7 @@ All coaching channels still call `Service.chat`. The model can clarify the user'
 5. A separate model call checks the proposed recommendation against the retrieved sources, user context, and the actual resulting goal records. It checks evidence claims, causal overstatements, applicability, measurement meaning, and consistency between described and saved dates/durations. Material issues are returned for correction before saving. This is an additional model check, not a guarantee of scientific validity.
 6. Explicit creation saves a Draft. Recommendations remain reviewable proposals. Starting, recording work, and external calendar confirmation remain separate actions.
 
-Each turn permits at most two research rounds and one repair after an invalid recommendation. Failed or irrelevant searches may lead to an explicitly provisional plan without citations. They must not become fabricated evidence. Source snapshots distinguish an actual retrieved abstract from a curated method summary. The app displays findings, applicability, limitations, and source links in **Why this plan?**.
+Each turn permits at most two research rounds, one read-only planning preview, and two repairs within six rounds. Failed or irrelevant searches may lead to an explicitly provisional plan without citations. They must not become fabricated evidence. Source snapshots distinguish an actual retrieved abstract from a curated method summary. The app displays findings, applicability, limitations, and source links in **Why this plan?**.
 
 Selected source snapshots live with their plan version. Decision records keep query history, result counts, and failed lookups without duplicating all retrieved abstracts. Existing versions preserve earlier explanations; later recommendations do not replace their sources.
 
@@ -42,7 +42,7 @@ Users can select suggested slots or review a specific date and time. Scheduling 
 
 Google/iCloud booking still uses the existing provider adapters, explicit confirmation, and availability rechecks. Existing external events are managed at their provider. This change adds a built-in view of work and checked busy periods; it does not claim continuous two-way synchronization or import every external event's details.
 
-**Review your week** begins with a short purpose and optional context field. Review time and prior reviews open on request. Reviews have explicit periods so a completed review does not hide the next week's review. Review with Adler opens a contextual conversation in place; the note and records remain available to the model. Prior reviews remain archived. The weekly appointment repeats in future calendar weeks and reserves a 15-minute planning allowance in Adler. Suggestions and booking checks respect that reservation. It is not an external booking.
+**Review your week** begins with a short purpose and optional context field. Review time and prior reviews open on request. Reviews have explicit periods so a completed review does not hide the next week's review. Review with Adler opens a contextual conversation in place; the note and records remain available to the model. Prior reviews remain archived. For active legacy goals, the weekly appointment repeats in future calendar weeks and reserves a 15-minute planning allowance in Adler. Adaptive goals use their chosen assessment timing and do not create that default reservation. Suggestions and booking checks respect that reservation. It is not an external booking.
 
 ## Chats and organization
 
@@ -75,3 +75,7 @@ The flow heading reads “Reach your goals with a plan that adapts to you.” St
 Illustrations never write account data. Browser checks cover the opening animation, primary actions, disclosures, phone check-ins, scrolling, graph sizing, proposed and recorded values, reduced motion, and accessibility.
 
 The landing describes the implemented research, saved-context, check-in, and review system. Additional model training and proprietary goal-attainment data are identified as planned development in the FAQ, not current capabilities.
+
+## Adaptive goal screen
+
+The [adaptive planning contract](adaptive-planning.md) extends this journey with coach-selected task/behavior decomposition, recurring occurrences, planning windows and assessment timing. The main goal screen shows the approach, work, outcome timeline and learning together; full source records and history remain expandable. Coach navigation is restored. Existing goals receive reviewable upgrades while their results and bookings stay intact. The original manual setup remains available.

@@ -1,6 +1,7 @@
 import { dateInZone, reviewSchedule } from "../shared/journey";
 import { LiveCoach } from "./LiveCoach";
 import { GoalOverview } from "./GoalOverview";
+import { GoalPlan } from "./GoalPlan";
 import { PlanExplanation } from "./PlanExplanation";
 import { useState, type FormEvent } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
@@ -28,7 +29,7 @@ import {
   type GoalStatus,
   type Milestone,
 } from "./store";
-import { ProgressChart } from "./ProgressChart";
+import { ProgressRecords } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
 import { RecordAction } from "./ActionCheckIn";
 
@@ -266,11 +267,15 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
+      <GoalPlan goal={goal}
+        onRecordResult={goal.measure || goal.kind === "learning" ? () => { setResult("assessment"); setConfirmed(false); } : undefined}
+        onMilestone={milestone => { setResult(milestone); setConfirmed(false); }}>
       <GoalOverview
         key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`}
         goal={goal}
         actionId={actionId ?? query.get("action") ?? undefined}
       />
+      </GoalPlan>
       <details
         className="journey-disclosure"
         open={tab === "plan" || undefined}
@@ -329,7 +334,7 @@ export function GoalWorkspace({
         <div className="goal-progress-layout journey-progress">
           <div>
             <section className="panel">
-              <ProgressChart goal={goal} />
+              <ProgressRecords goal={goal} today={dateInZone(data.timeZone)} />
               {actionMeasure && (
                 <div className="action-observations">
                   <b>

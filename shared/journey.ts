@@ -104,7 +104,7 @@ export function reviewSchedule(data: Data, now = new Date()) {
 }
 
 export function reviewBlock(data: Data, fromDate: string, now = new Date()) {
-  if (!data.goals.some((goal) => goal.status === "Active")) return null;
+  if (!data.goals.some((goal) => goal.status === "Active" && !goal.plans.at(-1)?.adaptive)) return null;
   const nextDate = reviewSchedule(data, now).nextDate;
   const weeksAhead = Math.max(
     0,

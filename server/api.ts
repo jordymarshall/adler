@@ -4,6 +4,7 @@ import type { Plugin } from "vite";
 import { z } from "zod";
 import { Database, digest } from "./database.ts";
 import { Service } from "./service.ts";
+import { PlanWorker } from "./plan-worker.ts";
 import { Channels, validateTwilio, messagingProvider } from "./channels.ts";
 import { verifyLinq, parseLinq } from "./linq.ts";
 import { reactionTypes } from "../shared/workspace.ts";
@@ -46,8 +47,9 @@ export function createRuntime(directory?: string) {
   const db = new Database(directory),
     service = new Service(db),
     channels = new Channels(db, service),
-    calendar = new CalendarAPI(db, service);
-  service.onChanged = (userId) => channels.ensureJobs(userId);
+    calendar = new CalendarAPI(db, service),
+    planner = new PlanWorker(service);
+  service.onChanged = (userId) => { channels.ensureJobs(userId); planner.ensureJobs(userId); };
   service.onReaction = (...args) => channels.queueReaction(...args);
   service.calendarContext = (userId) => calendar.context(userId);
   service.externalApply = (userId, changes, data) =>
@@ -239,6 +241,8 @@ export function createRuntime(directory?: string) {
         return json(res, { signedOut: true });
       }
       const id = user.id;
+      if (req.method === "POST" && /^\/api\/proposals\/[^/]+\/preview$/.test(url.pathname))
+        return json(res, service.previewPlan(id, url.pathname.split("/")[3]));
       if (
         req.method === "POST" &&
         /^\/api\/messages\/[^/]+\/reaction$/.test(url.pathname)
@@ -287,7 +291,9 @@ export function createRuntime(directory?: string) {
         return;
       }
       if (req.method === "GET" && url.pathname === "/api/workspace")
-        return json(res, db.snapshot(id));
+        return json(res, await service.refreshPlanning(id));
+      if (req.method === "GET" && url.pathname === "/api/planning/status")
+        return json(res, planner.status(id));
       if (req.method === "POST" && url.pathname === "/api/workspace") {
         const input = z
           .object({
@@ -506,10 +512,12 @@ export function createRuntime(directory?: string) {
     service,
     channels,
     calendar,
+    planner,
     handle,
-    start: () => channels.start(),
+    start: () => { channels.start(); if (process.env.NODE_ENV !== "test") planner.start(); },
     close: () => {
       channels.stop();
+      planner.stop();
       db.close();
     },
   };

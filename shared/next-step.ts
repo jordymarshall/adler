@@ -1,4 +1,5 @@
 import { dateInZone, reviewSchedule } from "./journey.ts";
+import { actionReady, actionStep } from "./adaptive-plan.ts";
 import {
   currentPlan,
   currentProgram,
@@ -32,7 +33,7 @@ export function goalStep(
     if (action.startedAt) {
       const end =
         Date.parse(action.startedAt) +
-        (plan.durationMinutes ?? currentProgram(data).sessionMinutes) * 60000;
+        (actionStep(data, action)?.durationMinutes ?? plan.durationMinutes ?? currentProgram(data).sessionMinutes) * 60000;
       return now.getTime() >= end ? "checkin" : "working";
     }
     if (block) {
@@ -54,7 +55,7 @@ export function goalStep(
     inactive: 7,
   };
   const actions = data.actions
-    .filter((a) => a.goalId === goal.id && !a.outcome)
+    .filter((a) => a.goalId === goal.id && !a.outcome && actionReady(data, a))
     .sort((a, b) => {
       const order = rank[phase(a)] - rank[phase(b)];
       if (order) return order;

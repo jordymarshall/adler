@@ -3,6 +3,8 @@ import { z } from "zod";
 import type { Data, Goal, Action } from "./workspace.ts";
 import { reactionTypes } from "./workspace.ts";
 import { METHODS } from "../src/methods.ts";
+import { adaptivePlanSchema, assessmentStateSchema, materializePlan, validateAdaptiveWork } from "./adaptive-plan.ts";
+import { forecastSchema } from "./forecast.ts";
 const id = z.string().min(1).max(100);
 const date = z
   .string()
@@ -32,9 +34,10 @@ export const resultSchema = z
   .strict();
 export const planSchema = z
   .object({
+    adaptive: adaptivePlanSchema.optional(),
     version: z.number().int().positive(),
     basis: planningBasisSchema.optional(),
-    durationMinutes: z.number().int().min(5).max(240).optional(),
+    durationMinutes: z.number().int().min(1).max(1440).optional(),
     action: text,
     timing: text,
     criterion: text,
@@ -47,6 +50,8 @@ export const measureSchema = z
     unit: z.string().trim().min(1).max(50),
     target: z.number().positive().max(1000000),
     baseline: z.number().min(0).max(1000000).nullable(),
+    aggregation: z.enum(["cumulative", "level", "period"]).optional(),
+    period: z.string().trim().min(1).max(150).optional(),
   })
   .strict();
 export const conversationSchema = z
@@ -59,6 +64,8 @@ export const conversationSchema = z
   .strict();
 export const goalSchema = z
   .object({
+    forecasts: z.array(forecastSchema).max(100).optional(),
+    assessment: assessmentStateSchema.optional(),
     id,
     title: z.string().trim().min(1).max(300),
     kind: z.enum(["project", "learning", "practical"]),
@@ -70,6 +77,7 @@ export const goalSchema = z
     tags: z.array(z.string().max(50)).max(8).optional(),
     priority: z.enum(["Focus", "Maintain", "Later"]).optional(),
     targetDate: date.optional(),
+    deadline: z.enum(["firm", "preferred", "none"]).optional(),
     startDate: date.optional(),
     target: z.number().min(1).max(1000000).optional(),
     unit: z.string().max(150).optional(),
@@ -108,9 +116,13 @@ export const actionSchema = z
     timing: text,
     date: z.union([date, z.literal("")]),
     planVersion: z.number().int().positive(),
+    stepId: z.string().max(80).optional(),
+    occurrence: z.string().max(100).optional(),
+    retiredAt: date.optional(),
     startedAt: z.iso.datetime().optional(),
     outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
     amount: z.number().min(0).max(1000000).optional(),
+    actualMinutes: z.number().min(0).max(1440).optional(),
     note: text.optional(),
     unplanned: z.boolean().optional(),
     history: z
@@ -118,6 +130,7 @@ export const actionSchema = z
         z.object({
           outcome: z.enum(["Done", "Partly", "Didn’t happen"]).optional(),
     amount: z.number().min(0).max(1000000).optional(),
+          actualMinutes: z.number().min(0).max(1440).optional(),
           note: text.optional(),
           at: text,
         }),
@@ -303,7 +316,7 @@ const workspaceSchema = z
       .optional(),
   })
   .strict();
-export function validateWorkspace(input: unknown): Data {
+export function validateWorkspace(input: unknown, previous?: Data): Data {
   const data = workspaceSchema.parse(input) as Data;
   new Intl.DateTimeFormat("en", { timeZone: data.timeZone });
   const today = new Intl.DateTimeFormat("en-CA", {
@@ -350,27 +363,30 @@ export function validateWorkspace(input: unknown): Data {
     )
       throw new Error("Learning assessments use a scale of 0–10.");
   }
+  validateAdaptiveWork(data, previous);
   return data;
 }
 export const createGoalSchema = z
   .object({
+    adaptive: adaptivePlanSchema.optional(),
     status: z.enum(["Draft", "Active"]).optional(),
     basis: planningBasisSchema.optional(),
-    durationMinutes: z.number().int().min(5).max(240).optional(),
+    durationMinutes: z.number().int().min(1).max(1440).optional(),
     title: z.string().trim().min(1).max(300),
     kind: z.enum(["project", "learning", "practical"]),
     why: text,
     success: z.string().trim().min(1).max(1500),
     area: z.enum(["Unassigned", "Career", "Learning", "Personal"]),
     tags: z.array(z.string().max(50)).max(8),
-    targetDate: date,
+    targetDate: z.union([date, z.literal("")]),
+    deadline: z.enum(["firm", "preferred", "none"]).optional(),
     milestones: z
-      .array(z.object({ title: text, criterion: text, dueDate: date.optional() }))
-      .min(1)
+      .array(z.object({ id: id.optional(), title: text, criterion: text, dueDate: date.optional() }))
       .max(30),
     measure: measureSchema.optional(),
     assessmentTarget: z.number().int().min(1).max(10),
     baseline: z.number().min(0).max(10).nullable(),
+    baselineDate: date.optional(),
     actionDate: date.optional(),
     action: text,
     criterion: text,
@@ -385,8 +401,15 @@ export function createGoal(
   recordId: string = crypto.randomUUID(),
 ) {
   input = createGoalSchema.parse(input);
-  if (input.targetDate < today)
+  if (input.targetDate && input.targetDate < today)
     throw new Error("Choose today or a future target date for a new goal.");
+  if (input.baselineDate && input.baselineDate > today)
+    throw new Error("The starting observation cannot be in the future.");
+  const practice = !input.targetDate && input.adaptive?.steps.some(s => s.type === "behavior") && !input.milestones.length && !input.measure;
+  if (!practice && !input.measure && input.kind !== "learning" && !input.milestones.length)
+    throw new Error("Choose an outcome measure or a verifiable deliverable.");
+  if (input.deadline === "none" && input.targetDate)
+    throw new Error("Use an empty targetDate when the goal has no deadline.");
   const goal: Goal = {
     ...(input.measure ? { measure: input.measure } : {}),
     id: recordId,
@@ -399,52 +422,55 @@ export function createGoal(
     status: input.status ?? "Active",
     priority: data.goals.length ? "Maintain" : "Focus",
     startDate: today,
-    targetDate: input.targetDate,
-    target: input.measure
+    ...(input.targetDate ? { targetDate: input.targetDate } : {}),
+    deadline: input.deadline ?? (input.targetDate ? "preferred" : "none"),
+    target: practice ? undefined : input.measure
       ? input.measure.target
       : input.kind === "learning"
         ? input.assessmentTarget
         : input.milestones.length,
-    unit: input.measure
+    unit: practice ? undefined : input.measure
       ? input.measure.unit
       : input.kind === "learning"
         ? "correct answers / 10"
         : "milestones verified",
     milestones: input.milestones.map((m) => ({
       ...m,
-      id: crypto.randomUUID(),
+      id: m.id ?? crypto.randomUUID(),
       done: false,
     })),
     plans: [
       {
         version: 1,
         date: today,
-        action: input.action,
-        criterion: input.criterion,
-        timing: input.timing,
+        action: input.adaptive?.steps[0].title ?? input.action,
+        criterion: input.adaptive?.steps[0].criterion ?? input.criterion,
+        timing: input.adaptive?.steps[0].cue ?? input.timing,
         ...(input.basis ? { basis: input.basis } : {}),
-        ...(input.durationMinutes ? { durationMinutes: input.durationMinutes } : {}),
+        ...(input.adaptive ? { adaptive: input.adaptive } : {}),
+        ...(input.adaptive ? { durationMinutes: input.adaptive.steps[0].durationMinutes } : input.durationMinutes ? { durationMinutes: input.durationMinutes } : {}),
       },
     ],
     results: [],
   };
-  goal.checkpoints = [
+  goal.checkpoints = input.targetDate ? [
     {
       id: crypto.randomUUID(),
       date: input.targetDate,
       value: goal.target!,
       label: "Target result",
     },
-  ];
-  const baseline = input.measure
+  ] : [];
+  const baseline = practice ? null : input.measure
     ? input.measure.baseline
     : input.kind === "learning"
       ? input.baseline
       : 0;
   if (baseline !== null) {
+    const baselineDate = input.baselineDate ?? today;
     goal.results.push({
       id: crypto.randomUUID(),
-      date: today,
+      date: baselineDate,
       value: baseline,
       source: input.measure
         ? "Starting result reported by you"
@@ -452,10 +478,10 @@ export function createGoal(
           ? "Starting assessment reported by you"
           : "Starting baseline: no milestones verified yet",
     });
-    goal.outcomeUpdatedAt = today;
+    goal.outcomeUpdatedAt = baselineDate;
     goal.checkpoints.unshift({
       id: crypto.randomUUID(),
-      date: today,
+      date: baselineDate,
       value: goal.results[0].value,
       label: "Starting point",
     });
@@ -471,7 +497,8 @@ export function createGoal(
     planVersion: 1,
     history: [],
   };
-  data.actions.push(action);
+  if (input.adaptive) materializePlan(data, goal, today);
+  else data.actions.push(action);
   if (!data.programs.at(-1)!.focusGoalId)
     data.programs.push({
       ...data.programs.at(-1)!,

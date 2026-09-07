@@ -1,5 +1,7 @@
 import { dateInZone } from "./journey.ts";
 import type { PlanningBasis } from "./planning.ts";
+import { materializePlan, type AdaptivePlan, type AssessmentState } from "./adaptive-plan.ts";
+import type { Forecast } from "./forecast.ts";
 import type {
   Checkpoint,
   CoachDecision,
@@ -13,6 +15,7 @@ export type Outcome = "Done" | "Partly" | "Didn’t happen";
 export type GoalStatus = "Draft" | "Active" | "Paused" | "Completed" | "Set aside";
 export type GoalKind = "project" | "learning" | "practical";
 export interface Plan {
+  adaptive?: AdaptivePlan;
   basis?: PlanningBasis;
   durationMinutes?: number;
   version: number;
@@ -30,6 +33,8 @@ export interface Milestone {
   completedAt?: string;
 }
 export interface Goal {
+  forecasts?: Forecast[];
+  assessment?: AssessmentState;
   id: string;
   title: string;
   kind: GoalKind;
@@ -41,6 +46,7 @@ export interface Goal {
   tags?: string[];
   priority?: "Focus" | "Maintain" | "Later";
   targetDate?: string;
+  deadline?: "firm" | "preferred" | "none";
   startDate?: string;
   target?: number;
   unit?: string;
@@ -49,6 +55,8 @@ export interface Goal {
     unit: string;
     target: number;
     baseline: number | null;
+    aggregation?: "cumulative" | "level" | "period";
+    period?: string;
   };
   measurementHistory?: { date: string; label: string; unit: string; results: Goal["results"]; reason: string }[];
   checkpoints?: Checkpoint[];
@@ -76,12 +84,16 @@ export interface Action {
   timing: string;
   date: string;
   planVersion: number;
+  stepId?: string;
+  occurrence?: string;
+  retiredAt?: string;
   startedAt?: string;
   outcome?: Outcome;
   amount?: number;
+  actualMinutes?: number;
   note?: string;
   unplanned?: boolean;
-  history: { outcome?: Outcome; amount?: number; note?: string; at: string }[];
+  history: { outcome?: Outcome; amount?: number; actualMinutes?: number; note?: string; at: string }[];
 }
 export const reactionTypes = [
   "love",
@@ -296,6 +308,7 @@ export function recordAction(
   outcome?: Outcome,
   note?: string,
   amount?: number,
+  actualMinutes?: number,
 ) {
   const action = data.actions.find((a) => a.id === id)!;
   if (!action.date && outcome) {
@@ -305,11 +318,13 @@ export function recordAction(
   action.history.push({
     outcome: action.outcome,
     amount: action.amount,
+    actualMinutes: action.actualMinutes,
     note: action.note,
     at: new Date().toISOString(),
   });
   action.outcome = outcome;
   action.amount = outcome ? amount : undefined;
+  action.actualMinutes = outcome ? actualMinutes : undefined;
   const block = data.workBlocks.find((b) => b.id === id);
   if (block) block.status = outcome ?? "Scheduled";
   if (note !== undefined) action.note = note;
@@ -321,7 +336,7 @@ export function applyPlan(
   data: Data,
   goalId: string,
   expectedVersion: number,
-  changes: Pick<Plan, "action" | "timing" | "criterion" | "basis" | "durationMinutes">,
+  changes: Pick<Plan, "action" | "timing" | "criterion" | "basis" | "durationMinutes" | "adaptive">,
 ) {
   const goal = data.goals.find((g) => g.id === goalId)!;
   if (currentPlan(goal).version !== expectedVersion)
@@ -335,13 +350,24 @@ export function applyPlan(
   const previous = currentPlan(goal);
   const plan: Plan = {
     ...changes,
+    adaptive: changes.adaptive ?? previous.adaptive,
     durationMinutes: changes.durationMinutes ?? previous.durationMinutes,
     basis: changes.basis ?? (changes.action === previous.action && changes.criterion === previous.criterion ? previous.basis : undefined),
     version: expectedVersion + 1,
     date: dateInZone(data.timeZone),
   };
+  if (plan.adaptive) {
+    plan.adaptive = structuredClone(plan.adaptive);
+    if (!changes.adaptive) Object.assign(plan.adaptive.steps[0], { title: changes.action, criterion: changes.criterion, cue: changes.timing });
+    const first = plan.adaptive.steps[0];
+    Object.assign(plan, { action: first.title, criterion: first.criterion, timing: first.cue, durationMinutes: first.durationMinutes });
+  }
   goal.plans.push(plan);
   if (goal.trial?.state === "Suggested") goal.trial.state = "Set aside";
+  if (plan.adaptive) {
+    materializePlan(data, goal, dateInZone(data.timeZone));
+    return;
+  }
   const future = data.actions.filter(
     (a) => a.goalId === goalId && (!a.date || a.date > dateInZone(data.timeZone)) && !a.outcome && !data.workBlocks.some((b) => b.id === a.id),
   );

@@ -3,7 +3,7 @@ import { formatDate, type Goal } from "../shared/workspace.ts";
 export function goalValue(goal: Goal) {
   if (goal.measure || goal.kind === "learning")
     return goal.results.at(-1)?.value ?? null;
-  return goal.milestones.filter((m) => m.done).length;
+  return goal.milestones.length ? goal.milestones.filter((m) => m.done).length : null;
 }
 export function progressStatus(goal: Goal, date: string) {
   const actual = goalValue(goal);

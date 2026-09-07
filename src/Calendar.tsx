@@ -1,3 +1,4 @@
+import { actionReady, actionStep } from "../shared/adaptive-plan";
 import { WeekCalendar, weekOf } from "./WeekCalendar";
 import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -118,6 +119,7 @@ export function Calendar({
     .filter(
       (a) =>
         a.goalId === goal?.id &&
+        actionReady(data, a) &&
         !a.outcome &&
         !a.startedAt &&
         !data.workBlocks.some((b) => b.id === a.id),
@@ -129,7 +131,7 @@ export function Calendar({
     (goal ? currentPlan(goal) : undefined);
   const program = {
     ...baseProgram,
-    sessionMinutes: actionPlan?.durationMinutes ?? baseProgram.sessionMinutes,
+    sessionMinutes: (action ? actionStep(data, action)?.durationMinutes : undefined) ?? actionPlan?.durationMinutes ?? baseProgram.sessionMinutes,
   };
   const actionTitle = action?.title ?? (goal ? currentPlan(goal).action : "");
   const review = reviewBlock(data, week);

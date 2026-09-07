@@ -77,6 +77,7 @@ for (const signal of ["SIGINT", "SIGTERM"] as const)
     if (closing) return;
     closing = true;
     runtime.channels.stop();
+    runtime.planner.stop();
     server.close(() => {
       runtime.db.close();
       process.exit(0);

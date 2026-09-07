@@ -1,0 +1,102 @@
+import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+import { register, save, snapshot, synced } from "./fixtures";
+import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
+import { addDays, dateInZone } from "../shared/journey";
+
+test("one goal screen connects the approach, behavior, check-in, timeline, and coach", async ({ page }) => {
+  await register(page);
+  const state = await snapshot(page);
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
+  await save(page, data, state.revision);
+  await page.goto("/app/goals/essay");
+  await expect(page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Coach", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "The approach", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Outline experiment", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Goal status" })).toContainText("Building the first estimate");
+  await expect(page.getByRole("heading", { name: "What we’re learning", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Start action", exact: true }).click();
+  await page.getByRole("button", { name: "I’m finished", exact: true }).click();
+  await page.getByRole("button", { name: "Done", exact: true }).click();
+  await page.getByLabel("Outline points (points) · optional").fill("5");
+  await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await synced(page);
+  await expect(page.getByRole("region", { name: "Work in this plan" })).toContainText("5 points recorded");
+  const saved = await snapshot(page);
+  expect(saved.data.actions).toHaveLength(3);
+  expect(saved.data.actions.filter(a => a.outcome === "Done")).toHaveLength(1);
+  expect(saved.data.goals[0].results.at(-1)?.value).toBe(0);
+  await page.screenshot({ path: ".context/adaptive-goal-desktop.png", fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBeTruthy();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.screenshot({ path: ".context/adaptive-goal-mobile.png", fullPage: true });
+});
+
+test("a legacy goal previews and accepts an upgrade on its existing screen", async ({ page }) => {
+  await register(page, true);
+  await page.goto("/app/goals/essays");
+  await expect(page.getByRole("heading", { name: "Review updated plan", exact: true })).toBeVisible();
+  const state = await snapshot(page);
+  const plan = state.data.goals[0].plans[0];
+  const today = dateInZone(state.data.timeZone);
+  const adaptive = adaptiveFixture(today, addDays(today, 2));
+  const response = await page.request.post("/api/proposals", { data: { summary: "An outline experiment for your essay", changes: [{
+    entity: "plan", operation: "update", id: null, parentId: "essays", reason: "Connect the existing goal to observable work",
+    values: JSON.stringify({ action: plan.action, criterion: plan.criterion, timing: plan.timing, adaptive }),
+  }] } });
+  expect(response.ok()).toBeTruthy();
+  await page.reload();
+  await page.getByRole("button", { name: "Compare forecast", exact: true }).click();
+  await expect(page.getByText("Proposed plan scenario", { exact: true })).toBeVisible();
+  expect((await snapshot(page)).data.goals[0].plans).toHaveLength(1);
+  await page.getByRole("button", { name: "Accept updated plan", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Outline experiment", exact: true })).toBeVisible();
+  const updated = await snapshot(page);
+  expect(updated.data.goals[0].id).toBe("essays");
+  expect(updated.data.goals[0].plans).toHaveLength(2);
+  expect(updated.data.goals[0].results).toEqual(state.data.goals[0].results);
+  await page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Coach", exact: true }).click();
+  await expect(page.getByRole("navigation", { name: "Coaching navigation" })).toBeVisible();
+});
+
+test("reported outcomes move the visible forecast and source context never preselects a check-in", async ({ page }) => {
+  await register(page);
+  const state = await snapshot(page);
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
+  const goal = data.goals[0];
+  goal.measure = { label: "Collected revenue", unit: "CAD", target: 100, baseline: 20, aggregation: "cumulative" };
+  goal.target = 100;
+  goal.unit = "CAD";
+  goal.targetDate = addDays(today, 24);
+  goal.checkpoints = [{ id: "target", date: goal.targetDate, value: 100, label: "Target result" }];
+  goal.results = [20, 24, 28].map((value, i) => ({ id: `r${i}`, date: addDays(today, -4 + i * 2), value, source: "Your collected revenue report" }));
+  goal.plans[0].adaptive!.forecast.method = "observed-rate";
+  goal.plans[0].adaptive!.steps[0].contextIds = ["morning"];
+  data.memories.push({ id: "morning", text: "I prefer to outline after breakfast.", date: today });
+  await save(page, data, state.revision);
+  await page.goto("/app/goals/essay");
+  await expect(page.getByTestId("forecast-line")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Outcome timeline" })).toContainText("Projected after target");
+  const before = await page.getByRole("region", { name: "Goal status" }).innerText();
+  const fresh = await snapshot(page);
+  fresh.data.goals[0].results[2].value = 44;
+  await save(page, fresh.data, fresh.revision);
+  await page.reload();
+  await expect(page.getByRole("region", { name: "Goal status" })).not.toHaveText(before);
+  await expect(page.getByRole("region", { name: "Outcome timeline" })).toContainText("Projected by target");
+  await page.getByRole("button", { name: "Start action", exact: true }).click();
+  await page.getByRole("button", { name: "I’m finished", exact: true }).click();
+  await expect(page.getByRole("complementary", { name: "Relevant context" })).toContainText("Confirmed by you");
+  await page.getByRole("button", { name: "Use in my note", exact: true }).click();
+  await expect(page.locator('.outcome-option[aria-pressed="true"]')).toHaveCount(0);
+  expect((await snapshot(page)).data.actions[0].outcome).toBeUndefined();
+  await page.getByRole("button", { name: "Partly", exact: true }).click();
+  await page.getByText("What got in the way? · optional", { exact: true }).click();
+  await page.getByRole("textbox", { name: "Your note", exact: true }).fill("I outlined after lunch instead.");
+  await page.getByRole("button", { name: "Save check-in", exact: true }).click();
+  await synced(page);
+  expect((await snapshot(page)).data.actions[0].note).toBe("I outlined after lunch instead.");
+});

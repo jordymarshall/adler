@@ -79,6 +79,7 @@ function AppShell() {
     { to: "/app/today", label: "Today", Icon: Sun },
     { to: "/app/goals", label: "Goals", Icon: Target },
     { to: "/app/calendar", label: "Calendar", Icon: CalendarDays },
+    { to: "/app/coach", label: "Coach", Icon: MessageCircle },
   ];
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
   if (!user) return <SignIn />;
@@ -168,6 +169,15 @@ function AppShell() {
     </div>
   );
 }
+function CoachSection() {
+  return <><nav className="coaching-nav" aria-label="Coaching navigation">
+    <NavLink to="/app/coach" end>Chat</NavLink>
+    <NavLink to="/app/insights">Insights</NavLink>
+    <NavLink to="/app/coach/about-you">About you</NavLink>
+    <NavLink to="/app/coach/program">Preferences</NavLink>
+    <NavLink to="/app/reviews/current">Review</NavLink>
+  </nav><Outlet /></>;
+}
 export function App() {
   const { toast } = useStore();
   return (
@@ -194,7 +204,7 @@ export function App() {
           <Route path="goals/:goalId" element={<GoalWorkspace />} />
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />
-          <Route element={<Outlet />}>
+          <Route element={<CoachSection />}>
             <Route path="insights" element={<Insights />} />
             <Route path="coach" element={<Coach />} />
             <Route path="coach/program" element={<Program />} />

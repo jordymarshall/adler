@@ -11,6 +11,7 @@ import {
 import { RecordAction } from "./ActionCheckIn";
 import { Calendar, savedPending } from "./Calendar";
 import { LiveCoach } from "./LiveCoach";
+import { actionStep } from "../shared/adaptive-plan";
 
 export function GoalOverview({
   goal,
@@ -93,7 +94,7 @@ export function GoalOverview({
         </button>
       </div>
     );
-  if (action && (mode === "schedule" || phase === "schedule"))
+  if (action && (mode === "schedule" || (phase === "schedule" && !plan.adaptive)))
     return (
       <section className="next-step-card panel" data-phase="schedule">
         <span className="section-kicker">MAKE ROOM FOR THE FIRST STEP</span>
@@ -165,7 +166,7 @@ export function GoalOverview({
                 })
               : action.date && phase === "waiting"
                 ? formatDate(action.date)
-                : `${plan.durationMinutes ?? data.programs.at(-1)!.sessionMinutes} minutes`}
+                : `${actionStep(data, action)?.durationMinutes ?? plan.durationMinutes ?? data.programs.at(-1)!.sessionMinutes} minutes${plan.adaptive && action.date ? ` · Suggested ${formatDate(action.date)} · ${action.timing}` : ""}`}
           </p>
         </>
       )}
@@ -198,6 +199,10 @@ export function GoalOverview({
           <Play size={16} /> Start action
         </button>
       )}
+      {phase === "schedule" && plan.adaptive && action && <div className="plan-actions">
+        <button className="button primary" onClick={() => { commit(d => beginAction(d, action.id), "Action started."); setNow(new Date()); }}><Play size={16} /> I’ll do it now</button>
+        <button className="button secondary" onClick={() => setMode("schedule")}>Choose a time</button>
+      </div>}
       {phase === "working" && action && (
         <>
           <p>
