@@ -27,7 +27,6 @@ import { SignIn } from "./Auth";
 import { Connections, ProviderSettings } from "./Connections";
 import { useStore } from "./store";
 import { Today } from "./Today";
-import { todayStep } from "../shared/next-step";
 import { NewGoal, SettingsPage, WeeklyReview } from "./Workspace";
 import { GoalWorkspace } from "./GoalWorkspace";
 import { Coach, Memory } from "./Coach";
@@ -37,29 +36,23 @@ import { OrganizedGoals } from "./GoalOrganization";
 
 function ScrollReset() {
   const { pathname, hash } = useLocation();
+  const { loading } = useStore();
   useEffect(() => {
     if (hash) {
       const frame = requestAnimationFrame(() =>
-        document.getElementById(hash.slice(1))?.scrollIntoView(),
+        (() => { const target = document.getElementById(decodeURIComponent(hash.slice(1)));
+          for (let node = target?.parentElement; node; node = node.parentElement) if (node instanceof HTMLDetailsElement) node.open = true;
+          target?.scrollIntoView(); })(),
       );
       return () => cancelAnimationFrame(frame);
     }
     window.scrollTo(0, 0);
-  }, [pathname, hash]);
+  }, [pathname, hash, loading]);
   return null;
 }
 function AppShell() {
   const location = useLocation();
-  const { data, user, loading, saving, saveError } = useStore();
-  const today = todayStep(data);
-  const requestedGoal =
-    location.pathname.match(/\/goals\/([^/]+)/)?.[1] ??
-    (location.pathname === "/app/today"
-      ? (new URLSearchParams(location.search).get("goal") ??
-        (!today.review ? today.step?.goal.id : undefined))
-      : undefined);
-  const contextGoal =
-    data.goals.find((g) => g.id === requestedGoal)?.id ?? "general";
+  const { user, loading, saving, saveError } = useStore();
   const label = location.pathname.includes("/integrations")
     ? "Integrations"
     : location.pathname.includes("/insights")
@@ -104,6 +97,7 @@ function AppShell() {
             </NavLink>
           ))}
         </nav>
+        <Link className="button primary sidebar-checkin" to="/app/coach?intent=checkin"><MessageCircle size={17} /> Check in</Link>
         <div className="sidebar-bottom">
           <NavLink to="/app/settings" className="sidebar-setting">
             <Settings size={19} />
@@ -131,12 +125,6 @@ function AppShell() {
           <span className="sync-state" role="status">
             {saving ? "Saving…" : saveError ? "Sync needs attention" : ""}
           </span>
-          <Link
-            className="ask-adler-link"
-            to={`/app/coach?goal=${encodeURIComponent(contextGoal)}`}
-          >
-            Ask Adler <MessageCircle size={16} />
-          </Link>
           <Link className="mobile-logo" to="/" aria-label="Adler home">
             <Asterisk size={27} />
           </Link>
@@ -169,13 +157,14 @@ function AppShell() {
     </div>
   );
 }
+function AboutYouRedirect() {
+  const { search, hash } = useLocation();
+  return <Navigate to={`/app/coach/about-you${search}${hash}`} replace />;
+}
 function CoachSection() {
   return <><nav className="coaching-nav" aria-label="Coaching navigation">
     <NavLink to="/app/coach" end>Chat</NavLink>
-    <NavLink to="/app/insights">Insights</NavLink>
     <NavLink to="/app/coach/about-you">About you</NavLink>
-    <NavLink to="/app/coach/program">Preferences</NavLink>
-    <NavLink to="/app/reviews/current">Review</NavLink>
   </nav><Outlet /></>;
 }
 export function App() {
@@ -205,14 +194,15 @@ export function App() {
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />
           <Route element={<CoachSection />}>
-            <Route path="insights" element={<Insights />} />
+            <Route path="insights" element={<AboutYouRedirect />} />
             <Route path="coach" element={<Coach />} />
-            <Route path="coach/program" element={<Program />} />
-            <Route path="coach/about-you" element={<Memory />} />
+            <Route path="coach/program" element={<Navigate to="/app/settings/coaching" replace />} />
+            <Route path="coach/about-you" element={<><Memory /><Insights /></>} />
             <Route path="reviews/:reviewId" element={<WeeklyReview />} />
           </Route>
           <Route path="calendar" element={<Calendar />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="settings/coaching" element={<Program />} />
           <Route path="settings/provider" element={<ProviderSettings />} />
           <Route path="connections" element={<Connections />} />
         </Route>

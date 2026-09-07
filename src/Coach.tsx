@@ -46,7 +46,7 @@ export function Memory() {
       <div className="page-heading">
         <div>
           <span className="section-kicker">ONLY WHAT YOU CHOOSE TO SHARE</span>
-          <h1>What Adler knows about you.</h1>
+          <h1>About you</h1>
           <p>Context you’ve confirmed. Yours to correct or remove.</p>
         </div>
         <button
@@ -69,7 +69,7 @@ export function Memory() {
       {data.memories.length ? (
         <div className="memory-list">
           {data.memories.map((m) => (
-            <article className="panel memory-card" key={m.id}>
+            <article className="panel memory-card" key={m.id} id={`record-${m.id}`}>
               <span className="memory-check">
                 <Check size={18} />
               </span>

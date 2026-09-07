@@ -203,3 +203,30 @@ test("a check-in supersedes a stale recommendation and schedules a fresh assessm
   assert.equal(service.listProposals(user.id).find(p => p.id === proposal.id)!.status, "stale");
   assert.ok(worker.status(user.id).some(job => job.status === "pending"));
 });
+
+test("a shared conversation records a focused check-in while retaining other goals and safe inline references", async t => {
+  const { db, user, input, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, input, today, "essay");
+  createGoal(state.data, { ...input, title: "Second essay" }, today, "second");
+  state.data.memories.push({ id: "morning", text: "I work best after breakfast", date: today });
+  db.save(user.id, state.data, state.revision, "web", "Fixture");
+  const actionId = state.data.actions[0].id;
+  const service = new Service(db, async (_config, instructions, context: any, schema) => {
+    assert.match(instructions, /behavioral coach, not the user's domain strategist/);
+    assert.equal(context.selectedGoalId, "essay");
+    assert.equal(context.allGoalContexts.length, 2);
+    return schema.parse({ reply: "Your essay update is saved. After breakfast remains something to test.", summary: "Save your reported action", methods: [], execution: "apply",
+      changes: [{ entity: "action", operation: "update", id: actionId, parentId: null, values: JSON.stringify({ outcome: "Partly", note: "Work ran late" }), reason: "You reported partial completion." }],
+      references: [{ text: "essay", recordId: "essay" }, { text: "After breakfast", recordId: "morning" }, { text: "saved", recordId: "foreign" }],
+    });
+  });
+  const result = await service.chat(user.id, "I partly finished the essay action today; work ran late.", "general", "web", "shared-checkin", undefined, undefined, undefined, "essay");
+  assert.equal(result.data.conversations.at(-1).goalId, "general");
+  assert.equal(result.data.actions[0].outcome, "Partly");
+  assert.equal(result.data.goals[0].milestones[0].done, false);
+  assert.equal(result.data.messages.at(-1).goalId, "essay");
+  assert.equal(result.data.decisions.at(-1).goalId, "essay");
+  assert.equal(result.data.messages.at(-1).references.length, 2);
+  assert.equal(result.data.messages.at(-1).references[1].recordId, "morning");
+});

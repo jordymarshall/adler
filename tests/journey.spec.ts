@@ -1,11 +1,11 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register, save, snapshot, synced } from "./fixtures";
+import { register, save, snapshot, synced, coachReply } from "./fixtures";
 import { addDays, dateInZone, reviewBlock } from "../shared/journey";
 import { createGoal } from "../shared/validation";
 import { basis, literature } from "./planning-fixture";
 
-test("one first goal moves through starting, working and checking in without leaving its page", async ({
+test("one first goal starts locally and hands off checking in to shared Coach", async ({
   page,
 }) => {
   await register(page);
@@ -34,7 +34,6 @@ test("one first goal moves through starting, working and checking in without lea
     .fill("Three thumbnails are on paper");
   await page.getByRole("button", { name: "Review my plan" }).click();
   await page.getByRole("button", { name: "Save plan", exact: true }).click();
-  const url = page.url();
   await expect(
     page.locator(".next-step-card .button.primary:visible"),
   ).toHaveCount(1);
@@ -50,17 +49,13 @@ test("one first goal moves through starting, working and checking in without lea
     .getByRole("button", { name: "I’ll do it now", exact: true })
     .click();
   await expect(page.locator('[data-phase="working"]')).toBeVisible();
-  await page.getByRole("button", { name: "I’m finished", exact: true }).click();
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "That’s enough for now." }),
-  ).toBeVisible();
-  expect(page.url()).toBe(url);
-  await synced(page);
+  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Coach" }).click();
+  await expect(page).toHaveURL(/\/app\/coach/);
+  await expect(page.getByLabel("Message Adler")).toContainText("Sketch three thumbnails");
   const { data } = await snapshot(page);
   expect(data.actions).toHaveLength(1);
   expect(data.actions[0].startedAt).toBeTruthy();
-  expect(data.actions[0].outcome).toBe("Done");
+  expect(data.actions[0].outcome).toBeUndefined();
   expect(data.goals[0].results.at(-1)?.value).toBe(0);
 });
 
@@ -139,13 +134,11 @@ test("evidence is disclosed on request and action observations stay separate fro
     "https://europepmc.org/article/MED/26479070",
   );
   await page.getByRole("button", { name: "Start action", exact: true }).click();
-  await page.getByRole("button", { name: "I’m finished", exact: true }).click();
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  await page.getByLabel("Outline points drafted (points) · optional").fill("4");
-  await page
-    .getByRole("button", { name: "Save check-in", exact: true })
-    .click();
-  await synced(page);
+  await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 4 }) }]);
+  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Coach" }).click();
+  await page.getByLabel("Message Adler").fill("Done today, four outline points.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
   const { data } = await snapshot(page);
   expect(data.actions[0].amount).toBe(4);
   expect(data.goals[0].results.at(-1)?.value).toBe(0);
@@ -172,36 +165,15 @@ test("conversations open on request, inherit the goal and can move to General", 
   expect((await snapshot(page)).data.conversations[0].goalId).toBe("general");
 });
 
-test("reviews keep prior history and ask for one piece of context in the same flow", async ({
-  page,
-}) => {
+test("opening a review in Coach preserves history and does not record an outcome", async ({ page }) => {
   await register(page, true);
   const state = await snapshot(page);
-  state.data.review = {
-    step: 3,
-    note: "Old note",
-    decision: "Keep",
-    completedAt: "2026-01-04T20:00:00Z",
-    periodStart: "2025-12-29",
-    periodEnd: "2026-01-04",
-  };
-  state.data.reviews.push(state.data.review);
+  state.data.reviews.push({ step: 3, note: "Old note", decision: "Keep", completedAt: "2026-01-04T20:00:00Z", periodStart: "2025-12-29", periodEnd: "2026-01-04" });
   await save(page, state.data, state.revision);
   await page.goto("/app/reviews/current");
-  await page
-    .getByLabel("What helped or got in the way?")
-    .fill("My drafting time was interrupted.");
-  await synced(page);
-  await page.getByText("Other options", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Keep my current plans", exact: true })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: "Your week is reviewed." }),
-  ).toBeVisible();
-  const { data } = await snapshot(page);
-  expect(data.reviews.at(-1)?.note).toBe("My drafting time was interrupted.");
-  expect(data.reviews[0].note).toBe("Old note");
+  await expect(page.getByLabel("Message Adler")).toContainText("review");
+  expect((await snapshot(page)).data.reviews).toHaveLength(1);
+  expect((await snapshot(page)).data.reviews[0].note).toBe("Old note");
 });
 
 test("Today follows the account date and current scheduled work takes priority over old check-ins", async ({
@@ -323,66 +295,16 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the landing uses Adler Warm and one disclosed six-step journey", async ({
-  page,
-}) => {
+test("the landing uses Adler Warm and five focused chapters on desktop and mobile", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".hero-intro-v2 h1")).toContainText("Big goals.");
-  await expect(page.locator(".eyebrow")).toHaveCount(0);
-  await expect(page.locator("#the-path .section-intro h2")).toHaveText(
-    "Reach your goals with a planthat adapts to you.",
-  );
-  await expect(page.locator("#step-6 .chapter-copy h3")).toHaveText(
-    /Life moves\.Your planshould, too\./,
-  );
-  expect(
-    await page
-      .locator(".hero-intro-v2 h1")
-      .evaluate((el) => getComputedStyle(el).fontFamily),
-  ).toContain("Adler Warm");
-  await page.evaluate(() => document.fonts.ready);
-  expect(
-    await page.evaluate(() => document.fonts.check('450 16px "Adler Warm"')),
-  ).toBeTruthy();
-  await expect(page.locator(".chapter-panel")).toHaveCount(6);
-  await expect(page.locator(".walk-step, .landing-walkthrough")).toHaveCount(0);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const preview = page.locator(".landing-plan-preview");
-  await expect(preview.locator(".primary:visible")).toHaveCount(1);
-  await expect(
-    page.locator("#step-1 details[open], #step-2 details[open]"),
-  ).toHaveCount(0);
-  await preview.getByRole("link", { name: "Start plan" }).click();
-  await expect(page.locator("#step-2")).toBeInViewport();
-  await page
-    .locator("#step-2")
-    .getByRole("link", { name: "Start plan" })
-    .click();
-  await expect(page.locator("#step-3")).toBeInViewport();
-  await expect(page.locator("#step-3 .suggested-time")).toContainText(
-    "6:30 pm",
-  );
-  await page
-    .locator("#step-3")
-    .getByRole("button", { name: "Save time" })
-    .click();
-  await expect(page.locator("#step-3")).toContainText(
-    "Check in after the session",
-  );
-  await expect(page.locator("#step-3 .chapter-copy")).toContainText(
-    "automatically revises its timing suggestions",
-  );
-  await expect(page.locator("#step-3 .chapter-copy")).toContainText(
-    "You confirm changes",
-  );
-  await expect(page.locator(".chapter-connected .text-phone")).toHaveCount(1);
-  await expect(page.locator(".connection-brands img")).toHaveCount(3);
+  await expect(page.locator(".adaptive-hero h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  expect(await page.locator(".adaptive-hero h1").evaluate(el => getComputedStyle(el).fontFamily)).toContain("Adler Warm");
+  await expect(page.locator(".focus-chapter")).toHaveCount(5);
+  await expect(page.locator(".hero-assembled")).toHaveCount(0);
+  await expect(page.locator("#step-5")).toContainText("Apple Health");
+  await expect(page.locator("#step-5 .connection-availability").filter({ hasText: "Coming soon" })).toHaveCount(2);
   await page.setViewportSize({ width: 390, height: 844 });
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth + 1,
-    ),
-  ).toBeTruthy();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
@@ -413,7 +335,7 @@ test("the progress and proposal graph fills its container and has readable label
     const graphBottom =
       (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
     const nextRow = await page
-      .locator(".proposed-checkpoint-note")
+      .locator(".preview-chat")
       .boundingBox();
     expect(nextRow!.y).toBeGreaterThan(graphBottom);
   }
@@ -462,6 +384,8 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
     const input = route.request().postDataJSON();
     requests.push(input.message);
     const state = await snapshot(page);
+    input.conversationId ??= crypto.randomUUID();
+    if (!state.data.conversations.some(c => c.id === input.conversationId)) state.data.conversations.push({ id: input.conversationId, title: "Shared coaching", goalId: "general", createdAt: new Date().toISOString() });
     const now = new Date().toISOString();
     state.data.messages.push({
       id: crypto.randomUUID(),
@@ -515,25 +439,27 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
     .getByLabel("What do you want to achieve?")
     .fill("I want to publish something.");
   await page.getByRole("button", { name: "Continue", exact: true }).click();
+  await page.getByRole("button", { name: "Send message", exact: true }).click();
   await expect(page.locator(".coach-thread")).toContainText(
     "What would you like to publish?",
   );
   expect(requests).toHaveLength(1);
-  await expect(page).toHaveURL(/\/app\/onboarding$/);
+  await expect(page).toHaveURL(/\/app\/coach/);
   await expect(page.getByLabel("Message Adler")).toHaveValue("");
   await page
     .getByLabel("Message Adler")
     .fill("An essay about my project, on my website.");
   await page.getByRole("button", { name: "Send message" }).click();
-  await expect(page).toHaveURL(/\/app\/goals\/essay$/);
+  await expect.poll(async () => (await snapshot(page)).data.goals.length).toBe(1);
+  await page.goto("/app/goals/essay");
   await expect(
     page.getByRole("button", { name: "Start plan", exact: true }),
   ).toBeVisible();
   expect(requests).toHaveLength(2);
   expect((await snapshot(page)).data.conversations.at(-1)?.goalId).toBe(
-    "essay",
+    "general",
   );
-  await page.getByText("Questions & conversations", { exact: true }).click();
+  await page.goto("/app/coach");
   await expect(page.locator(".coach-thread:visible")).toContainText(
     "What would you like to publish?",
   );
@@ -696,7 +622,7 @@ test("calendar day selection books that day and a block opens its own action", a
   );
 });
 
-test("a directly applied action returns from inline coaching to the next step", async ({
+test("a change discussed in shared Coach updates the next step", async ({
   page,
 }) => {
   await register(page, true);
@@ -735,10 +661,12 @@ test("a directly applied action returns from inline coaching to the next step", 
     .getByRole("button", { name: "Ask Adler", exact: true })
     .click();
   await page
-    .locator(".embedded-coach:visible")
+    .locator(".focused-coach")
     .getByLabel("Message Adler")
     .fill("Make this three points instead of five.");
   await page.getByRole("button", { name: "Send message", exact: true }).click();
+  await expect.poll(async () => (await snapshot(page)).data.actions[0].title).toBe("Draft three main points");
+  await page.goto("/app/goals/essays");
   await expect(page.locator('[data-phase="ready"]')).toContainText(
     "Draft three main points",
   );
@@ -770,89 +698,27 @@ test("latest action observations use the last check-in when records share a date
   );
 });
 
-test("the six-step story follows normal scrolling and uses the app chart throughout", async ({
-  page,
-}) => {
+test("each of the five chapters holds its own viewport and remains readable without motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
-  const panels = page.locator(".chapter-flow .chapter-panel");
-  await expect(panels).toHaveCount(6);
-  for (let index = 0; index < 6; index++) {
-    const panel = panels.nth(index);
-    await panel.evaluate((node) =>
-      window.scrollTo({
-        top: scrollY + node.getBoundingClientRect().top - innerHeight * 0.25,
-        behavior: "instant",
-      }),
-    );
-    await expect(panel.locator(".chapter-number")).toHaveAttribute(
-      "aria-current",
-      "step",
-    );
-    await expect(panel.locator(".chapter-visual")).toBeVisible();
+  const panels = page.locator(".focus-chapter");
+  for (let i = 0; i < 5; i++) {
+    const panel = panels.nth(i);
+    await panel.evaluate(node => window.scrollTo({ top: scrollY + node.getBoundingClientRect().top + 20, behavior: "instant" }));
+    await expect(panel).toHaveClass(/is-current/);
+    await expect(panel.locator(".chapter-stage")).toHaveCSS("position", "sticky");
+    await expect(panel.locator(".chapter-copy h2")).toBeInViewport();
   }
-  const paths = await page
-    .locator(".v2-landing .chart-actual")
-    .evaluateAll((elements) => elements.map((el) => el.getAttribute("d")));
-  expect(paths).toHaveLength(2);
-  expect(new Set(paths).size).toBe(1);
-  await page.goto("/#step-6");
-  await page.locator(".remembered-context > summary").click();
-  await expect(page.locator("#step-6")).toContainText("Adler remembers");
-  await expect(page.locator(".remembered-context")).toBeInViewport();
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(panels.nth(1).locator(".chapter-visual")).toHaveCSS(
-    "transform",
-    "none",
-  );
+  await expect(panels.nth(1).locator(".chapter-stage")).toHaveCSS("position", "static");
 });
 
-test("the opening animation gathers the cards into one usable next step", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
-  await page.emulateMedia({ reducedMotion: "no-preference" });
+test("the opening animation uses a concrete nonfitness goal and respects reduced motion", async ({ page }) => {
   await page.goto("/");
-  const hero = page.locator(".journey-hero");
-  await expect(hero).toHaveAttribute("data-scene", "intro");
-  await expect(page.locator(".hero-objects")).toBeVisible();
-  await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
-  const labelPixels = await page
-    .locator(".floating-progress .progress-viz > svg")
-    .evaluate((el) => {
-      const svg = el as unknown as SVGSVGElement;
-      return (
-        parseFloat(getComputedStyle(svg.querySelector("text")!).fontSize) *
-        svg.getScreenCTM()!.a
-      );
-    });
-  expect(labelPixels).toBeGreaterThanOrEqual(8.5);
-  await hero.evaluate((node) =>
-    window.scrollTo(
-      0,
-      (node.getBoundingClientRect().height - innerHeight) * 0.5,
-    ),
-  );
-  await expect(hero).toHaveAttribute("data-scene", "transition");
-  await expect(page.locator(".hero-buttons")).toHaveAttribute("inert", "");
-  await expect(page.locator(".hero-assembled")).toHaveAttribute("inert", "");
-  const hiddenAction = page.locator(".hero-buttons .dark");
-  await hiddenAction.focus();
-  await expect(hiddenAction).not.toBeFocused();
-  await hero.evaluate((node) =>
-    window.scrollTo(
-      0,
-      (node.getBoundingClientRect().height - innerHeight) * 0.95,
-    ),
-  );
-  await expect(hero).toHaveAttribute("data-scene", "plan");
-  const preview = page.locator(".hero-assembled");
-  await expect(preview).not.toHaveAttribute("inert", "");
-  await expect(preview.locator(".primary")).toBeInViewport({ ratio: 1 });
-  await expect(page.locator(".hero-buttons")).toHaveAttribute("inert", "");
-  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  await preview.getByRole("link", { name: "Start plan" }).click();
-  await expect(page.locator("#step-2")).toBeInViewport();
+  await expect(page.locator(".hero-plan-story")).toContainText("Publish my portfolio");
+  await expect(page.locator(".hero-plan-story")).toContainText("25 minutes after breakfast");
+  await expect(page.locator(".hero-story-card")).toHaveCount(3);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(hero).toHaveAttribute("data-scene", "static");
-  await expect(page.locator(".hero-sticky")).toHaveCSS("position", "relative");
+  await expect(page.locator(".hero-story-card").first()).toHaveCSS("animation-name", "none");
+  await expect(page.getByRole("heading", { name: "A clear next step." })).toHaveCount(0);
 });

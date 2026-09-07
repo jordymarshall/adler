@@ -6,7 +6,7 @@ import { actionStep, stepDates } from "./adaptive-plan.ts";
 export const forecastSchema = z.object({
   at: z.iso.datetime(), asOf: z.iso.date(), anchorDate: z.iso.date().optional(), planVersion: z.number().int(),
   status: z.enum(["unavailable", "provisional", "reached", "beyond-horizon"]),
-  method: z.enum(["none", "observed-rate", "behavior-rate"]),
+  method: z.enum(["none", "observed-rate", "behavior-rate", "assumed-rate"]),
   reason: z.string().max(3000), inputKey: z.string().max(100000),
   sourceIds: z.array(z.string()).max(10000),
   inputs: z.array(z.object({ label: z.string(), value: z.string() }).strict()).max(20),
@@ -39,7 +39,7 @@ export function forecastGoal(data: Data, goal: Goal, now = new Date()): Forecast
   const forecast: Forecast = {
     at: now.toISOString(), asOf: today, planVersion: version.version,
     status: "unavailable", method: settings?.method ?? "none", reason: "Building the first estimate.",
-    inputKey: JSON.stringify({ modelVersion: 2, today, version: version.version, settings, window: plan?.window, driver,
+    inputKey: JSON.stringify({ modelVersion: 3, today, version: version.version, settings, window: plan?.window, driver,
       target: goal.measure, targetDate: goal.targetDate, observations, actions: actions.map(a => [a.id, a.date, a.outcome, a.amount, a.planVersion]) }),
     sourceIds: observations.map(r => r.id), current: last?.value ?? null, anchorDate: last?.date,
     inputs: [
@@ -51,7 +51,7 @@ export function forecastGoal(data: Data, goal: Goal, now = new Date()): Forecast
     horizonDate: addDays(today, settings?.horizonDays ?? 90),
   };
   function unavailable(reason: string) { forecast.reason = reason; return forecast; }
-  if (!plan || !settings || settings.method === "none") return unavailable(settings?.rationale ?? "A forecast method has not been chosen for this goal.");
+  if (!plan || !settings) return unavailable("A forecast method has not been chosen for this goal.");
   if (!goal.measure || goal.measure.aggregation !== "cumulative")
     return unavailable("This rate model requires a cumulative outcome. Period totals, skill scores, and deliverables need a different model.");
   if (last && last.value >= goal.measure.target) {
@@ -59,8 +59,23 @@ export function forecastGoal(data: Data, goal: Goal, now = new Date()): Forecast
     forecast.expectedDate = last!.date;
     return unavailable("Your recorded outcome has reached the target.");
   }
-  if (observations.length < settings.minimumObservations)
-    return unavailable(`Record ${settings.minimumObservations} dated outcome observations to build this estimate; ${observations.length} are available.`);
+  if (observations.length < settings.minimumObservations) {
+    if (settings.initialDailyRate && last && days(last.date, today) <= settings.freshnessDays) {
+      const rate = settings.initialDailyRate;
+      const finish = addDays(last.date, Math.ceil((goal.measure.target - last.value) / rate));
+      forecast.method = "assumed-rate";
+      forecast.status = finish <= forecast.horizonDate ? "provisional" : "beyond-horizon";
+      if (finish <= forecast.horizonDate) forecast.expectedDate = finish;
+      forecast.rates = { low: rate, typical: rate, high: rate };
+      forecast.reason = `Initial scenario using a stated assumption of ${rate} ${goal.measure.unit} per day, not measured pace. ${settings.rationale}`;
+      forecast.inputs.push({ label: "User-supplied pace assumption", value: `${rate} ${goal.measure.unit} per day. Replace with observed pace as enough results arrive.` });
+      if (goal.targetDate && goal.targetDate >= last.date && goal.targetDate <= forecast.horizonDate)
+        forecast.expectedValue = rounded(last.value + rate * days(last.date, goal.targetDate));
+      return forecast;
+    }
+    return unavailable(`Share ${settings.minimumObservations} dated outcome observations in Coach to estimate your pace; ${observations.length} are available. A rough pace you supply can support an initial scenario.`);
+  }
+  if (settings.method === "none") forecast.method = "observed-rate";
   if (days(last!.date, today) > settings.freshnessDays)
     return unavailable(`The latest outcome is from ${last!.date}. Update it before relying on a forecast.`);
   forecast.inputs.push({ label: "Outcome evidence", value: `${observations.length} observations, ${observations[0].date}–${last!.date}` });

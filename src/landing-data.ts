@@ -1,130 +1,100 @@
 import type { Goal } from "./store";
-
 export const demoGoal: Goal = {
-  id: "demo-running",
-  title: "Run 5 km without stopping by November 15",
-  kind: "practical",
+  id: "demo-portfolio",
+  title: "Publish my portfolio with 3 case studies by November 15",
+  kind: "project",
   status: "Active",
-  area: "Personal",
-  tags: ["Running", "Fitness"],
+  area: "Career",
+  tags: ["Portfolio", "Creative"],
   priority: "Focus",
-  why: "Join my friends for our local 5 km run.",
-  success:
-    "Complete the full 5 km route without a walking break and record the distance.",
-  target: 5,
-  unit: "km",
+  why: "Have work I’m proud to share when the next opportunity comes.",
+  success: "My portfolio is live with three finished case studies.",
+  target: 3,
+  unit: "case studies",
   measure: {
-    label: "Longest run without stopping",
-    unit: "km",
-    target: 5,
-    baseline: 1,
+    label: "Published case studies",
+    unit: "case studies",
+    target: 3,
+    baseline: 0,
+    aggregation: "cumulative",
   },
   targetDate: "2026-11-15",
   outcomeUpdatedAt: "2026-10-17",
-  milestones: [3, 4, 5].map((distance) => ({
-    id: `km-${distance}`,
-    title: `Run ${distance} km without stopping`,
-    criterion: `A recorded ${distance} km run with no walking breaks`,
-    done: distance <= 2,
+  milestones: [1, 2, 3].map((value) => ({
+    id: `case-${value}`,
+    title: `Publish case study ${value}`,
+    criterion: `Case study ${value} is live on my portfolio.`,
+    done: value === 1,
   })),
   plans: [
     {
       version: 1,
       date: "2026-10-12",
-      action: "Go for the run I planned",
-      criterion: "Record whether I ran and the distance I covered.",
-      timing: "Tuesday & Thursday, 6:30 pm · Sunday, 9:00 am",
+      action: "Work on the case study I chose",
+      criterion:
+        "Spend 25 focused minutes on my draft and note where I stopped.",
+      timing: "Tuesday & Thursday, after breakfast",
+      durationMinutes: 25,
     },
   ],
   checkpoints: [
-    {
-      id: "p0",
-      date: "2026-10-01",
-      value: 1,
-      label: "Run 1 km without stopping",
-    },
-    {
-      id: "p1",
-      date: "2026-10-08",
-      value: 2,
-      label: "Run 2 km without stopping",
-    },
-    {
-      id: "p2",
-      date: "2026-10-15",
-      value: 3,
-      label: "Run 3 km without stopping",
-    },
+    { id: "p0", date: "2026-10-01", value: 0, label: "Starting point" },
+    { id: "p1", date: "2026-10-15", value: 1, label: "First case study live" },
+    { id: "p2", date: "2026-11-01", value: 2, label: "Second case study live" },
     {
       id: "p3",
-      date: "2026-11-01",
-      value: 4,
-      label: "Run 4 km without stopping",
-    },
-    {
-      id: "p4",
       date: "2026-11-15",
-      value: 5,
-      label: "Complete the 5 km route",
+      value: 3,
+      label: "Portfolio ready to share",
     },
   ],
   results: [
     {
       id: "r0",
       date: "2026-10-01",
-      value: 1,
-      source: "Recorded a 1 km run without stopping",
+      value: 0,
+      source: "No case studies published yet",
     },
     {
       id: "r1",
       date: "2026-10-11",
-      value: 2,
-      source: "Recorded a 2 km run without stopping",
+      value: 1,
+      source: "Published the first case study",
     },
     {
       id: "r2",
       date: "2026-10-17",
-      value: 2,
+      value: 1,
       source:
-        "Confirmed 2 km is still my longest run; both weekday runs were missed",
+        "Still one published; I spent both sessions editing the same draft",
     },
   ],
 };
-
 export const demoProposedCheckpoints = [
-  { date: "2026-10-17", value: 2 },
-  { date: "2026-11-01", value: 3 },
-  { date: "2026-11-08", value: 4 },
-  { date: "2026-11-15", value: 5 },
+  { date: "2026-10-17", value: 1 },
+  { date: "2026-11-08", value: 2 },
+  { date: "2026-11-22", value: 3 },
 ];
-
 export const demoPlanChanges = [
   {
-    label: "Approach",
-    before: "Three 25-minute sessions",
-    after: "Two 15-minute sessions, then review",
+    label: "Starting cue",
+    before: "Work on it when I have time",
+    after: "Open my draft after breakfast",
     reason:
-      "You have 15 minutes free in the morning. Test a smaller commitment before adding more sessions.",
+      "Attach the session to something already in your day. Test whether this makes starting easier.",
   },
   {
-    label: "Preparation",
-    before: "Get ready when it’s time to leave",
-    after: "Lay your kit out the night before",
+    label: "Session",
+    before: "Keep polishing until it feels ready",
+    after: "25 minutes on the finish line you choose",
     reason:
-      "Getting ready earlier may make it easier to start. This is a hypothesis to check next week.",
+      "You reported repeatedly editing. A concrete stopping point may help; we’ll check what happens.",
   },
   {
-    label: "Milestones",
-    before: "3 km · Oct 15 / 4 km · Nov 1",
-    after: "3 km · Nov 1 / 4 km · Nov 8",
+    label: "Smaller option",
+    before: "Skip it when the day gets busy",
+    after: "5 minutes to leave a note for tomorrow",
     reason:
-      "Your longest continuous run is still 2 km. Revisit the intermediate checkpoints while keeping the 5 km goal visible.",
-  },
-  {
-    label: "Timing",
-    before: "Weekdays at 6:30 pm",
-    after: "Weekdays at 7:00 am",
-    reason:
-      "Work interrupted both evening runs, and you’ve said mornings are usually free.",
+      "Keep an easy way back into the work, without pretending a smaller session means a published case study.",
   },
 ];

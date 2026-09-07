@@ -380,6 +380,7 @@ export function createRuntime(directory?: string) {
             message: z.string().trim().min(1).max(5000),
             goalId: z.string().max(100).default("general"),
             conversationId: z.string().max(100).optional(),
+            focusGoalId: z.string().max(100).optional(),
             requestId: z.string().min(8).max(100),
           })
           .strict()
@@ -394,6 +395,8 @@ export function createRuntime(directory?: string) {
             input.requestId,
             undefined,
             input.conversationId,
+            undefined,
+            input.focusGoalId,
           ),
         );
       }

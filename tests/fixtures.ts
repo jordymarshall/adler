@@ -67,3 +67,30 @@ export async function synced(page: Page) {
   await expect(page.getByText("Saving…", { exact: true })).toHaveCount(0);
   await expect(page.locator(".save-error")).toHaveCount(0);
 }
+
+// Exercise the real save/command paths while substituting a deterministic model reply.
+export async function coachReply(page: Page, changes: import("../server/commands").Change[], reply = "Your update is saved.") {
+  await page.route("**/api/status", async route => {
+    const response = await route.fetch();
+    await route.fulfill({ json: { ...await response.json(), coach: { configured: true, model: "fixture" } } });
+  });
+  await page.route("**/api/coach", async route => {
+    const input = route.request().postDataJSON();
+    const conversationId = input.conversationId ?? crypto.randomUUID();
+    if (!input.conversationId) {
+      const response = await page.request.post("/api/conversations", { data: { entity: "conversation", operation: "create", id: conversationId, parentId: null, values: JSON.stringify({ title: "Shared coaching", goalId: "general" }) } });
+      expect(response.ok()).toBeTruthy();
+    }
+    if (changes.length) {
+      const response = await page.request.post("/api/proposals", { data: { summary: reply, changes } });
+      expect(response.ok()).toBeTruthy();
+      const proposal = await response.json();
+      const applied = await page.request.post(`/api/proposals/${proposal.id}/approve`, { data: {} });
+      expect(applied.ok()).toBeTruthy();
+    }
+    const state = await snapshot(page);
+    state.data.messages.push({ id: crypto.randomUUID(), conversationId, goalId: "general", role: "user", text: input.message }, { id: crypto.randomUUID(), conversationId, goalId: "general", role: "coach", text: reply });
+    await save(page, state.data, state.revision);
+    await route.fulfill({ json: { conversationId, data: state.data } });
+  });
+}

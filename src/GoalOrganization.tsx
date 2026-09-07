@@ -9,12 +9,14 @@ import {
 } from "lucide-react";
 import { GoalIcon, Modal } from "./components";
 import {
-  currentPlan,
   formatDate,
   localDate,
   useStore,
   type Goal,
 } from "./store";
+import { BehaviorChart } from "./BehaviorChart";
+import { ProgressChart } from "./ProgressChart";
+import { forecastGoal } from "../shared/forecast";
 import type { GoalArea } from "./program-types";
 
 export function OrganizedGoals() {
@@ -43,6 +45,7 @@ export function OrganizedGoals() {
           <Plus size={17} /> New goal
         </Link>
       </div>
+      {data.goals.length > 0 && <BehaviorChart data={data} />}
       {data.goals.length > 0 && (
         <>
           <details className="quiet-disclosure">
@@ -112,24 +115,10 @@ export function OrganizedGoals() {
       )}
       <div className="goal-groups">
         {goals.map((goal) => (
-          <Link
-            className="goal-list-row"
-            key={goal.id}
-            to={`/app/goals/${goal.id}`}
-          >
-            <GoalIcon kind={goal.kind} small />
-            <div>
-              <h2>{goal.title}</h2>
-              <p>
-                {goal.status === "Draft"
-                  ? "Ready to start"
-                  : goal.status !== "Active"
-                    ? goal.status
-                    : currentPlan(goal).action}
-              </p>
-            </div>
-            <ArrowUpRight size={17} />
-          </Link>
+          <article className="goal-chart-row" key={goal.id}>
+            <div className="goal-row-summary"><GoalIcon kind={goal.kind} small /><span className="section-kicker">{goal.status}</span><Link to={`/app/goals/${goal.id}`}><h2>{goal.title} <ArrowUpRight size={17} /></h2></Link><p>{goal.success}</p><span className="small-text muted">{goal.targetDate ? `Target ${formatDate(goal.targetDate)}` : "No fixed deadline"}</span></div>
+            <ProgressChart goal={goal} compact graphOnly forecast={goal.forecasts?.at(-1) ?? forecastGoal(data, goal)} />
+          </article>
         ))}
       </div>
       {!goals.length && (

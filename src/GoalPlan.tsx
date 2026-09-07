@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, RefreshCw } from "lucide-react";
-import { currentPlan, formatDate, useStore, type Goal, type Milestone } from "./store";
+import { currentPlan, formatDate, useStore, type Goal } from "./store";
 import { dateInZone } from "../shared/journey";
 import { actionReady, planProgress } from "../shared/adaptive-plan";
 import { forecastGoal, type Forecast } from "../shared/forecast";
@@ -10,10 +10,9 @@ import { ProgressChart } from "./ProgressChart";
 import { api, type ServiceStatus } from "./api";
 import type { Proposal } from "../server/service";
 import { ProposalChanges } from "./ProposalChanges";
-import { LiveCoach } from "./LiveCoach";
 
-export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
-  goal: Goal; children: ReactNode; onRecordResult?: () => void; onMilestone: (milestone: Milestone) => void;
+export function GoalPlan({ goal, children }: {
+  goal: Goal; children: ReactNode;
 }) {
   const { data, flush, refresh } = useStore();
   const plan = currentPlan(goal);
@@ -39,7 +38,6 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
   const [jobs, setJobs] = useState<{ goalId: string; status: string; error?: string }[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [chat, setChat] = useState<string | null>(null);
   const [scenario, setScenario] = useState<Forecast | undefined>();
   useEffect(() => {
     let live = true;
@@ -80,9 +78,9 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
         <small>{goal.targetDate ? `${goal.deadline === "firm" ? "Firm deadline" : "Target date"} · ${formatDate(goal.targetDate, { month: "short", day: "numeric", year: "numeric" })}` : "No fixed deadline"}</small></div>
       <div><span>Actual result</span><strong>{actual === null ? "No result yet" : `${actual.toLocaleString()} ${goal.measure?.unit ?? goal.unit ?? "verified"}`}</strong>
         <small>{latest ? `Recorded ${formatDate(latest.date)} · ${latest.source}` : "Awaiting your first observation"}</small>
-        {onRecordResult && <button className="text-link" onClick={onRecordResult}>Record a result</button>}</div>
+</div>
       <div><span>Expected achievement</span><strong>{forecast.expectedDate ? formatDate(forecast.expectedDate, { month: "short", day: "numeric", year: "numeric" }) : forecast.status === "beyond-horizon" ? "Beyond this forecast" : "Building the first estimate"}</strong>
-        <small>{forecast.expectedDate ? "Conditional on the observed pace and stated assumptions" : forecast.reason}</small>
+        <small>{forecast.expectedDate ? forecast.method === "assumed-rate" ? "Initial scenario from your stated pace; not measured progress" : "Conditional on the observed pace and stated assumptions" : forecast.reason}</small>
         {previous && <small>{previous.expectedDate ? `Previously ${formatDate(previous.expectedDate)}` : "Previously unavailable"} · <a href="#forecast-evidence" onClick={() => setEvidenceOpen(true)}>See what changed</a></small>}</div>
     </section>
     <section className="panel plan-timeline" aria-label="Outcome timeline">
@@ -109,7 +107,7 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
           <span>{m.done ? <Check size={15} /> : null}{m.title}</span><small>{m.done ? "Verified" : m.dueDate ? `Target ${formatDate(m.dueDate)}` : "Date to be established"}</small>
         </button>)}
       </div>}
-      {milestone && <div className="plan-milestone-detail"><p>{goal.milestones.find(m => m.id === milestone)?.criterion}</p><button className="text-link" onClick={() => onMilestone(goal.milestones.find(m => m.id === milestone)!)}>Update milestone result</button></div>}
+      {milestone && <div className="plan-milestone-detail"><p>{goal.milestones.find(m => m.id === milestone)?.criterion}</p><Link className="text-link" to={`/app/coach?goal=${goal.id}`}>Discuss in Coach</Link></div>}
     </section>
     <div className={`plan-work-layout ${adaptive ? "" : "legacy-plan-work"}`}>
       {adaptive && <section className="panel plan-work" aria-label="Work in this plan">
@@ -142,7 +140,7 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
       {pending.map(p => <article className="plan-adaptation" key={p.id}>
         <h3>{p.summary}</h3><ProposalChanges changes={p.changes} data={data} beforeRecords={p.before} />
         <div className="plan-actions"><button className="button primary" disabled={busy} onClick={() => void review(p, "approve")}>Accept updated plan <Check size={15} /></button>
-          <button className="button secondary" disabled={busy} onClick={() => { setChat(`I want to edit proposal ${p.id} before accepting it.`); }}>Discuss changes</button>
+          <Link className="button secondary" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to discuss the proposed change: ${p.summary}`)}`}>Discuss changes</Link>
           <button className="text-link" disabled={busy} onClick={() => void review(p, "dismiss")}>Keep current plan</button>
           <button className="text-link" disabled={busy} onClick={() => void preview(p)}>Compare forecast</button></div>
       </article>)}
@@ -151,8 +149,7 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
         {d.insights?.map((insight, i) => <div key={i}><p><b>{insight.status === "To test" ? "Explanation to test" : "Reported"}:</b> {insight.finding}</p>
           <details className="quiet-disclosure"><summary>Evidence behind this observation</summary>{insight.sourceIds.map(id => <p key={id}>{sourceText(id)}</p>)}</details></div>)}
       </article>)}
-      {!pending.length && <button className="button secondary" onClick={() => setChat(adaptive ? "Assess my plan against my reported behavior and results. Explain what to keep or change and when to assess it again." : "Prepare an adaptive-plan upgrade for this existing goal, preserving its history and bookings. Ask only essential missing context, then show a reviewable proposal.")}>{adaptive ? "Review with Adler" : "Prepare updated plan"} <ArrowRight size={15} /></button>}
-      {chat !== null && <div className="plan-inline-coach"><LiveCoach key={chat} embedded goalId={goal.id} initialPrompt={chat} autoSend onContinue={() => setChat(null)} /></div>}
+      {!pending.length && <Link className="text-link" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(adaptive ? "Help me review my behavior and what we should adjust in this plan." : "Help me update this plan around my behavior and what you know about me. Preserve my history and bookings.")}`}>{adaptive ? "Continue in Coach" : "Discuss an updated plan"} <ArrowRight size={15} /></Link>}
     </section>
   </div>;
 }

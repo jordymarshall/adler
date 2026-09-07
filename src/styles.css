@@ -12255,3 +12255,69 @@ input[type="checkbox"] {
 @media (max-width: 600px) {
   .plan-timeline .progress-viz svg text { font-size: 24px; }
 }
+
+/* The workspace uses the available canvas; Coach is the shared reporting surface. */
+.app-shell .app-main, .app-main:has(> .goal-plan), .app-main:has(> .journey-goal-heading) { width: 100%; max-width: none; margin: 0; }
+.organized-goals, .journey-page, .journey-page:has(.goal-plan) { width: 100%; max-width: none; }
+.app-sidebar .sidebar-checkin { margin: 24px 0; justify-content: center; min-height: 44px; }
+.organized-goals .goal-groups { display: block; }
+.goal-chart-row { display: grid; grid-template-columns: minmax(240px, .7fr) minmax(0, 1.5fr); gap: 45px; align-items: center; padding: 30px 0; border-top: 1px solid var(--line); }
+.goal-row-summary > .goal-icon { margin-bottom: 16px; }
+.goal-row-summary > .section-kicker { margin-left: 10px; }
+.goal-row-summary h2 { font-size: 24px; line-height: 1.25; margin: 8px 0 12px; }
+.goal-row-summary h2 svg { vertical-align: middle; }
+.goal-row-summary p { color: var(--muted); font-size: 14px; line-height: 1.6; }
+.goal-chart-row .progress-viz { width: 100%; min-width: 0; }
+.goal-chart-row .chart-legend { flex-wrap: wrap; gap: 12px; }
+.chart-required-pace { fill: none; stroke: #a88954; stroke-width: 2; stroke-dasharray: 2 5; }
+.chart-legend .chart-required-key i { background: #a88954; border: 0; }
+.behavior-overview { margin: 20px 0 30px; padding: 25px 0; border-block: 1px solid var(--line); }
+.behavior-chart-heading { display: flex; justify-content: space-between; gap: 20px; align-items: end; }
+.behavior-chart-heading h2 { margin: 12px 0 4px; font-size: 22px; font-weight: 400; }
+.behavior-chart-heading strong { margin-left: 18px; font-size: 38px; font-weight: 500; color: var(--green); }
+.behavior-chart-heading p { font-size: 12px; color: var(--muted); }
+.behavior-overview svg { width: 100%; display: block; margin-top: 20px; overflow: visible; }
+.behavior-overview svg text { fill: var(--muted); font-size: 11px; }
+.behavior-legend { display: flex; flex-wrap: wrap; gap: 12px 22px; margin: 8px 0 15px; font-size: 12px; }
+.behavior-legend > * { display: inline-flex; align-items: center; gap: 7px; }
+.behavior-legend i { width: 17px; height: 3px; display: inline-block; border-radius: 2px; }
+.focused-coach { max-width: none; position: relative; }
+.focused-coach .live-coach { border: 0; background: transparent; box-shadow: none; padding: 0; }
+.focused-coach .coach-topline { padding: 15px 0; }
+.focused-coach .coach-topline h1 { font-size: 28px; margin: 0; }
+.focused-coach .coach-context-strip { border: 0; padding: 0; }
+.focused-coach .coach-context-strip:empty { display: none; }
+.focused-coach .coach-thread { width: 100%; max-width: 1000px; min-height: calc(100svh - 385px); padding: 18px 0 25px; }
+.focused-coach .live-message { animation: message-arrive .3s ease-out both; gap: 16px; margin: 30px 0; }
+.focused-coach .live-message .message-content { max-width: 850px; border: 0; box-shadow: none; }
+.focused-coach .live-message.coach .message-content { background: transparent; padding: 0; }
+.focused-coach .live-message.user .message-content { border-radius: 22px; background: var(--sage); padding: 13px 22px; }
+.focused-coach .live-message p { font-size: 15px; line-height: 1.75; }
+.focused-coach .live-message p a { text-decoration: underline; text-underline-offset: 3px; text-decoration-color: #9bab83; }
+.focused-coach .message-author { font-size: 10px; }
+.focused-coach .live-composer { position: sticky; bottom: 0; width: 100%; max-width: 1000px; margin: 0 auto; padding: 16px 0 20px; background: var(--bg); border: 0; z-index: 2; }
+.focused-coach .live-composer > div { border: 1px solid var(--line); border-radius: 25px; background: var(--paper); padding: 8px 12px 8px 20px; box-shadow: 0 8px 25px #30422508; }
+.focused-coach .live-composer textarea { font-size: 15px; min-height: 48px; max-height: 180px; field-sizing: content; resize: none; }
+.focused-coach .live-composer > div > button { border-radius: 50%; width: 38px; height: 38px; }
+.focused-coach .chat-library-disclosure { width: auto; max-width: 360px; margin: 0; left: auto; position: absolute; right: 0; top: 18px; z-index: 3; font-size: 12px; }
+.focused-coach .chat-library-disclosure[open] { width: min(350px, 90%); padding: 15px; background: var(--paper); border: 1px solid var(--line); border-radius: 15px; box-shadow: 0 12px 30px #24341912; }
+.coach-working { animation: coach-breathe 1.5s ease-in-out infinite; }
+.review-invitation { border-block: 1px solid var(--line); padding: 30px 0; }
+.memory-page { margin-bottom: 40px; }
+[id^="record-"] { scroll-margin-top: 30px; }
+[id^="record-"]:target { outline: 2px solid #98ab7c; outline-offset: 7px; }
+@keyframes message-arrive { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes coach-breathe { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@media (max-width: 760px) {
+  .goal-chart-row { grid-template-columns: 1fr; gap: 15px; padding: 25px 0; }
+  .behavior-chart-heading { display: block; }
+  .behavior-chart-heading strong { font-size: 30px; }
+  .behavior-overview svg { min-height: 145px; }
+  .focused-coach .live-composer { bottom: 63px; padding-block: 10px; }
+  .focused-coach .live-message.user { padding-left: 20px; }
+  .focused-coach .live-message p, .focused-coach .live-composer textarea { font-size: 16px; }
+  .focused-coach .coach-topline h1 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .focused-coach .live-message, .coach-working { animation: none; }
+}

@@ -4,7 +4,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   BookOpen,
-  Footprints,
+  Briefcase,
   Menu,
   PenLine,
   Plus,
@@ -14,201 +14,203 @@ import {
 import { Logo } from "./LandingArt";
 
 import { LandingHero } from "./LandingHero";
-import { LandingSchedulePreview } from "./LandingPlanPreview";
 import {
   GoalDefinitionPreview,
   WeeklyPlanPreview,
   ProgressProposalPreview,
   AdaptivePlanPreview,
 } from "./LandingJourneyPreviews";
-import { CheckInPreview } from "./CheckInPreview";
 import "./landing-core.css";
 
 const chapters = [
   {
-    label: "Set your goal",
+    label: "Set and manage your goals",
     title: (
       <>
-        Decide exactly what
-        <br />
-        <em>you want to achieve.</em>
+        Make room for <em>what matters to you.</em>
       </>
     ),
-    body: "Tell Adler what you want and why it matters. Together, define what success looks like, where you’re starting, and the milestones along the way.",
+    body: "A project, a new skill, a change you’ve been meaning to make. Define success in your own words and keep your goals together, with priorities and timelines that fit your life.",
     visual: <GoalDefinitionPreview />,
   },
   {
-    label: "Plan your week",
+    label: "A plan Adler helps you manage",
     title: (
       <>
-        Know what to do.
-        <br />
-        <em>And how to tell it’s working.</em>
+        Your goals, organized. <em>Your plan, in motion.</em>
       </>
     ),
-    body: "Adler proposes a strategy and turns it into actions that fit your available time. Know what to do, what result to check, and when to review it. Start with one clear next step.",
+    body: "Adler turns your intentions into manageable actions and habits. It helps you decide when to start, what to focus on, and when to review—whether your goal takes a day or a year.",
     visual: <WeeklyPlanPreview />,
   },
   {
-    label: "Make time",
+    label: "Track and visualize your progress",
     title: (
       <>
-        Give your next step
-        <br />
-        <em>a place in your day.</em>
+        See where you stand. <em>And where you’re heading.</em>
       </>
     ),
-    body: "Choose a time or connect your calendar to find room. As you text, check in, and share more, Adler automatically revises its timing suggestions. You confirm changes before they reach your calendar.",
-    visual: <LandingSchedulePreview />,
-  },
-  {
-    label: "Check in",
-    title: (
-      <>
-        A little closer.
-        <br />
-        <em>Even when you’re away.</em>
-      </>
-    ),
-    body: "After your session, send a quick check-in by text or in Adler: what happened, what helped, and what got in the way. Your reply stays with the goal and informs what comes next.",
-    visual: <ConnectedPreview />,
-  },
-  {
-    label: "See progress",
-    title: (
-      <>
-        See where you stand.
-        <br />
-        <em>And what could change.</em>
-      </>
-    ),
-    body: "Compare your results with the plan. When the approach needs adjusting, see the proposed checkpoints alongside your progress, with a clear explanation of what changes and why.",
+    body: "Text your coach or check in through the app. Your plan, reported progress, and timeline come together in one place, so you can see how your actions and results change the outlook.",
     visual: <ProgressProposalPreview />,
   },
   {
-    label: "Learn and adapt",
+    label: "Behavioural science, personal to you",
     title: (
       <>
-        Life moves.
-        <br />
-        Your plan
-        <br />
-        should, <em>too.</em>
+        Learn what gets in the way. <em>Find what helps you move.</em>
       </>
     ),
-    body: "Adler remembers what you share and keeps reassessing the strategy. At your weekly review, it brings together your check-ins, results, and relevant research to propose changes to the approach, actions, and milestones. You choose what to accept, then test it the following week.",
+    body: "Adler uses behavioural science research and what you share to understand how you work. It proposes adjustments to your cues, habits, and workload, then checks whether they help you succeed.",
     visual: <AdaptivePlanPreview />,
   },
+  {
+    label: "Adler connects to your life",
+    title: (
+      <>
+        Less to explain. <em>More of your life in the picture.</em>
+      </>
+    ),
+    body: "Bring relevant context into the conversation and make room for your goals. Connect your calendar so Adler can help manage your schedule, use the AI tools you already love, and keep your coach close by text.",
+    visual: <ConnectionsPreview />,
+  },
 ];
-
-function ConnectedPreview() {
+function ConnectionsPreview() {
   return (
-    <div className="connected-preview">
-      <div className="connection-orbit" aria-hidden="true" />
-      <div className="connected-phone">
-        <CheckInPreview />
-      </div>
-      <div className="connection-brands" aria-label="Optional connections">
-        {[
-          ["imessage", "iMessage & SMS"],
-          ["google-calendar", "Google Calendar"],
-          ["apple-calendar", "Apple Calendar"],
-        ].map(([brand, label]) => (
-          <div className={`connected-brand brand-${brand}`} key={brand}>
-            <img src={`/brands/${brand}.png`} alt="" />
-            <span>{label}</span>
+    <div className="journey-preview life-connections">
+      <span className="section-kicker">YOUR LIFE, CONNECTED</span>
+      <h3>Fits around you.</h3>
+      {[
+        {
+          title: "Your calendar",
+          description:
+            "Find room and manage scheduled work. You confirm changes to connected calendars.",
+          icon: "google-calendar",
+          status: "Available",
+        },
+        {
+          title: "Claude, ChatGPT & other AI tools",
+          description:
+            "Bring your Adler workspace into compatible AI tools through MCP.",
+          icon: "claude",
+          status: "Available",
+        },
+        {
+          title: "Text your coach",
+          description:
+            "Check in through a configured messaging connection. Your context stays with you.",
+          icon: "imessage",
+          status: "Available",
+        },
+        {
+          title: "Apple Health",
+          description: "Bring health context into your check-in.",
+          status: "Coming soon",
+        },
+        {
+          title: "Shared goals & stakes",
+          description:
+            "Work toward something together, with commitments that matter to you.",
+          status: "Coming soon",
+        },
+      ].map((item) => (
+        <div className="life-connection" key={item.title}>
+          {item.icon ? (
+            <img
+              src={`/brands/${item.icon}.${item.icon === "claude" ? "svg" : "png"}`}
+              alt=""
+            />
+          ) : (
+            <span className="connection-placeholder" aria-hidden="true">
+              +
+            </span>
+          )}
+          <div>
+            <h4>{item.title}</h4>
+            <p>{item.description}</p>
           </div>
-        ))}
-      </div>
-      <p className="connections-caption">
-        Connect what helps. You can also do everything in Adler.
-      </p>
+          <span className="connection-availability">{item.status}</span>
+        </div>
+      ))}
+      <Link className="text-link" to="/integrations">
+        Explore connections <ArrowUpRight size={14} />
+      </Link>
     </div>
   );
 }
-
 function ThePath() {
   const flow = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const node = flow.current!;
-    const panels = [...node.querySelectorAll<HTMLElement>(".chapter-panel")];
+    const panels = [...node.querySelectorAll<HTMLElement>(".focus-chapter")];
+    const motion = matchMedia(
+      "(min-width: 1000px) and (min-height: 760px) and (prefers-reduced-motion: no-preference)",
+    );
     let frame = 0;
     function update() {
       frame = 0;
-      const center = innerHeight * 0.55;
-      const first = panels[0].getBoundingClientRect().top + 77;
-      const last = panels.at(-1)!.getBoundingClientRect().top + 77;
-      const progress = Math.min(
-        1,
-        Math.max(0, (center - first) / Math.max(1, last - first)),
-      );
-      node.style.setProperty("--path-progress", String(progress));
-      node.style.setProperty("--path-length", `${last - first}px`);
-      const current = panels.reduce(
-        (selected, panel, index) =>
-          panel.getBoundingClientRect().top < center ? index : selected,
-        0,
-      );
-      panels.forEach((panel, index) => {
-        panel.classList.toggle("is-current", index === current);
-        panel.classList.toggle("is-past", index < current);
-        const marker = panel.querySelector(".chapter-number")!;
-        if (index === current) marker.setAttribute("aria-current", "step");
-        else marker.removeAttribute("aria-current");
+      panels.forEach((panel) => {
+        const box = panel.getBoundingClientRect();
+        const focus = motion.matches
+          ? Math.min(1, Math.max(0, (innerHeight - box.top) / innerHeight))
+          : 1;
+        panel.style.setProperty("--chapter-focus", String(focus));
+        panel.classList.toggle(
+          "is-current",
+          box.top <= innerHeight * 0.5 && box.bottom > innerHeight * 0.5,
+        );
       });
     }
     function scroll() {
       if (!frame) frame = requestAnimationFrame(update);
     }
     update();
-    const resize = new ResizeObserver(scroll);
-    resize.observe(node);
     addEventListener("scroll", scroll, { passive: true });
     addEventListener("resize", scroll);
+    motion.addEventListener("change", scroll);
     return () => {
-      resize.disconnect();
       removeEventListener("scroll", scroll);
       removeEventListener("resize", scroll);
+      motion.removeEventListener("change", scroll);
       cancelAnimationFrame(frame);
     };
   }, []);
   return (
-    <section className="path-section section-wrap" id="the-path">
-      <div className="section-intro reveal">
-        <h2>
-          Reach your goals with a plan
-          <br />
-          <em>that adapts to you.</em>
-        </h2>
-        <p>
-          A strategy for your goal. A place in your day. A coach that learns
-          about you.
-        </p>
-      </div>
-      <div className="chapter-flow" ref={flow}>
-        <div className="chapter-rail" aria-hidden="true">
-          <span />
-        </div>
+    <section
+      className="adaptive-path"
+      id="the-path"
+      aria-label="How Adler works"
+    >
+      <div ref={flow}>
         {chapters.map((chapter, index) => (
           <article
-            className={`chapter-panel ${index === 3 ? "chapter-connected" : ""}`}
+            className="focus-chapter"
             id={`step-${index + 1}`}
             aria-labelledby={`chapter-title-${index}`}
             key={chapter.label}
           >
-            <span
-              className="chapter-number"
-              aria-label={`Step ${index + 1} of ${chapters.length}`}
-            >
-              0{index + 1}
-            </span>
-            <div className="chapter-copy">
-              <span className="chapter-label">{chapter.label}</span>
-              <h3 id={`chapter-title-${index}`}>{chapter.title}</h3>
-              <p>{chapter.body}</p>
-            </div>
-            <div className={`chapter-visual chapter-${index}`}>
-              {chapter.visual}
+            <div className="chapter-stage">
+              <div className="chapter-copy">
+                <span className="chapter-label">
+                  <span className="focus-number">0{index + 1}</span>
+                  {chapter.label}
+                </span>
+                <h2 id={`chapter-title-${index}`}>{chapter.title}</h2>
+                <p>{chapter.body}</p>
+                <div
+                  className="chapter-position"
+                  aria-label={`Step ${index + 1} of 5`}
+                >
+                  {chapters.map((item, i) => (
+                    <a
+                      href={`#step-${i + 1}`}
+                      key={item.label}
+                      aria-label={item.label}
+                      aria-current={i === index ? "step" : undefined}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="chapter-visual">{chapter.visual}</div>
             </div>
           </article>
         ))}
@@ -266,8 +268,8 @@ export function Landing() {
           <span>FOR WHATEVER FORWARD MEANS TO YOU.</span>
           <div>
             <span>
-              <Footprints />
-              Run a little further
+              <Briefcase />
+              Take the next career step
             </span>
             <span>
               <PenLine />
@@ -294,8 +296,8 @@ export function Landing() {
             <p>
               You shouldn’t need a professional coach to get thoughtful help
               with your goals. Adler brings behavioural research into everyday
-              planning, with ongoing support to choose a strategy, make time,
-              and adapt when life changes.
+              planning, with ongoing support to build a workable rhythm, make
+              time, and adapt when life changes.
             </p>
           </div>
           <div className="principles">
@@ -306,10 +308,10 @@ export function Landing() {
                 <span />
                 <span className="art-destination" />
               </div>
-              <h3>A strategy with a reason.</h3>
+              <h3>A behaviour worth testing.</h3>
               <p>
-                Adler researches approaches, weighs them against your goal and
-                constraints, and explains why it recommends a particular plan.
+                Adler helps you define success, understand what gets in your
+                way, and choose an execution experiment with a clear reason.
               </p>
               <a
                 href="https://doi.org/10.1037/0003-066X.57.9.705"
@@ -327,9 +329,9 @@ export function Landing() {
               </div>
               <h3>A plan it helps you manage.</h3>
               <p>
-                Turn the strategy into milestones, realistic work sessions, and
-                one clear next action. Adler helps you revisit timing and
-                priorities as your week changes.
+                Give your intentions a cue, a manageable commitment, and a time
+                to reflect. Adler helps you revisit timing and priorities as
+                your circumstances change.
               </p>
               <a
                 href="https://doi.org/10.1016/S0065-2601(06)38002-1"
@@ -371,7 +373,7 @@ export function Landing() {
           {[
             [
               "What can I work toward?",
-              "A fitness goal, a creative project, a skill you want to learn, or a change in your everyday life. Start with something that matters to you; Adler helps make the outcome and next step clear.",
+              "A career goal, a creative project, a skill you want to learn, or a change in your everyday life. Start with something that matters to you; Adler helps make the outcome and next step clear.",
             ],
             [
               "What happens when I miss a step?",
@@ -391,7 +393,7 @@ export function Landing() {
             ],
             [
               "How do I start?",
-              "Describe one goal. Adler helps clarify the result and researches an approach. Review your first step, start the plan, and choose when to do it. Your account keeps your goals and check-ins. Coaching requires a configured AI provider.",
+              "Describe one goal. Adler helps clarify the result and build a plan around how you work. Review your first step, start the plan, and choose when to do it. Your account keeps your goals and check-ins. Coaching requires a configured AI provider.",
             ],
           ].map(([q, a]) => (
             <details key={q}>

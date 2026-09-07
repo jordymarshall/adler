@@ -126,6 +126,7 @@ export interface Message {
   decisionId?: string;
   conversationId?: string;
   links?: { goalId: string; tab: "progress" | "plan" }[];
+  references?: { text: string; recordId: string }[];
   channel?: "web" | "sms" | "imessage" | "rcs" | "whatsapp" | "mcp" | "job";
   reactions?: Partial<
     Record<"user" | "coach", { type: Reaction | null; at: string }>

@@ -1,5 +1,4 @@
 import { dateInZone, reviewSchedule } from "../shared/journey";
-import { LiveCoach } from "./LiveCoach";
 import { GoalOverview } from "./GoalOverview";
 import { GoalPlan } from "./GoalPlan";
 import { PlanExplanation } from "./PlanExplanation";
@@ -14,7 +13,6 @@ import {
   ChevronDown,
   Circle,
   History,
-  Plus,
   Settings2,
 } from "lucide-react";
 import { EmptyState, GoalIcon, Modal, Tag } from "./components";
@@ -22,16 +20,12 @@ import {
   applyPlan,
   currentPlan,
   formatDate,
-  localDate,
   useStore,
-  type Action,
   type Goal,
   type GoalStatus,
-  type Milestone,
 } from "./store";
 import { ProgressRecords } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
-import { RecordAction } from "./ActionCheckIn";
 
 function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   const { commit } = useStore();
@@ -131,12 +125,6 @@ export function GoalWorkspace({
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
   const [editing, setEditing] = useState(false);
-  const [result, setResult] = useState<Milestone | "assessment" | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
-  const [score, setScore] = useState("");
-  const [source, setSource] = useState("");
-  const [resultDate, setResultDate] = useState(localDate());
-  const [recording, setRecording] = useState<Action | null>(null);
   const [statusChange, setStatusChange] = useState<GoalStatus | null>(null);
   if (!goal)
     return (
@@ -177,41 +165,6 @@ export function GoalWorkspace({
   const amounts = (
     actionMeasure?.period === "action" ? observations.slice(0, 1) : observations
   ).filter((a) => a.amount !== undefined);
-  function saveResult(e: FormEvent) {
-    e.preventDefault();
-    if (!confirmed) return;
-    if (
-      commit((d) => {
-        const g = d.goals.find((g) => g.id === goalId)!;
-        if (result === "assessment") {
-          g.results.push({
-            id: crypto.randomUUID(),
-            value: Number(score),
-            source: source.trim(),
-            date: resultDate,
-          });
-          g.results.sort((a, b) => a.date.localeCompare(b.date));
-        } else if (result) {
-          const milestone = g.milestones.find((m) => m.id === result.id)!;
-          milestone.done = !result.done;
-          milestone.completedAt = milestone.done ? localDate() : undefined;
-          if (!g.measure && g.kind !== "learning")
-            g.results.push({
-              id: crypto.randomUUID(),
-              date: localDate(),
-              value: g.milestones.filter((m) => m.done).length,
-              source: `${milestone.done ? "Verified" : "Reopened"}: ${milestone.title}`,
-            });
-        }
-        g.outcomeUpdatedAt = g.results.at(-1)?.date;
-      }, "Result saved. Goal progress is updated everywhere.")
-    ) {
-      setResult(null);
-      setConfirmed(false);
-      setScore("");
-      setSource("");
-    }
-  }
   const statusOptions: GoalStatus[] =
     goal.status === "Active"
       ? ["Paused", "Completed", "Set aside"]
@@ -267,9 +220,7 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
-      <GoalPlan goal={goal}
-        onRecordResult={goal.measure || goal.kind === "learning" ? () => { setResult("assessment"); setConfirmed(false); } : undefined}
-        onMilestone={milestone => { setResult(milestone); setConfirmed(false); }}>
+      <GoalPlan goal={goal}>
       <GoalOverview
         key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`}
         goal={goal}
@@ -397,18 +348,6 @@ export function GoalWorkspace({
                 </details>
               )}
               <div className="plan-actions">
-                {(goal.measure || goal.kind === "learning") && (
-                  <button
-                    className="button primary small-button"
-                    onClick={() => {
-                      setResult("assessment");
-                      setConfirmed(false);
-                    }}
-                  >
-                    <Plus size={15} />
-                    {goal.measure ? "Record a result" : "Record an assessment"}
-                  </button>
-                )}
                 <Link className="text-link" to={`/app/coach?goal=${goal.id}`}>
                   Review progress with Adler <ArrowRight size={15} />
                 </Link>
@@ -422,6 +361,7 @@ export function GoalWorkspace({
                 {goal.milestones.map((m, i) => (
                   <article
                     key={m.id}
+                    id={`record-${m.id}`}
                     className={`milestone-card ${m.done ? "complete" : ""}`}
                   >
                     <span className="milestone-status">
@@ -447,16 +387,7 @@ export function GoalWorkspace({
                         </p>
                       )}
                     </div>
-                    <button
-                      className="button text-button small-button"
-                      onClick={() => {
-                        setResult(m);
-                        setConfirmed(false);
-                      }}
-                    >
-                      {m.done ? "Correct result" : "Update result"}
-                      <ArrowUpRight size={14} />
-                    </button>
+                    <Link className="text-link" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to discuss the milestone: ${m.title}`)}`}>Discuss in Coach <ArrowUpRight size={14} /></Link>
                   </article>
                 ))}
               </div>
@@ -470,7 +401,7 @@ export function GoalWorkspace({
                 Actions recorded separately from the result above.
               </p>
               {actions.map((a) => (
-                <div className="action-history-item" key={a.id}>
+                <div className="action-history-item" key={a.id} id={`record-${a.id}`}>
                   <span className="history-icon">
                     {a.outcome === "Done" ? (
                       <CheckCircle2 size={18} />
@@ -479,7 +410,7 @@ export function GoalWorkspace({
                     )}
                   </span>
                   <div>
-                    <button onClick={() => setRecording(a)}>{a.title}</button>
+                    <Link to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${a.title} (${a.date || "unscheduled"}).`)}`}>{a.title}</Link>
                     <span>
                       {a.unplanned ? "Unplanned · " : ""}
                       {a.date ? formatDate(a.date) : "Unscheduled"} · Plan{" "}
@@ -532,138 +463,7 @@ export function GoalWorkspace({
           </Link>
         </details>
       )}
-      <details className="journey-disclosure">
-        <summary>Questions & conversations</summary>
-        <LiveCoach embedded goalId={goal.id} />
-      </details>
       {editing && <EditPlan goal={goal} onClose={() => setEditing(false)} />}
-      {recording && (
-        <RecordAction action={recording} onClose={() => setRecording(null)} />
-      )}
-      {result && (
-        <Modal
-          title={
-            result === "assessment"
-              ? goal.measure
-                ? "Record your result"
-                : "Record what you can solve."
-              : result.done
-                ? "Correct this result."
-                : "A result worth recording."
-          }
-          onClose={() => setResult(null)}
-        >
-          <form onSubmit={saveResult}>
-            {result === "assessment" ? (
-              <>
-                <p className="muted">
-                  {goal.measure
-                    ? `Measure ${goal.measure.label.toLowerCase()} in ${goal.measure.unit}, using the same method each time.`
-                    : "Use the same kind of course assessment so the results mean the same thing."}
-                </p>
-                <div className="form-row">
-                  <div className="form-field">
-                    <label htmlFor="score">
-                      {goal.measure?.label ?? "Problems solved correctly"}
-                    </label>
-                    <input
-                      id="score"
-                      type="number"
-                      min="0"
-                      max={goal.measure ? 1000000 : 10}
-                      step={goal.measure ? "any" : "1"}
-                      required
-                      value={score}
-                      onChange={(e) => setScore(e.target.value)}
-                    />
-                    <p className="field-hint">
-                      {goal.measure?.unit ?? "Out of 10 problems"}
-                    </p>
-                  </div>
-                  <div className="form-field">
-                    <label htmlFor="score-date">Observation date</label>
-                    <input
-                      id="score-date"
-                      type="date"
-                      required
-                      max={localDate()}
-                      value={resultDate}
-                      onChange={(e) => setResultDate(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="form-field">
-                  <label htmlFor="score-source">
-                    {goal.measure
-                      ? "How you measured it"
-                      : "Assessment / source"}
-                  </label>
-                  <input
-                    id="score-source"
-                    required
-                    maxLength={300}
-                    value={source}
-                    placeholder="e.g. Course practice set C"
-                    onChange={(e) => setSource(e.target.value)}
-                  />
-                </div>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={confirmed}
-                    onChange={(e) => setConfirmed(e.target.checked)}
-                  />
-                  {goal.measure
-                    ? "I measured this result using the goal’s agreed definition."
-                    : "This assessment has comparable content, difficulty, and scoring to this goal’s other results."}
-                </label>
-                <p className="field-hint">
-                  {goal.measure
-                    ? "Completing a session or milestone does not change this measurement automatically."
-                    : "Incompatible assessments can’t be entered in this series. Create a separate goal with a suitable measure instead."}
-                </p>
-              </>
-            ) : (
-              <>
-                <h3>{result.title}</h3>
-                <p className="criterion">{result.criterion}</p>
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    required
-                    checked={confirmed}
-                    onChange={(e) => setConfirmed(e.target.checked)}
-                  />
-                  {result.done
-                    ? "This result is not currently met. Return it to in progress."
-                    : "I confirm this result meets the criterion above."}
-                </label>
-                <p className="field-hint">
-                  This records the result. Completing the whole goal is a
-                  separate choice.
-                </p>
-              </>
-            )}
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="button secondary"
-                onClick={() => setResult(null)}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="button primary"
-                disabled={!confirmed}
-              >
-                Save result <Check size={16} />
-              </button>
-            </div>
-          </form>
-        </Modal>
-      )}
       {statusChange && (
         <Modal
           title={

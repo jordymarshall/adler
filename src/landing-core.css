@@ -2072,3 +2072,77 @@
     font-size: 12px;
   }
 }
+
+/* Five focused chapters, with a static flow on small screens and reduced motion. */
+.v2-landing .adaptive-hero { position: relative; min-height: 90svh; padding: 65px 5vw 55px; overflow: hidden; text-align: center; }
+.v2-landing .adaptive-hero-copy { position: relative; z-index: 1; max-width: 930px; margin: auto; }
+.v2-landing .adaptive-hero h1 { font-size: clamp(46px, 6.2vw, 88px); line-height: 1.06; letter-spacing: -.055em; margin: 22px 0; text-wrap: balance; }
+.v2-landing .adaptive-hero h1 em { color: #637746; }
+.v2-landing .adaptive-hero-copy > p { max-width: 630px; margin: auto; font-size: 16px; color: #626957; }
+.v2-landing .adaptive-hero .hero-buttons { justify-content: center; margin-top: 27px; }
+.v2-landing .hero-plan-story { position: relative; display: grid; grid-template-columns: 1fr 35px 1fr 35px 1fr; align-items: center; max-width: 1100px; margin: 56px auto 20px; text-align: left; }
+.v2-landing .hero-story-card { min-height: 210px; padding: 24px; border: 1px solid #dce1d2; border-radius: 16px; background: #fffef9; box-shadow: 0 15px 45px #46542c08; animation: story-arrive .9s both; }
+.v2-landing .hero-story-card:nth-of-type(2) { animation-delay: .2s; }
+.v2-landing .hero-story-card:nth-of-type(3) { animation-delay: .4s; }
+.v2-landing .hero-story-card > svg { float: right; color: #718654; }
+.v2-landing .hero-story-card > small { display: block; font-size: 9px; letter-spacing: .12em; color: #69735c; padding: 4px 0 20px; }
+.v2-landing .hero-story-card h2 { font-size: 24px; letter-spacing: -.035em; margin-bottom: 10px; }
+.v2-landing .hero-story-card p { font-size: 12px; color: #69735c; }
+.v2-landing .story-adaptation { background: #eaf0dd; }
+.v2-landing .story-caption { display: block; font-size: 11px; line-height: 1.65; color: #69735c; margin-top: 18px; }
+.v2-landing .story-connector { color: #8b9a74; text-align: center; font-size: 23px; }
+.v2-landing .story-progress { height: 4px; background: #e5e9dd; margin-top: 18px; border-radius: 4px; }
+.v2-landing .story-progress span { display: block; width: 33.33%; height: 100%; background: #718654; transform-origin: left; animation: story-progress 1.5s .5s both; }
+.v2-landing .hero-example-note { font-size: 10px; color: #737b65; }
+.v2-landing .adaptive-path { padding: 0 5vw; }
+.v2-landing .focus-chapter { position: relative; border-bottom: 1px solid var(--line); scroll-margin-top: 40px; }
+.v2-landing .chapter-stage { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 7vw; align-items: center; max-width: 1300px; margin: auto; padding: 80px 0; }
+.v2-landing .focus-chapter .chapter-copy h2 { font-size: clamp(37px, 4.4vw, 65px); line-height: 1.1; letter-spacing: -.045em; margin: 25px 0; text-wrap: balance; }
+.v2-landing .focus-chapter .chapter-copy h2 em { color: #6b7e4e; display: block; }
+.v2-landing .focus-chapter .chapter-copy > p { font-size: 15px; max-width: 440px; color: #626957; }
+.v2-landing .focus-number { display: inline-flex; width: 31px; height: 31px; border: 1px solid #cad4b7; border-radius: 50%; align-items: center; justify-content: center; margin-right: 12px; letter-spacing: 0; }
+.v2-landing .chapter-position { display: flex; gap: 7px; margin-top: 32px; }
+.v2-landing .chapter-position a { width: 35px; height: 18px; position: relative; }
+.v2-landing .chapter-position a::after { content: ""; position: absolute; inset: 7px 0; border-radius: 3px; background: #d8dfca; }
+.v2-landing .chapter-position a[aria-current]::after { background: #6d8050; }
+.v2-landing .focus-chapter .journey-preview { max-width: none; padding: 30px; border-radius: 18px; box-shadow: 0 20px 70px #35492109; }
+.v2-landing .focus-chapter .journey-preview h3 { font-size: 28px; line-height: 1.2; }
+.v2-landing .preview-chat { border-top: 1px solid var(--line); padding-top: 15px; margin-top: 10px; font-size: 12px; }
+.v2-landing .preview-channel { display: flex; gap: 14px; margin-bottom: 12px; }
+.v2-landing .preview-channel button { border: 0; border-bottom: 1px solid transparent; background: transparent; padding: 4px 0; color: #68745a; font-size: 11px; }
+.v2-landing .preview-channel button[aria-pressed="true"] { color: #354a27; border-color: #718654; }
+.v2-landing .preview-chat .preview-user { background: #edf0e5; padding: 10px 13px; border-radius: 12px; margin: 6px 0 10px 30px; }
+.v2-landing .life-connection { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: start; gap: 12px; border-bottom: 1px solid var(--line); padding: 18px 0; }
+.v2-landing .life-connection img, .v2-landing .connection-placeholder { width: 28px; height: 28px; object-fit: contain; border-radius: 7px; }
+.v2-landing .connection-placeholder { display: grid; place-items: center; background: #eaf0dd; color: #6b7e4e; }
+.v2-landing .life-connection h4 { margin: 0 0 6px; font-size: 13px; font-weight: 500; }
+.v2-landing .life-connection p { font-size: 11px; color: #626957; line-height: 1.6; }
+.v2-landing .connection-availability { font-size: 9px; color: #657348; white-space: nowrap; padding-top: 2px; }
+.v2-landing .life-connections > .text-link { margin-top: 20px; display: inline-flex; }
+@keyframes story-arrive { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes story-progress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (min-width: 1000px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
+  .v2-landing .focus-chapter { min-height: 155svh; }
+  .v2-landing .chapter-stage { position: sticky; top: 0; min-height: 100svh; padding-block: 35px; transform: scale(calc(.92 + var(--chapter-focus, 1) * .08)); opacity: calc(.45 + var(--chapter-focus, 1) * .55); }
+}
+@media (max-width: 800px) {
+  .v2-landing .adaptive-hero { padding: 40px 24px; }
+  .v2-landing .adaptive-hero-copy > p { font-size: 14px; }
+  .v2-landing .hero-plan-story { grid-template-columns: 1fr; max-width: 440px; gap: 12px; margin-top: 35px; }
+  .v2-landing .story-connector { display: none; }
+  .v2-landing .hero-story-card { min-height: 0; padding: 20px; }
+  .v2-landing .hero-story-card h2 { font-size: 23px; }
+  .v2-landing .hero-story-card > small { padding-bottom: 10px; }
+  .v2-landing .adaptive-path { padding: 0 24px; }
+  .v2-landing .chapter-stage { grid-template-columns: 1fr; gap: 32px; padding: 65px 0; }
+  .v2-landing .focus-chapter .chapter-copy > p { max-width: none; font-size: 14px; }
+  .v2-landing .focus-chapter .journey-preview { padding: 23px 18px; }
+  .v2-landing .chapter-position { margin-top: 20px; }
+  .v2-landing .life-connection { grid-template-columns: 26px minmax(0, 1fr); }
+  .v2-landing .connection-availability { grid-column: 2; padding: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2-landing .hero-story-card, .v2-landing .story-progress span { animation: none; }
+}
+
+.v2-landing .focus-chapter .journey-preview > h3 { margin: 18px 0 26px; }

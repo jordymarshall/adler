@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 import { beginAction, goalStep } from "../shared/next-step";
 import {
   currentPlan,
@@ -8,9 +8,8 @@ import {
   formatDate,
   type Goal,
 } from "./store";
-import { RecordAction } from "./ActionCheckIn";
+import { Link, useNavigate } from "react-router-dom";
 import { Calendar, savedPending } from "./Calendar";
-import { LiveCoach } from "./LiveCoach";
 import { actionStep } from "../shared/adaptive-plan";
 
 export function GoalOverview({
@@ -21,19 +20,18 @@ export function GoalOverview({
   actionId?: string;
 }) {
   const { data, commit } = useStore();
+  const navigate = useNavigate();
   const [now, setNow] = useState(() => new Date());
-  const [mode, setMode] = useState<"step" | "schedule" | "checkin" | "chat">(
+  const [mode, setMode] = useState<"step" | "schedule">(
     "step",
   );
-  const [prompt, setPrompt] = useState("");
-  const [deferred, setDeferred] = useState<string[]>([]);
   const [saved, setSaved] = useState(false);
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(timer);
   }, []);
   const step = goalStep(
-    { ...data, actions: data.actions.filter((a) => !deferred.includes(a.id)) },
+    data,
     goal,
     now,
     actionId,
@@ -43,8 +41,7 @@ export function GoalOverview({
     goal.plans.find((p) => p.version === action?.planVersion) ??
     currentPlan(goal);
   function ask(text = "") {
-    setPrompt(text);
-    setMode("chat");
+    navigate(`/app/coach?goal=${goal.id}${text ? `&prompt=${encodeURIComponent(text)}` : ""}`);
   }
   const pending = savedPending();
   if (pending?.goalId === goal.id)
@@ -60,39 +57,6 @@ export function GoalOverview({
           }}
         />
       </section>
-    );
-  if (mode === "chat")
-    return (
-      <LiveCoach
-        embedded
-        goalId={goal.id}
-        initialPrompt={prompt}
-        autoSend={Boolean(prompt)}
-        onContinue={() => setMode("step")}
-      />
-    );
-  if (action && (mode === "checkin" || phase === "checkin"))
-    return (
-      <div className="next-step-card panel" data-phase="checkin">
-        <RecordAction
-          key={action.id}
-          action={action}
-          inline
-          onClose={() => {
-            setSaved(true);
-            setMode("step");
-          }}
-        />
-        <button
-          className="button text-button"
-          onClick={() => {
-            setDeferred((ids) => [...ids, action.id]);
-            setMode("step");
-          }}
-        >
-          Leave this for later
-        </button>
-      </div>
     );
   if (action && (mode === "schedule" || (phase === "schedule" && !plan.adaptive)))
     return (
@@ -203,14 +167,12 @@ export function GoalOverview({
         <button className="button primary" onClick={() => { commit(d => beginAction(d, action.id), "Action started."); setNow(new Date()); }}><Play size={16} /> I’ll do it now</button>
         <button className="button secondary" onClick={() => setMode("schedule")}>Choose a time</button>
       </div>}
-      {phase === "working" && action && (
+      {(phase === "working" || phase === "checkin") && action && (
         <>
           <p>
-            You can close Adler and do the work. Check in here when you finish.
+            When you’re ready, tell your coach what happened. Your update can include results, blockers, or a change of plan.
           </p>
-          <button className="button primary" onClick={() => setMode("checkin")}>
-            <Check size={16} /> I’m finished
-          </button>
+          <Link className="text-link" to={`/app/coach?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`}>Continue in Coach <ArrowRight size={16} /></Link>
         </>
       )}
       {phase === "waiting" && (
@@ -249,11 +211,7 @@ export function GoalOverview({
               Choose a time
             </button>
           )}
-          {action && phase !== "draft" && phase !== "waiting" && (
-            <button className="text-link" onClick={() => setMode("checkin")}>
-              Already did it? Check in
-            </button>
-          )}
+
         </details>
       )}
     </section>

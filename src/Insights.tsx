@@ -55,7 +55,7 @@ function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
     return {
       label: `Saved context · ${formatDate(memory.date)}`,
       text: memory.text,
-      href: "/app/coach/about-you",
+      href: `/app/coach/about-you#record-${encodeURIComponent(id)}`,
     };
   const message = data.messages.find((m) => m.id === id);
   if (message)
@@ -108,7 +108,7 @@ function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
     return {
       label: `Program v${program.version}`,
       text: `${program.sprintResult}. ${program.weeklyMinutes} minutes per week. ${program.approach}`,
-      href: "/app/coach/program",
+      href: "/app/settings/coaching",
     };
   return {
     label: "Source removed",
@@ -213,35 +213,12 @@ export function Insights() {
         };
       }),
     );
-  for (const memory of goalId === "all" ? data.memories : []) {
-    if (
-      rows.some((row) =>
-        row.sources.some((source) => source.text === memory.text),
-      )
-    )
-      continue;
-    rows.push({
-      id: memory.id,
-      finding: memory.text,
-      status: "Saved context",
-      sources: [resolveSource(memory.id, data)],
-      effect: (
-        <>
-          <p>
-            Available when Adler considers your goals. No linked plan change
-            recorded.
-          </p>
-          <Link to="/app/coach/about-you">Correct or remove ↗</Link>
-        </>
-      ),
-    });
-  }
   return (
     <div className="insights-page">
       <div className="page-heading">
         <div>
           <span className="section-kicker">LEARN FROM WHAT HAPPENED</span>
-          <h1>Your insights</h1>
+          <h2>What this means for your plan</h2>
           <p>
             What Adler has learned, the records behind it, and the changes that
             followed.

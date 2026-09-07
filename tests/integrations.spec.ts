@@ -46,43 +46,16 @@ test("the integration catalog distinguishes plans from working setup paths", asy
   ).toBe(true);
 });
 
-test("texting and the app show the same check-in without changing measured distance", async ({
-  page,
-}) => {
+test("texting and the app share the same example update without changing outcome evidence", async ({ page }) => {
   await page.goto("/");
-  const step = page.locator("#step-4");
-  await expect(
-    step.getByLabel("iMessage conversation with Adler"),
-  ).toBeVisible();
-  await expect(step.locator(".phone-bubble.outgoing")).toContainText(
-    "Work ran late",
-  );
-  await step.getByText("Try another check-in", { exact: true }).click();
-  await step.getByRole("button", { name: "Done", exact: true }).click();
-  await expect(step.locator(".phone-bubble.outgoing")).toContainText(
-    "still 2 km",
-  );
-  await expect(step.locator(".checkin-linked-result")).toContainText("Done");
-  await step.getByRole("button", { name: "SMS", exact: true }).click();
-  const phone = step.getByLabel("SMS conversation with Adler");
-  await expect(phone).toBeVisible();
-  const bounds = await phone.boundingBox();
-  expect(bounds!.height / bounds!.width).toBeGreaterThan(2);
-  expect(bounds!.height / bounds!.width).toBeLessThan(2.3);
-  await step.getByRole("button", { name: "Use the app", exact: true }).click();
-  await expect(step.locator(".app-checkin-saved")).toHaveText("Saved: Done");
-  await expect(step.locator(".checkin-linked-result")).toContainText("2 km");
-  await expect(step.locator(".checkin-linked-result")).toContainText("5 km");
-  const scheduling = page.locator("#step-3");
-  await scheduling.getByText("Choose another time", { exact: true }).click();
-  await scheduling
-    .getByRole("button", { name: "Tuesday, 7:00 am", exact: true })
-    .click();
-  await scheduling
-    .getByRole("button", { name: "Save time", exact: true })
-    .click();
-  await expect(scheduling).toContainText("Check in after the session");
-  await expect(scheduling.locator(".suggested-time")).toContainText("7:00 am");
+  const step = page.locator("#step-3");
+  const recorded = await step.locator(".chart-actual").getAttribute("d");
+  await step.getByRole("button", { name: "By text", exact: true }).click();
+  await expect(step.getByRole("button", { name: "By text" })).toHaveAttribute("aria-pressed", "true");
+  await expect(step.locator(".preview-user")).toContainText("Both sessions happened");
+  await step.getByRole("button", { name: "In Adler", exact: true }).click();
+  await expect(step.locator(".chart-actual")).toHaveAttribute("d", recorded!);
+  await expect(step.locator(".proposal-metrics")).toContainText("1 of 3");
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({
@@ -110,12 +83,12 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.locator(".journey-hero")).toHaveCSS("position", "relative");
+  await expect(page.locator(".adaptive-hero")).toHaveCSS("position", "relative");
   await expect(page.locator(".reveal").first()).toHaveCSS(
     "animation-name",
     "none",
   );
-  for (const selector of ["#step-3", "#step-4", "#step-5", "#step-6"]) {
+  for (const selector of ["#step-1", "#step-2", "#step-3", "#step-4", "#step-5"]) {
     await page.locator(selector).scrollIntoViewIfNeeded();
     const result = await new AxeBuilder({ page }).include(selector).analyze();
     expect(result.violations).toEqual([]);

@@ -1,3 +1,4 @@
+import { referencedText } from "../shared/record-links";
 import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -30,17 +31,15 @@ export function LiveCoach({
   const selectedChat = embedded ? localChat : params.get("chat");
   const conversation = selectedChat
     ? data.conversations.find((c) => c.id === selectedChat)
-    : data.conversations.filter((c) => c.goalId === requestedGoal).at(-1);
-  const selected = conversation?.goalId ?? requestedGoal;
+    : data.conversations.filter((c) => c.goalId === (embedded ? requestedGoal : "general")).at(-1);
+  const selected = conversation?.goalId ?? (embedded ? requestedGoal : "general");
   function selectChat(id: string, goalId: string) {
     if (embedded) setLocalChat(id);
-    else setParams(id ? { chat: id, goal: goalId } : { goal: goalId });
+    else setParams(id ? { chat: id, ...(requestedGoal !== "general" ? { goal: requestedGoal } : {}) } : { goal: goalId });
   }
   const belongsHere = (p: Proposal) =>
-    p.conversationId
-      ? p.conversationId === conversation?.id
-      : p.goalId === selected;
-  const goal = data.goals.find((g) => g.id === selected);
+    !embedded || (p.conversationId ? p.conversationId === conversation?.id : p.goalId === selected);
+  const goal = data.goals.find((g) => g.id === requestedGoal);
   const key = `adler-coach-draft-${conversation?.id ?? selected}`;
   const initialKey = useRef(key);
   const [text, setText] = useState(
@@ -97,7 +96,7 @@ export function LiveCoach({
     setError("");
   }, [key, params.get("prompt")]);
   useEffect(() => {
-    if (messages.length)
+    if (messages.length && !window.location.hash)
       bottom.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [messages.length, sending]);
   async function send(e?: FormEvent) {
@@ -124,14 +123,15 @@ export function LiveCoach({
       }>("coach", {
         message: value,
         goalId: selected,
+        focusGoalId: goal?.id,
         conversationId: conversation?.id,
         requestId: request.current.id,
       });
+      sessionStorage.removeItem(key);
+      setText("");
+      selectChat(result.conversationId, selected);
       await refresh();
       await reloadProposals();
-      selectChat(result.conversationId, selected);
-      setText("");
-      sessionStorage.removeItem(key);
       request.current = null;
       const created = result.data?.goals.find(
         (g) =>
@@ -213,7 +213,7 @@ export function LiveCoach({
       <div className="live-coach">
         <div className="coach-topline">
           <div className="coach-identity">
-            <div>{embedded ? <h2>Ask Adler</h2> : <h1>Ask Adler</h1>}</div>
+            <div>{embedded ? <h2>Adler</h2> : <h1>Your coach</h1>}</div>
           </div>
           {embedded && onContinue && (
             <button
@@ -226,11 +226,6 @@ export function LiveCoach({
           )}
         </div>
         <div className="coach-context-strip">
-          {goal ? (
-            <Link to={`/app/goals/${goal.id}`}>{goal.title}</Link>
-          ) : (
-            <span>Across goals</span>
-          )}
           {!service?.coach.configured && (
             <Link to="/app/settings/provider">Connect your AI provider</Link>
           )}
@@ -251,14 +246,14 @@ export function LiveCoach({
               <p>
                 {goal
                   ? `We’re working toward: ${goal.title}. Tell me what happened or what needs to change.`
-                  : "Tell me what you want to achieve. We’ll work out the next step."}
+                  : "Share what happened, check in on your week, or work through a blocker. Your goals and what you’ve shared are already here."}
               </p>
             </div>
           )}
           {messages.map((m) => {
             const decision = data.decisions.find((d) => d.id === m.decisionId);
             return (
-              <article className={`live-message ${m.role}`} key={m.id}>
+              <article className={`live-message ${m.role}`} key={m.id} id={`record-${m.id}`}>
                 {m.role === "coach" && <AdlerAvatar small />}
                 <div className="message-content">
                   <span className="message-author">
@@ -267,22 +262,7 @@ export function LiveCoach({
                       ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
                       : ""}
                   </span>
-                  {m.text.length > 650 ? (
-                    <details className="message-expansion">
-                      <summary>
-                        {m.text.slice(
-                          0,
-                          m.text.lastIndexOf(" ", 260) > 0
-                            ? m.text.lastIndexOf(" ", 260)
-                            : 260,
-                        )}
-                        … <span>Read more</span>
-                      </summary>
-                      <p>{m.text}</p>
-                    </details>
-                  ) : (
-                    <p>{m.text}</p>
-                  )}
+                  <p>{referencedText(data, m.text, m.references).map((part, index) => part.href ? <Link key={index} to={part.href}>{part.text}</Link> : part.text)}</p>
                   {decision?.status === "Accepted" && (
                     <span className="insight-change-status">
                       Saved to your workspace
@@ -450,7 +430,7 @@ export function LiveCoach({
           {sending && (
             <div className="coach-working">
               <AdlerAvatar small />
-              <span>Working through this…</span>
+              <span>Thinking with you…</span>
             </div>
           )}
           <div ref={bottom} />

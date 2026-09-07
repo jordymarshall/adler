@@ -34,7 +34,10 @@ export function ProgressChart({
   const proposed = [...proposedCheckpoints].sort((a, b) =>
     a.date.localeCompare(b.date),
   );
-  const dates = [...planned, ...actual, ...proposed]
+  const baseline = actual.at(-1);
+  const reference = !forecast?.rates && goal.targetDate && goal.targetDate > today && (goal.measure?.target ?? goal.target) !== undefined
+    ? [{ date: baseline?.date ?? today, value: baseline?.value ?? 0 }, { date: goal.targetDate, value: goal.measure?.target ?? goal.target! }] : [];
+  const dates = [...planned, ...actual, ...proposed, ...reference]
     .map((p) => p.date)
     .concat(today, ...(goal.targetDate ? [goal.targetDate] : []))
     .concat([forecast, alternativeForecast].flatMap(f => f?.rates ? [f.expectedDate, f.earliestDate, f.latestDate ?? f.horizonDate].filter((d): d is string => Boolean(d)) : []))
@@ -206,6 +209,7 @@ export function ProgressChart({
           className="chart-today"
         />
         {planned.length > 0 && <path d={path} className="chart-plan" />}
+        {reference.length > 0 && <path data-testid="required-pace-line" className="chart-required-pace" d={pointPath(reference.map(p => [x(p.date), y(p.value)]))}><title>Required pace to reach your target date. {baseline ? "Starts at your last reported result." : "Illustration assumes a zero starting point; confirm your baseline in Coach."} This is not an estimated finish.</title></path>}
         {forecast?.rates && <g data-testid="forecast-line">
           <path className="chart-forecast-range" d={`${pointPath([...forecastPoints(forecast, forecast.rates.high), ...forecastPoints(forecast, forecast.rates.low).reverse()])} Z`} />
           <path className="chart-forecast" d={pointPath(forecastPoints(forecast, forecast.rates.typical))} />
@@ -362,9 +366,11 @@ export function ProgressChart({
             <i /> Proposed plan
           </span>
         )}
-        {forecast?.rates && <span className="chart-forecast-key"><i /> Conditional forecast and pace range</span>}
+        {forecast?.rates && <span className="chart-forecast-key"><i /> {forecast.method === "assumed-rate" ? "Initial scenario · assumed pace" : "Conditional forecast and pace range"}</span>}
+        {reference.length > 0 && <span className="chart-required-key"><i /> Required pace · not a forecast</span>}
         {alternativeForecast?.rates && <span className="chart-alternative-key"><i /> Proposed plan scenario</span>}
       </div>
+      {reference.length > 0 && <p className="chart-scenario-note">{baseline ? "The dotted trajectory shows the pace needed from your last result to meet your target date." : "The dotted trajectory assumes a zero starting point. Confirm your starting result in Coach to make it personal."} {forecast?.reason ?? "Check-ins build the evidence for a projection."}</p>}
       {proposed.length > 0 && (
         <p className="chart-scenario-note">
           Proposed finish: {formatDate(proposed.at(-1)!.date)} · Future line
@@ -412,7 +418,7 @@ export function ProgressRecords({ goal, today = localDate() }: { goal: Goal; tod
               ]
                 .sort((a, b) => a.date.localeCompare(b.date))
                 .map((p) => (
-                  <tr key={p.id}>
+                  <tr key={p.id} id={`record-${p.id}`}>
                     <td>{formatDate(p.date)}</td>
                     <td>{p.type}</td>
                     <td>{p.value}</td>

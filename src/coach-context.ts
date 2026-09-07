@@ -14,7 +14,7 @@ export function coachingContext(
   const program = data.programs.at(-1)!;
   const goal = data.goals.find((g) => g.id === goalId);
   const goals = data.goals.filter((g) => g.status === "Active");
-  const actions = data.actions.filter((a) => a.goalId === goalId).slice(-20);
+  const actions = data.actions.slice(-60);
   const blocks = data.workBlocks.filter(
     (b) =>
       b.start.slice(0, 10) >= program.sprintStart &&
@@ -63,7 +63,7 @@ export function coachingContext(
               (a) => `${a.date}: ${a.outcome}${a.note ? ` — ${a.note}` : ""}`,
             )
             .join("\n")
-        : "No action outcomes recorded for this goal yet.",
+        : "No action outcomes reported yet.",
       sources: actions
         .filter((a) => a.outcome)
         .slice(-3)
@@ -111,12 +111,15 @@ export function coachingContext(
     goal: goal ?? null,
     program,
     activeGoals: goals,
+    allGoalContexts: data.goals.map(g => ({ id: g.id, title: g.title, status: g.status, plan: g.plans.at(-1),
+      behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
+      forecast: g.forecasts?.at(-1) ? { ...g.forecasts.at(-1), inputKey: undefined } : null })),
     recentActions: actions,
     confirmedContext: data.memories,
     workBlocks: blocks,
     freshCalendarAvailability: calendar,
     previousDecisions: data.decisions
-      .filter((d) => d.goalId === goalId)
+      .filter((d) => goalId === "general" || d.goalId === goalId)
       .slice(-5),
     conversation: data.messages
       .filter((m) =>

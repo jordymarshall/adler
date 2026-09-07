@@ -262,6 +262,7 @@ const workspaceSchema = z
             text,
             decisionId: id.optional(),
             conversationId: id.optional(),
+            references: z.array(z.object({ text: z.string().min(1).max(500), recordId: z.string().max(100) }).strict()).max(30).optional(),
             links: z
               .array(
                 z.object({ goalId: id, tab: z.enum(["progress", "plan"]) }),

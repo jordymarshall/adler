@@ -93,3 +93,24 @@ test("a reached cumulative target needs no minimum sample count, and flat pace h
   assert.equal(stalled.expectedDate, undefined);
   assert.equal(stalled.rates!.typical, 0);
 });
+
+test("an initial scenario needs a stated pace and a fresh baseline, then yields to observed pace", () => {
+  const { data, goal } = fixture();
+  const observations = [...goal.results];
+  goal.results = [observations[0]];
+  const now = new Date("2026-09-06T12:00:00Z");
+  assert.equal(forecastGoal(data, goal, now).expectedDate, undefined);
+  goal.plans[0].adaptive!.forecast.initialDailyRate = 4;
+  const initial = forecastGoal(data, goal, now);
+  assert.equal(initial.method, "assumed-rate");
+  assert.equal(initial.expectedDate, "2026-09-22");
+  assert.equal(initial.current, 20);
+  assert.equal(initial.probability, null);
+  assert.match(initial.reason, /not measured pace/);
+  goal.results = observations;
+  assert.equal(forecastGoal(data, goal, now).expectedDate, "2026-10-12");
+  goal.plans[0].adaptive!.forecast.method = "none";
+  assert.equal(forecastGoal(data, goal, now).method, "observed-rate");
+  goal.results = [];
+  assert.equal(forecastGoal(data, goal, now).rates, undefined);
+});

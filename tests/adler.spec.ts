@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register, save, snapshot, synced } from "./fixtures";
+import { register, save, snapshot, synced, coachReply } from "./fixtures";
 import { localDate } from "../shared/workspace";
 import { createGoal } from "../shared/validation";
 
@@ -8,47 +8,19 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toContainText("Big goals.");
-  const chart = page.locator("#step-5 .progress-viz svg");
-  await expect(chart.locator(".chart-recorded-label")).toHaveText(
-    "Recorded: 2 km",
-  );
+  await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
+  const chart = page.locator("#step-3 .progress-viz svg");
   await chart.focus();
   await page.keyboard.press("End");
-  await expect(page.locator("#step-5 .chart-tooltip")).toContainText(
-    "Last recorded: 2 km",
-  );
+  await expect(page.locator("#step-3 .chart-tooltip")).toContainText("Last recorded: 1 case studies");
+  await expect(chart.locator(".chart-forecast")).toHaveCount(1);
   const recordedPath = await chart.locator(".chart-actual").getAttribute("d");
-  await expect(chart.locator(".chart-proposed")).toHaveCount(1);
-  await expect(page.locator("#step-5 [role=tab]")).toHaveCount(0);
-  const review = page.locator("#step-6");
-  await expect(review.locator(".plan-change")).toHaveCount(4);
-  await expect(review.locator(".plan-change[open]")).toHaveCount(0);
-  await expect(review.locator(".change-after").first()).toHaveText(
-    "Two 15-minute sessions, then review",
-  );
-  await review
-    .locator(".plan-change")
-    .filter({ hasText: "Preparation" })
-    .locator("summary")
-    .click();
-  await expect(review).toContainText("This is a hypothesis to check next week");
-  await review.locator(".remembered-context summary").click();
-  await expect(review.locator(".remembered-context")).toContainText(
-    "You reported:",
-  );
-  await expect(review.locator(".remembered-context")).toContainText("To test:");
-  await review.getByRole("button", { name: "Confirm revised plan" }).click();
-  await expect(review.getByRole("status")).toContainText(
-    "Review how it went on October 25",
-  );
-  await expect(chart.locator(".chart-actual")).toHaveAttribute(
-    "d",
-    recordedPath!,
-  );
-  await expect(page.locator("#step-5 .proposal-metrics")).toContainText(
-    "2 km recorded",
-  );
+  const review = page.locator("#step-4");
+  await expect(review.locator(".plan-change")).toHaveCount(3);
+  await review.getByRole("button", { name: "Try this adjustment" }).click();
+  await expect(review.getByRole("status")).toContainText("Review after two sessions");
+  await expect(chart.locator(".chart-actual")).toHaveAttribute("d", recordedPath!);
+  await expect(page.locator("#step-5")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
     .first()
@@ -127,39 +99,22 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   ).toBeVisible();
 });
 
-test("action check-ins do not complete milestones and verified results update the interactive chart", async ({
-  page,
-}) => {
+test("chat reports preserve the distinction between actions and goal results", async ({ page }) => {
   await register(page, true);
-  await page.goto("/app/today");
-  await page.getByRole("button", { name: "Start action", exact: true }).click();
-  await page.getByRole("button", { name: "I’m finished", exact: true }).click();
-  await page.getByRole("button", { name: "Done", exact: true }).click();
-  await synced(page);
-  expect(
-    (await snapshot(page)).data.goals[0].milestones.filter((m) => m.done),
-  ).toHaveLength(0);
+  const state = await snapshot(page);
+  await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done" }) }]);
+  await page.goto("/app/coach?goal=essays");
+  await page.getByLabel("Message Adler").fill("I finished drafting the five points today.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
+  const saved = await snapshot(page);
+  expect(saved.data.actions[0].outcome).toBe("Done");
+  expect(saved.data.goals[0].milestones.filter(m => m.done)).toHaveLength(0);
+  expect(saved.data.goals[0].results.at(-1)?.value).toBe(0);
   await page.goto("/app/goals/essays/progress");
-  await page
-    .getByRole("button", { name: "Update result", exact: true })
-    .first()
-    .click();
-  await page
-    .getByRole("checkbox", {
-      name: "I confirm this result meets the criterion above.",
-    })
-    .check();
-  await page.getByRole("button", { name: "Save result", exact: true }).click();
-  await synced(page);
-  expect((await snapshot(page)).data.goals[0].results.at(-1)?.value).toBe(1);
-  const chart = page.locator(".progress-viz svg");
-  await chart.focus();
-  await page.keyboard.press("End");
-  await expect(page.locator(".chart-tooltip")).toContainText(
-    "Last recorded: 1",
-  );
-  await page.keyboard.press("Home");
-  await expect(page.locator(".chart-tooltip")).toContainText("Last recorded:");
+  await page.getByRole("link", { name: "Discuss in Coach" }).first().click();
+  await expect(page).toHaveURL(/\/app\/coach/);
+  await expect(page.getByLabel("Message Adler")).toContainText("milestone");
 });
 
 test("a learning goal records results in one chart with its own target", async ({
@@ -198,12 +153,12 @@ test("a learning goal records results in one chart with its own target", async (
   await expect(page.getByRole("region", { name: "Goal status" })).toContainText("Six correct answers");
   await expect(page.locator(".pace-badge")).toHaveText("Estimate unavailable");
   await expect(page.locator(".app-main")).not.toContainText("8/10");
-  await page.getByRole("button", { name: "Record an assessment" }).click();
-  await page.getByLabel("Problems solved correctly", { exact: true }).fill("4");
-  await page.getByLabel("Assessment / source").fill("Practice set B");
-  await page.getByRole("checkbox").check();
-  await page.getByRole("button", { name: "Save result", exact: true }).click();
-  await synced(page);
+  await coachReply(page, [{ entity: "result", operation: "create", id: null, parentId: "algebra", values: JSON.stringify({ value: 4, date: localDate(), source: "Practice set B" }) }]);
+  await page.getByRole("link", { name: "Review progress with Adler" }).click();
+  await page.getByLabel("Message Adler").fill("I scored 4 out of 10 on comparable Practice set B today.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
+  await page.goto("/app/goals/algebra/progress");
   expect((await snapshot(page)).data.goals[0].results.at(-1)?.value).toBe(4);
   await expect(page.getByRole("region", { name: "Goal status" })).toContainText(
     "4 correct answers / 10",
@@ -215,41 +170,15 @@ test("a learning goal records results in one chart with its own target", async (
   await expect(page.getByRole("table")).toContainText("Practice set B");
 });
 
-test("weekly review is directly accessible and archives the decision", async ({
-  page,
-}) => {
+test("weekly review uses shared chat and archives the reported reflection", async ({ page }) => {
   await register(page, true);
-  await page.goto("/app/today");
-  await page.getByText("Choose something else", { exact: true }).click();
-  await page.getByRole("link", { name: "Review my week", exact: true }).click();
-  await expect(page.locator("h1")).toHaveText("Review your week");
-  await page
-    .getByLabel("What helped or got in the way?")
-    .fill("Drafting worked best before opening email.");
-  await synced(page);
-  await page.reload();
-  await expect(page.getByLabel("What helped or got in the way?")).toHaveValue(
-    "Drafting worked best before opening email.",
-  );
-  await page.getByText("Other options", { exact: true }).click();
-  await page.getByRole("button", { name: "Keep my current plans" }).click();
-  await synced(page);
-  await expect(
-    page.getByRole("heading", { name: "Your week is reviewed." }),
-  ).toBeVisible();
-  expect((await snapshot(page)).data.reviews).toHaveLength(1);
-  await page.getByText("Review options", { exact: true }).click();
-  await page.getByRole("button", { name: "Reopen this review" }).click();
-  await expect(page.getByLabel("What helped or got in the way?")).toHaveValue(
-    "",
-  );
-  await page.getByText("Other options", { exact: true }).click();
-  await page.getByRole("button", { name: "Keep my current plans" }).click();
-  await synced(page);
-  const reviews = (await snapshot(page)).data.reviews;
-  expect(reviews).toHaveLength(2);
-  expect(reviews[0].note).toBe("Drafting worked best before opening email.");
-  expect(reviews[1].note).toBe("");
+  await coachReply(page, [{ entity: "review", operation: "update", id: null, parentId: null, values: JSON.stringify({ note: "Drafting worked best before email.", decision: "Keep", complete: true }) }]);
+  await page.goto("/app/reviews/current");
+  await expect(page).toHaveURL(/\/app\/coach\?intent=review/);
+  await page.getByLabel("Message Adler").fill("I’ve reviewed my week. Drafting worked best before email. Keep my plans.");
+  await page.getByRole("button", { name: "Send message" }).click();
+  await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
+  expect((await snapshot(page)).data.reviews.at(-1)?.note).toBe("Drafting worked best before email.");
 });
 
 test("a second signed-in tab receives confirmed changes and stale saves are rejected", async ({
@@ -280,10 +209,10 @@ test("a second signed-in tab receives confirmed changes and stale saves are reje
   await page.request.post(`/api/proposals/${proposal.id}/approve`, {
     data: {},
   });
-  await expect(other.locator(".goal-list-row")).toContainText(
+  await expect(other.locator(".goal-chart-row")).toContainText(
     "Publish two design essays",
   );
-  await expect(page.locator(".goal-list-row")).toContainText(
+  await expect(page.locator(".goal-chart-row")).toContainText(
     "Publish two design essays",
   );
   const stale = await page.request.post("/api/workspace", {

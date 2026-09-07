@@ -50,6 +50,7 @@ export const adaptivePlanSchema = z.object({
     rationale: description,
     driverStepId: identifier.optional(),
     observationStart: z.iso.date().optional(),
+    initialDailyRate: z.number().positive().max(1000000).optional(),
     minimumObservations: z.number().int().min(3).max(100),
     horizonDays: z.number().int().min(1).max(3660),
     freshnessDays: z.number().int().min(1).max(366),

@@ -24,7 +24,6 @@ import {
   type GoalKind,
 } from "./store";
 
-export { RecordAction } from "./ActionCheckIn";
 
 const draftDefaults = {
   title: "",
@@ -501,6 +500,7 @@ export function SettingsPage() {
       </div>
       <section className="panel settings-section">
         <h2>Your preferences</h2>
+        <div className="settings-row"><div><h3>Time & coaching</h3><p>Your available time, preferred hours, review rhythm, and coaching methods.</p></div><Link className="text-link" to="/app/settings/coaching">Manage →</Link></div>
         <div className="settings-row">
           <div>
             <h3>Appearance</h3>

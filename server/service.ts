@@ -47,6 +47,7 @@ const replySchema = z
     insights: z.array(insightSchema).max(6).default([]),
     execution: z.enum(["apply", "propose"]).default("propose"),
     confirmProposalId: z.string().max(100).nullable().default(null),
+    references: z.array(z.object({ text: z.string().min(1).max(500), recordId: z.string().max(100) }).strict()).max(30).default([]),
     links: z
       .array(
         z
@@ -477,6 +478,7 @@ export class Service {
     sourceMessageId?: string,
     conversationId?: string,
     background?: { key: string },
+    focusGoalId?: string,
   ) {
     this.db.limit(`chat:${userId}`, 20, 60000);
     const execute = async () => {
@@ -490,6 +492,7 @@ export class Service {
           channel,
           sourceMessageId,
           conversationId,
+          focusGoalId,
         }),
       );
       if (stored) {
@@ -521,14 +524,15 @@ export class Service {
         (p) =>
           p.status === "pending" &&
           p.expires > Date.now() &&
-          (p.conversationId
+          ((!background && goalId === "general") || (p.conversationId
             ? p.conversationId === conversation.id
-            : p.goalId === goalId),
+            : p.goalId === goalId)),
       );
       const config = configuration(this.db, userId);
+      if (focusGoalId && !snapshot.data.goals.some(g => g.id === focusGoalId)) throw new Error("That goal is no longer available.");
       const context = coachingContext(
         snapshot.data,
-        goalId,
+        focusGoalId ?? goalId,
         message,
         dayInZone(snapshot.data),
         conversation.id,
@@ -669,7 +673,7 @@ export class Service {
           if (result.changes.some((change) => JSON.parse(change.values).basis)) {
             const review = await this.runner(config, researchReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
-              goals: context.activeGoals, program: context.program, reply: result.reply,
+              goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
               changes: result.changes, researchSearches, effectiveGoals: applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data)).goals,
             }, researchReviewSchema, 2200);
             if (review.issues.length)
@@ -752,11 +756,12 @@ export class Service {
         (l, i, all) =>
           all.findIndex((x) => x.goalId === l.goalId && x.tab === l.tab) === i,
       );
+      const relatedGoalId = focusGoalId ?? (links.length && links.every(link => link.goalId === links[0].goalId) ? links[0].goalId : goalId);
       const decisionId = randomUUID();
       data.messages.push(
         ...(!background ? [{
           id: userMessageId,
-          goalId,
+          goalId: relatedGoalId,
           conversationId: conversation.id,
           role: "user" as const,
           text: message,
@@ -775,10 +780,11 @@ export class Service {
         }] : []),
         {
           id: randomUUID(),
-          goalId,
+          goalId: relatedGoalId,
           conversationId: conversation.id,
           role: "coach",
           text: result.reply,
+          references: result.references.filter(r => sourceIds.has(r.recordId) && result.reply.includes(r.text)),
           links,
           decisionId,
           at: new Date().toISOString(),
@@ -788,7 +794,7 @@ export class Service {
       data.decisions.push({
         id: decisionId,
         date: new Date().toISOString(),
-        goalId,
+        goalId: relatedGoalId,
         programVersion: context.program.version,
         planVersion: context.goal?.plans.at(-1)?.version ?? 0,
         mode: "live",

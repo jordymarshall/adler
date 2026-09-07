@@ -329,9 +329,7 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
   await page.getByLabel("Chat name").fill("A plan for my essays");
   await page.getByLabel("Goal folder").selectOption("essays");
   await page.getByRole("button", { name: "Save chat", exact: true }).click();
-  await expect(page.locator(".coach-context-strip")).toContainText(
-    "Publish two essays",
-  );
+  await expect(page.locator(".coach-context-strip")).not.toContainText("Across goals");
   await expect(page.locator(".conversation-item.selected")).toContainText(
     "A plan for my essays",
   );
@@ -341,9 +339,7 @@ test("chats can be renamed, filed under a goal, and deleted without removing the
     "A plan for my essays",
   );
   await page.getByRole("button", { name: "New chat", exact: true }).click();
-  await expect(page.locator(".coach-context-strip")).toContainText(
-    "Publish two essays",
-  );
+  await expect(page.locator(".coach-context-strip")).not.toContainText("Across goals");
   await page
     .getByRole("button", {
       name: "Delete chat: A plan for my essays",
@@ -430,7 +426,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await page
     .getByRole("link", { name: "See observations & sources", exact: false })
     .click();
-  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
+  await expect(page).toHaveURL(/\/app\/coach\/about-you\?goal=essays$/);
   await expect(page.getByRole("combobox")).toHaveValue("essays");
   await expect(page.locator(".insight-row")).toHaveCount(1);
   await expect(page.locator(".insight-row")).toContainText(
@@ -447,9 +443,10 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await page.locator(".message-record-links a").click();
   await expect(page).toHaveURL(/\/app\/goals\/essays$/);
   await page.goto("/app/goals/essays/learning");
-  await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
+  await expect(page).toHaveURL(/\/app\/coach\/about-you\?goal=essays$/);
   await page.getByRole("combobox").selectOption("all");
-  await expect(page.locator(".insight-row")).toHaveCount(2);
+  await expect(page.locator(".insight-row")).toHaveCount(1);
+  await expect(page.locator(".memory-card")).toContainText("I prefer short sessions.");
   await page.reload();
   await expect(page.getByRole("combobox")).toHaveValue("all");
 });

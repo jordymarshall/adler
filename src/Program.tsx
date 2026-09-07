@@ -40,12 +40,12 @@ export function Program() {
       <div className="page-heading">
         <div>
           <span className="section-kicker">
-            THE PLAN BEHIND THE CONVERSATION
+            YOUR TIME AND PREFERENCES
           </span>
-          <h1>Your coaching program.</h1>
+          <h1>Time & coaching</h1>
           <p>
-            Set your sprint, make time for the work, and see how Adler uses your
-            records to guide the next step.
+            Set your available time, preferred hours, review rhythm, and coaching methods.
+            Each goal’s planning cycle adapts to your input.
           </p>
         </div>
         <button
