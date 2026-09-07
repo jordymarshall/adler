@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
-test("the mountain scroll converges from a large chart to one point and keeps the first step accessible", async ({ page }) => {
+test("the mountain scroll converges into the Adler mark and keeps the first step accessible", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   const finale = page.locator(".mountain-finale");
@@ -24,7 +24,8 @@ test("the mountain scroll converges from a large chart to one point and keeps th
   await expect(finale.getByRole("heading", { name: "Let’s give it a start." })).toBeInViewport();
   await expect(finale.getByRole("link", { name: "Take your first step" })).toHaveAttribute("href", "/app/goals/new");
   const point = (await finale.locator(".mountain-start-point").boundingBox())!;
-  expect(point.width).toBeLessThan(15);
+  expect(point.width).toBeGreaterThan(30);
+  expect(point.width).toBeLessThan(50);
   expect(Math.abs(point.x + point.width / 2 - 720)).toBeLessThan(1);
   expect(point.y).toBeGreaterThan(300);
   expect(point.y + point.height).toBeLessThan(600);
@@ -37,4 +38,41 @@ test("the mountain scroll converges from a large chart to one point and keeps th
   await expect(finale.locator(".mountain-start-copy")).not.toHaveAttribute("inert", "");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
+test("the connected phones share an animated check-in and booking, with pause and reduced-motion controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.clock.install();
+  await page.goto("/");
+  const demo = page.locator(".connections-showcase");
+  await page.clock.runFor(5000);
+  await expect(demo).toHaveAttribute("data-phase", "0");
+  await demo.scrollIntoViewIfNeeded();
+  await page.clock.runFor(4100);
+  await expect(demo).toHaveAttribute("data-phase", "1");
+  await demo.getByRole("button", { name: "Pause connected apps animation" }).click();
+  await page.clock.runFor(9000);
+  await expect(demo).toHaveAttribute("data-phase", "1");
+  await demo.getByRole("button", { name: "Play connected apps animation" }).click();
+  for (const phase of ["2", "3"]) await expect.poll(async () => {
+    await page.clock.runFor(500);
+    return demo.getAttribute("data-phase");
+  }, { intervals: [50] }).toBe(phase);
+  await expect(demo.locator(".phone-messages")).toContainText("Yes, book 8:30.");
+  await expect(demo.locator(".calendar-focus-block")).toContainText("Added by Adler");
+  await expect(demo.locator(".connection-phone-screen").first()).toHaveCSS("font-family", /apple-system/);
+  await expect(demo.locator(".claude-answer p").first()).toHaveCSS("font-family", /Georgia/);
+  await demo.getByRole("button", { name: "Pause connected apps animation" }).click();
+  await page.screenshot({ path: ".context/landing-phones-desktop.png" });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.clock.runFor(9000);
+  await expect(demo).toHaveAttribute("data-phase", "3");
+  await expect(demo.locator(".phone-playback")).toBeHidden();
+  await demo.getByRole("button", { name: "Reset example text check-in" }).click();
+  await expect(demo).toHaveAttribute("data-phase", "0");
+  await demo.getByRole("button", { name: "Try the example text check-in" }).click();
+  await expect(demo).toHaveAttribute("data-phase", "3");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).include(".connections-showcase").analyze()).violations).toEqual([]);
 });

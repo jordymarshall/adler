@@ -1937,6 +1937,7 @@
 .v2-landing .app-capture-preview figcaption { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; font-size: 10px; color: #626957; }
 .v2-landing .app-capture-frames { position: relative; display: block; overflow: hidden; }
 .v2-landing .app-capture-preview .capture-detail { position: absolute; inset: 0; opacity: 0; animation: capture-detail 9s infinite; }
+.v2-landing .app-capture-preview .capture-followup { display: none; }
 .v2-landing .capture-cursor { position: absolute; left: 78%; top: 78%; color: #fffefa; fill: #293a2d; filter: drop-shadow(0 1px 2px #293a2d40); opacity: 0; animation: capture-cursor 9s infinite; pointer-events: none; }
 .v2-landing .capture-click { position: absolute; left: var(--cursor-x); top: var(--cursor-y); width: 28px; height: 28px; margin: -14px; border: 1px solid #677e48; border-radius: 50%; opacity: 0; animation: capture-click 9s infinite; pointer-events: none; }
 .v2-landing .app-capture-preview .capture-animation { animation-play-state: paused; }
@@ -1945,6 +1946,7 @@
 @keyframes capture-detail { 0%, 29%, 91%, 100% { opacity: 0; } 32%, 83% { opacity: 1; } }
 @keyframes capture-cursor { 0%, 8%, 100% { opacity: 0; left: 78%; top: 78%; } 15% { opacity: 1; left: 78%; top: 78%; } 28%, 72% { opacity: 1; left: var(--cursor-x); top: var(--cursor-y); } 88%, 95% { opacity: 0; left: 78%; top: 78%; } }
 @keyframes capture-click { 0%, 28%, 37%, 100% { opacity: 0; transform: scale(.6); } 30% { opacity: .6; transform: scale(.6); } 36% { opacity: 0; transform: scale(1.4); } }
+@keyframes capture-followup { 0%, 56%, 91%, 100% { opacity: 0; } 60%, 83% { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
   .v2-landing .app-capture-preview .capture-animation, .v2-landing .capture-playback { display: none; animation: none; }
 }
@@ -1957,6 +1959,10 @@
 @media (max-width: 650px) {
   .v2-landing .app-capture-preview { max-width: 320px; margin-inline: auto; --cursor-x: var(--cursor-mobile-x); --cursor-y: var(--cursor-mobile-y); }
   .v2-landing .app-capture-preview .modal { max-width: calc(100vw - 20px); padding: 12px; }
+  .v2-landing .app-capture-preview .capture-followup { display: block; position: absolute; inset: 0; opacity: 0; animation: capture-followup 9s infinite; animation-play-state: paused; }
+}
+@media (max-width: 650px) and (prefers-reduced-motion: reduce) {
+  .v2-landing .app-capture-preview .capture-followup { display: none; animation: none; }
 }
 
 /* Restore the floating-card hero while keeping the five focused chapters. */
@@ -1970,7 +1976,7 @@
 .v2-landing .connections-showcase { text-align: center; min-width: 0; padding: 25px 0; }
 .v2-landing .connection-phones { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; perspective: 1600px; padding: 80px 8px; }
 .v2-landing .connection-phone { flex: 0 0 31%; max-width: 195px; aspect-ratio: 0.54; padding: 5px; border: 1px solid #747771; border-radius: 31px; background: linear-gradient(110deg, #656960, #171b17 20%, #4b5148 60%, #1c211b); box-shadow: 1px 16px 30px #27352426, inset 0 0 0 2px #a9ada433; position: relative; }
-.v2-landing .connection-phone-screen { position: absolute; inset: 5px; display: flex; flex-direction: column; overflow: hidden; border-radius: 26px; background: #fff; padding: 0 10px; color: #2d302b; }
+.v2-landing .connection-phone-screen { --body-font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; --heading-font: var(--body-font); --body-weight: 400; font-family: var(--body-font); font-weight: 400; position: absolute; inset: 5px; display: flex; flex-direction: column; overflow: hidden; border-radius: 26px; background: #fff; padding: 0 10px; color: #2d302b; }
 .v2-landing .claude-phone { transform: rotate(-8deg) translateX(10px) translateY(14px); margin-right: -8px; }
 .v2-landing .adler-phone { flex-basis: 35%; max-width: 218px; z-index: 2; transform: translateY(-8px); }
 .v2-landing .calendar-phone { transform: rotate(8deg) translateX(-10px) translateY(14px); margin-left: -8px; }
@@ -1984,7 +1990,8 @@
 .v2-landing .claude-phone .connection-phone-screen { background: #f6f4ed; }
 .v2-landing .phone-user-note { font-size: 10px; background: #e8e5da; border-radius: 9px; margin: 14px 0 15px 15px; padding: 9px; }
 .v2-landing .claude-answer > img { width: 19px; }
-.v2-landing .claude-answer p { font-size: 9px; line-height: 1.6; margin: 9px 0; }
+.v2-landing .claude-answer p { font-family: "Anthropic Serif", "Tiempos Text", Georgia, serif; font-size: 10px; font-weight: 400; line-height: 1.55; margin: 9px 0; }
+.v2-landing .claude-phone header b { font-family: "Anthropic Serif", "Tiempos Text", Georgia, serif; font-weight: 600; font-size: 15px; }
 .v2-landing .phone-record-link { display: block; font-size: 8px; text-decoration: underline; margin: 7px 0; color: #60714e; }
 .v2-landing .mock-phone-composer { position: relative; flex-shrink: 0; margin: auto 0 15px; min-height: 27px; display: flex; justify-content: space-between; align-items: center; padding: 6px 9px; border: 1px solid #d8dbd3; border-radius: 15px; background: #fffef8; color: #696f60; font-size: 8px; }
 .v2-landing button.mock-phone-composer { cursor: pointer; }
@@ -2005,8 +2012,8 @@
 .v2-landing .texting-phone header svg { width: 21px; height: 21px; }
 .v2-landing .texting-phone .phone-messages { padding: 0; display: flex; flex-direction: column; gap: 9px; }
 .v2-landing .texting-phone .phone-bubble { font-size: 9px; line-height: 1.45; border-radius: 10px; padding: 8px; margin: 0; max-width: 91%; text-align: left; }
-.v2-landing .texting-phone .phone-bubble.outgoing { background: #e3ecd4; color: #34452a; align-self: flex-end; }
-.v2-landing .texting-phone .phone-bubble.incoming { background: #eaece6; color: #343a30; }
+.v2-landing .texting-phone .phone-bubble.outgoing { background: #0878f9; color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+.v2-landing .texting-phone .phone-bubble.incoming { background: #e9e9eb; color: #1c1c1e; border-bottom-left-radius: 3px; }
 .v2-landing .texting-phone .phone-delivered { margin: -5px 3px 0; font-size: 6px; text-align: right; color: #5a6650; }
 .v2-landing .connections-caption-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; font-size: 10px; color: #58664b; margin: 16px 0; }
 .v2-landing .connections-upcoming { font-size: 11px; margin: 16px 0; color: #516243; }
@@ -2031,8 +2038,20 @@
 .v2-landing .texting-phone .phone-messages { flex: 1; min-height: 0; overflow-y: auto; padding-bottom: 10px; }
 .v2-landing .claude-answer { flex: 1; min-height: 0; overflow-y: auto; text-align: left; }
 .v2-landing .phone-calendar-day { flex: 1; min-height: 0; overflow-y: auto; }
-.v2-landing .adler-phone .connection-phone-screen { background: #fafbf6; }
+.v2-landing .adler-phone .connection-phone-screen { background: #fff; }
 .v2-landing .connection-phone:focus-within { z-index: 4; }
+.v2-landing .connections-showcase[data-phase="0"] .claude-answer { opacity: 0; }
+.v2-landing .claude-answer { transition: opacity .5s ease; }
+.v2-landing .phone-bubble, .v2-landing .phone-booking-reveal { animation: phone-arrival .4s ease both; }
+.v2-landing .phone-calendar-day .calendar-open-slot { color: #76766e; border: 1px dashed #dadbd3; border-radius: 4px; }
+.v2-landing .phone-demo-playback { margin-top: 30px; display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 30px; font-size: 11px; color: #58664b; }
+.v2-landing .phone-playback { display: inline-flex; align-items: center; gap: 5px; padding: 5px; border: 0; background: none; font-size: 10px; color: inherit; }
+@keyframes phone-arrival { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  .v2-landing .phone-bubble, .v2-landing .phone-booking-reveal { animation: none; }
+  .v2-landing .claude-answer { transition: none; }
+  .v2-landing .phone-playback { display: none; }
+}
 
 /* A shared plan makes the learning loop visible, including its setbacks. */
 .v2-landing .learning-preview { text-align: left; }
@@ -2156,6 +2175,7 @@
 
 /* A mountain-shaped chart converges to one starting point. */
 .v2-landing .mountain-finale { position: relative; border-block: 1px solid var(--line); }
+.v2-landing .mountain-start-point { color: #677e48; }
 .v2-landing .mountain-stage { position: relative; isolation: isolate; overflow: hidden; }
 .v2-landing .mountain-graph { display: block; width: 100%; height: auto; }
 .v2-landing .mountain-grid { opacity: .7; }

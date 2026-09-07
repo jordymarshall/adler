@@ -42,12 +42,12 @@ await page.clock.setFixedTime(new Date(captureDate));
 const screens = [
   { name: 'goals', route: '/app/goals', ready: '.goal-table-row' },
   { name: 'calendar', route: '/app/calendar', ready: '.week-calendar' },
-  { name: 'progress', route: '/app/goals/reading', ready: '.goal-projection' },
+  { name: 'progress', route: '/app/goals/reading', ready: '.weekly-actions' },
   { name: 'insights', route: '/app/insights', ready: '.insight-row' },
 ];
 const points: Record<string, Record<string, { x: number; y: number }>> = {};
-async function capture(name: string) {
-  const screenshot = await page.screenshot();
+async function capture(name: string, selector?: string) {
+  const screenshot = selector ? await page.locator(selector).screenshot() : await page.screenshot();
   await writeFile(`.context/app-captures/${name}.png`, screenshot);
   const webp = await page.evaluate(async encoded => {
     const image = new Image();
@@ -71,14 +71,14 @@ for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobi
     await page.evaluate(() => document.fonts.ready);
     await page.waitForTimeout(150);
     await expect(page.locator('.save-error, [role="alert"]')).toHaveCount(0);
-    const focus = screen.name === 'progress' ? '.goal-projection' : screen.name === 'calendar' ? '.full-calendar' : screen.name === 'insights' ? '.learning-loop' : null;
+    const focus = screen.name === 'progress' ? '.weekly-actions' : screen.name === 'calendar' ? '.full-calendar' : screen.name === 'insights' ? '.learning-loops' : null;
     if (focus) await page.locator(focus).first().evaluate(element => {
       window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' });
     });
     await capture(`${screen.name}-${size.name}`);
     const target = screen.name === 'calendar' ? page.locator('.month-entry button').filter({ hasText: '25 minutes on my chosen draft' }).first()
-      : screen.name === 'insights' ? page.locator('.insight-sources summary').first()
-      : screen.name === 'progress' ? page.locator('.projection-evidence summary').first()
+      : screen.name === 'insights' ? page.locator('.insight-overview-summary').first()
+      : screen.name === 'progress' ? page.locator('.execution-action summary').filter({ hasText: 'Wed' }).first()
       : page.getByRole('link', { name: 'Read 30 books' });
     const box = (await target.boundingBox())!;
     if (box.y < 0 || box.y + box.height > size.height) throw new Error(`Interaction outside capture: ${screen.name}`);
@@ -89,8 +89,16 @@ for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobi
       await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
       await page.locator('.goal-projection').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     }
+    if (screen.name === 'insights') await page.locator('.learning-loop[open] .learning-canvas').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
     await page.waitForTimeout(150);
     await capture(`${screen.name}-${size.name}-detail`);
+    if (screen.name === 'insights') {
+      await capture(`${screen.name}-${size.name}-reasoning`, '.learning-loop[open]');
+      if (size.name === 'mobile') {
+        await page.locator('.learning-loop[open] .result-node').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
+        await capture(`${screen.name}-${size.name}-followup`);
+      }
+    }
     console.log(`Captured ${screen.name} and its interaction at ${size.width}×${size.height}`);
   }
 }

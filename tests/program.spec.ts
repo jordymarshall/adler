@@ -434,6 +434,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await expect(page.locator(".insight-row")).toContainText(
     "A late meeting interrupted the session.",
   );
+  await page.locator(".insight-overview-summary").click();
   await page.locator(".insight-sources summary").click();
   await expect(page.locator(".insight-sources")).toContainText(
     "My meeting ran late. I missed the session.",

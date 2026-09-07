@@ -48,17 +48,17 @@ const chapters = [
         It’s hard to see what’s working. <em>Make your progress visible.</em>
       </>
     ),
-    body: "Being busy doesn’t tell you whether you’re moving forward. Check in by text or in the app to see your actions, results, and milestones together—and understand what needs to change in your plan or timeline.",
+    body: "See how your actions change week by week. Open a session to revisit what happened, notice where your rhythm breaks down, and connect those reports to your results and goal timeline.",
     visual: <LandingAppCapture screen="progress" />,
   },
   {
     label: "Behavioural science, personal to you",
     title: (
       <>
-        The same plan keeps breaking. <em>Learn why. Try what helps.</em>
+        Your experience holds clues. <em>Build a plan that understands you.</em>
       </>
     ),
-    body: "A missed action is something to understand. Adler uses behavioural science and your check-ins to explore the friction, try a different cue or a smaller commitment, and review whether the change actually helped.",
+    body: "Your check-ins build a picture of what helps you start, what gets in the way, and what’s worth trying next. See those insights together, how they shape your plan, and the behavioural science and observations behind each one.",
     visual: <LandingAppCapture screen="insights" />,
   },
   {

@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot } from "./fixtures";
-import { landingWorkspace, captureDate } from "../scripts/landing-workspace";
+import { landingWorkspace, landingProposals, captureDate } from "../scripts/landing-workspace";
 import { dateInZone } from "../shared/journey";
 import type { Data } from "../shared/workspace";
 
@@ -66,7 +66,13 @@ test("a full month distinguishes goals and opens complete Adler event details on
 
 test("the reasoning path distinguishes evidence, hypotheses, experiments and feedback, with source links", async ({ page }) => {
   await example(page);
+  await page.route("**/api/proposals", route => route.fulfill({ json: landingProposals }));
   await page.goto("/app/insights");
+  await expect(page.locator(".insight-overview-summary")).toHaveCount(3);
+  await expect(page.locator(".learning-loop[open]")).toHaveCount(0);
+  await expect(page.locator(".insight-overview-implication").first()).toContainText("In the saved plan");
+  await expect(page.locator(".insight-overview-implication").first()).toContainText("Choose a finish line");
+  await page.locator(".insight-overview-summary").first().click();
   const loop = page.getByRole("list", { name: "Coaching reasoning from evidence to the next test" });
   await expect(loop.getByRole("listitem")).toHaveCount(6);
   await expect(loop.locator(".learning-stage")).toHaveText([/01OBSERVATION/, /02HYPOTHESIS/, /03TEST/, /04RESULT/, /05INFERENCE/, /06NEXT QUESTION/]);
@@ -83,4 +89,9 @@ test("the reasoning path distinguishes evidence, hypotheses, experiments and fee
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.getByRole("combobox").selectOption("reading");
+  await expect(page.locator(".insight-overview-summary")).toHaveCount(1);
+  await expect(page.locator(".insight-overview-summary")).toContainText("book is already beside my lunch spot");
+  await page.goto("/app/insights#learning-learned-rhythm-0");
+  await expect(page.locator("#learning-learned-rhythm-0")).toHaveAttribute("open", "");
 });

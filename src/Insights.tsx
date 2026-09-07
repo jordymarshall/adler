@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import { api } from "./api";
 import { formatDate, useStore, type Data } from "./store";
 import type { Proposal } from "../server/service";
@@ -17,16 +17,36 @@ export interface InsightRow {
   status: string;
   sources: { label: string; text: string; href?: string }[];
   effect: ReactNode;
+  implication: string;
+  implicationLabel: string;
   learning?: CoachInsight["learning"];
   resultSources: InsightRow["sources"];
   research: ResearchSource[];
   date: string;
   goalTitle: string;
+  goalIds: string[];
 }
 export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
+  const feedbackCount = rows.filter(row => row.learning?.result).length;
+  useEffect(() => {
+    function revealLinkedInsight() {
+      const element = document.getElementById(location.hash.slice(1));
+      if (element instanceof HTMLDetailsElement && element.classList.contains("learning-loop")) element.open = true;
+    }
+    revealLinkedInsight();
+    addEventListener("hashchange", revealLinkedInsight);
+    return () => removeEventListener("hashchange", revealLinkedInsight);
+  }, [rows]);
   return <div className="learning-loops" aria-label="Learning experiments and their evidence">
-    {rows.map(row => <article className="insight-row learning-loop" id={`learning-${row.id}`} key={row.id}>
-      <header><span>{row.goalTitle} · {formatDate(row.date)}</span><span className="insight-status">{row.learning?.result ? "Feedback received" : row.learning ? "Experiment in progress" : row.status}</span></header>
+    <header className="insights-overview-heading"><div><span className="section-kicker">WHAT SHAPES YOUR PLAN</span><h2>What we’re learning about you</h2></div><p>{rows.length} {rows.length === 1 ? "observation" : "observations"} · {feedbackCount} {feedbackCount === 1 ? "experiment" : "experiments"} with feedback</p></header>
+    <div className="insights-overview-labels" aria-hidden="true"><span>From your experience</span><span>How Adler adapts the plan</span></div>
+    {rows.map(row => <details className="insight-row learning-loop" id={`learning-${row.id}`} key={row.id}>
+      <summary className="insight-overview-summary">
+        <span className="insight-overview-finding"><small>{row.goalTitle} · {formatDate(row.date)}</small><strong>{row.finding}</strong><span className="insight-status">{row.learning?.insight ? "Working insight · Feedback received" : row.learning?.result ? "Feedback received · Under review" : row.learning ? "Hypothesis · Testing" : row.status === "To test" ? "Hypothesis · To test" : "Your observation"} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</span></span>
+        <ArrowRight className="insight-implication-arrow" size={18} aria-hidden="true" />
+        <span className="insight-overview-implication"><small>{row.implicationLabel}</small><span>{row.implication}</span></span>
+        <span className="insight-open-label"><span>View reasoning</span><ChevronDown size={17} aria-hidden="true" /></span>
+      </summary>
       {row.learning?.previousInsightId && <a className="previous-loop" href={`#learning-${row.learning.previousInsightId}`}>↳ Builds on an earlier learning cycle</a>}
       <ol className="learning-canvas" role="list" aria-label="Coaching reasoning from evidence to the next test">
         <li className="learning-node observation-node">
@@ -60,7 +80,7 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
           <aside className="deduction-evidence"><small>The next experiment builds on this evidence. Earlier reasoning stays available.</small></aside>
         </li>
       </ol>
-    </article>)}
+    </details>)}
   </div>;
 }
 function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
@@ -144,32 +164,26 @@ export function Insights() {
   const rows: InsightRow[] = data.decisions
     .slice()
     .reverse()
-    .filter(
-      (d) =>
-        goalId === "all" ||
-        d.goalId === goalId ||
-        proposals.some(
-          (p) =>
-            p.decisionId === d.id &&
-            p.changes.some(
-              (c) => (c.entity === "goal" ? c.id : c.parentId) === goalId,
-            ),
-        ),
-    )
     .flatMap((decision) =>
       (decision.insights ?? []).map((insight, i) => {
         const proposal = proposals.find((p) => p.decisionId === decision.id);
         const changes = insight.changeIndexes.flatMap((index) =>
           proposal?.changes[index] ? [proposal.changes[index]] : [],
         );
+        const affectedGoals = [...new Set(changes.map(change => change.entity === "goal" ? change.id : change.parentId).filter(Boolean))];
+        const insightGoalId = affectedGoals.length === 1 ? affectedGoals[0]! : decision.goalId;
         return {
           id: `${decision.id}-${i}`,
           finding: insight.finding,
+          implication: changes.length ? changes.map(change => change.reason).filter(Boolean).join(" ") || insight.learning?.experiment || "Review the linked plan change."
+            : insight.learning?.experiment ?? "Keep this context in view when reviewing the next plan. No change is attached yet.",
+          implicationLabel: changes.length ? proposal?.status === "applied" ? "In the saved plan" : proposal?.status === "pending" ? "Proposed adjustment" : "Previously considered adjustment" : "What to explore next",
           learning: insight.learning,
           resultSources: insight.learning?.result?.sourceIds.map(id => resolveSource(id, data)) ?? [],
           research: (decision.researchSources ?? []).filter(source => insight.learning?.researchSourceIds.includes(source.id)),
           date: decision.date,
-          goalTitle: data.goals.find(g => g.id === decision.goalId)?.title ?? "Across your goals",
+          goalTitle: data.goals.find(g => g.id === insightGoalId)?.title ?? "Across your goals",
+          goalIds: affectedGoals.length ? affectedGoals as string[] : [decision.goalId],
           status: insight.status,
           sources: insight.sourceIds.map((id) => resolveSource(id, data)),
           effect: (
@@ -231,7 +245,7 @@ export function Insights() {
           ),
         };
       }),
-    );
+    ).filter(row => goalId === "all" || row.goalIds.includes(goalId));
   return (
     <div className="insights-page">
       <div className="page-heading">
@@ -239,7 +253,7 @@ export function Insights() {
           <span className="section-kicker">LEARN FROM WHAT HAPPENED</span>
           <h1>Insights</h1>
           <p>
-            Your check-ins become observations. Adler uses behavioural research to form hypotheses, test changes, and learn from the results.
+            Your experiences add up. See what Adler is learning, how it shapes your plan, and the evidence behind each working insight.
           </p>
         </div>
         <Link className="button secondary" to={coachLink}>

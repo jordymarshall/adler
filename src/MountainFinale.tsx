@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { Mark } from "./LandingArt";
 
 export function MountainFinale() {
   const section = useRef<HTMLElement>(null);
@@ -101,8 +102,8 @@ export function MountainFinale() {
           </g>
           <g className="mountain-origin" ref={origin}>
             <path className="mountain-origin-guide" d="M0 760H1600" stroke="#c8d2ba" strokeDasharray="3 7" vectorEffect="non-scaling-stroke" />
-            <circle cx="800" cy="760" r="17" fill="#e7eddc" />
-            <circle className="mountain-start-point" cx="800" cy="760" r="6" fill="#677e48" />
+            <circle cx="800" cy="760" r="30" fill="#f6f7ef" />
+            <Mark className="mountain-start-point" x={779} y={739} width={42} height={42} />
           </g>
         </svg>
         <div

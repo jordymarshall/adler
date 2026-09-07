@@ -9,6 +9,8 @@ import {
   Signal,
   Wifi,
   BatteryFull,
+  Pause,
+  Play,
 } from "lucide-react";
 import { Mark } from "./LandingArt";
 
@@ -44,14 +46,34 @@ function Phone({
   );
 }
 export function ConnectionsPreview() {
-  const [sent, setSent] = useState(false);
+  const [phase, setPhase] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const showcase = useRef<HTMLDivElement>(null);
   const messages = useRef<HTMLDivElement>(null);
+  const sent = phase >= 2;
+  useEffect(() => {
+    const motion = matchMedia("(prefers-reduced-motion: reduce)");
+    let visible = false;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    function sync() {
+      clearInterval(timer);
+      if (!motion.matches && visible && !paused && !document.hidden) timer = setInterval(() => setPhase(previous => (previous + 1) % 4), 4000);
+    }
+    function motionChanged() { if (motion.matches) setPhase(3); sync(); }
+    const observer = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; sync(); }, { threshold: .25 });
+    observer.observe(showcase.current!);
+    motion.addEventListener("change", motionChanged);
+    document.addEventListener("visibilitychange", sync);
+    if (motion.matches && !paused) setPhase(3);
+    sync();
+    return () => { clearInterval(timer); observer.disconnect(); motion.removeEventListener("change", motionChanged); document.removeEventListener("visibilitychange", sync); };
+  }, [paused]);
   useEffect(() => {
     if (messages.current)
       messages.current.scrollTop = messages.current.scrollHeight;
-  }, [sent]);
+  }, [phase]);
   return (
-    <div className="connections-showcase">
+    <div className="connections-showcase" ref={showcase} data-phase={phase}>
       <div className="connection-universe">
         <div className="connection-orbits" aria-hidden="true">
           <svg viewBox="0 0 700 540" preserveAspectRatio="none">
@@ -101,13 +123,14 @@ export function ConnectionsPreview() {
               <b>Claude</b>
               <Plus size={15} />
             </header>
-            <p className="phone-date">Your Adler plan, in the conversation</p>
+            <p className="phone-date">{phase === 0 ? "Reading your Adler plan…" : "Adler context connected"}</p>
             <p className="phone-user-note">What’s my plan for today?</p>
             <div
               className="claude-answer"
-              tabIndex={0}
+              tabIndex={phase >= 1 ? 0 : -1}
               role="region"
               aria-label="Example Claude reply"
+              aria-hidden={phase === 0}
             >
               <img src="/brands/claude.svg" alt="" />
               <p>
@@ -144,7 +167,7 @@ export function ConnectionsPreview() {
               tabIndex={0}
               role="log"
               aria-label="Example Adler check-in"
-              aria-live="polite"
+              aria-live="off"
             >
               <p className="phone-bubble incoming">
                 How did your portfolio session go?
@@ -164,13 +187,15 @@ export function ConnectionsPreview() {
                   </p>
                   <p className="phone-bubble incoming">
                     Let’s try that and check how it feels after two sessions.
+                    I found 8:30 tomorrow. Book 25 minutes?
                   </p>
                 </>
               )}
+              {phase === 3 && <><p className="phone-bubble outgoing">Yes, book 8:30.</p><p className="phone-bubble incoming">Booked in your calendar. Your next step is ready.</p></>}
             </div>
             <button
               className="mock-phone-composer"
-              onClick={() => setSent(!sent)}
+              onClick={() => { setPaused(true); setPhase(sent ? 0 : 3); }}
               aria-label={
                 sent
                   ? "Reset example text check-in"
@@ -191,8 +216,8 @@ export function ConnectionsPreview() {
               <Plus size={17} />
             </header>
             <div className="phone-calendar-date">
-              <small>THURSDAY</small>
-              <strong>15</strong>
+              <small>FRIDAY</small>
+              <strong>16</strong>
               <span>Room for your goals.</span>
             </div>
             <div
@@ -205,13 +230,13 @@ export function ConnectionsPreview() {
                 <time>8 AM</time>
                 <span>Breakfast</span>
               </div>
-              <div className="calendar-focus-block">
+              <div className={phase === 3 ? "calendar-focus-block phone-booking-reveal" : "calendar-open-slot"}>
                 <time>8:30</time>
-                <span>
+                {phase === 3 ? <span>
                   <CalendarDays size={14} />
                   <b>My portfolio draft</b>
-                  <small>25 minutes · A finish line I choose</small>
-                </span>
+                  <small>25 minutes · Added by Adler</small>
+                </span> : <span>Available<small>Room for a next step</small></span>}
               </div>
               <div>
                 <time>9 AM</time>
@@ -230,11 +255,12 @@ export function ConnectionsPreview() {
               </div>
             </div>
             <p className="phone-calendar-note">
-              Your goals have a place in your day.
+              {phase === 3 ? "Added after your confirmation." : "Adler finds time around your day."}
             </p>
           </Phone>
         </div>
       </div>
+      <div className="phone-demo-playback"><span>{["Your plan, inside Claude", "Same context, wherever you check in", "A next step shaped by your check-in", "Confirmed by you. Added to your calendar."][phase]}</span><button className="phone-playback" onClick={() => setPaused(!paused)} aria-label={`${paused ? "Play" : "Pause"} connected apps animation`}>{paused ? <Play size={12} /> : <Pause size={12} />}{paused ? "Play" : "Pause"}</button></div>
       <div className="connections-caption-list">
         <span>Claude, ChatGPT & compatible AI tools</span>
         <span>Google & Apple Calendar</span>

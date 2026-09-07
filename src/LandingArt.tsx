@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 
-export function Mark({ className = "" }: { className?: string }) {
+export function Mark({ className = "", ...props }: { className?: string; x?: number; y?: number; width?: number; height?: number }) {
   return (
     <svg
       className={`adler-mark ${className}`}
       viewBox="0 0 40 40"
       fill="none"
       aria-hidden="true"
+      {...props}
     >
       <path
         d="M20 4v32M6.14 12l27.72 16M6.14 28l27.72-16"

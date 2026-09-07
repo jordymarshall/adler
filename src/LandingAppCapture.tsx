@@ -6,8 +6,8 @@ import points from "./landing-capture-points.json";
 const screens = {
   goals: { title: "Your goals", alt: "Adler’s categorized goals table with activity heatmaps, goal attainment, and projected finish dates." },
   calendar: { title: "Your calendar", alt: "Adler’s full month calendar with goal colours and highlighted plan sessions. Selecting a session shows its full details." },
-  progress: { title: "Goal progress", alt: "A goal to read 30 books, with a 100 percent target line and projected goal attainment fan based on measured pages per day and assumed book lengths." },
-  insights: { title: "Insights", alt: "Adler’s learning loop: check-in observations, a research-informed hypothesis, a behavioral experiment, observed results, a new insight, and the next hypothesis." },
+  progress: { title: "Goal progress", alt: "Weekly action progress for Read 30 books: a line graph of reported completion, dated sessions, pages read, and check-in context." },
+  insights: { title: "Insights", alt: "An overview of three personal observations and their planning implications. Open one to follow the observations, behavioural research, experiment, feedback and next question." },
 };
 
 export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) {
@@ -15,12 +15,13 @@ export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) 
   const [paused, setPaused] = useState(false);
   const { title, alt } = screens[screen];
   const point = points[screen];
-  function capture(enlarged = false, detail = false) {
-    const suffix = detail ? "-detail" : "";
+  function capture(enlarged = false, detail = false, followup = false) {
+    const suffix = enlarged && screen === "insights" ? "-reasoning" : detail || followup ? "-detail" : "";
+    const hidden = (detail || followup) && !enlarged;
     return (
-      <picture className={detail ? "capture-detail capture-animation" : "capture-still"} aria-hidden={detail || undefined}>
-        <source media="(max-width: 650px)" srcSet={`/media/app/${screen}-mobile${suffix}.webp`} width="780" height="2100" />
-        <img src={`/media/app/${screen}-desktop${suffix}.webp`} alt={detail ? "" : alt} width="2000" height="1800" loading={enlarged ? "eager" : "lazy"} decoding="async" />
+      <picture className={enlarged ? "capture-expanded" : followup ? "capture-followup capture-animation" : detail ? "capture-detail capture-animation" : "capture-still"} aria-hidden={hidden || undefined}>
+        <source media="(max-width: 650px)" srcSet={`/media/app/${screen}-mobile${followup ? "-followup" : suffix}.webp`} width="780" height="2100" />
+        <img src={`/media/app/${screen}-desktop${suffix}.webp`} alt={hidden ? "" : enlarged && screen === "insights" ? "The complete reasoning behind a working insight, from reported evidence through the next experiment." : alt} width="2000" height="1800" loading={enlarged ? "eager" : "lazy"} decoding="async" />
       </picture>
     );
   }
@@ -34,6 +35,7 @@ export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) 
         <span className="app-capture-frames">
           {capture()}
           {capture(false, true)}
+          {screen === "insights" && capture(false, false, true)}
           <MousePointer2 className="capture-cursor capture-animation" size={24} aria-hidden="true" />
           <span className="capture-click capture-animation" aria-hidden="true" />
         </span>

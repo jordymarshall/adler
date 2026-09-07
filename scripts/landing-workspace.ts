@@ -86,6 +86,10 @@ export function landingWorkspace(): Data {
     insight: 'In two reported sessions, you finished the work. In one, you explicitly linked stopping to the finish line; we need more observations.', nextHypothesis: 'Could a smaller fallback help on crowded days?', previousInsightId: null,
     researchSourceIds: ['method:goal-definition', 'adler:P3', 'adler:P4'],
   } }];
+  decision.insights.push(
+    { finding: 'Starting after breakfast works better for me than leaving it until the evening.', status: 'Reported', sourceIds: ['breakfast-cue'], changeIndexes: [0] },
+    { finding: 'I read more often when my book is already beside my lunch spot.', status: 'Reported', sourceIds: ['book-cue'], changeIndexes: [2] },
+  );
   return data;
 }
 export const landingProposals: Proposal[] = [{ id: 'rhythm-change', summary: 'Keep the helpful cues and test a clear finish line.', status: 'applied', expires: Date.parse('2026-11-01'), channel: 'web', goalId: 'demo-portfolio', decisionId: 'learned-rhythm', changes: [
