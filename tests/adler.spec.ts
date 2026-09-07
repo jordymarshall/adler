@@ -9,14 +9,8 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a system that adapts to you.");
-  const recordedMetrics = page.locator("#step-3 .proposal-metrics");
-  await expect(recordedMetrics).toContainText("4 sessions recorded");
-  const recorded = (await recordedMetrics.textContent())!;
-  const review = page.locator("#step-4");
-  await expect(review.locator(".plan-change")).toHaveCount(3);
-  await review.getByRole("button", { name: "Try this adjustment" }).click();
-  await expect(review.getByRole("status")).toContainText("Review after two sessions");
-  await expect(recordedMetrics).toHaveText(recorded);
+  await expect(page.locator(".app-capture-window .capture-still img")).toHaveCount(4);
+  await expect(page.locator("#step-4 figcaption")).toContainText("Actual app · Example workspace");
   await expect(page.locator("#step-5")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })

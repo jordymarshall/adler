@@ -48,16 +48,16 @@ test("the integration catalog distinguishes plans from working setup paths", asy
 
 test("the example text check-in discusses a next step without rewriting recorded work", async ({ page }) => {
   await page.goto("/");
-  const recordedMetrics = page.locator("#step-3 .proposal-metrics");
-  const recorded = (await recordedMetrics.textContent())!;
+  const recordedCapture = page.locator("#step-3 .app-capture-window .capture-still img");
+  const recorded = (await recordedCapture.getAttribute("src"))!;
   const step = page.locator("#step-5");
   await step.getByRole("button", { name: "Try the example text check-in" }).click();
   await expect(step.getByRole("log")).toContainText("One paragraph, then leave a note");
   await expect(step.getByRole("log")).toContainText("check how it feels after two sessions");
-  await expect(recordedMetrics).toHaveText(recorded);
+  await expect(recordedCapture).toHaveAttribute("src", recorded);
   await step.getByRole("button", { name: "Reset example text check-in" }).click();
   await expect(step.getByRole("log")).not.toContainText("One paragraph, then leave a note");
-  await expect(recordedMetrics).toHaveText(recorded);
+  await expect(recordedCapture).toHaveAttribute("src", recorded);
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({

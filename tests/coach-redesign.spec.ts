@@ -3,6 +3,76 @@ import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot } from "./fixtures";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
 import { addDays, dateInZone } from "../shared/journey";
+import { weekStart } from "../shared/goal-execution";
+import { type Outcome } from "../shared/workspace";
+
+test("weekly completion lines distinguish zero from unknown and retain the reports behind a week", async ({ page }) => {
+  await register(page);
+  const state = await snapshot(page);
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
+  const monday = weekStart(today);
+  const records: { offset: number; outcome?: Outcome }[] = [
+    { offset: -21, outcome: "Done" }, { offset: -21, outcome: "Didn’t happen" }, { offset: -21 },
+    { offset: -14 }, { offset: -7, outcome: "Didn’t happen" }, { offset: 0, outcome: "Done" }, { offset: 7 },
+  ];
+  data.actions = records.map((record, index) => ({ id: `report-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points", criterion: "Five points are written", timing: "After breakfast", date: addDays(monday, record.offset), planVersion: 1, outcome: record.outcome, history: [] }));
+  await save(page, data, state.revision);
+  await page.goto("/app/goals/essay");
+  const chart = page.locator(".weekly-actions");
+  await expect(chart.locator(".execution-metric")).toHaveText("Action completion (%)");
+  await expect(chart.locator(".execution-time-label")).toHaveText("Week starting");
+  await expect(chart.locator(".execution-bar")).toHaveCount(0);
+  await expect(chart.locator("circle title")).toHaveText([
+    /50% · 1 of 2 reported actions completed/, /0% · 0 of 1 reported actions completed/, /100% · 1 of 1 reported actions completed/,
+  ]);
+  expect((await chart.locator(".execution-trend-line").getAttribute("d"))!.match(/M/g)).toHaveLength(2);
+  const missed = chart.getByRole("button", { name: /: 0% completion, 1 planned/ });
+  await missed.focus();
+  await page.keyboard.press("Enter");
+  await expect(chart.locator(".execution-week-summary")).toContainText("1 didn’t happen");
+  await expect(chart.locator(".execution-action")).toHaveCount(1);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
+
+test("weekly completion projection shows a dashed estimate, uncertainty band and error bars", async ({ page }) => {
+  await register(page);
+  const state = await snapshot(page);
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 21)));
+  data.goals[0].plans[0].adaptive!.window.capacityMinutes = 300;
+  data.goals[0].plans[0].adaptive!.steps[0].recurrence!.until = addDays(weekStart(today), 20);
+  data.programs.at(-1)!.weeklyMinutes = 300;
+  data.actions = Array.from({ length: 10 }, (_, index) => ({
+    id: `reported-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points",
+    criterion: "Five points are written", timing: "After breakfast", date: addDays(today, -index),
+    planVersion: 1, outcome: index % 2 ? "Didn’t happen" : "Done", history: [],
+  }));
+  for (const offset of [7, 14]) data.actions.push({ ...data.actions[0], id: `future-${offset}`, date: addDays(weekStart(today), offset), outcome: undefined });
+  await save(page, data, state.revision);
+  await page.goto("/app/goals/essay");
+  const chart = page.locator(".weekly-actions");
+  await expect(chart.locator(".execution-projection")).toHaveCount(2);
+  await expect(chart.locator(".execution-projection title")).toHaveText([
+    /projected rate 50% · approximate 95% rate interval 24–76%/,
+    /projected rate 50% · approximate 95% rate interval 24–76%/,
+  ]);
+  expect(Number(await chart.locator(".execution-projection-band").first().getAttribute("height"))).toBeGreaterThan(0);
+  await expect(chart.locator(".execution-projection-error")).toHaveCount(2);
+  expect(await chart.locator(".execution-projection-line").first().evaluate(el => getComputedStyle(el).strokeDasharray)).not.toBe("none");
+  await expect(chart.getByLabel("Chart legend")).toContainText("Rate uncertainty");
+  const future = chart.getByRole("button", { name: /No reports, [1-9]\d* planned, 0 done.*[1-9]\d* upcoming/ }).first();
+  await future.click();
+  await expect(chart.locator(".execution-week-summary")).toContainText(/0 \/ \d+ actions done/);
+  await chart.locator(".execution-projection-note summary").click();
+  await expect(chart.locator(".execution-projection-note")).toContainText(/10 of \d+ due actions reported/);
+  await expect(chart.locator(".execution-projection-note")).toContainText("It does not predict the goal’s outcome.");
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});
 
 test("goals use full-width chart rows and show reporting coverage without invented completion", async ({
   page,
@@ -168,9 +238,7 @@ test("landing keeps the floating scroll hero, five chapters, shared goal plan, a
   await expect.poll(async () => (await camera.boundingBox())!.width / viewport!.width).toBeCloseTo(1, 2);
   await expect(page.getByRole("heading", { name: "Progress isn’t linear. Learning adds up." })).toBeVisible();
   const chapter = page.locator("#step-2");
-  await expect(chapter.locator(".demo-goal-row")).toHaveCount(3);
-  await chapter.getByRole("button", { name: /Read for enjoyment/ }).click();
-  await expect(chapter.locator(".demo-selected-action")).toContainText("15 minutes with my book");
+  await expect(chapter.locator(".app-capture-window .capture-still img")).toHaveAttribute("src", "/media/app/calendar-desktop.webp");
   const connections = page.locator("#step-5");
   await expect(connections.locator(".connection-phone")).toHaveCount(3);
   await expect(connections.locator(".connection-phone").nth(1)).toHaveClass(/adler-phone/);

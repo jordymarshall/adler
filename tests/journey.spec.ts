@@ -313,39 +313,63 @@ test("the landing uses Adler Warm and five focused chapters on desktop and mobil
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
-test("the progress and proposal graph fills its container and has readable labels on desktop and phone", async ({
-  page,
-}) => {
+test("landing app captures load the desktop and native mobile screens", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-    await page.evaluate(() => document.fonts.ready);
-    const chart = page.locator(".landing-projection");
-    const size = await chart.evaluate(el => ({ width: el.getBoundingClientRect().width, labelPixels: parseFloat(getComputedStyle(el.querySelector(".projection-ticks")!).fontSize) }));
-    expect(size.width).toBeGreaterThan(width === 390 ? 250 : 380);
-    expect(size.labelPixels).toBeGreaterThanOrEqual(8.5);
-    const graphBottom =
-      (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
-    const nextRow = await page
-      .locator(".projection-adjustment")
-      .boundingBox();
-    expect(nextRow!.y).toBeGreaterThan(graphBottom);
+    for (const [index, screen] of ["goals", "calendar", "progress", "insights"].entries()) {
+      const capture = page.locator(`#step-${index + 1} .app-capture-window .capture-still img`);
+      await capture.scrollIntoViewIfNeeded();
+      await expect.poll(() => capture.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+      const image = await capture.evaluate((el: HTMLImageElement) => ({ src: el.currentSrc, pixels: el.naturalWidth, width: el.getBoundingClientRect().width }));
+      expect(image.src).toContain(`/media/app/${screen}-${width === 390 ? "mobile" : "desktop"}.webp`);
+      expect(image.pixels).toBe(width === 390 ? 780 : 2000);
+      expect(image.width).toBeGreaterThan(width === 390 ? 300 : 600);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
 });
 
-test("the landing projection distinguishes recorded work and links to the proposed adjustment", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+test("landing capture interactions pause and respect reduced motion", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  const preview = page.locator(".progress-proposal-preview");
-  await expect(preview.locator(".projection-range")).toBeVisible();
-  await expect(preview.locator(".projection-legend")).toContainText("Recorded actions");
-  await expect(preview.locator(".projection-legend")).toContainText("Example projection");
-  await expect(preview.locator(".projection-adjustment")).toContainText("Your four recorded sessions stay unchanged");
-  await preview.getByRole("link", { name: "See what changes in the plan" }).focus();
-  await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/#step-4$/);
-  await expect(page.getByRole("button", { name: "Try this adjustment" })).toBeInViewport();
+  const preview = page.locator("#step-4 .app-capture-preview");
+  await preview.getByRole("button", { name: "Pause Insights animation" }).scrollIntoViewIfNeeded();
+  await expect(page.locator("#step-4")).toHaveClass(/is-current/);
+  const cursor = preview.locator(".capture-cursor");
+  await expect(cursor).toHaveCSS("animation-play-state", "running");
+  await expect(page.locator("#step-1 .capture-cursor")).toHaveCSS("animation-play-state", "paused");
+  await preview.getByRole("button", { name: "Pause Insights animation" }).click();
+  await expect(cursor).toHaveCSS("animation-play-state", "paused");
+  await preview.getByRole("button", { name: "Play Insights animation" }).click();
+  await expect(cursor).toHaveCSS("animation-play-state", "running");
+  await preview.locator(".capture-detail img").evaluate((el: HTMLImageElement) => el.decode());
+  await preview.locator(".capture-animation").evaluateAll(elements => elements.forEach(el => el.getAnimations().forEach(animation => { animation.currentTime = 4500; })));
+  await expect(preview.locator(".capture-detail")).toHaveCSS("opacity", "1");
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(cursor).toHaveCSS("display", "none");
+  await expect(preview.locator(".capture-detail")).toHaveCSS("display", "none");
+  await expect(preview.locator(".capture-still")).toBeVisible();
+});
+
+test("landing app screenshots enlarge with the keyboard and restore focus", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 1050 });
+    await page.goto("/");
+    const opener = page.getByRole("button", { name: "Enlarge Goal progress screenshot" });
+    await opener.focus();
+    await page.keyboard.press("Enter");
+    const dialog = page.getByRole("dialog", { name: "Goal progress" });
+    await expect(dialog).toBeVisible();
+    await expect.poll(() => dialog.locator("img").evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+    expect((await dialog.boundingBox())!.width).toBeGreaterThan(width === 390 ? 340 : 1200);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(opener).toBeFocused();
+  }
 });
 
 test("onboarding submits once, clarifies in place, then opens the researched draft", async ({

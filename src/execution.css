@@ -144,97 +144,32 @@
   opacity: 0.3;
   cursor: default;
 }
-.execution-weeks {
-  display: flex;
-  gap: 8px;
-  margin: 22px 0 12px;
-  border-bottom: 1px solid var(--line);
-}
-.execution-week {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  padding: 8px 2px 12px;
-  background: transparent;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  font-size: 11px;
-  cursor: pointer;
-  color: var(--muted);
-}
-.execution-week.selected {
-  background: var(--sage);
-  border-bottom-color: var(--green);
-  color: var(--ink);
-}
-.execution-total {
-  font-size: 12px;
-}
-.execution-bar-area {
-  width: 100%;
-  height: 104px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-}
-.execution-bar {
-  width: min(60%, 48px);
-  display: flex;
-  flex-direction: column-reverse;
-  overflow: hidden;
-  border-radius: 4px 4px 0 0;
-}
-.execution-segment {
-  min-height: 2px;
-}
-.execution-segment.done,
-.execution-legend i.done {
-  background: #426547;
-}
-.execution-segment.partial,
-.execution-legend i.partial {
-  background: #acb895;
-}
-.execution-segment.missed,
-.execution-legend i.missed {
-  background: #b48364;
-}
-.execution-segment.unknown,
-.execution-legend i.unknown {
-  background: repeating-linear-gradient(
-    135deg,
-    #f9faf6,
-    #f9faf6 3px,
-    #b6bbae 3px,
-    #b6bbae 4px
-  );
-}
-.execution-segment.upcoming,
-.execution-legend i.upcoming {
-  background: #e3e6dd;
-}
-.execution-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-  margin: 14px 0;
-  font-size: 11px;
-  color: var(--muted);
-}
-.execution-legend > span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.execution-legend i {
-  width: 10px;
-  height: 10px;
-  display: inline-block;
-  border-radius: 2px;
-}
+.execution-trend { margin-top: 18px; }
+.execution-metric, .execution-time-label { display: block; color: var(--muted); font-size: 11px; }
+.execution-trend svg { display: block; width: 100%; height: auto; overflow: visible; }
+.execution-trend text { fill: var(--muted); font-size: 11px; }
+.execution-trend-grid { stroke: var(--line); stroke-width: 1; }
+.execution-trend-line { fill: none; stroke: var(--green); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.execution-trend-point { fill: var(--paper); stroke: var(--green); stroke-width: 2; }
+.execution-trend-point.selected { fill: var(--green); }
+.execution-projection-band { fill: #708a721f; }
+.execution-projection-line { fill: none; stroke: #647b65; stroke-width: 2; stroke-dasharray: 5 5; vector-effect: non-scaling-stroke; }
+.execution-projection-error { fill: none; stroke: #647b65; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.execution-chart-legend { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+.execution-chart-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.execution-chart-legend i { display: inline-block; width: 18px; }
+.legend-actual { border-top: 2px solid var(--green); }
+.legend-projected { border-top: 2px dashed #647b65; }
+.legend-uncertainty { height: 9px; background: #708a722e; border-inline: 1px solid #647b65; }
+.execution-projection-note { font-size: 11px; color: var(--muted); margin: 10px 0; }
+.execution-projection-note summary { cursor: pointer; }
+.execution-projection-note summary::after { content: " +"; }
+.execution-projection-note[open] summary::after { content: " −"; }
+.execution-projection-note p { max-width: 680px; line-height: 1.6; }
+.execution-weeks { position: relative; height: 34px; margin: -8px 3.51% 8px 5.26%; }
+.execution-week { position: absolute; min-width: 32px; padding: 8px 0; background: transparent; border: 0; border-bottom: 2px solid transparent; font-size: 10px; cursor: pointer; color: var(--muted); transform: translateX(-50%); white-space: nowrap; }
+.execution-week.selected { border-bottom-color: var(--green); color: var(--ink); font-weight: 600; }
+.execution-time-label { text-align: center; margin-bottom: 14px; }
 .execution-week-summary {
   font-size: 12px;
   color: var(--muted);
@@ -277,12 +212,6 @@
 .goal-chart-row .weekly-actions h2 {
   font-size: 14px;
 }
-.goal-chart-row .execution-bar-area {
-  height: 85px;
-}
-.goal-chart-row .execution-legend {
-  gap: 6px 12px;
-}
 .insights-page + .memory-page {
   margin-top: 56px;
   padding-top: 32px;
@@ -308,6 +237,9 @@
   margin: 20px 0;
 }
 @media (max-width: 700px) {
+  .execution-trend text {
+    font-size: 22px;
+  }
   .execution-status,
   .cycle-evidence {
     grid-template-columns: 1fr;
@@ -325,9 +257,6 @@
   }
   .execution-action > div {
     padding-left: 0;
-  }
-  .execution-weeks {
-    gap: 2px;
   }
   .execution-week {
     font-size: 9px;

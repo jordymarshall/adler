@@ -1,4 +1,4 @@
-import type { Goal } from "./store";
+import type { Goal } from "../shared/workspace";
 export const demoGoal: Goal = {
   id: "demo-portfolio",
   title: "Publish my portfolio with 3 case studies by November 15",
@@ -77,26 +77,3 @@ export const demoGoal: Goal = {
     },
   ],
 };
-export const demoPlanChanges = [
-  {
-    label: "Starting cue",
-    before: "Work on it when I have time",
-    after: "Open my draft after breakfast",
-    reason:
-      "Attach the session to something already in your day. Test whether this makes starting easier.",
-  },
-  {
-    label: "Session",
-    before: "Keep polishing until it feels ready",
-    after: "25 minutes on the finish line you choose",
-    reason:
-      "You reported repeatedly editing. A concrete stopping point may help; we’ll check what happens.",
-  },
-  {
-    label: "Smaller option",
-    before: "Skip it when the day gets busy",
-    after: "5 minutes to leave a note for tomorrow",
-    reason:
-      "Keep an easy way back into the work, without pretending a smaller session means a published case study.",
-  },
-];

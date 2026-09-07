@@ -15,12 +15,7 @@ import { Logo } from "./LandingArt";
 
 import { LandingHero } from "./LandingHero";
 import { LandingBackdrop } from "./LandingBackdrop";
-import {
-  GoalDefinitionPreview,
-  MultiGoalPlanPreview,
-  AdaptivePlanPreview,
-} from "./LandingJourneyPreviews";
-import { ProgressProposalPreview } from "./LandingProgressPreview";
+import { LandingAppCapture } from "./LandingAppCapture";
 import { MountainFinale } from "./MountainFinale";
 import { ConnectionsPreview } from "./LandingConnectionsPreview";
 import "./landing-core.css";
@@ -34,7 +29,7 @@ const chapters = [
       </>
     ),
     body: "A project in your notes. A habit you keep restarting. A change you’ve been putting off. Bring them together in Adler, define what success means, and decide what matters now.",
-    visual: <GoalDefinitionPreview />,
+    visual: <LandingAppCapture screen="goals" />,
   },
   {
     label: "A plan Adler helps you manage",
@@ -44,7 +39,7 @@ const chapters = [
       </>
     ),
     body: "Planning each goal separately can leave you with more commitments than time. Adler organizes your goals into manageable actions, makes room for them in your week, and helps you adjust what no longer fits.",
-    visual: <MultiGoalPlanPreview />,
+    visual: <LandingAppCapture screen="calendar" />,
   },
   {
     label: "Track and visualize your progress",
@@ -54,7 +49,7 @@ const chapters = [
       </>
     ),
     body: "Being busy doesn’t tell you whether you’re moving forward. Check in by text or in the app to see your actions, results, and milestones together—and understand what needs to change in your plan or timeline.",
-    visual: <ProgressProposalPreview />,
+    visual: <LandingAppCapture screen="progress" />,
   },
   {
     label: "Behavioural science, personal to you",
@@ -64,7 +59,7 @@ const chapters = [
       </>
     ),
     body: "A missed action is something to understand. Adler uses behavioural science and your check-ins to explore the friction, try a different cue or a smaller commitment, and review whether the change actually helped.",
-    visual: <AdaptivePlanPreview />,
+    visual: <LandingAppCapture screen="insights" />,
   },
   {
     label: "Adler connects to your life",
