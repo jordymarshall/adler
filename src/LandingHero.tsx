@@ -88,11 +88,11 @@ export function LandingHero() {
       <div className="hero-sticky">
         <div className="hero-intro-v2">
           <h1>
-            Reach your goals with a system <em>that adapts to you.</em>
+            Reach your goals with a system <em>that learns with you.</em>
           </h1>
           <p>
-            Adler turns your goals into a manageable plan, then uses behavioural
-            science and your check-ins to help you follow through.
+            Adler turns your goals into manageable actions, then uses behavioural
+            science and your check-ins to adapt the system as you go.
           </p>
           <div
             className="hero-buttons"

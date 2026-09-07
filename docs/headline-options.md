@@ -1,6 +1,6 @@
 # Landing headline options
 
-Suggestions only; the current headline and subheadline have not been changed.
+Option 1 was selected and applied to the landing page. Other options are retained for reference.
 
 1. **Reach your goals with a system that learns with you.**
    Adler turns your goals into manageable actions, then uses behavioural science and your check-ins to adapt the system as you go.
@@ -11,4 +11,4 @@ Suggestions only; the current headline and subheadline have not been changed.
 3. **Build a way forward that works for you.**
    Bring your goals together, see what your actions lead to, and work with a coach that learns from your experience.
 
-Recommended: option 1. It preserves the current promise, introduces learning without claiming guaranteed results, and explains what the user actually does.
+Option 1 preserves the current promise, introduces learning without claiming guaranteed results, and explains what the user actually does.
