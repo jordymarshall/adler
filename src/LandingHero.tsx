@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, PenLine, Play } from "lucide-react";
+import { ArrowUpRight, BookOpen, Briefcase, PenLine, Play } from "lucide-react";
 import { Mark } from "./LandingArt";
-import { MultiGoalPlanPreview } from "./LandingJourneyPreviews";
+import { LearningPreview } from "./LandingLearningPreview";
 
 export function LandingHero() {
   const section = useRef<HTMLElement>(null);
@@ -22,10 +22,30 @@ export function LandingHero() {
         ? Math.min(1, Math.max(0, -box.top / (box.height - innerHeight)))
         : 0;
       node.style.setProperty("--journey", String(progress));
+      node.style.setProperty(
+        "--gather",
+        String(Math.min(1, Math.max(0, (progress - 0.08) / 0.24))),
+      );
+      node.style.setProperty(
+        "--bundle",
+        String(
+          motion.matches
+            ? Math.min(1, Math.max(0, (progress - 0.2) / 0.32))
+            : 1,
+        ),
+      );
+      node.style.setProperty(
+        "--learning",
+        String(
+          motion.matches
+            ? Math.min(1, Math.max(0, (progress - 0.5) / 0.45))
+            : 1,
+        ),
+      );
       setScene(
         !motion.matches
           ? "static"
-          : progress >= 0.85
+          : progress >= 0.45
             ? "plan"
             : progress >= 0.2
               ? "transition"
@@ -51,7 +71,7 @@ export function LandingHero() {
       className="journey-hero"
       ref={section}
       data-scene={scene}
-      aria-label="From a goal to a way forward"
+      aria-label="From scattered goals to a plan that learns"
     >
       <div className="hero-sticky">
         <div className="hero-atmosphere" />
@@ -60,8 +80,8 @@ export function LandingHero() {
             Reach your goals with a plan <em>that adapts to you.</em>
           </h1>
           <p>
-            Adler is a behavioural science coach that learns about you to create
-            adaptable plans that help you achieve your goals.
+            Adler turns your goals into a manageable plan, then uses behavioural
+            science and your check-ins to help you follow through.
           </p>
           <div
             className="hero-buttons"
@@ -95,37 +115,37 @@ export function LandingHero() {
           </svg>
           <div className="hero-float floating-goal">
             <PenLine size={20} />
-            <small>A GOAL WORTH MAKING ROOM FOR</small>
+            <small>THE PROJECT I KEEP PUTTING OFF</small>
             <h3>Publish my portfolio.</h3>
-            <p>3 case studies · November 15</p>
+            <p>Another week polishing the same draft.</p>
+            <svg className="hero-action-chart" viewBox="0 0 260 45">
+              <path d="M2 8L45 19L86 12L128 27L168 22L211 38L258 34" />
+            </svg>
           </div>
           <div className="hero-float floating-progress">
-            <small>SMALL STEPS, VISIBLE PROGRESS</small>
-            <h3>
-              2 of 2 <span>sessions completed</span>
-            </h3>
-            <svg className="hero-action-chart" viewBox="0 0 260 92" role="presentation">
-              <path d="M10 72H250M10 42H250M10 12H250" stroke="#e3e7d9" />
-              <path d="M20 65L75 45L130 45L185 15" fill="none" stroke="#68804c" strokeWidth="3" />
-              <path d="M185 15H240" fill="none" stroke="#a5b68d" strokeWidth="3" strokeDasharray="4 5" />
-              {[ [20,65], [75,45], [130,45], [185,15] ].map(([x,y]) => <circle key={x} cx={x} cy={y} r="4" fill="#68804c" />)}
+            <BookOpen size={20} />
+            <small>THE HABIT THAT NEVER QUITE STICKS</small>
+            <h3>Read more often.</h3>
+            <p>A good start. Then life gets busy.</p>
+            <svg className="hero-action-chart" viewBox="0 0 260 45">
+              <path d="M2 12L45 5L86 24L128 20L168 34L211 29L258 41" />
             </svg>
-            <p>Check in. Learn. Adjust the next cycle.</p>
           </div>
           <div className="hero-float floating-action">
-            <small>ONE NEXT STEP</small>
-            <h3>
-              Work on my draft.
-              <br />25 focused minutes.
-            </h3>
-            <p>Tuesday & Thursday · After breakfast</p>
+            <Briefcase size={20} />
+            <small>THE CHANGE THAT KEEPS WAITING</small>
+            <h3>Find my next role.</h3>
+            <p>On my list. Never on my calendar.</p>
+            <svg className="hero-action-chart" viewBox="0 0 260 45">
+              <path d="M2 3L45 17L86 12L128 25L168 20L211 36L258 40" />
+            </svg>
           </div>
           <div className="hero-float floating-coach">
             <Mark />
             <p>
-              We’ll find what works for you.
+              Your goals shouldn’t compete.
               <br />
-              And keep learning as you go.
+              Let’s make a plan that fits.
             </p>
           </div>
         </div>
@@ -135,9 +155,9 @@ export function LandingHero() {
           aria-hidden={scene === "intro" || scene === "transition"}
         >
           <h2>
-            Your goals. <em>One adaptable plan.</em>
+            Scattered goals. <em>A plan that learns with you.</em>
           </h2>
-          <MultiGoalPlanPreview />
+          <LearningPreview />
         </div>
       </div>
     </section>

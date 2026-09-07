@@ -52,130 +52,188 @@ export function ConnectionsPreview() {
   }, [sent]);
   return (
     <div className="connections-showcase">
-      <div className="connection-phones">
-        <Phone
-          className="claude-phone"
-          label="Illustrative Claude conversation connected to Adler"
+      <div className="connection-universe">
+        <div className="connection-orbits" aria-hidden="true">
+          <svg viewBox="0 0 700 540" preserveAspectRatio="none">
+            <ellipse cx="350" cy="270" rx="325" ry="145" />
+            <ellipse
+              cx="350"
+              cy="270"
+              rx="285"
+              ry="175"
+              transform="rotate(38 350 270)"
+            />
+            <ellipse
+              cx="350"
+              cy="270"
+              rx="285"
+              ry="175"
+              transform="rotate(-38 350 270)"
+            />
+          </svg>
+        </div>
+        <div
+          className="connection-orbit-icons"
+          role="group"
+          aria-label="Connect Adler to your everyday apps"
         >
-          <header>
-            <img src="/brands/claude.svg" alt="" />
-            <b>Claude</b>
-            <Plus size={15} />
-          </header>
-          <p className="phone-date">Your Adler plan, in the conversation</p>
-          <p className="phone-user-note">What’s my plan for today?</p>
-          <div className="claude-answer">
-            <img src="/brands/claude.svg" alt="" />
-            <p>
-              You set aside 25 minutes after breakfast for your portfolio draft.
-            </p>
-            <p>
-              Last check-in, you said it was hard to stop editing. Choose one
-              finish line before you start.
-            </p>
-            <span className="phone-record-link">↗ Publish my portfolio</span>
-            <span className="phone-record-link">↗ Your last check-in</span>
-          </div>
-          <div className="mock-phone-composer">
-            Reply to Claude <ArrowUp size={15} />
-          </div>
-        </Phone>
-        <Phone
-          className="calendar-phone"
-          label="Illustrative phone calendar with planned work"
-        >
-          <header>
-            <ChevronLeft size={16} />
-            <b>October</b>
-            <Plus size={17} />
-          </header>
-          <div className="phone-calendar-date">
-            <small>THURSDAY</small>
-            <strong>15</strong>
-            <span>Room for your goals.</span>
-          </div>
-          <div className="phone-calendar-day">
-            <div>
-              <time>8 AM</time>
-              <span>Breakfast</span>
+          {[
+            ["Google Calendar", "google-calendar.png"],
+            ["Claude", "claude.svg"],
+            ["Apple Calendar", "apple-calendar.png"],
+            ["ChatGPT", "chatgpt.svg"],
+            ["Messages", "imessage.png"],
+            ["Gemini", "gemini.svg"],
+          ].map(([name, icon]) => (
+            <div className="connection-orbit-icon" key={name}>
+              <img src={`/brands/${icon}`} alt="" />
+              <span>{name}</span>
             </div>
-            <div className="calendar-focus-block">
-              <time>8:30</time>
-              <span>
-                <CalendarDays size={14} />
-                <b>My portfolio draft</b>
-                <small>25 minutes · A finish line I choose</small>
-              </span>
-            </div>
-            <div>
-              <time>9 AM</time>
-              <span>Team catch-up</span>
-            </div>
-            <div>
-              <time>10 AM</time>
-              <span>Project work</span>
-            </div>
-            <div className="calendar-reading-block">
-              <time>7 PM</time>
-              <span>
-                <b>Read for enjoyment</b>
-                <small>15 minutes · After dinner</small>
-              </span>
-            </div>
-          </div>
-          <p className="phone-calendar-note">
-            Your goals have a place in your day.
-          </p>
-        </Phone>
-        <Phone
-          className="texting-phone"
-          label="Illustrative text check-in with Adler"
-        >
-          <header>
-            <ChevronLeft size={17} />
-            <div>
-              <Mark />
-              <b>Adler</b>
-            </div>
-            <span />
-          </header>
-          <p className="phone-date">iMessage · Today 9:05 AM</p>
-          <div className="phone-messages" ref={messages} aria-live="polite">
-            <p className="phone-bubble incoming">
-              How did your portfolio session go?
-            </p>
-            <p className="phone-bubble outgoing">
-              I started after breakfast, but kept editing the same paragraph.
-            </p>
-            <p className="phone-delivered">Delivered</p>
-            <p className="phone-bubble incoming">
-              You made the start happen. Would a smaller stopping point help
-              next time?
-            </p>
-            {sent && (
-              <>
-                <p className="phone-bubble outgoing">
-                  Yes. One paragraph, then leave a note for the next session.
-                </p>
-                <p className="phone-bubble incoming">
-                  Let’s try that and check how it feels after two sessions.
-                </p>
-              </>
-            )}
-          </div>
-          <button
-            className="mock-phone-composer"
-            onClick={() => setSent(!sent)}
-            aria-label={
-              sent
-                ? "Reset example text check-in"
-                : "Try the example text check-in"
-            }
+          ))}
+        </div>
+        <div className="connection-phones">
+          <Phone
+            className="claude-phone"
+            label="Illustrative Claude conversation connected to Adler"
           >
-            {sent ? "Replay check-in" : "Try a smaller finish line"}
-            <ArrowUp size={15} />
-          </button>
-        </Phone>
+            <header>
+              <img src="/brands/claude.svg" alt="" />
+              <b>Claude</b>
+              <Plus size={15} />
+            </header>
+            <p className="phone-date">Your Adler plan, in the conversation</p>
+            <p className="phone-user-note">What’s my plan for today?</p>
+            <div
+              className="claude-answer"
+              tabIndex={0}
+              role="region"
+              aria-label="Example Claude reply"
+            >
+              <img src="/brands/claude.svg" alt="" />
+              <p>
+                You set aside 25 minutes after breakfast for your portfolio
+                draft.
+              </p>
+              <p>
+                Last check-in, you said it was hard to stop editing. Choose one
+                finish line before you start.
+              </p>
+              <span className="phone-record-link">↗ Publish my portfolio</span>
+              <span className="phone-record-link">↗ Your last check-in</span>
+            </div>
+            <div className="mock-phone-composer">
+              Reply to Claude <ArrowUp size={15} />
+            </div>
+          </Phone>
+          <Phone
+            className="texting-phone adler-phone"
+            label="Illustrative Adler check-in connected to your other apps"
+          >
+            <header>
+              <ChevronLeft size={17} />
+              <div>
+                <Mark />
+                <b>Adler</b>
+              </div>
+              <span />
+            </header>
+            <p className="phone-date">YOUR CHECK-IN · TODAY</p>
+            <div
+              className="phone-messages"
+              ref={messages}
+              tabIndex={0}
+              role="log"
+              aria-label="Example Adler check-in"
+              aria-live="polite"
+            >
+              <p className="phone-bubble incoming">
+                How did your portfolio session go?
+              </p>
+              <p className="phone-bubble outgoing">
+                I started after breakfast, but kept editing the same paragraph.
+              </p>
+              <p className="phone-delivered">Delivered</p>
+              <p className="phone-bubble incoming">
+                You made the start happen. Would a smaller stopping point help
+                next time?
+              </p>
+              {sent && (
+                <>
+                  <p className="phone-bubble outgoing">
+                    Yes. One paragraph, then leave a note for the next session.
+                  </p>
+                  <p className="phone-bubble incoming">
+                    Let’s try that and check how it feels after two sessions.
+                  </p>
+                </>
+              )}
+            </div>
+            <button
+              className="mock-phone-composer"
+              onClick={() => setSent(!sent)}
+              aria-label={
+                sent
+                  ? "Reset example text check-in"
+                  : "Try the example text check-in"
+              }
+            >
+              {sent ? "Replay check-in" : "Try a smaller finish line"}
+              <ArrowUp size={15} />
+            </button>
+          </Phone>
+          <Phone
+            className="calendar-phone"
+            label="Illustrative phone calendar with planned work"
+          >
+            <header>
+              <ChevronLeft size={16} />
+              <b>October</b>
+              <Plus size={17} />
+            </header>
+            <div className="phone-calendar-date">
+              <small>THURSDAY</small>
+              <strong>15</strong>
+              <span>Room for your goals.</span>
+            </div>
+            <div
+              className="phone-calendar-day"
+              tabIndex={0}
+              role="region"
+              aria-label="Example calendar schedule"
+            >
+              <div>
+                <time>8 AM</time>
+                <span>Breakfast</span>
+              </div>
+              <div className="calendar-focus-block">
+                <time>8:30</time>
+                <span>
+                  <CalendarDays size={14} />
+                  <b>My portfolio draft</b>
+                  <small>25 minutes · A finish line I choose</small>
+                </span>
+              </div>
+              <div>
+                <time>9 AM</time>
+                <span>Team catch-up</span>
+              </div>
+              <div>
+                <time>10 AM</time>
+                <span>Project work</span>
+              </div>
+              <div className="calendar-reading-block">
+                <time>7 PM</time>
+                <span>
+                  <b>Read for enjoyment</b>
+                  <small>15 minutes · After dinner</small>
+                </span>
+              </div>
+            </div>
+            <p className="phone-calendar-note">
+              Your goals have a place in your day.
+            </p>
+          </Phone>
+        </div>
       </div>
       <div className="connections-caption-list">
         <span>Claude, ChatGPT & compatible AI tools</span>

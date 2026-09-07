@@ -4,9 +4,11 @@ Review base: `470dee7`. This records the user's latest direction, superseding th
 
 ## Landing page
 
-Keep the five focused scroll chapters: goals; organizing and managing multiple goals; progress and check-ins; behavioral learning and adaptation; life connections. Restore the floating-card hero and scroll transition from `08c565e`, retaining the requested headline “Reach your goals with a plan that adapts to you.” Use the subheadline “Adler is a behavioural science coach that learns about you to create adaptable plans that help you achieve your goals.” Use a relatable portfolio example, not the old fitness or “A clear next step” scene.
+Keep the five focused scroll chapters: goals; organizing and managing multiple goals; progress and check-ins; behavioral learning and adaptation; life connections. Restore the floating-card hero and scroll transition from `08c565e`, retaining the requested headline “Reach your goals with a plan that adapts to you.” Use the subheadline “Adler turns your goals into a manageable plan, then uses behavioural science and your check-ins to help you follow through.” Use a relatable portfolio example, not the old fitness or “A clear next step” scene.
 
-Chapter 02 must show multiple goals and their commitments in one plan. Chapter 05 must show three phone mockups: Claude chat, calendar, and text check-in. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
+The opening scroll centers a visual of scattered, struggling goals joining one plan, followed by an illustrative action-completion curve that improves through setbacks and adjustments. This is a demonstration of the learning loop, not measured efficacy. Chapter headlines state the problem, then Adler’s solution.
+
+Chapter 02 must show multiple goals and their commitments in one plan. Chapter 05 must show three proportionate phone mockups: Adler check-in in the center, Claude chat and calendar beside it, with connected-app icons arranged on orbital paths. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
 
 ## App and coaching contract
 

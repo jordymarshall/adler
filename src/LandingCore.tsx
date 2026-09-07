@@ -28,50 +28,50 @@ const chapters = [
     label: "Set and manage your goals",
     title: (
       <>
-        Make room for <em>what matters to you.</em>
+        Good intentions get lost. <em>Give your goals a clear home.</em>
       </>
     ),
-    body: "A project, a new skill, a change you’ve been meaning to make. Define success in your own words and keep your goals together, with priorities and timelines that fit your life.",
+    body: "A project in your notes. A habit you keep restarting. A change you’ve been putting off. Bring them together in Adler, define what success means, and decide what matters now.",
     visual: <GoalDefinitionPreview />,
   },
   {
     label: "A plan Adler helps you manage",
     title: (
       <>
-        Your goals, organized. <em>Your plan, in motion.</em>
+        Your goals compete for time. <em>Give them one workable plan.</em>
       </>
     ),
-    body: "Adler turns your intentions into manageable actions and habits. It helps you decide when to start, what to focus on, and when to review—whether your goal takes a day or a year.",
+    body: "Planning each goal separately can leave you with more commitments than time. Adler organizes your goals into manageable actions, makes room for them in your week, and helps you adjust what no longer fits.",
     visual: <MultiGoalPlanPreview />,
   },
   {
     label: "Track and visualize your progress",
     title: (
       <>
-        See where you stand. <em>And where you’re heading.</em>
+        It’s hard to see what’s working. <em>Make your progress visible.</em>
       </>
     ),
-    body: "Text your coach or check in through the app. See your weekly actions, planning cycles, and milestones in one place. What you report helps Adler adjust the next cycle and discuss changes to your timeline.",
+    body: "Being busy doesn’t tell you whether you’re moving forward. Check in by text or in the app to see your actions, results, and milestones together—and understand what needs to change in your plan or timeline.",
     visual: <ProgressProposalPreview />,
   },
   {
     label: "Behavioural science, personal to you",
     title: (
       <>
-        Learn what gets in the way. <em>Find what helps you move.</em>
+        The same plan keeps breaking. <em>Learn why. Try what helps.</em>
       </>
     ),
-    body: "Adler uses behavioural science research and what you share to understand how you work. It proposes adjustments to your cues, habits, and workload, then checks whether they help you succeed.",
+    body: "A missed action is something to understand. Adler uses behavioural science and your check-ins to explore the friction, try a different cue or a smaller commitment, and review whether the change actually helped.",
     visual: <AdaptivePlanPreview />,
   },
   {
     label: "Adler connects to your life",
     title: (
       <>
-        Less to explain. <em>More of your life in the picture.</em>
+        Your life spans different apps. <em>Keep your coach connected.</em>
       </>
     ),
-    body: "Bring relevant context into the conversation and make room for your goals. Connect your calendar so Adler can help manage your schedule, use the AI tools you already love, and keep your coach close by text.",
+    body: "Your schedule is in one place, your ideas in another. Connect Adler to your calendar and AI tools so your plan travels with you. A quick text brings your coach up to speed.",
     visual: <ConnectionsPreview />,
   },
 ];
