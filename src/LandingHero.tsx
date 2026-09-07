@@ -86,7 +86,6 @@ export function LandingHero() {
       aria-label="From scattered goals to a plan that learns"
     >
       <div className="hero-sticky">
-        <div className="hero-atmosphere" />
         <div className="hero-intro-v2">
           <h1>
             Reach your goals with a system <em>that adapts to you.</em>

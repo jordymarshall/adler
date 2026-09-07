@@ -6,6 +6,8 @@ Assets: [paper-grit-v2.webp](paper-grit-v2.webp), [sage-pigment-v2.webp](sage-pi
 
 The palette follows Adler's existing cream and grey-sage colours. Monochrome grain is a separate layer, displayed at a fixed 320px tile size with multiply blending, so its scale stays consistent across viewport sizes. The sage pigment adds an asymmetric stippled sweep. These replace the earlier warm orange/beige gradients.
 
+One shared viewport backdrop carries both assets through the entire landing page. Scrolling gradually shifts the pigment field without resetting at chapter boundaries; a soft mask keeps its centre open. Pigment fades from 42% to 3% opacity during the immersive learning chart and closing graph, with finer grain reduced alongside it. Reduced motion uses a stationary, restrained composition.
+
 Generated as JPEG at 1K square and 2K landscape respectively. Resized to 640px and 1920px wide, without cropping, and encoded as WebP at 0.94 quality to preserve grain. Original outputs remain in `.context/texture-v2/`.
 
 ## paper-grit-v2.webp

@@ -14,6 +14,7 @@ import {
 import { Logo } from "./LandingArt";
 
 import { LandingHero } from "./LandingHero";
+import { LandingBackdrop } from "./LandingBackdrop";
 import {
   GoalDefinitionPreview,
   MultiGoalPlanPreview,
@@ -176,6 +177,7 @@ export function Landing() {
   }, []);
   return (
     <div className="v2-landing">
+      <LandingBackdrop />
       <header className="landing-nav">
         <Logo />
         <nav aria-label="Main navigation" className={menu ? "menu-open" : ""}>

@@ -1,4 +1,6 @@
 .v2-landing {
+  position: relative;
+  isolation: isolate;
   font-family: var(--body-font);
   color: #293a2d;
   background: #f8f8f2;
@@ -305,21 +307,39 @@
 .v2-landing .menu-toggle {
   display: none;
 }
-.v2-landing .hero-atmosphere {
+.v2-landing .landing-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  background: var(--paper);
+  --backdrop-progress: 0;
+  --backdrop-pigment: .42;
+  --backdrop-grain: .065;
+}
+.v2-landing .landing-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: -20vmax;
+  background: var(--texture-pigment) center / cover;
+  mask-image: radial-gradient(ellipse at 50% 35%, transparent 5%, #0008 55%, #000 85%);
+  transform: translate3d(calc((.5 - var(--backdrop-progress)) * 18vw), calc((var(--backdrop-progress) - .5) * 16vh), 0) rotate(calc((var(--backdrop-progress) - .5) * 18deg));
+  opacity: var(--backdrop-pigment);
+  will-change: transform, opacity;
+}
+.v2-landing .landing-backdrop::after {
+  content: "";
   position: absolute;
   inset: 0;
-  pointer-events: none;
-  background-image: var(--texture-pigment);
-  background-position: center bottom;
-  background-size: cover;
-  opacity: .6;
+  background: var(--texture-grit) repeat;
+  background-size: 320px 320px;
+  mix-blend-mode: multiply;
+  opacity: var(--backdrop-grain);
 }
-.v2-landing .hero-atmosphere::after,
-.v2-landing .focus-chapter::after,
-.v2-landing .mountain-stage::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--texture-grit) repeat; background-size: 320px 320px; mix-blend-mode: multiply; opacity: .1; }
-.v2-landing .focus-chapter::after,
-.v2-landing .mountain-stage::before { z-index: -1; }
-.v2-landing .focus-chapter::after { mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .v2-landing .landing-backdrop::before { transform: none; will-change: auto; }
+}
 .v2-landing .hero-buttons {
   display: flex;
   gap: 24px;
@@ -340,7 +360,7 @@
   border-block: 1px solid var(--line);
   text-align: center;
   padding: 35px 25px 36px;
-  background: #f6f7ef;
+  background: #f6f7ef66;
 }
 .v2-landing .possibility-strip > span {
   font-size: 9px;
@@ -2012,8 +2032,6 @@
 /* Five focused chapters, with a static flow on small screens and reduced motion. */
 .v2-landing .adaptive-path { padding: 0 5vw; }
 .v2-landing .focus-chapter { position: relative; isolation: isolate; border-bottom: 1px solid var(--line); scroll-margin-top: 40px; }
-.v2-landing .focus-chapter::before { content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none; background: var(--texture-pigment) center / cover; opacity: .35; mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%); }
-.v2-landing .focus-chapter:nth-child(even)::before { transform: scaleX(-1); }
 .v2-landing .chapter-stage { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 7vw; align-items: center; max-width: 1300px; margin: auto; padding: 80px 0; }
 .v2-landing .focus-chapter .chapter-copy h2 { font-size: clamp(37px, 4.4vw, 65px); line-height: 1.1; letter-spacing: -.045em; margin: 25px 0; text-wrap: balance; }
 .v2-landing .focus-chapter .chapter-copy h2 em { color: #6b7e4e; display: block; }
@@ -2276,8 +2294,8 @@
 .v2-landing .canada-note > span { font-size: 16px; line-height: 1; }
 
 /* A mountain-shaped chart converges to one starting point. */
-.v2-landing .mountain-finale { position: relative; background: var(--paper); border-block: 1px solid var(--line); }
-.v2-landing .mountain-stage { position: relative; isolation: isolate; overflow: hidden; background-image: linear-gradient(#f8f8f2b3, #f8f8f2b3), var(--texture-pigment); background-position: center; background-size: cover; }
+.v2-landing .mountain-finale { position: relative; border-block: 1px solid var(--line); }
+.v2-landing .mountain-stage { position: relative; isolation: isolate; overflow: hidden; }
 .v2-landing .mountain-graph { display: block; width: 100%; height: auto; }
 .v2-landing .mountain-grid { opacity: .7; }
 .v2-landing .mountain-summit-copy { position: relative; padding: 65px 24px 0; text-align: center; z-index: 1; }
