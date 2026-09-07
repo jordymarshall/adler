@@ -87,6 +87,9 @@ test("reported outcomes move the visible forecast and source context never prese
   await page.reload();
   await expect(page.getByRole("region", { name: "Goal status" })).not.toHaveText(before);
   await expect(page.getByRole("region", { name: "Outcome timeline" })).toContainText("Projected by target");
+  await page.getByRole("link", { name: "See what changed", exact: true }).click();
+  await expect(page.locator(".forecast-changes")).toContainText(`${today}: 28`);
+  await expect(page.locator(".forecast-changes")).toContainText(`${today}: 44`);
   await page.getByRole("button", { name: "Start action", exact: true }).click();
   await page.getByRole("button", { name: "I’m finished", exact: true }).click();
   await expect(page.getByRole("complementary", { name: "Relevant context" })).toContainText("Confirmed by you");

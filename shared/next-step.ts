@@ -104,7 +104,7 @@ export function todayStep(data: Data, now = new Date()) {
   );
   const next = steps[0];
   const review = Boolean(
-    steps.length &&
+    steps.some(step => !currentPlan(step.goal).adaptive) &&
     reviewSchedule(data, now).due &&
     (!next || order[next.phase] > 2),
   );

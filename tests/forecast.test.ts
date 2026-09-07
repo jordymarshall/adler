@@ -35,6 +35,15 @@ test("a supported rate forecast distinguishes the target date from an evidence-b
   assert.equal(corrected.rates?.high, 3);
 });
 
+test("unchanged observations do not imply zero progress on a later day", () => {
+  const { data, goal } = fixture();
+  const first = forecastGoal(data, goal, new Date("2026-09-06T12:00:00Z"));
+  const later = forecastGoal(data, goal, new Date("2026-09-08T12:00:00Z"));
+  assert.equal(later.expectedDate, first.expectedDate);
+  assert.equal(later.expectedValue, first.expectedValue);
+  assert.equal(later.current, 28, "Inferred progress never overwrites the recorded result");
+});
+
 test("sparse, stale, and unsupported outcome records do not produce invented dates", () => {
   const { data, goal } = fixture();
   assert.equal(forecastGoal(data, goal, new Date("2026-10-06T12:00:00Z")).status, "unavailable");

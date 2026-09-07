@@ -12251,3 +12251,7 @@ input[type="checkbox"] {
   .coaching-nav { overflow-x: auto; white-space: nowrap; }
   .mobile-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
+
+@media (max-width: 600px) {
+  .plan-timeline .progress-viz svg text { font-size: 24px; }
+}

@@ -20,7 +20,7 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
   const adaptive = plan.adaptive;
   const today = dateInZone(data.timeZone);
   const forecast = goal.forecasts?.at(-1) ?? forecastGoal(data, goal);
-  const previous = goal.forecasts?.slice(0, -1).reverse().find(f => f.expectedDate !== forecast.expectedDate || f.status !== forecast.status);
+  const previous = goal.forecasts?.slice(0, -1).reverse().find(f => f.expectedDate !== forecast.expectedDate || f.status !== forecast.status || JSON.stringify(f.inputs) !== JSON.stringify(forecast.inputs));
   const status = progressStatus(goal, today);
   const latest = [...goal.results].filter(r => r.date <= today).sort((a, b) => a.date.localeCompare(b.date)).at(-1);
   const actual = goal.measure || goal.kind === "learning" ? latest?.value ?? null : status.actual;
@@ -29,6 +29,10 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
       : forecast.expectedDate && goal.targetDate ? forecast.expectedDate > goal.targetDate ? "Projected after target" : "Projected by target"
         : forecast.status === "beyond-horizon" ? "Beyond forecast horizon"
           : forecast.expectedDate ? "Conditional estimate" : "Estimate unavailable";
+  const changedInputs = previous ? [...new Set([...previous.inputs, ...forecast.inputs].map(input => input.label))]
+    .map(label => ({ label, before: previous.inputs.find(i => i.label === label)?.value ?? "Not available", after: forecast.inputs.find(i => i.label === label)?.value ?? "Not available" }))
+    .filter(input => input.before !== input.after) : [];
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
   const [milestone, setMilestone] = useState("");
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [service, setService] = useState<ServiceStatus | null>(null);
@@ -79,14 +83,18 @@ export function GoalPlan({ goal, children, onRecordResult, onMilestone }: {
         {onRecordResult && <button className="text-link" onClick={onRecordResult}>Record a result</button>}</div>
       <div><span>Expected achievement</span><strong>{forecast.expectedDate ? formatDate(forecast.expectedDate, { month: "short", day: "numeric", year: "numeric" }) : forecast.status === "beyond-horizon" ? "Beyond this forecast" : "Building the first estimate"}</strong>
         <small>{forecast.expectedDate ? "Conditional on the observed pace and stated assumptions" : forecast.reason}</small>
-        {previous?.expectedDate && <small>Previously {formatDate(previous.expectedDate)} · <a href="#forecast-evidence">See what changed</a></small>}</div>
+        {previous && <small>{previous.expectedDate ? `Previously ${formatDate(previous.expectedDate)}` : "Previously unavailable"} · <a href="#forecast-evidence" onClick={() => setEvidenceOpen(true)}>See what changed</a></small>}</div>
     </section>
     <section className="panel plan-timeline" aria-label="Outcome timeline">
       <div className="list-heading"><h2>Progress and outlook</h2><span className="pace-badge neutral">{outlook}</span></div>
       <ProgressChart goal={goal} today={today} graphOnly forecast={forecast} alternativeForecast={scenario} />
       {forecast.expectedValue !== undefined && <p className="small-text">At this pace: {forecast.expectedValue.toLocaleString()} {goal.measure?.unit} by {formatDate(goal.targetDate!)}.</p>}
-      <details id="forecast-evidence" className="quiet-disclosure"><summary>What informs the forecast?</summary>
+      <details id="forecast-evidence" className="quiet-disclosure" open={evidenceOpen} onToggle={event => setEvidenceOpen(event.currentTarget.open)}><summary>What informs the forecast?</summary>
         <p>{forecast.reason}</p>
+        {previous && <div className="forecast-changes"><h3>What changed since the previous estimate</h3>
+          {changedInputs.map(input => <p key={input.label}><b>{input.label}</b><br />Before: {input.before}<br />Now: {input.after}</p>)}
+          {!changedInputs.length && <p>Before: {previous.reason}<br />Now: {forecast.reason}</p>}
+        </div>}
         {forecast.earliestDate && <p>Observed-pace scenarios: {formatDate(forecast.earliestDate)}–{forecast.latestDate ? formatDate(forecast.latestDate) : "beyond the forecast horizon"}. This range is not a success probability.</p>}
         {forecast.inputs.map(input => <p key={input.label}><b>{input.label}:</b> {input.value}</p>)}
         {forecast.sourceIds.length > 0 && <details><summary>Source observations</summary>{forecast.sourceIds.map(id => <p key={id}>{sourceText(id)}</p>)}</details>}

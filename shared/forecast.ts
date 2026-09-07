@@ -4,7 +4,7 @@ import { addDays, dateInZone } from "./journey.ts";
 import { actionStep, stepDates } from "./adaptive-plan.ts";
 
 export const forecastSchema = z.object({
-  at: z.iso.datetime(), asOf: z.iso.date(), planVersion: z.number().int(),
+  at: z.iso.datetime(), asOf: z.iso.date(), anchorDate: z.iso.date().optional(), planVersion: z.number().int(),
   status: z.enum(["unavailable", "provisional", "reached", "beyond-horizon"]),
   method: z.enum(["none", "observed-rate", "behavior-rate"]),
   reason: z.string().max(3000), inputKey: z.string().max(100000),
@@ -39,9 +39,14 @@ export function forecastGoal(data: Data, goal: Goal, now = new Date()): Forecast
   const forecast: Forecast = {
     at: now.toISOString(), asOf: today, planVersion: version.version,
     status: "unavailable", method: settings?.method ?? "none", reason: "Building the first estimate.",
-    inputKey: JSON.stringify({ today, version: version.version, settings, window: plan?.window, driver,
+    inputKey: JSON.stringify({ modelVersion: 2, today, version: version.version, settings, window: plan?.window, driver,
       target: goal.measure, targetDate: goal.targetDate, observations, actions: actions.map(a => [a.id, a.date, a.outcome, a.amount, a.planVersion]) }),
-    sourceIds: observations.map(r => r.id), inputs: [], current: last?.value ?? null,
+    sourceIds: observations.map(r => r.id), current: last?.value ?? null, anchorDate: last?.date,
+    inputs: [
+      { label: "Target", value: `${goal.measure?.target ?? goal.target ?? goal.success} ${goal.measure?.unit ?? goal.unit ?? ""}${goal.targetDate ? ` by ${goal.targetDate}` : "; no fixed deadline"}` },
+      { label: "Dated outcomes", value: observations.length ? observations.map(r => `${r.date}: ${r.value}`).join("; ") : "None reported" },
+      { label: "Approach", value: plan?.approach ?? "No adaptive approach selected" },
+    ],
     probability: null, targetDate: goal.targetDate,
     horizonDate: addDays(today, settings?.horizonDays ?? 90),
   };
@@ -103,18 +108,20 @@ export function forecastGoal(data: Data, goal: Goal, now = new Date()): Forecast
   function finish(rate: number) {
     if (rate <= 0) return undefined;
     const duration = Math.ceil(remaining / rate);
-    return duration <= settings!.horizonDays ? addDays(today, duration) : undefined;
+    const date = addDays(last!.date, duration);
+    return date <= forecast.horizonDate ? date : undefined;
   }
   forecast.expectedDate = finish(typical);
   forecast.earliestDate = finish(samples.at(-1)!);
   forecast.latestDate = finish(samples[0]);
   if (goal.targetDate && goal.targetDate >= today && goal.targetDate <= forecast.horizonDate)
-    forecast.expectedValue = rounded(last!.value + typical * days(today, goal.targetDate));
+    forecast.expectedValue = rounded(last!.value + typical * days(last!.date, goal.targetDate));
   forecast.status = forecast.expectedDate ? "provisional" : "beyond-horizon";
   forecast.reason = settings.method === "behavior-rate"
     ? "A conditional scenario using the observed outcome per behavior amount and your recorded follow-through, if the current commitment continues. This relationship may change; it is not a causal guarantee."
     : "A conditional scenario if the recent recorded outcome pace continues. Actions alone do not change this outcome-only model.";
   forecast.inputs.push(
+    { label: "Daily pace", value: `${rounded(typical)} ${goal.measure.unit}; observed range ${rounded(samples[0])}–${rounded(samples.at(-1)!)}. Projected from the ${last!.date} observation; later progress is unverified.` },
     { label: "Assumption", value: settings.rationale },
     { label: "Scenario range", value: "Slowest to fastest observed interval; not a statistical confidence interval or success probability." },
   );

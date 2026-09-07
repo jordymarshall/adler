@@ -185,3 +185,21 @@ test("previewing an upgrade is read-only, and stale worker jobs can be scheduled
   assert.deepEqual(db.snapshot(user.id), before);
   assert.equal(service.listProposals(user.id)[0].status, "pending");
 });
+
+test("a check-in supersedes a stale recommendation and schedules a fresh assessment", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Accepted plan");
+  const service = new Service(db);
+  const worker = new PlanWorker(service);
+  service.onChanged = () => worker.ensureJobs(user.id);
+  const proposal = service.propose(user.id, [{ entity: "plan", operation: "update", id: null, parentId: "essay", reason: "Adapt to reported work",
+    values: JSON.stringify({ action: input.action, criterion: input.criterion, timing: input.timing, adaptive }),
+  }], "A proposed revision", "web", "essay");
+  const updated = db.snapshot(user.id);
+  updated.data.actions[0].outcome = "Partly";
+  await service.update(user.id, updated.data, updated.revision, "new-report");
+  assert.equal(service.listProposals(user.id).find(p => p.id === proposal.id)!.status, "stale");
+  assert.ok(worker.status(user.id).some(job => job.status === "pending"));
+});

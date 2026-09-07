@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGoal, validateWorkspace } from "../shared/validation.ts";
 import { initialData, recordAction } from "../shared/workspace.ts";
-import { goalStep } from "../shared/next-step.ts";
+import { goalStep, todayStep } from "../shared/next-step.ts";
 import { maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture.ts";
 import { applyChanges } from "../server/commands.ts";
@@ -46,11 +46,64 @@ test("decomposition supports a short task and rejects missing or circular prereq
 });
 
 test("competing goals cannot silently exceed shared capacity", () => {
-  const data = adaptiveWorkspace();
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
   const other = structuredClone(data.goals[0]);
   other.id = "another-goal";
   data.goals.push(other);
   assert.throws(() => validateWorkspace(data), /shared.*capacity/i);
+});
+
+test("completed task identities survive a new window and release their prerequisites", () => {
+  const today = dateInZone("UTC");
+  const plan = adaptiveFixture(today, today);
+  plan.steps[0].type = "task";
+  delete plan.steps[0].recurrence;
+  const data = adaptiveWorkspace(plan);
+  recordAction(data, data.actions[0].id, "Done");
+  const next = structuredClone(data.goals[0].plans[0]);
+  next.version++;
+  next.adaptive!.window.start = addDays(today, 1);
+  next.adaptive!.window.end = addDays(today, 1);
+  next.adaptive!.steps[0].scheduledDate = addDays(today, 1);
+  next.adaptive!.steps.push({ ...next.adaptive!.steps[0], id: "publish", title: "Publish the draft", dependsOn: ["outline"] });
+  data.goals[0].plans.push(next);
+  maintainAdaptivePlans(data, new Date(`${today}T12:00:00Z`));
+  assert.equal(data.actions.filter(a => a.stepId === "outline").length, 1);
+  assert.equal(goalStep(data, data.goals[0]).action?.stepId, "publish");
+});
+
+test("a reviewed retry preserves partial and missed attempts while making unfinished tasks executable", () => {
+  for (const outcome of ["Partly", "Didn’t happen"] as const) {
+    const today = dateInZone("UTC");
+    const plan = adaptiveFixture(today, today);
+    plan.steps[0].type = "task";
+    delete plan.steps[0].recurrence;
+    const data = adaptiveWorkspace(plan);
+    const original = data.actions[0];
+    recordAction(data, original.id, outcome, "Needs another attempt");
+    maintainAdaptivePlans(data);
+    assert.equal(data.actions.length, 1, "No extra commitment before a review");
+    const next = structuredClone(data.goals[0].plans[0]);
+    next.version++;
+    next.adaptive!.window.start = addDays(today, 1);
+    next.adaptive!.window.end = addDays(today, 1);
+    next.adaptive!.steps[0].scheduledDate = addDays(today, 1);
+    data.goals[0].plans.push(next);
+    maintainAdaptivePlans(data);
+    maintainAdaptivePlans(data);
+    assert.equal(data.actions.length, 2);
+    assert.equal(original.outcome, outcome);
+    assert.equal(goalStep(data, data.goals[0]).action?.id, data.actions[1].id);
+    assert.equal(data.actions[1].stepId, original.stepId);
+  }
+});
+
+test("Today does not impose a weekly review on an adaptive-only account", () => {
+  const data = adaptiveWorkspace(adaptiveFixture("2026-09-14", "2026-09-18"));
+  data.goals[0].startDate = "2026-08-01";
+  data.programs.at(-1)!.reviewDay = "Sunday";
+  assert.equal(todayStep(data, new Date("2026-09-13T12:00:00Z")).review, false);
 });
 
 test("reduced capacity never prevents reporting what happened, but new work must fit", () => {

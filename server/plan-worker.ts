@@ -1,5 +1,5 @@
 import { assessmentDue } from "../shared/adaptive-plan.ts";
-import { digest } from "./database.ts";
+import { digest, fingerprint } from "./database.ts";
 import { configuration } from "./providers.ts";
 import type { Service } from "./service.ts";
 
@@ -14,6 +14,7 @@ export class PlanWorker {
     let configured = true;
     try { configuration(db, userId); } catch { configured = false; }
     const { data } = db.snapshot(userId);
+    db.sql.prepare("UPDATE proposals SET status='stale' WHERE user_id=? AND status='pending' AND base_hash!=?").run(userId, fingerprint(data));
     const pending = this.service.listProposals(userId).filter(p => p.status === "pending" && p.expires > Date.now());
     const keep = new Set<string>();
     for (const goal of data.goals) {
@@ -47,6 +48,7 @@ export class PlanWorker {
       const job = db.sql.prepare("UPDATE jobs SET status='running',attempts=attempts+1,lease=? WHERE id=(SELECT id FROM jobs WHERE kind='plan-review' AND status='pending' AND due<=? ORDER BY due LIMIT 1) RETURNING *")
         .get(Date.now(), Date.now()) as { id: string; user_id: string; json: string; attempts: number } | undefined;
       if (!job) return;
+      db.changed(job.user_id);
       const payload = JSON.parse(job.json) as { goalId: string; key: string; reason: string };
       try {
         await this.service.chat(job.user_id, payload.reason, payload.goalId, "job", job.id, undefined, undefined, { key: payload.key });
@@ -60,6 +62,7 @@ export class PlanWorker {
           Date.now() + job.attempts * 60000, job.id,
         );
       }
+      if (!this.stopped) db.changed(job.user_id);
     } finally { this.running = false; }
   }
 

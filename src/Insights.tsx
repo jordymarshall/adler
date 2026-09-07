@@ -160,7 +160,9 @@ export function Insights() {
                   ? "Saved"
                   : proposal?.status === "pending"
                     ? "Proposed"
-                    : proposal?.status === "dismissed"
+                    : proposal?.status === "stale"
+                      ? "Needs a fresh review"
+                      : proposal?.status === "dismissed"
                       ? "Not applied"
                       : "No plan change"}
               </span>

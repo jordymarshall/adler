@@ -69,6 +69,8 @@ export function assessmentEvidence(data: Data, goal: Goal) {
   const watches = (event: NonNullable<typeof triggers>[number]) => !triggers || triggers.includes(event);
   return JSON.stringify({
     version: goal.plans.at(-1)!.version,
+    outcome: [goal.title, goal.success, goal.targetDate, goal.deadline, goal.measure],
+    commitments: data.goals.map(g => [g.id, g.status, g.plans.at(-1)!.version]),
     program: data.programs.at(-1)!.version,
     memories: data.memories.map(m => [m.id, m.text]),
     messages: data.messages.filter(m => m.role === "user" && m.goalId === goal.id && m.channel !== "job").slice(-12).map(m => m.id),
@@ -121,6 +123,14 @@ export function actionStep(data: Data, action: Action) {
     .find(p => p.version === action.planVersion)?.adaptive?.steps.find(s => s.id === action.stepId);
 }
 
+function stepAction(data: Data, goalId: string, step: PlanStep, date: string) {
+  if (step.type === "behavior") return data.actions.find(a => a.goalId === goalId && a.occurrence === `${step.id}:${date}`);
+  const attempts = data.actions.filter(a => a.goalId === goalId && a.stepId === step.id && actionStep(data, a)?.type === "task");
+  const version = data.goals.find(g => g.id === goalId)!.plans.at(-1)!.version;
+  return attempts.find(a => a.outcome === "Done") ?? attempts.find(a => !a.outcome) ??
+    attempts.find(a => a.planVersion === version);
+}
+
 export function actionReady(data: Data, action: Action) {
   if (action.retiredAt) return false;
   const step = actionStep(data, action);
@@ -134,11 +144,11 @@ export function planProgress(data: Data, goal: Goal, now = new Date()) {
   const today = dateInZone(data.timeZone, now);
   return plan.steps.map(step => {
     const actions = data.actions.filter(a => a.goalId === goal.id && a.stepId === step.id && !a.retiredAt &&
-      a.date >= plan.window.start && a.date <= plan.window.end);
+      (step.type === "task" || (a.date >= plan.window.start && a.date <= plan.window.end)));
     const known = actions.filter(a => a.outcome);
     const measured = known.filter(a => a.amount !== undefined && actionStep(data, a)?.measure?.id === step.measure?.id);
     return {
-      step, actions, planned: stepDates(plan, step).length,
+      step, actions, planned: step.type === "task" ? 1 : stepDates(plan, step).length,
       done: known.filter(a => a.outcome === "Done").length,
       partial: known.filter(a => a.outcome === "Partly").length,
       missed: known.filter(a => a.outcome === "Didn’t happen").length,
@@ -152,8 +162,9 @@ function weeklyCommitments(data: Data) {
   const loads = new Map<string, number>();
   const counted = new Set<string>();
   const today = dateInZone(data.timeZone);
+  const weekStart = addDays(today, -((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7));
   function add(date: string, minutes: number) {
-    if (!date || date < today) return;
+    if (!date || date < weekStart) return;
     const weekday = new Date(`${date}T12:00:00Z`).getUTCDay();
     const week = addDays(date, -((weekday + 6) % 7));
     loads.set(week, (loads.get(week) ?? 0) + minutes);
@@ -167,7 +178,7 @@ function weeklyCommitments(data: Data) {
   for (const goal of data.goals.filter(g => g.status === "Active" || g.status === "Draft")) {
     const plan = goal.plans.at(-1)?.adaptive;
     for (const step of plan?.steps ?? []) for (const date of stepDates(plan!, step)) {
-      const action = data.actions.find(a => a.goalId === goal.id && a.occurrence === `${step.id}:${date}`);
+      const action = stepAction(data, goal.id, step, date);
       if (action) addAction(action, actionStep(data, action)?.durationMinutes ?? step.durationMinutes);
       else add(date, step.durationMinutes);
     }
@@ -200,13 +211,17 @@ export function validateAdaptiveWork(data: Data, previous?: Data) {
       visit(step.id);
       if (step.milestoneId && !goal.milestones.some(m => m.id === step.milestoneId)) throw new Error("Link work to an existing milestone.");
       if ((step.type === "behavior") !== Boolean(step.recurrence)) throw new Error("Repeating behaviors need recurrence; one-time tasks do not.");
-      if (step.scheduledDate < plan.window.start || step.scheduledDate > plan.window.end ||
-        (step.recurrence && step.recurrence.until < step.scheduledDate) || !stepDates(plan, step).length)
+      const completed = step.type === "task" && stepAction(data, goal.id, step, step.scheduledDate)?.outcome === "Done";
+      if (!completed && (step.scheduledDate < plan.window.start || step.scheduledDate > plan.window.end ||
+        (step.recurrence && step.recurrence.until < step.scheduledDate) || !stepDates(plan, step).length))
         throw new Error("Each step needs an occurrence inside its planning window.");
       if (step.dependsOn.some(id => plan.steps.find(s => s.id === id)?.type === "behavior"))
         throw new Error("A prerequisite must be a verifiable task, not an ongoing behavior.");
     }
-    const minutes = plan.steps.reduce((sum, step) => sum + stepDates(plan, step).length * step.durationMinutes, 0);
+    const minutes = plan.steps.reduce((sum, step) => {
+      const action = step.type === "task" ? stepAction(data, goal.id, step, step.scheduledDate) : undefined;
+      return sum + (action?.outcome === "Done" && action.date < plan.window.start ? 0 : stepDates(plan, step).length * step.durationMinutes);
+    }, 0);
     if (minutes > plan.window.capacityMinutes)
       throw new Error(`${goal.title}: ${minutes} minutes of work exceeds the ${plan.window.capacityMinutes}-minute capacity. Reduce the commitment or ask to change capacity.`);
     if (plan.forecast.method === "behavior-rate" && !plan.steps.some(s =>
@@ -232,7 +247,7 @@ export function materializePlan(data: Data, goal: Goal, today: string) {
     for (const date of stepDates(plan, step)) {
       const occurrence = `${step.id}:${date}`;
       planned.add(occurrence);
-      let existing = data.actions.find(a => a.goalId === goal.id && a.occurrence === occurrence);
+      let existing = stepAction(data, goal.id, step, date);
       if (date < today) continue;
       // Upgrading a goal can reuse its unbooked first action without duplicating work.
       existing ??= data.actions.find(a => a.goalId === goal.id && !a.stepId && !a.outcome &&
@@ -242,7 +257,7 @@ export function materializePlan(data: Data, goal: Goal, today: string) {
       if (existing?.planVersion === version.version && !existing.retiredAt) continue;
       const fields = {
         title: step.title, criterion: step.criterion, timing: step.cue,
-        date: existing?.stepId ? existing.date : date,
+        date,
         planVersion: version.version, stepId: step.id, occurrence,
       };
       if (existing) {

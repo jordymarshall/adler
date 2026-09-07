@@ -261,6 +261,7 @@ export class Service {
     if (!row) throw new Error("That proposal was not found.");
     if (row.status === "applied")
       return { ...JSON.parse(row.result), ...this.db.snapshot(userId) };
+    if (row.status === "stale") throw Object.assign(new Error("The workspace changed after this proposal. Ask Adler to review the current records before confirming."), { status: 409 });
     if (row.status !== "pending" || row.expires < Date.now())
       throw new Error(
         "This proposal is no longer pending. Ask Adler for an updated proposal.",
@@ -636,6 +637,7 @@ export class Service {
             if (creating || result.execution === "propose" || values.basis) {
               if (!researchSearches.length)
                 throw new Error("Investigate the recommendation first using researchQueries, then include basis in the goal or plan command.");
+              if (!values.basis) throw new Error(`The ${command.entity} command for ${command.parentId ?? command.id ?? "the new goal"} needs its own basis (interpretation, strategy, alternatives, evidence, assumptions and review). Include it in every recommended goal/plan change, not just another command in the bundle.`);
               const basis = planningBasisSchema.parse(values.basis);
               const available = [...researchSources, ...researchSearches.flatMap((search) => search.sources)];
               const used = [...new Set(basis.evidence.map((e) => e.sourceId))];

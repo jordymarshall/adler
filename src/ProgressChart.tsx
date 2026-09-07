@@ -70,14 +70,14 @@ export function ProgressChart({
     .map((p, i) => `${i ? `H${x(p.date)} V` : `M${x(p.date)},`}${y(p.value)}`)
     .join(" ");
   function projected(f: Forecast, rate: number, date: string) {
-    return Math.min(max, (f.current ?? 0) + rate * Math.max(0, (Date.parse(date) - Date.parse(f.asOf)) / 86400000));
+    return Math.min(max, (f.current ?? 0) + rate * Math.max(0, (Date.parse(date) - Date.parse(f.anchorDate ?? f.asOf)) / 86400000));
   }
   function forecastPoints(f: Forecast, rate: number) {
     const endDate = [f.horizonDate, dates.at(-1)!].sort()[0];
     const duration = rate > 0 ? Math.max(0, max - (f.current ?? 0)) / rate : Infinity;
-    const finish = duration < (Date.parse(endDate) - Date.parse(f.asOf)) / 86400000
-      ? new Date(Date.parse(f.asOf) + duration * 86400000).toISOString() : endDate;
-    return [[x(f.asOf), y(f.current ?? 0)], [x(finish), y(projected(f, rate, finish))], [x(endDate), y(projected(f, rate, endDate))]];
+    const finish = duration < (Date.parse(endDate) - Date.parse(f.anchorDate ?? f.asOf)) / 86400000
+      ? new Date(Date.parse(f.anchorDate ?? f.asOf) + duration * 86400000).toISOString() : endDate;
+    return [[x(f.anchorDate ?? f.asOf), y(f.current ?? 0)], [x(finish), y(projected(f, rate, finish))], [x(endDate), y(projected(f, rate, endDate))]];
   }
   const pointPath = (points: number[][]) => points.map(([x, y], i) => `${i ? "L" : "M"}${x},${y}`).join(" ");
   return (
@@ -194,7 +194,7 @@ export function ProgressChart({
               className="chart-grid"
             />
             <text x="27" y={y(value) + 4} textAnchor="end">
-              {Number(value.toFixed(1))}
+              {Number(value.toFixed(1)).toLocaleString(undefined, { notation: "compact", maximumFractionDigits: 1 })}
             </text>
           </g>
         ))}
