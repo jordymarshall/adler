@@ -16,7 +16,7 @@
 }
 .execution-status strong {
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: 1.4;
 }
 .execution-status small {
@@ -123,7 +123,7 @@
 }
 .weekly-actions h2 {
   font-size: 20px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .execution-pagination {
   display: flex;
@@ -242,7 +242,7 @@
 }
 .execution-week-summary b {
   color: var(--ink);
-  font-weight: 500;
+  font-weight: 550;
 }
 .execution-action {
   border-top: 1px solid var(--line);
@@ -262,7 +262,7 @@
 }
 .execution-action b {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .execution-action > div {
   padding: 0 0 20px 96px;
@@ -306,24 +306,6 @@
 }
 .learning-method {
   margin: 20px 0;
-}
-.progress-proposal-preview .execution-pagination {
-  display: none;
-}
-.progress-proposal-preview .execution-weeks {
-  margin-top: 8px;
-}
-.progress-proposal-preview .execution-bar-area {
-  height: 60px;
-}
-.progress-proposal-preview .weekly-actions {
-  padding: 8px 0;
-}
-.progress-proposal-preview .weekly-actions h2 {
-  font-size: 15px;
-}
-.progress-proposal-preview .execution-week-summary {
-  margin: 8px 0;
 }
 @media (max-width: 700px) {
   .execution-status,

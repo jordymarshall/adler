@@ -46,16 +46,18 @@ test("the integration catalog distinguishes plans from working setup paths", asy
   ).toBe(true);
 });
 
-test("texting and the app share the same example update without changing outcome evidence", async ({ page }) => {
+test("the example text check-in discusses a next step without rewriting recorded work", async ({ page }) => {
   await page.goto("/");
-  const step = page.locator("#step-3");
-  const recorded = await step.locator(".execution-week-summary").innerText();
-  await step.getByRole("button", { name: "By text", exact: true }).click();
-  await expect(step.getByRole("button", { name: "By text" })).toHaveAttribute("aria-pressed", "true");
-  await expect(step.locator(".preview-user")).toContainText("Both sessions happened");
-  await step.getByRole("button", { name: "In Adler", exact: true }).click();
-  await expect(step.locator(".execution-week-summary")).toHaveText(recorded);
-  await expect(step.locator(".proposal-metrics")).toContainText("2 of 2");
+  const recordedMetrics = page.locator("#step-3 .proposal-metrics");
+  const recorded = (await recordedMetrics.textContent())!;
+  const step = page.locator("#step-5");
+  await step.getByRole("button", { name: "Try the example text check-in" }).click();
+  await expect(step.getByRole("log")).toContainText("One paragraph, then leave a note");
+  await expect(step.getByRole("log")).toContainText("check how it feels after two sessions");
+  await expect(recordedMetrics).toHaveText(recorded);
+  await step.getByRole("button", { name: "Reset example text check-in" }).click();
+  await expect(step.getByRole("log")).not.toContainText("One paragraph, then leave a note");
+  await expect(recordedMetrics).toHaveText(recorded);
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({

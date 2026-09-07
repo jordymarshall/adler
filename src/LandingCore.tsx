@@ -17,9 +17,10 @@ import { LandingHero } from "./LandingHero";
 import {
   GoalDefinitionPreview,
   MultiGoalPlanPreview,
-  ProgressProposalPreview,
   AdaptivePlanPreview,
 } from "./LandingJourneyPreviews";
+import { ProgressProposalPreview } from "./LandingProgressPreview";
+import { MountainFinale } from "./MountainFinale";
 import { ConnectionsPreview } from "./LandingConnectionsPreview";
 import "./landing-core.css";
 
@@ -343,18 +344,7 @@ export function Landing() {
             </details>
           ))}
         </section>
-        <section className="final-section">
-          <div className="final-orbit" />
-          <h2>
-            Your someday.
-            <br />
-            <em>Let’s give it a start.</em>
-          </h2>
-          <Link className="btn dark" to="/app/goals/new">
-            Take your first step <ArrowUpRight size={17} />
-          </Link>
-          <span>A goal that matters. A little help along the way.</span>
-        </section>
+        <MountainFinale />
       </main>
       <footer className="landing-footer section-wrap">
         <Logo />
@@ -374,6 +364,7 @@ export function Landing() {
           <Link to="/privacy">Privacy</Link>
           <Link to="/terms">Terms</Link>
           <Link to="/support">Help</Link>
+          <span className="canada-note"><span aria-hidden="true">🇨🇦</span> Proudly built in Canada</span>
         </div>
       </footer>
     </div>

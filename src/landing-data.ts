@@ -1,4 +1,4 @@
-import { initialData, type Goal } from "./store";
+import type { Goal } from "./store";
 export const demoGoal: Goal = {
   id: "demo-portfolio",
   title: "Publish my portfolio with 3 case studies by November 15",
@@ -100,12 +100,3 @@ export const demoPlanChanges = [
       "Keep an easy way back into the work, without pretending a smaller session means a published case study.",
   },
 ];
-
-export const demoExecutionData = initialData();
-demoExecutionData.timeZone = "UTC";
-demoExecutionData.goals = [demoGoal];
-demoExecutionData.actions = ["2026-10-13", "2026-10-15", "2026-10-20", "2026-10-22"].map((date, i) => ({
-  id: `demo-session-${i}`, goalId: demoGoal.id, title: demoGoal.plans[0].action, criterion: demoGoal.plans[0].criterion,
-  timing: "After breakfast", date, history: [], planVersion: 1, stepId: "portfolio-session", occurrence: `portfolio-session:${date}`,
-  ...(i < 2 ? { outcome: "Done" as const, note: "Both sessions happened. Still polishing the same draft." } : {}),
-}));

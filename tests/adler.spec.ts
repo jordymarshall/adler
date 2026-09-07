@@ -9,14 +9,14 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a plan that adapts to you.");
-  const chart = page.locator("#step-3 .weekly-actions");
-  await expect(chart).toContainText("2 / 2 actions done");
-  const recorded = await chart.locator(".execution-week-summary").innerText();
+  const recordedMetrics = page.locator("#step-3 .proposal-metrics");
+  await expect(recordedMetrics).toContainText("4 sessions recorded");
+  const recorded = (await recordedMetrics.textContent())!;
   const review = page.locator("#step-4");
   await expect(review.locator(".plan-change")).toHaveCount(3);
   await review.getByRole("button", { name: "Try this adjustment" }).click();
   await expect(review.getByRole("status")).toContainText("Review after two sessions");
-  await expect(chart.locator(".execution-week-summary")).toHaveText(recorded);
+  await expect(recordedMetrics).toHaveText(recorded);
   await expect(page.locator("#step-5")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })

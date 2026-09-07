@@ -49,6 +49,7 @@
 }
 
 :root {
+  font-weight: 450;
   --body-font: "Adler Warm", ui-rounded, system-ui, sans-serif;
   font-family: var(--body-font);
   color: #263d32;
@@ -140,7 +141,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 500;
+  font-weight: 550;
 }
 h1,
 h2 {
@@ -200,7 +201,7 @@ input[type="number"] {
 }
 label {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 550;
 }
 fieldset {
   min-width: 0;
@@ -223,7 +224,7 @@ caption {
   padding: 14px 0;
 }
 th {
-  font-weight: 600;
+  font-weight: 650;
 }
 details > summary {
   cursor: pointer;
@@ -271,7 +272,7 @@ details > summary:focus-visible {
   padding: 14px 21px;
   min-height: 47px;
   font-size: 15px;
-  font-weight: 550;
+  font-weight: 600;
   line-height: 1.3;
   transition:
     background 0.2s,
@@ -373,7 +374,7 @@ details > summary:focus-visible {
   letter-spacing: 0.01em;
   padding: 4px 9px;
   border-radius: 4px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .tag.sage {
   background: #edf2e7;
@@ -387,7 +388,7 @@ details > summary:focus-visible {
   gap: 9px;
   font-size: 12px;
   letter-spacing: 0.14em;
-  font-weight: 550;
+  font-weight: 600;
   line-height: 1.5;
   color: #646b5c;
 }
@@ -412,7 +413,7 @@ details > summary:focus-visible {
   width: fit-content;
   color: #263f31;
   font-size: 36px;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: -2px;
   line-height: 1;
 }
@@ -486,7 +487,7 @@ details > summary:focus-visible {
   width: 32px;
   height: 32px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 650;
   background: #e9e6da;
   color: #6f6a56;
   flex-shrink: 0;
@@ -584,7 +585,7 @@ details > summary:focus-visible {
   line-height: 1;
   transform: rotate(9deg);
   font-family: var(--body-font);
-  font-weight: 400;
+  font-weight: 450;
 }
 .hero-copy > p {
   max-width: 458px;
@@ -720,7 +721,7 @@ details > summary:focus-visible {
   display: flex;
   align-items: center;
   gap: 2px;
-  font-weight: 600;
+  font-weight: 650;
   margin-bottom: 30px;
 }
 .mini-brand svg {
@@ -780,14 +781,14 @@ details > summary:focus-visible {
   font-size: 7px;
   letter-spacing: 0.1em;
   margin-bottom: 9px;
-  font-weight: 600;
+  font-weight: 650;
   display: flex;
   justify-content: space-between;
   color: #7c806f;
 }
 .mini-section-label > span {
   font-size: 7px;
-  font-weight: 400;
+  font-weight: 450;
 }
 .mini-action {
   background: #fffefa;
@@ -1218,7 +1219,7 @@ details > summary:focus-visible {
 .demo-result > b {
   font-family: var(--heading-font);
   font-size: 30px;
-  font-weight: 400;
+  font-weight: 450;
 }
 .demo-result > b > span {
   font-size: 21px;
@@ -1245,7 +1246,7 @@ details > summary:focus-visible {
 }
 .stage-blocks b {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .stage-blocks small {
   font-size: 9px;
@@ -1279,7 +1280,7 @@ details > summary:focus-visible {
 .score-bars b {
   font-size: 10px;
   white-space: nowrap;
-  font-weight: 500;
+  font-weight: 550;
 }
 .score-bars .target-bar i {
   background: none;
@@ -1755,7 +1756,7 @@ details > summary:focus-visible {
   background: #e4eada;
   border-color: #dce3cf;
   color: var(--supporting-ink, #3b5730);
-  font-weight: 550;
+  font-weight: 600;
 }
 .nav-chevron {
   margin-left: auto;
@@ -1811,7 +1812,7 @@ details > summary:focus-visible {
 }
 .sidebar-profile b {
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .sidebar-profile div > span {
   font-size: 10px;
@@ -1846,7 +1847,7 @@ details > summary:focus-visible {
   color: var(--supporting-ink, #656a5e);
 }
 .breadcrumb b {
-  font-weight: 500;
+  font-weight: 550;
   color: var(--supporting-ink, #5d6b50);
 }
 .preview-badge {
@@ -1930,7 +1931,7 @@ details > summary:focus-visible {
   font-family: var(--body-font);
   letter-spacing: 0;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 0;
   display: flex;
   align-items: center;
@@ -2006,13 +2007,13 @@ details > summary:focus-visible {
   display: block;
   font-size: 14px;
   margin: 0 0 10px;
-  font-weight: 500;
+  font-weight: 550;
   color: var(--ink);
   line-height: 1.5;
 }
 .form-field > label > span,
 .field-label > span {
-  font-weight: 400;
+  font-weight: 450;
   color: var(--muted);
   margin-left: 5px;
   font-size: 12px;
@@ -2118,7 +2119,7 @@ details > summary:focus-visible {
 }
 .criterion b {
   display: block;
-  font-weight: 500;
+  font-weight: 550;
   font-size: 11px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -2188,7 +2189,7 @@ details > summary:focus-visible {
   gap: 10px;
   font-size: 14px;
   line-height: 1.8;
-  font-weight: 400;
+  font-weight: 450;
 }
 .checkbox-label > input {
   margin-top: 3px;
@@ -2244,7 +2245,7 @@ details > summary:focus-visible {
   gap: 10px;
   padding: 10px 0;
   font-size: 15px;
-  font-weight: 400;
+  font-weight: 450;
 }
 
 /* Today */
@@ -2416,7 +2417,7 @@ details > summary:focus-visible {
 .snapshot-goal b {
   display: block;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 2px 0 7px;
 }
 .snapshot-goal div > span {
@@ -2656,13 +2657,13 @@ details > summary:focus-visible {
   margin-bottom: 10px;
 }
 .goal-overview-result > strong {
-  font-weight: 500;
+  font-weight: 550;
   font-size: 14px;
   color: var(--supporting-ink, #5c6f48);
   display: block;
 }
 .goal-next-step > b {
-  font-weight: 450;
+  font-weight: 500;
   font-size: 14px;
   display: block;
   line-height: 1.65;
@@ -2714,7 +2715,7 @@ details > summary:focus-visible {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 550;
   color: var(--supporting-ink, #606e4c);
   margin-top: 15px;
 }
@@ -2972,7 +2973,7 @@ details > summary:focus-visible {
   align-items: center;
   gap: 10px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 550;
   color: var(--supporting-ink, #5d6f48);
   border-top: 1px solid var(--line);
   padding-top: 17px;
@@ -3130,7 +3131,7 @@ details > summary:focus-visible {
   align-items: center;
   gap: 9px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .plan-history > div b > .tag {
   font-size: 9px;
@@ -3239,7 +3240,7 @@ details > summary:focus-visible {
 }
 .message-author > span {
   font-size: 10px;
-  font-weight: 400;
+  font-weight: 450;
   text-transform: none;
   color: var(--supporting-ink, #646c58);
   letter-spacing: 0;
@@ -3486,7 +3487,7 @@ details > summary:focus-visible {
 }
 .review-goal b {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .review-goal p {
   font-size: 12px;
@@ -3512,7 +3513,7 @@ details > summary:focus-visible {
 .review-counts strong {
   font-family: var(--heading-font);
   font-size: 31px;
-  font-weight: 400;
+  font-weight: 450;
   color: var(--supporting-ink, #5c6e48);
 }
 .review-counts span {
@@ -3546,7 +3547,7 @@ details > summary:focus-visible {
 }
 .review-choice b {
   display: block;
-  font-weight: 500;
+  font-weight: 550;
   font-size: 14px;
   margin-bottom: 7px;
 }
@@ -3611,7 +3612,7 @@ details > summary:focus-visible {
 .settings-row h3,
 .settings-row label {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 0 0 6px;
   display: block;
 }
@@ -6839,7 +6840,7 @@ details > summary:focus-visible {
   padding: 5px 9px;
   border-radius: 6px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 650;
   line-height: 1.3;
   white-space: nowrap;
 }
@@ -6904,12 +6905,12 @@ details > summary:focus-visible {
 }
 .viz-numbers strong {
   font-size: 27px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .viz-numbers strong small {
   font-size: 11px;
   color: var(--muted);
-  font-weight: 400;
+  font-weight: 450;
 }
 .viz-numbers > span:not(.viz-target) {
   color: var(--line);
@@ -6991,7 +6992,7 @@ details > summary:focus-visible {
 }
 .chart-data summary {
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 650;
 }
 .chart-data table {
   width: 100%;
@@ -7032,7 +7033,7 @@ details > summary:focus-visible {
   gap: 9px;
   font-size: 10px;
   letter-spacing: 0.13em;
-  font-weight: 600;
+  font-weight: 650;
   margin-bottom: 25px;
 }
 .concrete-hero h1 {
@@ -7085,7 +7086,7 @@ details > summary:focus-visible {
 }
 .landing-product-main > h2 {
   font-size: 24px;
-  font-weight: 550;
+  font-weight: 600;
   margin: 13px 0 6px;
   letter-spacing: -0.025em;
 }
@@ -7116,7 +7117,7 @@ details > summary:focus-visible {
   margin: 5px 0 8px;
 }
 .hero-coach-note a {
-  font-weight: 600;
+  font-weight: 650;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -7132,7 +7133,7 @@ details > summary:focus-visible {
 .concrete-final h2 {
   font-size: clamp(30px, 3.4vw, 43px);
   line-height: 1.2;
-  font-weight: 500;
+  font-weight: 550;
   letter-spacing: -0.035em;
   margin: 20px 0 35px;
 }
@@ -7151,7 +7152,7 @@ details > summary:focus-visible {
 }
 .problem-grid h3 {
   font-size: 17px;
-  font-weight: 550;
+  font-weight: 600;
   margin: 15px 0 10px;
 }
 .problem-grid p {
@@ -7164,7 +7165,7 @@ details > summary:focus-visible {
   display: block;
   font-size: 12px;
   margin-top: 20px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .product-walkthrough {
   background: #f0f2e9;
@@ -7232,7 +7233,7 @@ details > summary:focus-visible {
 }
 .goal-tags b {
   font-size: 10px;
-  font-weight: 500;
+  font-weight: 550;
   color: var(--supporting-ink, #5d7646);
   margin-left: auto;
 }
@@ -7273,7 +7274,7 @@ details > summary:focus-visible {
 }
 .demo-next b {
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
   display: block;
 }
 .demo-next p {
@@ -7589,7 +7590,7 @@ details > summary:focus-visible {
 .decision-methods b,
 .decision-review b {
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .decision-methods p,
 .decision-review p {
@@ -7655,7 +7656,7 @@ details > summary:focus-visible {
 }
 .method-examples article h3 {
   font-size: 19px;
-  font-weight: 550;
+  font-weight: 600;
   margin: 9px 0;
 }
 .method-examples article p {
@@ -7672,7 +7673,7 @@ details > summary:focus-visible {
 .concrete-faq h2 {
   text-align: center;
   font-size: 30px;
-  font-weight: 500;
+  font-weight: 550;
   margin-bottom: 30px;
 }
 .concrete-faq details {
@@ -7772,7 +7773,7 @@ details > summary:focus-visible {
 }
 .goal-group > h2 {
   font-size: 16px;
-  font-weight: 550;
+  font-weight: 600;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -7812,7 +7813,7 @@ details > summary:focus-visible {
 .organized-card h3 {
   font-size: 21px;
   line-height: 1.3;
-  font-weight: 550;
+  font-weight: 600;
   margin: 15px 0 6px;
 }
 .goal-deadline {
@@ -7865,7 +7866,7 @@ details > summary:focus-visible {
 }
 .goal-meta-row > b {
   margin-left: auto;
-  font-weight: 500;
+  font-weight: 550;
 }
 .goal-meta-row .text-link {
   background: transparent;
@@ -7897,14 +7898,14 @@ details > summary:focus-visible {
   flex-direction: column;
   gap: 8px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .program-form input,
 .program-form select,
 .program-form textarea {
   width: 100%;
   font-size: 13px;
-  font-weight: 400;
+  font-weight: 450;
 }
 .program-form h3 {
   margin: 10px 0 0;
@@ -7946,7 +7947,7 @@ details > summary:focus-visible {
   flex-direction: row;
   align-items: center;
   margin: 10px 0;
-  font-weight: 400;
+  font-weight: 450;
 }
 .method-action {
   font-size: 12px;
@@ -8011,7 +8012,7 @@ details > summary:focus-visible {
 .program-navigation button[aria-pressed="true"] {
   border-color: var(--green);
   color: var(--ink);
-  font-weight: 600;
+  font-weight: 650;
 }
 .program-navigation button span {
   font-size: 10px;
@@ -8204,7 +8205,7 @@ details > summary:focus-visible {
 .program-review-link b {
   display: block;
   font-size: 15px;
-  font-weight: 550;
+  font-weight: 600;
   margin: 6px 0;
 }
 .program-review-link p {
@@ -8242,7 +8243,7 @@ details > summary:focus-visible {
 }
 .program-method-list summary b {
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .program-method-list summary p {
   margin: 5px 0 0;
@@ -8336,7 +8337,7 @@ details > summary:focus-visible {
 }
 .program-context-browser nav b {
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .program-context-browser nav small {
   display: block;
@@ -8374,7 +8375,7 @@ details > summary:focus-visible {
   margin-top: 23px;
   border-top: 1px solid var(--line);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 650;
 }
 .context-sources {
   padding: 0;
@@ -8793,7 +8794,7 @@ details > summary:focus-visible {
 .coach-identity h1 {
   margin: 0 0 5px;
   font-size: 31px;
-  font-weight: 550;
+  font-weight: 600;
   letter-spacing: -0.03em;
 }
 .coach-identity p {
@@ -8847,7 +8848,7 @@ details > summary:focus-visible {
 }
 .coach-welcome h2 {
   font-size: 27px;
-  font-weight: 500;
+  font-weight: 550;
   letter-spacing: -0.025em;
   margin: 24px 0 15px;
 }
@@ -8901,7 +8902,7 @@ details > summary:focus-visible {
 }
 .message-author {
   font-size: 10px;
-  font-weight: 550;
+  font-weight: 600;
   color: var(--muted);
 }
 .live-message p {
@@ -8922,12 +8923,12 @@ details > summary:focus-visible {
   align-items: center;
   cursor: pointer;
   font-size: 10px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .decision-inspector summary span {
   margin-left: auto;
   color: var(--muted);
-  font-weight: 400;
+  font-weight: 450;
 }
 .decision-inspector > p {
   font-size: 12px;
@@ -8952,7 +8953,7 @@ details > summary:focus-visible {
 }
 .decision-checks b {
   font-size: 11px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .decision-checks p {
   font-size: 11px;
@@ -8980,7 +8981,7 @@ details > summary:focus-visible {
 .live-proposal h3 {
   font-size: 20px;
   margin: 12px 0 10px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .button-row {
   display: flex;
@@ -9084,7 +9085,7 @@ details > summary:focus-visible {
   place-items: center;
   background: var(--sage);
   border-radius: 11px;
-  font-weight: 650;
+  font-weight: 700;
   font-size: 24px;
   flex-shrink: 0;
 }
@@ -9198,7 +9199,7 @@ details > summary:focus-visible {
 }
 .calendar-slots-heading h2 {
   font-size: 22px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 13px 0 8px;
 }
 .calendar-slots-heading p {
@@ -9245,7 +9246,7 @@ details > summary:focus-visible {
 .slot-grid > button b {
   display: block;
   font-size: 14px;
-  font-weight: 550;
+  font-weight: 600;
   margin-top: 5px;
   color: var(--ink);
 }
@@ -9274,7 +9275,7 @@ details > summary:focus-visible {
 }
 .scheduled-work > h2 {
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 25px 0 20px;
 }
 .work-block {
@@ -9853,7 +9854,7 @@ details > summary:focus-visible {
 }
 .today-pace-banner b {
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .today-pace-banner span {
   display: block;
@@ -9901,7 +9902,7 @@ details > summary:focus-visible {
   display: grid;
   gap: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .auth-page input,
 .connection-form input,
@@ -10227,7 +10228,7 @@ input[type="checkbox"] {
 }
 .progress-viz svg .chart-recorded-label {
   fill: var(--ink);
-  font-weight: 650;
+  font-weight: 700;
   paint-order: stroke;
   stroke: var(--paper);
   stroke-width: 4px;
@@ -10340,7 +10341,7 @@ input[type="checkbox"] {
 .timeline-heading h3 {
   margin: 7px 0 0;
   font-size: 17px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .timeline-heading > span {
   font-size: 11px;
@@ -10434,7 +10435,7 @@ input[type="checkbox"] {
 }
 .timeline-detail b {
   font-size: 13px;
-  font-weight: 550;
+  font-weight: 600;
 }
 .timeline-detail p {
   font-size: 12px;
@@ -10513,7 +10514,7 @@ input[type="checkbox"] {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-weight: 600;
+  font-weight: 650;
   color: var(--green);
 }
 .decision-calendar-step > div > small {
@@ -10558,7 +10559,7 @@ input[type="checkbox"] {
 .adjustment-record summary b {
   font-size: 12px;
   line-height: 1.7;
-  font-weight: 550;
+  font-weight: 600;
 }
 .adjustment-record[open] > summary > svg {
   transform: rotate(180deg);
@@ -10619,7 +10620,7 @@ input[type="checkbox"] {
   align-items: center;
   font-size: 12px;
   margin-top: 12px;
-  font-weight: 550;
+  font-weight: 600;
 }
 @media (max-width: 600px) {
   .program-visual-plan {
@@ -10662,7 +10663,7 @@ input[type="checkbox"] {
 .comparison-label {
   display: block;
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 650;
   letter-spacing: 0.075em;
   text-transform: uppercase;
   line-height: 1.5;
@@ -10678,7 +10679,7 @@ input[type="checkbox"] {
   overflow-wrap: anywhere;
 }
 .change-after > .comparison-value {
-  font-weight: 550;
+  font-weight: 600;
 }
 .change-direction {
   align-self: center;
@@ -10764,7 +10765,7 @@ input[type="checkbox"] {
   font-size: 10px;
   color: var(--muted);
   text-transform: capitalize;
-  font-weight: 400;
+  font-weight: 450;
   margin-bottom: 3px;
 }
 .adjustment-creation .comparison-value dd {
@@ -10837,7 +10838,7 @@ input[type="checkbox"] {
 .change-research b {
   display: block;
   font-size: 12px;
-  font-weight: 550;
+  font-weight: 600;
   line-height: 1.7;
 }
 .change-research a {
@@ -10862,7 +10863,7 @@ input[type="checkbox"] {
 .conversation-library h2 { font-size: 16px; margin: 0; }
 .conversation-groups { max-height: 65vh; overflow-y: auto; }
 .conversation-groups section { margin-bottom: 20px; }
-.conversation-groups h3 { font-size: 11px; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+.conversation-groups h3 { font-size: 11px; color: var(--muted); margin: 0 0 8px; font-weight: 650; }
 .conversation-item { display: flex; align-items: center; border-radius: 8px; padding: 3px; margin-bottom: 5px; }
 .conversation-item.selected { background: var(--sage-pale, #edf1e9); }
 .conversation-item > button:first-child { display: flex; align-items: center; gap: 7px; border: 0; background: none; color: var(--ink); min-width: 0; flex: 1; text-align: left; padding: 9px 4px; font: inherit; font-size: 12px; }
@@ -10870,7 +10871,7 @@ input[type="checkbox"] {
 .conversation-item svg { flex-shrink: 0; }
 .conversation-item .icon-button { width: 24px; height: 30px; flex-shrink: 0; }
 .message-record-links { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-.message-record-links a { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 600; color: var(--ink); text-decoration: none; background: var(--paper); }
+.message-record-links a { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; font-size: 12px; font-weight: 650; color: var(--ink); text-decoration: none; background: var(--paper); }
 .chart-checkpoint { fill: var(--paper, #fff); stroke: var(--muted); stroke-width: 1.8; }
 .chart-date-explanation { font-size: 11px; line-height: 1.5; color: var(--muted); margin: 0 0 10px; }
 .decision-change-list > li { min-width: 0; margin: 0; padding: 0; }
@@ -10878,18 +10879,18 @@ input[type="checkbox"] {
 /* An observation, its source, and its consequence stay on the same row. */
 .insights-matrix { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--paper); }
 .insights-column-heads, .insight-row { display: grid; grid-template-columns: 1fr .9fr 1.25fr; }
-.insights-column-heads { background: var(--sage-pale, #edf1e9); font-size: 11px; font-weight: 600; color: var(--muted); }
+.insights-column-heads { background: var(--sage-pale, #edf1e9); font-size: 11px; font-weight: 650; color: var(--muted); }
 .insights-column-heads > span { padding: 16px 22px; }
 .insight-row + .insight-row { border-top: 1px solid var(--line); }
 .insight-row > div { min-width: 0; padding: 24px 22px; }
 .insight-row > div + div { border-left: 1px solid var(--line); }
-.insight-row h3 { margin: 13px 0 0; font-size: 16px; line-height: 1.55; font-weight: 500; }
-.insight-status, .insight-change-status { display: inline-block; font-size: 10px; font-weight: 600; border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; color: var(--ink); }
+.insight-row h3 { margin: 13px 0 0; font-size: 16px; line-height: 1.55; font-weight: 550; }
+.insight-status, .insight-change-status { display: inline-block; font-size: 10px; font-weight: 650; border: 1px solid var(--line); border-radius: 5px; padding: 4px 7px; color: var(--ink); }
 .insight-status.hypothesis { color: var(--ink); border-style: dashed; }
 .insight-sources details + details { margin-top: 12px; }
 .insight-sources summary, .insight-change-details > summary { display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; font-size: 12px; line-height: 1.6; color: var(--ink); }
 .insight-sources p, .insight-effect p { font-size: 12px; line-height: 1.75; color: var(--muted); margin: 10px 0; }
-.insight-effect b { display: block; font-size: 13px; line-height: 1.8; font-weight: 600; }
+.insight-effect b { display: block; font-size: 13px; line-height: 1.8; font-weight: 650; }
 .insight-effect b svg { vertical-align: middle; margin: 0 4px; }
 .insight-row a { font-size: 12px; color: var(--ink); text-underline-offset: 3px; }
 .insight-change-details { margin: 14px 0; }
@@ -11087,7 +11088,7 @@ input[type="checkbox"] {
 }
 .phone-contact b {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .phone-contact b span {
   color: #71767b;
@@ -11201,14 +11202,14 @@ input[type="checkbox"] {
 .checkin-linked-result dd {
   margin: 0;
   font-size: 21px;
-  font-weight: 500;
+  font-weight: 550;
 }
 .checkin-linked-result dl > div:first-child dd {
   font-size: 12px;
 }
 .checkin-linked-result dd small {
   font-size: 12px;
-  font-weight: 400;
+  font-weight: 450;
 }
 .checkin-linked-result > p:last-child {
   font-size: 12px;
@@ -11305,7 +11306,7 @@ input[type="checkbox"] {
 }
 .integrations-heading h1 {
   font-size: clamp(36px, 4.8vw, 62px);
-  font-weight: 500;
+  font-weight: 550;
   line-height: 1.13;
   letter-spacing: -0.045em;
   margin: 20px 0;
@@ -11380,7 +11381,7 @@ input[type="checkbox"] {
 }
 .integration-center b {
   font-size: 24px;
-  font-weight: 500;
+  font-weight: 550;
   letter-spacing: -0.03em;
 }
 .integration-center span {
@@ -11472,7 +11473,7 @@ input[type="checkbox"] {
 }
 .integration-catalog-heading h2 {
   font-size: 26px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 0 0 9px;
 }
 .integration-catalog-heading p {
@@ -11551,7 +11552,7 @@ input[type="checkbox"] {
 }
 .integration-card :is(h2, h3) {
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 550;
   margin: 18px 0 9px;
 }
 .integration-card p {
@@ -11614,7 +11615,7 @@ input[type="checkbox"] {
 }
 .landing-integrations-copy h2 {
   font-size: 38px;
-  font-weight: 500;
+  font-weight: 550;
   line-height: 1.2;
   letter-spacing: -0.035em;
   margin: 20px 0;
@@ -11824,7 +11825,7 @@ input[type="checkbox"] {
 .checkin-preview { padding: 0; }
 .checkin-surface-tabs { margin-bottom: 20px; }
 .checkin-linked-result { display: flex; align-items: center; gap: 10px; font-size: 11px; }
-.checkin-linked-result b { display: block; font-weight: 500; }
+.checkin-linked-result b { display: block; font-weight: 550; }
 .checkin-linked-result span { display: block; color: var(--muted); margin-top: 5px; }
 .checkin-demo-controls { justify-content: center; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 18px; padding-top: 0; border: 0; }
 .checkin-demo-controls > div > span { text-align: center; }
@@ -11849,7 +11850,7 @@ input[type="checkbox"] {
 .decision-change-row { border-bottom: 1px solid var(--line); }
 .decision-change-row > summary { padding: 18px 8px; min-height: 80px; font-size: 12px; line-height: 1.6; list-style: none; }
 .decision-change-row > summary::-webkit-details-marker, .landing-insight > summary::-webkit-details-marker { display: none; }
-.decision-change-row > summary b { font-weight: 500; }
+.decision-change-row > summary b { font-weight: 550; }
 .decision-change-row > summary .change-from { color: var(--muted); }
 .decision-change-row > summary .change-to { color: #3e623b; }
 .decision-change-row[open] > summary { background: var(--sage); }
@@ -11866,7 +11867,7 @@ input[type="checkbox"] {
 .landing-insight > summary { display: flex; align-items: center; gap: 20px; padding: 20px; list-style: none; }
 .landing-insight > summary span { flex: 1; }
 .landing-insight > summary small { display: block; margin-bottom: 8px; color: var(--muted); font-size: 10px; }
-.landing-insight > summary b { font-size: 13px; font-weight: 500; line-height: 1.7; display: block; }
+.landing-insight > summary b { font-size: 13px; font-weight: 550; line-height: 1.7; display: block; }
 .landing-insight[open] > summary { background: var(--sage); }
 .landing-insight-detail { padding: 20px; }
 .landing-insight-detail .insight-effect { padding: 0; }
@@ -11930,7 +11931,7 @@ input[type="checkbox"] {
 .onboarding-page h1 { max-width: 740px; margin: 14px 0 18px; font-size: clamp(30px, 4vw, 46px); line-height: 1.15; letter-spacing: -1.4px; }
 .onboarding-intro { max-width: 700px; color: var(--muted); font-size: 17px; line-height: 1.7; }
 .onboarding-intake { margin: 30px 0; padding: 30px; }
-.onboarding-intake > label { display: block; font-weight: 600; margin-bottom: 12px; }
+.onboarding-intake > label { display: block; font-weight: 650; margin-bottom: 12px; }
 .onboarding-intake textarea { width: 100%; padding: 16px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); color: var(--ink); line-height: 1.6; resize: vertical; }
 .onboarding-intake .button-row { margin: 18px 0; gap: 18px; }
 .onboarding-intake .field-hint { margin: 0; }
@@ -11959,10 +11960,10 @@ input[type="checkbox"] {
 .action-measure-summary, .plan-review-question { padding: 20px; background: var(--sage); border-radius: 8px; margin: 16px 0; }
 .action-measure-summary p { margin: 10px 0; }
 .explanation-details { border-top: 1px solid var(--line); padding: 18px 0; }
-.explanation-details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.explanation-details summary { cursor: pointer; font-weight: 650; font-size: 14px; }
 .explanation-details[open] > div, .explanation-details[open] > p { margin-top: 18px; }
 .research-source { border-top: 1px solid var(--line); padding-top: 20px; margin-top: 20px; }
-.research-source > a { font-weight: 600; text-decoration: underline; text-underline-offset: 3px; line-height: 1.6; }
+.research-source > a { font-weight: 650; text-decoration: underline; text-underline-offset: 3px; line-height: 1.6; }
 .research-source .field-hint { margin-top: 9px; }
 .research-source details { padding: 14px; background: var(--bg); border-radius: 6px; overflow-wrap: anywhere; }
 .research-source details p { margin-top: 14px; }
@@ -11987,7 +11988,7 @@ input[type="checkbox"] {
 .goal-tabs { overflow-x: auto; }
 .goal-tabs > a { white-space: nowrap; }
 .calendar-connection-details { margin: 24px 0; }
-.calendar-connection-details > summary { cursor: pointer; font-weight: 600; padding: 12px 0; }
+.calendar-connection-details > summary { cursor: pointer; font-weight: 650; padding: 12px 0; }
 .calendar-connection-details .calendar-connections { margin-top: 16px; }
 .week-calendar { margin-bottom: 26px; padding: 24px; }
 .week-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
@@ -12002,7 +12003,7 @@ input[type="checkbox"] {
 .week-day-headings, .week-grid { display: grid; grid-template-columns: 52px repeat(7, minmax(0, 1fr)); }
 .week-day-headings { border-bottom: 1px solid var(--line); }
 .week-day-headings > div { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 14px 0 8px; }
-.week-day-headings b { font-size: 11px; font-weight: 500; color: var(--muted); }
+.week-day-headings b { font-size: 11px; font-weight: 550; color: var(--muted); }
 .week-day-headings span { font-size: 19px; }
 .week-day-headings .is-today { color: var(--green); background: var(--sage); border-radius: 9px 9px 0 0; }
 .week-scroll { height: 500px; overflow-y: auto; border-bottom: 1px solid var(--line); scrollbar-width: thin; }
@@ -12108,7 +12109,7 @@ input[type="checkbox"] {
 .inline-scheduler .calendar-options { margin-top: 5px; }
 .scheduler-form > label, .calendar-options > label, .review-step > details > label { display: block; font-size: 12px; margin-bottom: 18px; }
 .suggested-time { display: flex; align-items: center; gap: 13px; margin: 20px 0; padding: 18px; background: var(--sage); border-radius: 12px; }
-.suggested-time b { font-size: 14px; font-weight: 500; display: block; }
+.suggested-time b { font-size: 14px; font-weight: 550; display: block; }
 .suggested-time span { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
 .inline-scheduler .scheduler-form > .button { width: 100%; }
 .custom-calendar-time { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border: 0; padding: 0; margin: 0; }
@@ -12210,7 +12211,7 @@ input[type="checkbox"] {
 .plan-work-item { padding: 20px 0; border-top: 1px solid var(--line); }
 .plan-work-item:last-child { padding-bottom: 0; }
 .plan-work-item > p { margin: 8px 0; }
-.plan-work-count { font-weight: 600; }
+.plan-work-count { font-weight: 650; }
 .plan-occurrence { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 10px 0; font-size: 13px; }
 .plan-occurrence a { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; }
 .plan-learning { padding: 26px; min-width: 0; }
@@ -12272,8 +12273,8 @@ input[type="checkbox"] {
 .chart-legend .chart-required-key i { background: #a88954; border: 0; }
 .behavior-overview { margin: 20px 0 30px; padding: 25px 0; border-block: 1px solid var(--line); }
 .behavior-chart-heading { display: flex; justify-content: space-between; gap: 20px; align-items: end; }
-.behavior-chart-heading h2 { margin: 12px 0 4px; font-size: 22px; font-weight: 400; }
-.behavior-chart-heading strong { margin-left: 18px; font-size: 38px; font-weight: 500; color: var(--green); }
+.behavior-chart-heading h2 { margin: 12px 0 4px; font-size: 22px; font-weight: 450; }
+.behavior-chart-heading strong { margin-left: 18px; font-size: 38px; font-weight: 550; color: var(--green); }
 .behavior-chart-heading p { font-size: 12px; color: var(--muted); }
 .behavior-overview svg { width: 100%; display: block; margin-top: 20px; overflow: visible; }
 .behavior-overview svg text { fill: var(--muted); font-size: 11px; }

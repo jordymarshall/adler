@@ -8,7 +8,9 @@ Keep the five focused scroll chapters: goals; organizing and managing multiple g
 
 The opening scroll moves into a full-viewport chart of scattered, struggling goals joining one plan. Scrolling follows a close view along the time axis, with short explanations of attempts, setbacks and adjustments, then pulls back to reveal the whole illustrative action-completion curve. Reduced-motion and smaller-screen layouts retain the complete static view. This is a demonstration of the learning loop, not measured efficacy. Chapter headlines state the problem, then Adler’s solution.
 
-Chapter 02 must show multiple goals and their commitments in one plan. Chapter 05 must show three proportionate phone mockups: Adler check-in in the center, Claude chat and calendar beside it, with connected-app icons arranged on orbital paths. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
+Chapter 02 must show multiple goals and their commitments in one plan. Chapter 03 restores a recorded-actions vs dated-plan chart with an explicitly illustrative future projection and shaded possible range; this does not reintroduce an outcome-forecast engine. Chapter 05 must show three proportionate phone mockups: Adler check-in in the center, Claude chat and calendar beside it, with connected-app icons arranged on orbital paths. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
+
+The closing scroll begins at a mountain summit (“Your someday.”), follows the path down to a seed and roots, and reveals “Let’s give it a start.” with the goal-creation action. The footer ends with a small Canadian flag and “Proudly built in Canada.” Typography is slightly heavier across the landing page and app. Publish the verified branch to `main` as requested.
 
 ## App and coaching contract
 

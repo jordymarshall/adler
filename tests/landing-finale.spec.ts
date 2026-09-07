@@ -1,0 +1,38 @@
+import { expect, test } from "@playwright/test";
+import AxeBuilder from "@axe-core/playwright";
+
+test("the mountain scroll travels from summit to seed and keeps the first step accessible", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const finale = page.locator(".mountain-finale");
+  await expect(finale).toHaveAttribute("data-scene", "summit");
+  await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; });
+  await page.evaluate(() => { const el = document.querySelector(".mountain-finale")!; window.scrollTo(0, el.getBoundingClientRect().top + scrollY); });
+  await expect(finale.locator(".mountain-summit-copy")).toHaveCSS("opacity", "1");
+  await expect(finale.locator(".mountain-seed-copy")).toHaveAttribute("inert", "");
+  const camera = finale.locator(".mountain-landscape");
+  const start = (await camera.getAttribute("viewBox"))!.split(" ").map(Number);
+  await page.evaluate(() => { const el = document.querySelector(".mountain-finale")!; window.scrollTo(0, el.getBoundingClientRect().top + scrollY + (el.clientHeight - innerHeight) * .55); });
+  await expect(finale).toHaveAttribute("data-scene", "descent");
+  const middle = (await camera.getAttribute("viewBox"))!.split(" ").map(Number);
+  expect(middle[1]).toBeGreaterThan(start[1] + 700);
+  await page.evaluate(() => { const el = document.querySelector(".mountain-finale")!; window.scrollTo(0, el.getBoundingClientRect().top + scrollY + el.clientHeight - innerHeight); });
+  await expect(finale).toHaveAttribute("data-scene", "seed");
+  const finish = (await camera.getAttribute("viewBox"))!.split(" ").map(Number);
+  expect(finish[3]).toBeLessThan(start[3]);
+  await expect(finale.locator(".mountain-seed-copy")).not.toHaveAttribute("inert", "");
+  await expect(finale.getByRole("heading", { name: "Let’s give it a start." })).toBeInViewport();
+  await expect(finale.getByRole("link", { name: "Take your first step" })).toHaveAttribute("href", "/app/goals/new");
+  const seed = await finale.locator(".mountain-seed").boundingBox();
+  expect(seed!.y).toBeGreaterThan(0);
+  expect(seed!.y + seed!.height).toBeLessThan(650);
+  await expect(page.locator(".footer-bottom .canada-note")).toHaveText("🇨🇦 Proudly built in Canada");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(finale).toHaveAttribute("data-scene", "static");
+  await expect(camera).toHaveAttribute("viewBox", "0 0 1600 2450");
+  await expect(finale.locator(".mountain-seed-copy")).not.toHaveAttribute("inert", "");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+});

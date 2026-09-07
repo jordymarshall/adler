@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, Check } from "lucide-react";
 import { Mark } from "./LandingArt";
-import { WeeklyActions } from "./ExecutionTimeline";
-import { demoGoal, demoExecutionData, demoPlanChanges } from "./landing-data";
+import { demoGoal, demoPlanChanges } from "./landing-data";
 export function GoalDefinitionPreview() {
   return (
     <div className="journey-preview goal-definition-preview">
@@ -39,47 +38,6 @@ export function GoalDefinitionPreview() {
       </div>
       <p className="demo-footnote">
         Your definition of success. Room for your other goals.
-      </p>
-    </div>
-  );
-}
-export function ProgressProposalPreview() {
-  const [channel, setChannel] = useState("In Adler");
-  return (
-    <div className="journey-preview progress-proposal-preview">
-      <span className="section-kicker">YOUR PROGRESS, WITH CONTEXT</span>
-      <h3>See the work you can control.</h3>
-      <div className="proposal-metrics">
-        <span>
-          <b>2 of 2</b> sessions completed
-        </span>
-        <span>
-          <b>Oct 25</b> cycle review
-        </span>
-      </div>
-      <WeeklyActions data={demoExecutionData} goal={demoGoal} today="2026-10-17" compact />
-      <div className="preview-chat">
-        <div className="preview-channel" aria-label="Example check-in channel">
-          {["In Adler", "By text"].map((value) => (
-            <button
-              key={value}
-              aria-pressed={value === channel}
-              onClick={() => setChannel(value)}
-            >
-              {value}
-            </button>
-          ))}
-        </div>
-        <p className="preview-user">
-          “Both sessions happened. I’m still polishing the same draft.”
-        </p>
-        <p>
-          <b>Adler</b> What made it hard to call the draft finished?
-        </p>
-      </div>
-      <p className="demo-footnote">
-        The sessions happened; the draft still needs work. Review the stopping
-        point together before committing to the next cycle.
       </p>
     </div>
   );

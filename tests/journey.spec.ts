@@ -317,29 +317,31 @@ test("the progress and proposal graph fills its container and has readable label
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    const chart = page.locator(".progress-proposal-preview .execution-weeks");
-    const size = await chart.evaluate(el => ({ width: el.getBoundingClientRect().width, labelPixels: parseFloat(getComputedStyle(el.querySelector("button")!).fontSize) }));
+    const chart = page.locator(".landing-projection");
+    const size = await chart.evaluate(el => ({ width: el.getBoundingClientRect().width, labelPixels: parseFloat(getComputedStyle(el.querySelector(".projection-ticks")!).fontSize) }));
     expect(size.width).toBeGreaterThan(width === 390 ? 250 : 380);
     expect(size.labelPixels).toBeGreaterThanOrEqual(8.5);
     const graphBottom =
       (await chart.boundingBox())!.y + (await chart.boundingBox())!.height;
     const nextRow = await page
-      .locator(".preview-chat")
+      .locator(".projection-adjustment")
       .boundingBox();
     expect(nextRow!.y).toBeGreaterThan(graphBottom);
   }
 });
 
-test("landing weekly commitments are selectable with the keyboard", async ({ page }) => {
+test("the landing projection distinguishes recorded work and links to the proposed adjustment", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
-  const chart = page.locator(".progress-proposal-preview .weekly-actions");
-  await chart.getByRole("button", { name: /Week of Oct 19/ }).focus();
+  const preview = page.locator(".progress-proposal-preview");
+  await expect(preview.locator(".projection-range")).toBeVisible();
+  await expect(preview.locator(".projection-legend")).toContainText("Recorded actions");
+  await expect(preview.locator(".projection-legend")).toContainText("Example projection");
+  await expect(preview.locator(".projection-adjustment")).toContainText("Your four recorded sessions stay unchanged");
+  await preview.getByRole("link", { name: "See what changes in the plan" }).focus();
   await page.keyboard.press("Enter");
-  await expect(chart.locator(".execution-week-summary")).toContainText("0 / 2 actions done");
-  await expect(chart.locator(".execution-week-summary")).toContainText("2 upcoming");
-  await chart.getByRole("button", { name: /Week of Oct 12/ }).click();
-  await expect(chart.locator(".execution-week-summary")).toContainText("2 / 2 actions done");
+  await expect(page).toHaveURL(/#step-4$/);
+  await expect(page.getByRole("button", { name: "Try this adjustment" })).toBeInViewport();
 });
 
 test("onboarding submits once, clarifies in place, then opens the researched draft", async ({
@@ -690,7 +692,8 @@ test("each of the five chapters holds its own viewport and remains readable with
 test("the opening animation uses a concrete nonfitness goal and respects reduced motion", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".hero-objects")).toContainText("Publish my portfolio");
-  await expect(page.locator(".hero-objects")).toContainText("25 focused minutes");
+  await expect(page.locator(".hero-objects")).toContainText("Read more often");
+  await expect(page.locator(".hero-objects")).toContainText("Find my next role");
   await expect(page.locator(".hero-float")).toHaveCount(4);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "static");
