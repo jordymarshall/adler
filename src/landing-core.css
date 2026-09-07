@@ -12,8 +12,8 @@
   --line: #e2e5d9;
   --green: #677e48;
   --lime: #dce8b3;
-  --texture-sand: url("/media/textures/sand-gradient.webp");
-  --texture-sage: url("/media/textures/sage-gradient.webp");
+  --texture-grit: url("/media/textures/paper-grit-v2.webp");
+  --texture-pigment: url("/media/textures/sage-pigment-v2.webp");
 }
 
 .v2-landing * {
@@ -309,11 +309,17 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background-image: var(--texture-sand);
-  background-position: center;
+  background-image: var(--texture-pigment);
+  background-position: center bottom;
   background-size: cover;
-  opacity: .75;
+  opacity: .6;
 }
+.v2-landing .hero-atmosphere::after,
+.v2-landing .focus-chapter::after,
+.v2-landing .mountain-stage::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: var(--texture-grit) repeat; background-size: 320px 320px; mix-blend-mode: multiply; opacity: .1; }
+.v2-landing .focus-chapter::after,
+.v2-landing .mountain-stage::before { z-index: -1; }
+.v2-landing .focus-chapter::after { mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
 .v2-landing .hero-buttons {
   display: flex;
   gap: 24px;
@@ -2006,8 +2012,8 @@
 /* Five focused chapters, with a static flow on small screens and reduced motion. */
 .v2-landing .adaptive-path { padding: 0 5vw; }
 .v2-landing .focus-chapter { position: relative; isolation: isolate; border-bottom: 1px solid var(--line); scroll-margin-top: 40px; }
-.v2-landing .focus-chapter::before { content: ""; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: var(--texture-sand) center / cover; opacity: .7; mask-image: radial-gradient(ellipse at center, #000 25%, transparent 72%); }
-.v2-landing .focus-chapter:nth-child(even)::before { background-image: var(--texture-sage); opacity: .45; }
+.v2-landing .focus-chapter::before { content: ""; position: absolute; inset: 0; z-index: -2; pointer-events: none; background: var(--texture-pigment) center / cover; opacity: .35; mask-image: radial-gradient(ellipse at center, #000 35%, transparent 75%); }
+.v2-landing .focus-chapter:nth-child(even)::before { transform: scaleX(-1); }
 .v2-landing .chapter-stage { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 7vw; align-items: center; max-width: 1300px; margin: auto; padding: 80px 0; }
 .v2-landing .focus-chapter .chapter-copy h2 { font-size: clamp(37px, 4.4vw, 65px); line-height: 1.1; letter-spacing: -.045em; margin: 25px 0; text-wrap: balance; }
 .v2-landing .focus-chapter .chapter-copy h2 em { color: #6b7e4e; display: block; }
@@ -2271,7 +2277,7 @@
 
 /* A mountain-shaped chart converges to one starting point. */
 .v2-landing .mountain-finale { position: relative; background: var(--paper); border-block: 1px solid var(--line); }
-.v2-landing .mountain-stage { position: relative; overflow: hidden; background-image: linear-gradient(#f8f8f2b3, #f8f8f2b3), var(--texture-sage); background-position: center; background-size: cover; }
+.v2-landing .mountain-stage { position: relative; isolation: isolate; overflow: hidden; background-image: linear-gradient(#f8f8f2b3, #f8f8f2b3), var(--texture-pigment); background-position: center; background-size: cover; }
 .v2-landing .mountain-graph { display: block; width: 100%; height: auto; }
 .v2-landing .mountain-grid { opacity: .7; }
 .v2-landing .mountain-summit-copy { position: relative; padding: 65px 24px 0; text-align: center; z-index: 1; }
