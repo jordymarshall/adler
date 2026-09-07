@@ -1917,7 +1917,7 @@
 }
 @media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
   .v2-landing .journey-hero {
-    height: 320svh;
+    height: 640svh;
   }
   .v2-landing .hero-sticky {
     position: sticky;
@@ -1926,7 +1926,7 @@
     padding: 125px 24px 0;
   }
   .v2-landing .hero-intro-v2 {
-    opacity: clamp(0, calc(1 - var(--journey) * 4), 1);
+    opacity: clamp(0, calc(1 - var(--journey) * 7), 1);
     transform: translateY(calc(var(--journey) * -100px));
   }
   .v2-landing .hero-objects {
@@ -1937,7 +1937,7 @@
     width: min(1200px, calc(100% - 80px));
     height: 420px;
     transform: translate(-50%, calc(var(--journey) * -250px));
-    opacity: clamp(0, calc(2.6 - var(--journey) * 8), 1);
+    opacity: clamp(0, calc(2.5 - var(--journey) * 12), 1);
   }
   .v2-landing .hero-connecting-path {
     position: absolute;
@@ -2011,12 +2011,14 @@
   }
   .v2-landing .hero-assembled {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: min(920px, calc(100% - 96px));
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
     margin: 0;
-    opacity: clamp(0, calc(var(--journey) * 8 - 2.6), 1);
-    transform: translate(-50%, -50%);
+    opacity: clamp(0, calc(var(--journey) * 14 - 2.8), 1);
+    transform: none;
   }
 }
 @media (min-width: 900px) and (min-height: 700px) and (max-height: 850px) and (prefers-reduced-motion: no-preference) {
@@ -2194,29 +2196,32 @@
 .v2-landing .learning-preview { text-align: left; }
 .v2-landing .learning-goals { display: flex; justify-content: center; gap: 12px; padding: 12px 0 22px; }
 .v2-landing .learning-goal { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 16px; border: 1px solid #dce2d2; border-radius: 10px; background: #f5f7ef; color: #4d623d; font-size: 12px; }
-.v2-landing .learning-goal.portfolio { transform: translate(calc((1 - var(--bundle, 1)) * -50px), calc((1 - var(--bundle, 1)) * 12px)) rotate(calc((1 - var(--bundle, 1)) * -7deg)); }
-.v2-landing .learning-goal.reading { color: #885f43; background: #f8f0e7; transform: translateY(calc((1 - var(--bundle, 1)) * -18px)) rotate(calc((1 - var(--bundle, 1)) * 5deg)); }
-.v2-landing .learning-goal.career { color: #4d6d7a; background: #eef3f5; transform: translate(calc((1 - var(--bundle, 1)) * 50px), calc((1 - var(--bundle, 1)) * 18px)) rotate(calc((1 - var(--bundle, 1)) * 7deg)); }
+.v2-landing .learning-goal.reading { color: #885f43; background: #f8f0e7; }
+.v2-landing .learning-goal.career { color: #4d6d7a; background: #eef3f5; }
 .v2-landing .learning-chart-card { padding: 26px 30px 18px; background: #fffefa; border: 1px solid #dfe4d5; border-radius: 18px; box-shadow: 0 18px 65px #344a2b08; }
 .v2-landing .learning-chart-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .v2-landing .learning-chart-heading h3 { font-size: 24px; letter-spacing: -.025em; margin: 9px 0 0; }
 .v2-landing .learning-chart-heading .section-kicker { font-size: 9px; }
-.v2-landing .learning-plan-label { display: flex; align-items: center; gap: 7px; color: #4b633a; font-size: 11px; white-space: nowrap; opacity: var(--bundle, 1); }
+.v2-landing .learning-plan-label { display: flex; align-items: center; gap: 7px; color: #4b633a; font-size: 11px; white-space: nowrap; }
 .v2-landing .learning-plan-label svg { width: 24px; height: 24px; }
 .v2-landing .learning-axis-title { color: #657059; font-size: 10px; margin: 24px 0 12px; }
 .v2-landing .learning-chart { position: relative; height: 210px; margin-left: 38px; }
-.v2-landing .learning-chart > svg { width: 100%; height: 100%; overflow: visible; }
+.v2-landing .learning-chart-viewport, .v2-landing .learning-chart-world { position: relative; height: 100%; }
+.v2-landing .learning-chart-world > svg { width: 100%; height: 100%; overflow: visible; }
+.v2-landing .learning-narration, .v2-landing .learning-time-marks, .v2-landing .learning-skip { display: none; }
+.v2-landing .learning-time-grid { display: none; }
+.v2-landing .learning-join-dot { position: absolute; left: 33.333%; top: 70.8%; width: 10px; height: 10px; border-radius: 50%; background: #55723e; transform: translate(-50%, -50%); }
+.v2-landing .learning-reveal-mask { width: calc(var(--reveal, 1) * 900px); }
 .v2-landing .learning-y-axis { position: absolute; right: calc(100% + 10px); top: 0; height: 100%; display: flex; flex-direction: column; justify-content: space-between; font-size: 9px; color: #68725f; padding-block: 3px; }
 .v2-landing .learning-fragment-line { fill: none; stroke-width: 2; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; }
 .v2-landing .learning-fragment-line.portfolio { stroke: #7b8a63; }
 .v2-landing .learning-fragment-line.reading { stroke: #ae8263; }
 .v2-landing .learning-fragment-line.career { stroke: #73949f; }
-.v2-landing .learning-improvement-line { fill: none; stroke: #55723e; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: calc(1 - var(--learning, 1)); vector-effect: non-scaling-stroke; }
-.v2-landing .learning-join-guide, .v2-landing .learning-join-dot { opacity: var(--bundle, 1); }
+.v2-landing .learning-improvement-line { fill: none; stroke: #55723e; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
 .v2-landing .learning-adjustment { position: absolute; font-size: 9px; color: #536845; padding: 5px 7px; border-radius: 6px; background: #eef3e5; white-space: nowrap; }
-.v2-landing .learning-adjustment.first { left: 40%; top: 77%; opacity: clamp(0, calc(var(--learning, 1) * 5 - 1), 1); }
-.v2-landing .learning-adjustment.second { left: 62%; top: 53%; opacity: clamp(0, calc(var(--learning, 1) * 5 - 2.5), 1); }
-.v2-landing .learning-adjustment.third { right: 0; top: 27%; opacity: clamp(0, calc(var(--learning, 1) * 5 - 3.5), 1); }
+.v2-landing .learning-adjustment.first { left: 40%; top: 77%; opacity: clamp(0, calc(var(--reveal, 1) * 20 - 9.6), 1); }
+.v2-landing .learning-adjustment.second { left: 62%; top: 53%; opacity: clamp(0, calc(var(--reveal, 1) * 20 - 14), 1); }
+.v2-landing .learning-adjustment.third { right: 0; top: 27%; opacity: clamp(0, calc(var(--reveal, 1) * 20 - 18.2), 1); }
 .v2-landing .learning-x-axis { display: grid; grid-template-columns: 1fr 1.5fr auto; margin: 12px 0 0 38px; font-size: 10px; color: #657059; gap: 8px; }
 .v2-landing .learning-x-axis > span:last-child { display: flex; align-items: center; gap: 5px; }
 .v2-landing .learning-loop { border-top: 1px solid #e6e9df; margin-top: 22px; padding-top: 15px; display: flex; justify-content: center; align-items: center; gap: 12px; color: #526646; font-size: 11px; }
@@ -2259,4 +2264,47 @@
   .v2-landing .learning-example-note { line-height: 1.5; }
   .v2-landing .connection-orbit-icon img { width: 39px; height: 39px; padding: 8px; border-radius: 12px; }
   .v2-landing .connection-orbit-icon { font-size: 8px; }
+}
+
+/* Scroll along a close view of time, then pull back to the whole learning curve. */
+@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .v2-landing .hero-assembled > h2 { display: none; }
+  .v2-landing .learning-preview { position: relative; height: 100%; }
+  .v2-landing .learning-narration { display: block; position: absolute; top: 6svh; left: 7vw; right: 7vw; animation: learning-caption-in .3s ease-out; }
+  .v2-landing .learning-narration .section-kicker { font-size: 11px; letter-spacing: .12em; }
+  .v2-landing .learning-narration h2 { font-size: clamp(40px, 4vw, 64px); line-height: 1.1; letter-spacing: -.045em; margin: 18px 0; text-wrap: balance; }
+  .v2-landing .learning-narration p { font-size: 15px; line-height: 1.7; color: #5c6b50; max-width: 790px; }
+  .v2-landing .learning-chart-card { padding: 0; border: 0; background: transparent; box-shadow: none; }
+  .v2-landing .learning-chart-heading, .v2-landing .learning-x-axis { display: none; }
+  .v2-landing .learning-axis-title { position: absolute; top: 25svh; left: 7vw; font-size: 11px; margin: 0; }
+  .v2-landing .learning-chart { position: absolute; top: 30svh; left: 7vw; right: 7vw; height: calc(54svh - var(--overview) * 7svh); margin: 0; }
+  .v2-landing .learning-y-axis { font-size: 11px; height: calc(100% - 40px); right: calc(100% + 14px); }
+  .v2-landing .learning-chart-viewport { overflow: hidden; }
+  .v2-landing .learning-chart-world { width: calc(100% * var(--camera-scale)); transform: translateX(var(--camera-shift)); will-change: transform; }
+  .v2-landing .learning-chart-world > svg { height: calc(100% - 40px); }
+  .v2-landing .learning-time-grid { display: inline; opacity: .65; }
+  .v2-landing .learning-join-dot { top: calc(70.8% - 28.32px); width: 14px; height: 14px; }
+  .v2-landing .learning-fragment-line { stroke-width: 3; stroke-dasharray: 6 8; }
+  .v2-landing .learning-improvement-line { stroke-width: 4; }
+  .v2-landing .learning-adjustment { font-size: 12px; padding: 8px 12px; }
+  .v2-landing .learning-adjustment.first { left: 44%; top: 76%; }
+  .v2-landing .learning-adjustment.second { left: 68%; top: 50%; }
+  .v2-landing .learning-adjustment.third { right: 2%; top: 23%; }
+  .v2-landing .learning-time-marks { display: block; position: absolute; bottom: 0; width: 100%; height: 25px; font-size: 12px; color: #5a6a4c; }
+  .v2-landing .learning-time-marks span { position: absolute; white-space: nowrap; }
+  .v2-landing .learning-time-marks span:nth-child(1) { left: 0; }
+  .v2-landing .learning-time-marks span:nth-child(2) { left: 33.333%; }
+  .v2-landing .learning-time-marks span:nth-child(3) { left: 64%; }
+  .v2-landing .learning-time-marks span:nth-child(4) { right: 0; }
+  .v2-landing .learning-goals { position: absolute; bottom: 8svh; left: 7vw; gap: 18px; padding: 0; }
+  .v2-landing .learning-goal { border: 0; background: transparent; padding: 0; font-size: 11px; gap: 6px; }
+  .v2-landing .learning-loop { position: absolute; bottom: 8svh; right: 7vw; margin: 0; padding: 0; border: 0; opacity: var(--overview); }
+  .v2-landing .learning-example-note { position: absolute; bottom: 3svh; left: 7vw; margin: 0; text-align: left; font-size: 10px; }
+  .v2-landing .learning-skip { display: flex; position: absolute; bottom: 3svh; right: 7vw; align-items: center; gap: 8px; color: #4e623d; font-size: 11px; }
+}
+@keyframes learning-caption-in { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+
+@media (min-width: 900px) and (max-width: 1100px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .v2-landing .learning-narration h2 { font-size: 36px; margin: 12px 0; }
+  .v2-landing .learning-narration p { font-size: 13px; }
 }
