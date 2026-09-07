@@ -2,12 +2,17 @@
 
 Version: `besci-coaching-v1`. This is the operational method for the current shared web, text and MCP coach. Screens, prompts, schemas and evaluations must follow it. It implements the research as a decision process, with explicit limits on what the app currently measures and can infer.
 
+The user's accepted direction is recorded in [governing product principles](../product-principles.md). The [engineering design](coaching-engineering.md) specifies the next implementation of claim-level grounding, live hypotheses/tests and one shared system across intelligent interactions. These are required development directions, not delivered capabilities. The [product review](../scientific-disclosure-product-proposal.md) identifies current gaps; this contract must not be treated as proof that every runtime path already satisfies it.
+
 ## Source hierarchy
 
 1. The user's current product instructions and explicit choices govern scope, autonomy and interaction design.
-2. This document defines the current implementation and resolves older product mechanics.
-3. [Behavioural science synthesis](../research/behavioural-science-synthesis.md) supplies P1–P36, evidence grades, resolved conflicts, population/transfer limits, tailoring, and the limits of individual inference. It was recovered from commit `472e979` on `swift-ai-goal-coach-app`; it was absent from the web branch. Its [23 deep dives](../research/deep/README.md) and companion research provide supporting citations and qualifications.
-4. [Research baseline v0.5](research-baseline-v0.5.md) preserves the earlier method unchanged for provenance. Its intake scripts, numerical gates, deployment architecture and unimplemented statistical/safety systems are historical design, not claims about current runtime capabilities.
+2. [Governing product principles](../product-principles.md) preserve the accepted product direction for future iterations.
+3. This document defines the current method and resolves older product mechanics; [the engineering design](coaching-engineering.md) specifies the target implementation with its status explicit.
+4. [Behavioural science synthesis](../research/behavioural-science-synthesis.md) supplies P1–P36, evidence grades, resolved conflicts, population/transfer limits, tailoring, and the limits of individual inference. It was recovered from commit `472e979` on `swift-ai-goal-coach-app`; it was absent from the web branch. Its [23 deep dives](../research/deep/README.md) and companion research provide supporting citations and qualifications. The newer [grounding](../research/coaching-grounding-engineering.md) and [individual-learning](../research/individual-learning-methodology.md) research distinguish specific source support from proposed engineering choices.
+5. [Research baseline v0.5](research-baseline-v0.5.md) preserves the earlier method unchanged for provenance. Its intake scripts, numerical gates, deployment architecture and unimplemented statistical/safety systems are historical design, not claims about current runtime capabilities.
+
+This hierarchy resolves product direction and implementation status. It does not let a product requirement strengthen a research finding or override a primary source's actual scope.
 
 The synthesis and underlying research were authored in the repository. Importing them does not independently verify every statistic, establish clinical efficacy, or update their legal references. Research claims retain their grade and population limits. Current medical/legal guidance requires current appropriate sources; the coach does not provide treatment or legal compliance advice.
 
