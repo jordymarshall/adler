@@ -62,14 +62,14 @@
 .v2-landing h2,
 .v2-landing h3,
 .v2-landing h4 {
-  font-weight: 450;
+  font-weight: var(--heading-weight);
 }
 .v2-landing p {
   line-height: 1.7;
 }
 .v2-landing em {
   font-family: var(--heading-font);
-  font-weight: 450;
+  font-weight: inherit;
 }
 .v2-landing ::selection {
   background: #dce8b3;
@@ -460,7 +460,7 @@
 }
 .v2-landing .principles h3 {
   font-size: 18px;
-  font-weight: 500;
+  font-weight: var(--heading-weight);
   letter-spacing: -0.4px;
   margin: 14px 0 12px;
 }
@@ -1249,7 +1249,7 @@
   font-size: clamp(64px, 8vw, 108px);
   line-height: 1.04;
   letter-spacing: -0.065em;
-  font-weight: 500;
+  font-weight: var(--heading-weight);
 }
 .v2-landing .hero-intro-v2 > p {
   max-width: 550px;
@@ -1666,7 +1666,7 @@
   color: var(--ink);
   font-size: 21px;
   margin-top: 5px;
-  font-weight: 500;
+  font-weight: var(--heading-weight);
 }
 .v2-landing .week-plan-steps {
   padding: 0;
@@ -1701,7 +1701,7 @@
 .v2-landing .weekly-time b {
   display: block;
   font-size: 20px;
-  font-weight: 500;
+  font-weight: var(--heading-weight);
 }
 .v2-landing .schedule-day {
   display: flex;
@@ -1753,7 +1753,7 @@
   margin-bottom: 5px;
   font-size: 27px;
   line-height: 1;
-  font-weight: 500;
+  font-weight: var(--heading-weight);
   color: var(--ink);
 }
 .v2-landing .progress-proposal-preview .chart-recorded-label,
@@ -2084,7 +2084,7 @@
 .v2-landing button.mock-phone-composer { cursor: pointer; }
 .v2-landing .phone-calendar-date { flex-shrink: 0; display: flex; flex-direction: column; text-align: left; padding: 13px 8px; }
 .v2-landing .phone-calendar-date small { color: #94543c; font-size: 8px; letter-spacing: 1px; }
-.v2-landing .phone-calendar-date strong { font-size: 35px; line-height: 1.3; font-weight: 450; }
+.v2-landing .phone-calendar-date strong { font-size: 35px; line-height: 1.3; font-weight: var(--body-weight); }
 .v2-landing .phone-calendar-date span { color: #5d6856; font-size: 9px; }
 .v2-landing .phone-calendar-day > div { display: flex; gap: 9px; text-align: left; font-size: 8px; padding: 12px 4px; border-top: 1px solid #eeeee7; }
 .v2-landing .phone-calendar-day time { width: 26px; flex-shrink: 0; color: #5b6553; }
@@ -2273,32 +2273,34 @@
 .v2-landing .canada-note { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
 .v2-landing .canada-note > span { font-size: 16px; line-height: 1; }
 
-/* Follow the mountain path back to the seed where a goal begins. */
-.v2-landing .mountain-finale { position: relative; background: #eee3ce; border-block: 1px solid #e0e6d2; }
+/* A mountain-shaped chart converges to one starting point. */
+.v2-landing .mountain-finale { position: relative; background: var(--paper); border-block: 1px solid var(--line); }
 .v2-landing .mountain-stage { position: relative; overflow: hidden; }
-.v2-landing .mountain-landscape { display: block; width: 100%; height: 1000px; background: #e7ead8; }
-.v2-landing .mountain-summit-copy { position: absolute; top: 45px; left: 24px; right: 24px; text-align: center; }
+.v2-landing .mountain-graph { display: block; width: 100%; height: auto; }
+.v2-landing .mountain-grid { opacity: .7; }
+.v2-landing .mountain-summit-copy { position: relative; padding: 65px 24px 0; text-align: center; z-index: 1; }
 .v2-landing .mountain-summit-copy .section-kicker { justify-content: center; font-size: 11px; letter-spacing: .13em; }
-.v2-landing .mountain-summit-copy h2 { font-size: clamp(58px, 8vw, 118px); line-height: 1.05; letter-spacing: -.05em; margin: 20px 0; }
-.v2-landing .mountain-scroll-hint { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; color: #586b4c; }
-.v2-landing .mountain-seed-copy { position: relative; margin-top: -30px; padding: 0 24px 75px; text-align: center; }
-.v2-landing .mountain-seed-copy h2 { font-size: clamp(45px, 6vw, 86px); line-height: 1.06; letter-spacing: -.045em; margin-bottom: 18px; }
-.v2-landing .mountain-seed-copy p { color: #5b694c; font-size: 14px; margin-bottom: 25px; }
+.v2-landing .mountain-summit-copy h2 { font-size: clamp(58px, 8vw, 108px); line-height: 1.05; letter-spacing: -.065em; margin: 20px 0; }
+.v2-landing .mountain-scroll-hint { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
+.v2-landing .mountain-start-copy { position: relative; padding: 0 24px 75px; text-align: center; }
+.v2-landing .mountain-start-copy h2 { font-size: clamp(45px, 6vw, 86px); line-height: 1.06; letter-spacing: -.045em; margin-bottom: 18px; }
+.v2-landing .mountain-start-copy p { color: var(--muted); font-size: 14px; margin-bottom: 25px; }
 @media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
-  .v2-landing .mountain-finale { height: 480svh; }
+  .v2-landing .mountain-finale { height: 400svh; }
   .v2-landing .mountain-stage { position: sticky; top: 0; height: 100svh; }
-  .v2-landing .mountain-landscape { position: absolute; inset: 0; height: 100%; }
-  .v2-landing .mountain-summit-copy { top: 7svh; opacity: clamp(0, calc(1.5 - var(--descent, 0) * 5), 1); }
-  .v2-landing .mountain-seed-copy { position: absolute; left: 24px; right: 24px; top: 65svh; margin: 0; padding: 0; opacity: clamp(0, calc((var(--descent, 0) - .82) * 12), 1); }
+  .v2-landing .mountain-graph { position: absolute; inset: 0; height: 100%; }
+  .v2-landing .mountain-grid { opacity: calc(.7 - var(--convergence, 0) * .5); }
+  .v2-landing .mountain-origin-guide { opacity: calc(1 - var(--convergence, 0)); }
+  .v2-landing .mountain-summit-copy { position: absolute; left: 24px; right: 24px; top: 7svh; padding: 0; opacity: clamp(0, calc(1.5 - var(--convergence, 0) * 5), 1); }
+  .v2-landing .mountain-start-copy { position: absolute; left: 24px; right: 24px; top: 62svh; padding: 0; opacity: clamp(0, calc((var(--convergence, 0) - .82) * 12), 1); }
 }
 @media (max-width: 650px) {
   .v2-landing .landing-projection { height: 190px; margin-left: 23px; }
   .v2-landing .projection-adjustment { padding: 16px; }
   .v2-landing .footer-bottom .canada-note { flex-basis: 100%; justify-content: flex-end; font-size: 9px; }
-  .v2-landing .mountain-landscape { height: 620px; }
-  .v2-landing .mountain-summit-copy { top: 30px; }
+  .v2-landing .mountain-summit-copy { padding-top: 45px; }
   .v2-landing .mountain-summit-copy h2 { font-size: 56px; }
   .v2-landing .mountain-summit-copy .section-kicker { font-size: 9px; }
   .v2-landing .mountain-scroll-hint { font-size: 10px; }
-  .v2-landing .mountain-seed-copy { margin-top: 0; padding-bottom: 55px; }
+  .v2-landing .mountain-start-copy { padding-bottom: 55px; }
 }

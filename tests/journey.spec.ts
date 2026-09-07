@@ -298,7 +298,11 @@ test("the simplified journey works on a phone with accessible disclosure control
 test("the landing uses Adler Warm and five focused chapters on desktop and mobile", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".journey-hero h1")).toHaveText("Reach your goals with a plan that adapts to you.");
-  expect(await page.locator(".journey-hero h1").evaluate(el => getComputedStyle(el).fontFamily)).toContain("Adler Warm");
+  const typography = await page.locator(".journey-hero h1, .chapter-copy h2, .mountain-finale h2").evaluateAll(elements =>
+    elements.map(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight })),
+  );
+  expect(typography.every(font => font.family.includes("Adler Warm") && font.weight === "550")).toBeTruthy();
+  await expect(page.locator(".hero-intro-v2 > p")).toHaveCSS("font-weight", "500");
   await expect(page.locator(".focus-chapter")).toHaveCount(5);
   await expect(page.locator(".hero-assembled")).toHaveCount(1);
   await expect(page.locator("#step-5")).toContainText("Apple Health");

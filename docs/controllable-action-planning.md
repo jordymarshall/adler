@@ -10,7 +10,7 @@ The opening scroll moves into a full-viewport chart of scattered, struggling goa
 
 Chapter 02 must show multiple goals and their commitments in one plan. Chapter 03 restores a recorded-actions vs dated-plan chart with an explicitly illustrative future projection and shaded possible range; this does not reintroduce an outcome-forecast engine. Chapter 05 must show three proportionate phone mockups: Adler check-in in the center, Claude chat and calendar beside it, with connected-app icons arranged on orbital paths. Retain accurate availability labels for Apple Health and shared goals/stakes. Desktop animation must retain a readable static layout on mobile and reduced motion.
 
-The closing scroll begins at a mountain summit (“Your someday.”), follows the path down to a seed and roots, and reveals “Let’s give it a start.” with the goal-creation action. The footer ends with a small Canadian flag and “Proudly built in Canada.” Typography is slightly heavier across the landing page and app. Publish the verified branch to `main` as requested.
+The closing scroll begins with a large mountain-shaped area chart (“Your someday.”), contracts to one small starting point, and reveals “Let’s give it a start.” with the goal-creation action. Use the same green chart language as the rest of the page, without landscape, road, tree, or seed illustrations. The footer ends with a small Canadian flag and “Proudly built in Canada.” Typography uses the same Adler Warm family throughout, with shared 500 body and 550 heading weights across the landing page and app. Publish the verified branch to `main` as requested.
 
 ## App and coaching contract
 

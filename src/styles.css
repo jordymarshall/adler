@@ -49,7 +49,9 @@
 }
 
 :root {
-  font-weight: 450;
+  --body-weight: 500;
+  --heading-weight: 550;
+  font-weight: var(--body-weight);
   --body-font: "Adler Warm", ui-rounded, system-ui, sans-serif;
   font-family: var(--body-font);
   color: #263d32;
@@ -141,7 +143,7 @@ h1,
 h2,
 h3,
 h4 {
-  font-weight: 550;
+  font-weight: var(--heading-weight);
 }
 h1,
 h2 {
@@ -585,7 +587,7 @@ details > summary:focus-visible {
   line-height: 1;
   transform: rotate(9deg);
   font-family: var(--body-font);
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .hero-copy > p {
   max-width: 458px;
@@ -788,7 +790,7 @@ details > summary:focus-visible {
 }
 .mini-section-label > span {
   font-size: 7px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .mini-action {
   background: #fffefa;
@@ -1219,7 +1221,7 @@ details > summary:focus-visible {
 .demo-result > b {
   font-family: var(--heading-font);
   font-size: 30px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .demo-result > b > span {
   font-size: 21px;
@@ -2013,7 +2015,7 @@ details > summary:focus-visible {
 }
 .form-field > label > span,
 .field-label > span {
-  font-weight: 450;
+  font-weight: var(--body-weight);
   color: var(--muted);
   margin-left: 5px;
   font-size: 12px;
@@ -2189,7 +2191,7 @@ details > summary:focus-visible {
   gap: 10px;
   font-size: 14px;
   line-height: 1.8;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .checkbox-label > input {
   margin-top: 3px;
@@ -2245,7 +2247,7 @@ details > summary:focus-visible {
   gap: 10px;
   padding: 10px 0;
   font-size: 15px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 
 /* Today */
@@ -2663,7 +2665,7 @@ details > summary:focus-visible {
   display: block;
 }
 .goal-next-step > b {
-  font-weight: 500;
+  font-weight: var(--heading-weight);
   font-size: 14px;
   display: block;
   line-height: 1.65;
@@ -3240,7 +3242,7 @@ details > summary:focus-visible {
 }
 .message-author > span {
   font-size: 10px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
   text-transform: none;
   color: var(--supporting-ink, #646c58);
   letter-spacing: 0;
@@ -3513,7 +3515,7 @@ details > summary:focus-visible {
 .review-counts strong {
   font-family: var(--heading-font);
   font-size: 31px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
   color: var(--supporting-ink, #5c6e48);
 }
 .review-counts span {
@@ -6910,7 +6912,7 @@ details > summary:focus-visible {
 .viz-numbers strong small {
   font-size: 11px;
   color: var(--muted);
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .viz-numbers > span:not(.viz-target) {
   color: var(--line);
@@ -7905,7 +7907,7 @@ details > summary:focus-visible {
 .program-form textarea {
   width: 100%;
   font-size: 13px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .program-form h3 {
   margin: 10px 0 0;
@@ -7947,7 +7949,7 @@ details > summary:focus-visible {
   flex-direction: row;
   align-items: center;
   margin: 10px 0;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .method-action {
   font-size: 12px;
@@ -8928,7 +8930,7 @@ details > summary:focus-visible {
 .decision-inspector summary span {
   margin-left: auto;
   color: var(--muted);
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .decision-inspector > p {
   font-size: 12px;
@@ -10765,7 +10767,7 @@ input[type="checkbox"] {
   font-size: 10px;
   color: var(--muted);
   text-transform: capitalize;
-  font-weight: 450;
+  font-weight: var(--body-weight);
   margin-bottom: 3px;
 }
 .adjustment-creation .comparison-value dd {
@@ -11209,7 +11211,7 @@ input[type="checkbox"] {
 }
 .checkin-linked-result dd small {
   font-size: 12px;
-  font-weight: 450;
+  font-weight: var(--body-weight);
 }
 .checkin-linked-result > p:last-child {
   font-size: 12px;
@@ -12273,7 +12275,7 @@ input[type="checkbox"] {
 .chart-legend .chart-required-key i { background: #a88954; border: 0; }
 .behavior-overview { margin: 20px 0 30px; padding: 25px 0; border-block: 1px solid var(--line); }
 .behavior-chart-heading { display: flex; justify-content: space-between; gap: 20px; align-items: end; }
-.behavior-chart-heading h2 { margin: 12px 0 4px; font-size: 22px; font-weight: 450; }
+.behavior-chart-heading h2 { margin: 12px 0 4px; font-size: 22px; font-weight: var(--heading-weight); }
 .behavior-chart-heading strong { margin-left: 18px; font-size: 38px; font-weight: 550; color: var(--green); }
 .behavior-chart-heading p { font-size: 12px; color: var(--muted); }
 .behavior-overview svg { width: 100%; display: block; margin-top: 20px; overflow: visible; }
