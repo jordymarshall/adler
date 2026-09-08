@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- THROWAWAY: three All Goals layouts comparing goal-first, shared-week and outcome-first organization.
+     Fictional data; browser-memory changes only. Continues the explicitly pre-implementation UX study.
+     Run: python3 -m http.server 8766 --bind 127.0.0.1 --directory .context/ux-grilling
+     Open all-goals-prototype.html?variant=A|B|C. -->
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adler · All Goals design study</title>
+<link rel="icon" href="overview-mark.svg">
+<link rel="stylesheet" href="all-goals-prototype.css">
+<link rel="stylesheet" href="goal-streak.css">
+<body>
+<header class="app-header">
+  <a class="brand" href="all-goals-prototype.html">adler<img src="overview-mark.svg" alt="" width="24" height="24"></a>
+  <nav aria-label="Workspace"><a href="all-goals-prototype.html" aria-current="page">All goals</a><button data-open="coach">Coach</button></nav>
+  <span class="study-label">Interactive mockup · fictional data</span>
+</header>
+<div class="study-tools"><label for="scenario">Example week</label><select id="scenario"><option value="tight">Limited time · 6 hours</option><option value="roomy">More time · 10 hours</option><option value="unknown">Time not estimated</option></select><span>Same goals in all three layouts</span></div>
+<main id="app"></main>
+<nav class="variant-switcher" aria-label="Design variants">
+  <button id="previous" aria-label="Previous layout">←</button><div><b id="variant-name"></b><small>ALL GOALS · DESIGN STUDY</small></div><button id="next" aria-label="Next layout">→</button>
+  <span></span><button data-open="state" aria-label="Inspect demo state">{ }</button><button id="reset" aria-label="Reset example">↺</button>
+</nav>
+<dialog id="details" aria-labelledby="dialog-title"><header><div><span class="eyebrow" id="dialog-kind"></span><h2 id="dialog-title"></h2></div><button id="close" class="icon-button" aria-label="Close details">×</button></header><div id="dialog-body"></div></dialog>
+<div id="notice" role="status" hidden></div>
+<script src="goal-plan-signals.js"></script>
+<script src="all-goals-prototype.js"></script>
+</body>
+</html>

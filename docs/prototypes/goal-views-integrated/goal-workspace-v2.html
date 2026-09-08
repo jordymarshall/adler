@@ -1,0 +1,25 @@
+<!doctype html>
+<!-- PROTOTYPE: Three structurally different goal workspaces: plan first, action first, learning first.
+     Pre-implementation design study; fictional fixtures, browser-memory state, no app or calendar writes.
+     Run: python3 -m http.server 8766 --bind 127.0.0.1 --directory .context/ux-grilling
+     ?variant=A|B|C&goal=reading|revenue|day. Earlier study remains at goal-visual-prototype.html. -->
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adler · Goal workspace variants</title>
+<link rel="stylesheet" href="goal-workspace-v2.css">
+<link rel="stylesheet" href="goal-streak.css">
+<body>
+<header class="app-header">
+  <a class="brand" href="goal-workspace-v2.html">adler<span class="brand-dot">✳</span></a>
+  <nav aria-label="Workspace"><button class="nav-current" data-dialog="goals">Goals</button><button data-dialog="coach">Coach</button></nav>
+  <div class="demo-picker"><label for="fixture">Example</label><select id="fixture"><option value="reading">Reading</option><option value="revenue">Revenue</option><option value="day">One-day goal</option></select><span class="demo-label">Fictional data · design study</span></div>
+</header>
+<main id="app"></main>
+<div id="notice" class="notice" role="status" hidden></div>
+<nav class="variant-switcher" aria-label="Design variants"><button id="prev-variant" aria-label="Previous variant">←</button><div><span id="variant-name"></span><small>DESIGN VARIANTS · USE ← →</small></div><button id="next-variant" aria-label="Next variant">→</button><span class="switch-divider"></span><button id="demo-state" aria-label="Inspect prototype state">{ }</button><button id="reset-demo" aria-label="Reset demo">↺</button></nav>
+<dialog id="inspector" aria-labelledby="dialog-title"><div class="dialog-head"><div><span class="eyebrow" id="dialog-kind"></span><h2 id="dialog-title"></h2></div><button id="close-dialog" aria-label="Close details" class="icon-button">✕</button></div><div id="dialog-body"></div></dialog>
+<script src="goal-plan-signals.js"></script>
+<script src="goal-workspace-v2.js"></script>
+</body>
+</html>
