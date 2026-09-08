@@ -23,7 +23,7 @@ The shared coach already has these gates, research bindings, durable test versio
 - [x] Full app screens remain available; the outcome line, full projection range and mobile axes are readable by default.
 - [x] Keyboard, reduced motion, desktop/mobile layout and capture expansion work. The main narrative changes only on request. Preserve scroll-controlled camera motion and its static mobile/reduced-motion overview.
 - [x] Browser checks, typecheck/build and independent review.
-- [ ] Commit/push to main.
+- [x] Commit/push to main (`1ec0ed8`, also pushed to `reengineeredv2`).
 - [ ] Public deployment, pending a persistent backend.
 
 ## Basis and limits

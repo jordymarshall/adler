@@ -21,7 +21,7 @@ Current user priority: fix the shared coaching product and learn from Statsig’
 - [x] Make Check-in prompts specific to the current action/test while using the same conversation.
 - [x] Restore actual app demonstrations to the landing journey and refresh captures after app changes.
 - [x] Verify affected regressions, full checks, accessibility and independent code review.
-- [ ] Commit and push main.
+- [x] Commit and push main (`1ec0ed8`, also pushed to `reengineeredv2`).
 - [ ] Deploy and verify withadler.com with durable backend storage (external hosting dependency).
 
 ## Current diagnosis
