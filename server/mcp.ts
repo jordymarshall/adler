@@ -129,6 +129,13 @@ export async function handleMCP(
       ),
   );
   tool(
+    "manage_learning",
+    "Pause, resume, close or agree to an existing Adler learning test at the user's explicit request. Uses the same state as the app. New hypotheses, interpretations and reviews go through coach_message.",
+    { id: z.string().min(1).max(150), version: z.number().int().positive(), action: z.enum(["agree", "decline", "pause", "resume", "close"]), requestId: z.string().min(8).max(100) },
+    false,
+    args => service.learningAction(userId, args.id, args.version, args.action, args.requestId, "mcp"),
+  );
+  tool(
     "react_to_message",
     "Add or remove Adler's reaction to a user message. Reactions are feedback; they never record goal progress or approve proposals. A reaction to a linked iMessage is also queued for native delivery.",
     {

@@ -1,3 +1,4 @@
+import { reviewed } from "./planning-fixture.ts";
 import { adaptiveFixture } from "./adaptive-fixture.ts";
 import { basis, literature, researched } from "./planning-fixture.ts";
 import test from "node:test";
@@ -148,6 +149,12 @@ test("stale workspace saves are rejected and request IDs cannot hide changed con
   await service.update(user.id, next, 0, "change-0001");
   await service.update(user.id, next, 0, "change-0001");
   assert.equal(db.snapshot(user.id).revision, 1);
+  const later = db.snapshot(user.id);
+  later.data.decisions.push({ id: "later-decision", goalId: "general", programVersion: 1, planVersion: 1, mode: "live", checks: [], methods: [], summary: "New evidence arrived after this request.", date: "2026-09-07", status: "No change" });
+  db.save(user.id, later.data, later.revision, "web", "Later coaching decision");
+  await service.update(user.id, next, 0, "change-0001");
+  assert.equal(db.snapshot(user.id).revision, 2);
+  assert.equal(db.snapshot(user.id).data.decisions.at(-1)?.id, "later-decision");
   await assert.rejects(
     service.update(user.id, snapshot.data, 0, "change-0002"),
     /another channel/,
@@ -229,7 +236,7 @@ test("invalid changes are atomic and cannot target another user’s proposal", a
     user.id,
     [change("goal", "create", goalInput)],
     "Publish two essays",
-    "mcp",
+    "mcp", "general", undefined, true,
   );
   const other = db.createUser("other", "another-long-password", "UTC");
   await assert.rejects(
@@ -246,7 +253,7 @@ test("proposal approval checks current records; expired proposals and duplicate 
     user.id,
     [change("goal", "create", goalInput)],
     "Create goal",
-    "sms",
+    "sms", "general", undefined, true,
   );
   const current = db.snapshot(user.id);
   current.data.theme = "dark";
@@ -633,15 +640,17 @@ test("authenticated HTTP and a real MCP client share one workspace; revoked toke
   t.after(() => client.close());
   const tools = await client.listTools();
   assert(tools.tools.some((tool) => tool.name === "propose_changes"));
+  const unchecked = await client.callTool({ name: "propose_changes", arguments: { changes: [change("goal", "create", goalInput)], summary: "Unchecked goal advice" } });
+  assert.equal(unchecked.isError, true, "New coaching must use the shared coach_message tool");
   const proposed = await client.callTool({
     name: "propose_changes",
     arguments: {
-      changes: [change("goal", "create", goalInput)],
+      changes: [change("memory", "create", { text: "Keep evenings free." })],
       summary: "Publish two essays",
     },
   });
   const proposal = JSON.parse((proposed.content as { text: string }[])[0].text);
-  assert.equal(runtime.db.snapshot(account.user.id).data.goals.length, 0);
+  assert.equal(runtime.db.snapshot(account.user.id).data.memories.length, 0);
   const applied = await client.callTool({
     name: "apply_proposal",
     arguments: { id: proposal.id, confirmed: true },
@@ -649,7 +658,7 @@ test("authenticated HTTP and a real MCP client share one workspace; revoked toke
   assert(!applied.isError);
   assert.equal(
     (await (await request("/api/workspace", undefined, { cookie })).json()).data
-      .goals.length,
+      .memories.length,
     1,
   );
   await request("/api/tokens/revoke", { id: access.id }, { cookie });
@@ -817,7 +826,9 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
       changes: [],
     });
   };
-  const service = new Service(db, runner);
+  const service = new Service(db, reviewed(runner));
+  // Explicit manual goals do not attach a scientific explanation.
+  data.goals.forEach(goal => goal.plans.forEach(plan => { delete plan.basis; }));
   // The same save path used by goal/program forms must feed every coach surface.
   await service.update(user.id, data, snapshot.revision, randomUUID());
   assert.equal(calls.length, 0, "An explicit form save does not require a model call");
@@ -834,7 +845,7 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
     assert.deepEqual(call.config, calls[0].config);
     assert.equal(call.instructions, calls[0].instructions);
     const frameworkContext = call.context as typeof call.context & { coachingFramework: { version: string }; behavioralResearch: { synthesis: string }; researchLibrary: { id: string }[] };
-    assert.equal(frameworkContext.coachingFramework.version, "besci-coaching-v1");
+    assert.equal(frameworkContext.coachingFramework.version, "besci-coaching-v2");
     assert.match(frameworkContext.behavioralResearch.synthesis, /P24. Structural constraints/);
     assert.match(frameworkContext.behavioralResearch.synthesis, /P29. Health rules do not export/);
     assert.ok(frameworkContext.researchLibrary.some(document => document.id === "deep/idiographic-inference.md"));
@@ -874,7 +885,7 @@ test("SMS conversation proposes a change, web approval syncs it, and the same te
       changes: [change("memory", "create", { text: "I prefer mornings." })],
     });
   };
-  const service = new Service(db, runner),
+  const service = new Service(db, reviewed(runner)),
     channels = new Channels(db, service, async () => ({
       sid: "SM" + randomUUID().replaceAll("-", ""),
       status: "queued",
@@ -937,6 +948,7 @@ test("approved external work blocks use the same stable booking ID and persist t
   const { db, user, service } = fixture(t);
   const snapshot = db.snapshot(user.id);
   createGoal(snapshot.data, goalInput, dayInZone(snapshot.data), "goal");
+  delete snapshot.data.goals[0].plans[0].basis;
   await service.update(user.id, snapshot.data, 0, "setup-external");
   let calls = 0;
   service.externalApply = async (_id, changes, data) => {
@@ -991,7 +1003,8 @@ test("existing workspaces can coach without the retired enable switch", async (t
   let called = false;
   const service = new Service(
     db,
-    async (_config, _instructions, _context, schema) => {
+    async (_config, _instructions, _context: any, schema) => {
+      if (_context.task === "review-plan") return schema.parse({ issues: [] });
       called = true;
       return schema.parse({
         reply: "What result would you like to work toward?",
@@ -1079,7 +1092,8 @@ test("unsupported citations cannot be saved after the repair attempt", async (t)
   const service = new Service(db, researched(async (_config, _instructions, _context, schema) => schema.parse({ reply: "A plan", summary: "A plan", methods: [], execution: "apply", changes: [change("goal", "create", { ...coachGoalInput(), basis: { ...basis, evidence: [{ ...basis.evidence[0], sourceId: "fabricated" }] } })] })), literature);
   await assert.rejects(service.chat(user.id, "Create the essay goal"), /Do not invent citations/);
   assert.equal(db.snapshot(user.id).data.goals.length, 0);
-  assert.equal(db.snapshot(user.id).data.messages.length, 0);
+  assert.equal(db.snapshot(user.id).data.messages.length, 1);
+  assert.equal(db.snapshot(user.id).data.messages[0].role, "user", "Keep the valid report; no unchecked coaching is saved");
 });
 
 test("an evidence review sends unsupported causal claims back for correction before saving", async (t) => {
@@ -1113,8 +1127,8 @@ test("unavailable research can produce an explicitly provisional plan without fa
   }), async (queries) => ({ queries, sources: [], unavailable: queries, searchedAt: new Date().toISOString() }));
   const result = await service.chat(user.id, "Help me plan the essays");
   const values = JSON.parse(result.proposal.changes[0].values);
-  assert.deepEqual(values.basis.sources.map((s: { id: string }) => s.id), ["method:implementation", "adler:P2"]);
-  assert.ok(values.basis.sources.every((s: { access: string }) => s.access === "method summary"));
+  assert.deepEqual(values.basis.sources.map((s: { id: string }) => s.id), ["method:implementation", "adler:P2", "curated:implementation-if-then"]);
+  assert.ok(values.basis.sources.every((s: { access: string }) => ["method summary", "full text excerpt", "abstract"].includes(s.access)));
   assert.match(values.basis.uncertainty, /unavailable/);
 });
 
@@ -1180,6 +1194,7 @@ test("chat repairs a rejected command and records a sourced insight with the sav
   const service = new Service(
     db,
     async (_config, _instructions, context: any, schema) => {
+      if (context.task === "review-plan") return schema.parse({ issues: [] });
       calls++;
       if (calls === 2)
         assert.match(context.validationError, /Unrecognized key/);
@@ -1276,6 +1291,7 @@ test("conversation folders isolate history, can move to a goal, and delete messa
   const service = new Service(
     db,
     async (_config, _instructions, context: any, schema) => {
+      if (context.task === "review-plan") return schema.parse({ issues: [] });
       assert(
         !context.conversation.some(
           (m: any) => m.text === "Private topic in first chat",

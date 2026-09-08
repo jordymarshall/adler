@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot, coachReply } from "./fixtures";
+import { seedCoaching, reviewedProposal } from "./fixtures";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
 import { addDays, dateInZone } from "../shared/journey";
 
@@ -9,7 +10,7 @@ test("one goal screen connects the approach, behavior, check-in, timeline, and c
   const state = await snapshot(page);
   const today = dateInZone("UTC");
   const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
-  await save(page, data, state.revision);
+  await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Check-in", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "How you’ll make room for the work", exact: true })).toBeVisible();
@@ -46,11 +47,10 @@ test("a legacy goal previews and accepts an upgrade on its existing screen", asy
   const plan = state.data.goals[0].plans[0];
   const today = dateInZone(state.data.timeZone);
   const adaptive = adaptiveFixture(today, addDays(today, 2));
-  const response = await page.request.post("/api/proposals", { data: { summary: "An outline experiment for your essay", changes: [{
-    entity: "plan", operation: "update", id: null, parentId: "essays", reason: "Connect the existing goal to observable work",
-    values: JSON.stringify({ action: plan.action, criterion: plan.criterion, timing: plan.timing, adaptive }),
-  }] } });
-  expect(response.ok()).toBeTruthy();
+  const changes = [{ entity: "plan" as const, operation: "update" as const, id: null, parentId: "essays", reason: "Connect the existing goal to observable work", values: JSON.stringify({ action: plan.action, criterion: plan.criterion, timing: plan.timing, adaptive }) }];
+  const unchecked = await page.request.post("/api/proposals", { data: { summary: "Unchecked coaching", changes } });
+  expect(unchecked.ok()).toBe(false);
+  await reviewedProposal(page, changes, "An outline experiment for your essay");
   await page.reload();
   await expect(page.locator(".plan-adaptation")).toContainText("What we’re testing");
   expect((await snapshot(page)).data.goals[0].plans).toHaveLength(1);
@@ -78,7 +78,7 @@ test("reported revenue does not invent an achievement pace or change action exec
   goal.results = [20, 24, 28].map((value, i) => ({ id: `r${i}`, date: addDays(today, -4 + i * 2), value, source: "Your collected revenue report" }));
   goal.plans[0].adaptive!.steps[0].contextIds = ["morning"];
   data.memories.push({ id: "morning", text: "I prefer to outline after breakfast.", date: today });
-  await save(page, data, state.revision);
+  await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.getByTestId("forecast-line")).toHaveCount(0);
   const before = await page.getByRole("region", { name: "Goal and current cycle" }).innerText();

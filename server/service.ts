@@ -1,3 +1,4 @@
+import { currentLearningVersion, planNeedsReview } from "../shared/learning.ts";
 import { recordLink, resolveRecord } from "../shared/record-links.ts";
 import { currentRecord } from "../shared/change-record.ts";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -17,8 +18,11 @@ import { planningBasisSchema, type ResearchSearch } from "../shared/planning.ts"
 import { adaptivePlanSchema, assessmentDue, assessmentEvidence, maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 import { behavioralResearch, researchLibrary, readBehavioralResearch, synthesisSources } from "./behavioral-research.ts";
 import { COACHING_FRAMEWORK } from "../shared/coaching-framework.ts";
-import { behavioralMethodologyInstructions, validateBehavioralReasoning } from "./behavioral-methodology.ts";
+import { attachReasoningSources, behavioralMethodologyInstructions, groundingInstructions, groundingReviewInstructions, validateBehavioralReasoning } from "./behavioral-methodology.ts";
+import { recommendationSchema, type Recommendation } from "../shared/behavioral-reasoning.ts";
+import { RESEARCH_CLAIMS } from "../shared/research-claims.ts";
 import { adaptiveInstructions } from "./adaptive-instructions.ts";
+import { evidenceRevision, reconcileLearning, saveLearning, setLearningAgreement, correctLearningEvidence } from "./learning.ts";
 import { executionSummary } from "../shared/goal-execution.ts";
 import {
   reactionTypes,
@@ -37,6 +41,8 @@ export const dayInZone = (data: Data, date = new Date()) =>
   }).format(date);
 const replySchema = z
   .object({
+    evidenceCorrections: z.array(z.object({ sourceId: z.string().min(1).max(150), replacementSourceIds: z.array(z.string().min(1).max(150)).min(1).max(10), reason: z.string().min(1).max(1200) }).strict()).max(10).default([]),
+    recommendation: recommendationSchema.nullable().default(null),
     nextAssessmentAt: z.iso.datetime({ offset: true }).nullable().default(null),
     planCheck: z.array(changeSchema).max(20).default([]),
     reply: z.string().min(1).max(5000),
@@ -135,23 +141,70 @@ export class Service {
     this.db.changed(userId);
     this.onChanged(userId);
   }
+  learningAction(userId: string, id: string, version: number, action: "agree" | "decline" | "pause" | "resume" | "close", requestId: string, channel: Channel = "web") {
+    return this.locked(userId, () => {
+      const hash = digest(JSON.stringify({ id, version, action }));
+      const prior = this.db.sql.prepare("SELECT hash,result FROM requests WHERE user_id=? AND id=?").get(userId, requestId) as { hash: string; result: string } | undefined;
+      if (prior) {
+        if (prior.hash !== hash) throw new Error("A request ID cannot be reused for another learning action.");
+        return this.db.snapshot(userId);
+      }
+      const snapshot = this.db.snapshot(userId);
+      const record = snapshot.data.learning?.find(r => r.id === id);
+      if (!record || currentLearningVersion(record).version !== version) throw new Error("This learning record changed. Review the current version.");
+      const test = currentLearningVersion(record);
+      if (action === "agree" && record.state !== "suggested") throw new Error("This suggestion has already been considered.");
+      if (action === "decline" && record.state !== "suggested") throw new Error("Only an unstarted suggestion can be declined.");
+      if (action === "resume" && record.state !== "paused") throw new Error("Only a paused test can be resumed.");
+      if ((action === "agree" || action === "resume") && record.standing === "reconsider") throw new Error("The evidence changed. Discuss a fresh review in Check-in first.");
+      if ((action === "agree" || action === "decline") && test.proposalId && this.listProposals(userId).some(p => p.id === test.proposalId && p.status !== "applied"))
+        throw new Error("Review and accept the linked proposal so the actual plan and test stay together.");
+      if (action === "pause" && !["agreed", "reviewed"].includes(record.state)) throw new Error("Only an agreed or reviewed test can be paused.");
+      if (action === "close" && ["suggested", "declined", "closed"].includes(record.state)) throw new Error("Choose a current test to finish.");
+      if (action === "agree") { record.activeVersion = test.version; delete record.pendingVersion; }
+      if (action === "decline") delete record.pendingVersion;
+      record.state = action === "decline" ? "declined" : action === "pause" ? "paused" : action === "close" ? "closed" : "agreed";
+      record.events.push({ at: new Date().toISOString(), state: record.state, reason: action === "agree" || action === "resume" ? "You chose to try this support. Its use and effect still need your feedback." : `You chose to ${action} this test. This does not establish whether it worked.` });
+      const saved = this.db.transaction(() => {
+        const revision = this.db.save(userId, snapshot.data, snapshot.revision, channel, "Updated the learning test at your request.");
+        const result = { revision, data: snapshot.data };
+        this.db.sql.prepare("INSERT INTO requests VALUES(?,?,?,?)").run(userId, requestId, hash, JSON.stringify(result));
+        return result;
+      });
+      this.changed(userId);
+      return saved;
+    });
+  }
   update(userId: string, state: unknown, revision: number, requestId: string) {
     return this.locked(userId, () => {
-      const existing = this.db.snapshot(userId).data;
-      const data = validateWorkspace(state, existing);
-      const hash = digest(JSON.stringify(data));
+      const hash = digest(JSON.stringify({ state, revision }));
       const previous = this.db.sql
         .prepare("SELECT hash,result FROM requests WHERE user_id=? AND id=?")
         .get(userId, requestId) as { hash: string; result: string } | undefined;
       if (previous) {
         if (previous.hash !== hash)
-          throw new Error(
-            "A request ID cannot be reused for different changes.",
-          );
+          throw new Error("A request ID cannot be reused for different changes.");
         return JSON.parse(previous.result);
       }
+      const existing = this.db.snapshot(userId).data;
+      const data = validateWorkspace(state, existing);
+      // Scientific records are owned by the shared coach; app edits can only change their source evidence.
+      data.learning = structuredClone(existing.learning ?? []);
+      data.evidenceCorrections = structuredClone(existing.evidenceCorrections ?? []);
+      data.decisions = structuredClone(existing.decisions);
+      for (const goal of data.goals) {
+        const prior = existing.goals.find(item => item.id === goal.id);
+        const rationale = (plan: Data["goals"][number]["plans"][number]) => JSON.stringify({ basis: plan.basis, reasoning: plan.adaptive?.reasoning, experiment: plan.adaptive?.experiment });
+        for (const plan of goal.plans) {
+          if (!plan.basis && !plan.adaptive?.reasoning && !plan.adaptive?.experiment) continue;
+          if (!prior?.plans.some(before => rationale(before) === rationale(plan)))
+            throw new Error("New coaching explanations must use the shared coach, where their research and learning are reviewed. Manual edits can save your chosen work without adding a scientific claim.");
+        }
+      }
+      reconcileLearning(data, new Date().toISOString(), existing);
       for (const goal of data.goals) {
         const old = existing.goals.find(g => g.id === goal.id);
+        if (old?.status === "Draft" && goal.status === "Active" && planNeedsReview(data, goal)) throw new Error("This plan relies on corrected evidence. Review it in Check-in before starting.");
         goal.forecasts = old?.forecasts;
         goal.assessment = old?.assessment;
       }
@@ -212,7 +265,12 @@ export class Service {
     channel: Channel,
     goalId = "general",
     base?: Data,
+    reviewed = false,
   ) {
+    if (!reviewed && changes.some(change => {
+      const values = JSON.parse(change.values);
+      return (change.entity === "goal" && change.operation === "create") || values.basis || values.adaptive?.reasoning || values.adaptive?.experiment;
+    })) throw new Error("Goal setup and behavioural recommendations must use Adler's shared coach. Send the request through Check-in or coach_message so evidence and learning are reviewed together.");
     changes = changes.map((change) => ({
       ...change,
       id:
@@ -303,6 +361,8 @@ export class Service {
       dayInZone(snapshot.data),
     );
     await this.externalApply(userId, proposal.changes, data);
+    setLearningAgreement(data, proposal.id, true);
+    reconcileLearning(data);
     if (proposal.decisionId) {
       const decision = data.decisions.find((d) => d.id === proposal.decisionId);
       if (decision) decision.status = "Accepted";
@@ -360,6 +420,7 @@ export class Service {
         (d) => d.id === proposal.decisionId,
       );
       if (decision) decision.status = "Kept plan";
+      setLearningAgreement(snapshot.data, proposal.id, false);
       if (text)
         snapshot.data.messages.push({
           id: randomUUID(),
@@ -462,6 +523,7 @@ export class Service {
         [change],
         dayInZone(snapshot.data),
       );
+      reconcileLearning(data);
       this.db.transaction(() => {
         this.db.save(
           userId,
@@ -494,7 +556,10 @@ export class Service {
     background?: { key: string },
     focusGoalId?: string,
   ) {
+    const externalContext = channel === "job";
     this.db.limit(`chat:${userId}`, 20, 60000);
+    let pendingReport: { id: string; goalId: string; conversationId: string; role: "user"; origin: "user"; requestHash: string; text: string; at: string; channel: Channel } | undefined;
+    let pendingConversation: Data["conversations"][number] | undefined;
     const execute = async () => {
       const stored = this.db.sql
         .prepare("SELECT hash,result FROM requests WHERE user_id=? AND id=?")
@@ -534,6 +599,13 @@ export class Service {
         goalId,
         createdAt: new Date().toISOString(),
       };
+      const userMessageId = sourceMessageId ?? `report-${digest(requestId).slice(0, 32)}`;
+      const earlierReport = snapshot.data.messages.find(report => report.id === userMessageId);
+      if (earlierReport && (earlierReport.text !== message || earlierReport.requestHash && earlierReport.requestHash !== requestHash)) throw new Error("A request ID cannot be reused for another message.");
+      if (!externalContext) {
+        pendingConversation = conversation;
+        pendingReport = { id: userMessageId, goalId: focusGoalId ?? goalId, conversationId: conversation.id, role: "user", origin: "user", requestHash, text: message, at: new Date().toISOString(), channel };
+      }
       const pendingProposals = this.listProposals(userId).filter(
         (p) =>
           p.status === "pending" &&
@@ -552,7 +624,6 @@ export class Service {
         conversation.id,
       );
       const connectedCalendars = await this.calendarContext(userId);
-      const userMessageId = sourceMessageId ?? randomUUID();
       const sourceIds = new Set([
         ...(background ? [] : [userMessageId]),
         ...snapshot.data.messages.map((m) => m.id),
@@ -566,40 +637,46 @@ export class Service {
           ...(g.checkpoints ?? []).map((p) => p.id),
         ]),
         ...snapshot.data.programs.map((p) => `program-v${p.version}`),
+        ...(snapshot.data.learning ?? []).map(record => record.id),
       ]);
       const reportedSourceIds = new Set([
         ...snapshot.data.actions.filter(a => a.outcome).map(a => a.id),
         ...snapshot.data.goals.flatMap(g => g.results.map(r => r.id)),
         ...snapshot.data.memories.map(m => m.id),
-        ...snapshot.data.messages.filter(m => m.role === "user").map(m => m.id),
-        ...(!background ? [userMessageId] : []),
+        ...snapshot.data.messages.filter(m => m.role === "user" && m.channel !== "job" && (!m.origin || m.origin === "user")).map(m => m.id),
+        ...(!externalContext ? [userMessageId] : []),
       ]);
       const turn = {
         ...context,
         currentMessageId: userMessageId,
+        inputOrigin: externalContext ? "connected" : "user",
+        reportedSourceIds: [...reportedSourceIds],
         channel,
-        workspace: { ...snapshot.data, messages: undefined, goals: snapshot.data.goals.map(g => ({ ...coachingGoal(g), assessment: g.assessment ? { ...g.assessment, evidenceKey: undefined } : undefined })) },
+        workspace: { ...snapshot.data, messages: undefined, learning: undefined, decisions: undefined, memories: context.confirmedContext, goals: snapshot.data.goals.map(g => ({ ...coachingGoal(g), assessment: g.assessment ? { ...g.assessment, evidenceKey: undefined } : undefined })) },
         conversationId: conversation.id,
         pendingProposals: pendingProposals.map(coachingProposal),
         connectedCalendars,
         commandCatalog,
         evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)),
         coachingFramework: COACHING_FRAMEWORK, behavioralResearch, researchLibrary,
+        researchClaims: RESEARCH_CLAIMS.filter(claim => claim.review.status === "source-checked" && claim.methodIds.some(id => context.program.enabledMethods.includes(id))),
         ...(background ? { automaticAssessment: true, task: "assess-plan", instruction: "Assess saved evidence without inventing a user report. Propose substantive changes; return nextAssessmentAt as a future time or null when waiting for user input/new evidence. Do not confirm proposals, record outcomes, or save personal memories." } : {}),
       };
       const researchSearches: ResearchSearch[] = [];
       let planningChecks: unknown;
-      const researchSources = [...methodSources().filter((source) => context.program.enabledMethods.includes(source.id.slice(7))), ...synthesisSources()];
+      const researchSources = [...methodSources().filter((source) => context.program.enabledMethods.includes(source.id.slice(7))), ...synthesisSources(), ...RESEARCH_CLAIMS.filter(c => c.review.status === "source-checked").map(c => c.source)];
       const methodologyReadings: ReturnType<typeof readBehavioralResearch> = [];
       let methodologyRounds = 0;
       let result!: z.infer<typeof replySchema>;
       let validationError: string | undefined;
       let repairs = 0;
       let ready = false;
+      let recommendations: Recommendation[] = [];
       for (let attempt = 0; attempt < 8; attempt++) {
-        result = await this.runner(
+        try {
+          result = await this.runner(
           config,
-          instructions + planningInstructions + adaptiveInstructions + behavioralMethodologyInstructions,
+          instructions + planningInstructions + adaptiveInstructions + behavioralMethodologyInstructions + groundingInstructions,
           {
             ...turn,
             methodologyReadings,
@@ -611,8 +688,14 @@ export class Service {
               : {}),
           },
           replySchema,
-          8500,
+          12000,
         );
+        } catch (error) {
+          const issue = error instanceof Error ? error.message : "";
+          if (!/incomplete|invalid response/i.test(issue) || ++repairs >= 3) throw error;
+          validationError = "Return one compact, complete response matching the schema. Do not repeat supplied records or research metadata. The previous response could not be parsed; no proposed changes were saved.";
+          continue;
+        }
         try {
           if (result.planCheck.length) {
             if (planningChecks || result.changes.length || result.confirmProposalId || result.researchQueries.length || result.methodologyRequests.length)
@@ -649,7 +732,7 @@ export class Service {
             )
           )
             throw new Error("Use only enabled methods.");
-          if (background) {
+          if (externalContext) {
             if (result.confirmProposalId) throw new Error("Automatic assessments cannot approve proposals.");
             if (result.nextAssessmentAt && Date.parse(result.nextAssessmentAt) <= Date.now())
               throw new Error("Choose a future nextAssessmentAt or null when waiting for new input.");
@@ -672,6 +755,7 @@ export class Service {
             if (creating || values.adaptive || (revising && result.execution === "propose")) {
               if (!values.adaptive) throw new Error("Include an adaptive plan: choose a concrete planning window, executable steps, feedback and assessment timing.");
               values.adaptive = adaptivePlanSchema.parse(values.adaptive);
+              if (values.adaptive.reasoning) attachReasoningSources(values.adaptive.reasoning);
               if (values.adaptive.forecast) throw new Error("Omit legacy forecast settings. Define the controllable inputs and learning experiment instead.");
               for (const step of values.adaptive.steps) {
                 if (step.recurrence && step.recurrence.everyDays % 7 === 0 && (step.recurrence.weekdays?.length ?? 0) > 1)
@@ -679,16 +763,12 @@ export class Service {
               }
               if (values.adaptive.experiment?.comparisonSourceIds.some((id: string) => !sourceIds.has(id)))
                 throw new Error("A starting comparison must cite existing source records or the actual current message ID; keep unreported history unknown.");
-              if (values.adaptive.steps.some((step: { type: string }) => step.type === "behavior") && !values.adaptive.experiment)
-                throw new Error("A repeating plan needs a learning experiment: hypothesis, inputStepIds, outcomeSignal, comparison, decisionRule, and alternativeExplanations. Keep execution and outcome evidence distinct.");
             }
             if (creating || result.execution === "propose" || values.basis) {
-              if (!researchSearches.length)
-                throw new Error("Investigate the recommendation first using researchQueries, then include basis in the goal or plan command.");
               if (!values.basis) throw new Error(`The ${command.entity} command for ${command.parentId ?? command.id ?? "the new goal"} needs its own basis (interpretation, strategy, alternatives, evidence, assumptions and review). Include it in every recommended goal/plan change, not just another command in the bundle.`);
               const basis = planningBasisSchema.parse(values.basis);
               const available = [...researchSources, ...researchSearches.flatMap((search) => search.sources)];
-              validateBehavioralReasoning(values.adaptive?.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(available.map(source => source.id)) });
+              validateBehavioralReasoning(values.adaptive?.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(available.map(source => source.id)), requireGrounding: true });
               const used = [...new Set([...basis.evidence.map((e) => e.sourceId), ...(values.adaptive?.reasoning.researchSourceIds ?? [])])];
               if (used.some((id) => !available.some((source) => source.id === id)))
                 throw new Error("Every research citation must use a source ID retrieved in this turn. Do not invent citations.");
@@ -723,10 +803,16 @@ export class Service {
           for (const insight of result.insights) {
             const loop = insight.learning;
             if (!loop) {
+              if (insight.status === "Reported" && insight.sourceIds.some(id => !reportedSourceIds.has(id)))
+                throw new Error("Reported personal observations need actual user-reported evidence; connected events and planned work are context only.");
               if (insight.status === "To test") throw new Error("A tentative personal explanation needs insights.learning with a behavioral framework and testable rationale.");
               continue;
             }
-            const reasoning = validateBehavioralReasoning(loop.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(literature.map(source => source.id)) });
+            if (loop.reasoning) {
+              attachReasoningSources(loop.reasoning);
+              loop.researchSourceIds = [...new Set([...loop.researchSourceIds, ...loop.reasoning.researchSourceIds])];
+            }
+            const reasoning = validateBehavioralReasoning(loop.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(literature.map(source => source.id)), requireGrounding: true });
             if (reasoning.researchSourceIds.some(id => !loop.researchSourceIds.includes(id)))
               throw new Error("Include the behavioral rationale’s research IDs in the learning record so its sources are retained.");
             if (loop.researchSourceIds.some(id => !literature.some(source => source.id === id)))
@@ -736,14 +822,39 @@ export class Service {
             if (loop.previousInsightId && !snapshot.data.decisions.some(d => d.insights?.some((_, index) => `${d.id}-${index}` === loop.previousInsightId)))
               throw new Error("Link a learning loop only to an existing insight ID from a previous decision.");
           }
-          if (result.changes.some((change) => JSON.parse(change.values).basis) || result.insights.some(insight => insight.learning)) {
+          for (const correction of result.evidenceCorrections) {
+            if (externalContext || !reportedSourceIds.has(correction.sourceId) || correction.sourceId === userMessageId || correction.replacementSourceIds.some(id => !reportedSourceIds.has(id)))
+              throw new Error("An evidence correction needs an earlier personal source and the actual user report that corrects it. Connected context cannot correct a personal fact.");
+          }
+          recommendations = result.recommendation ? [result.recommendation] : [];
+          for (const [index, change] of result.changes.entries()) {
+            const values = JSON.parse(change.values);
+            const reasoning = values.adaptive?.reasoning;
+            if (!reasoning || recommendations.some(r => r.changeIndexes.includes(index))) continue;
+            recommendations.push({ action: values.action ?? values.adaptive.steps[0].title, observation: reasoning.barrier.explanation,
+              interpretation: reasoning.mechanism, expectedEffect: reasoning.prediction, reasoning,
+              goalIds: [change.entity === "goal" ? change.id! : change.parentId!], sourceIds: reasoning.barrier.sourceIds, changeIndexes: [index] });
+          }
+          for (const recommendation of recommendations) {
+            attachReasoningSources(recommendation.reasoning);
+            validateBehavioralReasoning(recommendation.reasoning, { enabledMethods: context.program.enabledMethods, reportedSourceIds, researchSourceIds: new Set(literature.map(source => source.id)), requireGrounding: true });
+            if (recommendation.sourceIds.some(id => !reportedSourceIds.has(id)) || recommendation.changeIndexes.some(index => index >= result.changes.length))
+              throw new Error("Recommendation observations must cite eligible reports and actual changes.");
+          }
+          {
             const reviewedData = applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data));
-            const review = await this.runner(config, researchReviewInstructions, {
+            if (!externalContext && !reviewedData.messages.some(m => m.id === userMessageId)) reviewedData.messages.push({ id: userMessageId, goalId: focusGoalId ?? goalId, role: "user", origin: "user", requestHash, text: message, at: new Date().toISOString(), channel });
+            correctLearningEvidence(reviewedData, result.evidenceCorrections, snapshot.data);
+            saveLearning(reviewedData, "preview-decision", result.insights, result.changes, null, false, new Date().toISOString(), recommendations);
+            const review = await this.runner(config, researchReviewInstructions + groundingReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              changes: result.changes, insights: result.insights, coachingFramework: COACHING_FRAMEWORK, behavioralResearch, methodologyReadings, evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)), researchSources: literature, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
+              recommendations, currentLearning: context.currentLearning, proposedLearning: reviewedData.learning, researchClaims: turn.researchClaims, reportedSourceIds: [...reportedSourceIds], inputOrigin: turn.inputOrigin,
+              changes: result.changes, insights: result.insights, evidenceCorrections: result.evidenceCorrections, coachingFramework: COACHING_FRAMEWORK, behavioralResearch, methodologyReadings, evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)), researchSources: literature, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
               executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...executionSummary(reviewedData, g) })),
             }, researchReviewSchema, 2200);
+            if (review.needsGrounding && !recommendations.length && !result.insights.some(i => i.learning))
+              throw new Error("The reply contains substantive advice or a personal inference. Save its recommendation with specific grounded reasoning, or ask a useful clarification without unsupported advice.");
             if (review.issues.length)
               throw new Error(`Correct the evidence or consistency issues before saving: ${JSON.stringify(review.issues)}`);
           }
@@ -833,11 +944,12 @@ export class Service {
         : attributedGoalIds.length > 1 ? "general" : focusGoalId ?? goalId;
       const decisionId = randomUUID();
       data.messages.push(
-        ...(!background ? [{
+        ...(!background && !data.messages.some(m => m.id === userMessageId) ? [{
           id: userMessageId,
           goalId: relatedGoalId,
           conversationId: conversation.id,
           role: "user" as const,
+          origin: externalContext ? "connected" as const : "user" as const,
           text: message,
           at: new Date().toISOString(),
           channel,
@@ -873,13 +985,17 @@ export class Service {
         planVersion: data.goals.find(g => g.id === relatedGoalId)?.plans.at(-1)?.version ?? 0,
         mode: "live",
         insights: result.insights,
+        recommendations,
+        researchClaims: RESEARCH_CLAIMS.filter(claim => [...recommendations.map(r => r.reasoning), ...result.insights.flatMap(i => i.learning?.reasoning ? [i.learning.reasoning] : [])].some(r => r.grounding?.some(b => b.claimId === claim.id && b.version === claim.version))),
+        evidenceRevisions: [...new Set([...recommendations.flatMap(r => [...r.sourceIds, ...r.reasoning.barrier.sourceIds]), ...result.insights.flatMap(i => [...i.sourceIds, ...(i.learning?.result?.sourceIds ?? [])])])].flatMap(id => { const source = evidenceRevision(data, id); return source ? [source] : []; }),
+        scientificReview: { at: new Date().toISOString(), provider: config.provider, model: config.model, policy: "grounded-coaching-v2", status: "checked" },
         frameworkVersion: COACHING_FRAMEWORK.version,
         methodologyReadings: methodologyReadings.map(reading => reading.id),
         researchSources: [...new Map([
           ...snapshot.data.goals.flatMap(g => g.plans.flatMap(p => p.basis?.sources ?? [])),
           ...snapshot.data.decisions.flatMap(d => d.researchSources ?? []),
           ...researchSources, ...researchSearches.flatMap(search => search.sources),
-        ].filter(source => result.insights.some(i => i.learning?.researchSourceIds.includes(source.id))).map(source => [source.id, source])).values()].slice(0, 8),
+        ].filter(source => result.insights.some(i => i.learning?.researchSourceIds.includes(source.id)) || recommendations.some(r => r.reasoning.researchSourceIds.includes(source.id))).map(source => [source.id, source])).values()].slice(0, 8),
         checks: context.checks,
         methods: result.methods,
         summary: result.summary,
@@ -905,6 +1021,7 @@ export class Service {
             channel,
             goalId,
             snapshot.data,
+            true,
           );
           proposal.conversationId = conversation.id;
           proposal.decisionId = decisionId;
@@ -912,6 +1029,11 @@ export class Service {
             .prepare("UPDATE proposals SET json=? WHERE id=?")
             .run(JSON.stringify(proposal), proposal.id);
         }
+        correctLearningEvidence(data, result.evidenceCorrections, snapshot.data);
+        saveLearning(data, decisionId, result.insights, result.changes, proposal?.id ?? null, Boolean(applyNow), new Date().toISOString(), recommendations, applyNow ? data : applyChanges(data, result.changes, dayInZone(data)));
+        reconcileLearning(data);
+        if (proposal && !applyNow)
+          this.db.sql.prepare("UPDATE proposals SET base_hash=? WHERE id=? AND user_id=?").run(fingerprint(data), proposal.id, userId);
         const revision = this.db.save(
           userId,
           data,
@@ -962,6 +1084,20 @@ export class Service {
       this.changed(userId);
       return saved;
     };
-    return background ? execute() : this.locked(userId, execute);
+    return background ? execute() : this.locked(userId, async () => {
+      try { return await execute(); }
+      catch (error) {
+        if (pendingReport && pendingConversation) {
+          const current = this.db.snapshot(userId);
+          if (!current.data.messages.some(m => m.id === pendingReport!.id)) {
+            if (!current.data.conversations.some(c => c.id === pendingConversation!.id)) current.data.conversations.push(pendingConversation);
+            current.data.messages.push(pendingReport);
+            this.db.transaction(() => this.db.save(userId, current.data, current.revision, channel, "Preserved your message while coaching was unavailable."));
+            this.changed(userId);
+          }
+        }
+        throw error;
+      }
+    });
   }
 }

@@ -58,7 +58,7 @@ test("the connected phones share an animated check-in and booking, with pause an
     await page.clock.runFor(500);
     return demo.getAttribute("data-phase");
   }, { intervals: [50] }).toBe(phase);
-  await expect(demo.locator(".phone-messages")).toContainText("Yes, book 8:30.");
+  await expect(demo.locator(".phone-messages")).toContainText("Yes, book 12:30.");
   await expect(demo.locator(".calendar-focus-block")).toContainText("Added by Adler");
   await expect(demo.locator(".connection-phone-screen").first()).toHaveCSS("font-family", /apple-system/);
   await expect(demo.locator(".claude-answer p").first()).toHaveCSS("font-family", /Georgia/);

@@ -10,6 +10,8 @@ import type { CoachInsight } from "./program-types";
 import type { ResearchSource } from "../shared/planning";
 import { recordLink } from "../shared/record-links";
 import "./learning-loops.css";
+import { LearningDashboard, type LearningControl } from "./LearningDashboard";
+import { currentLearningVersion, type LearningRecord } from "../shared/learning";
 
 export interface InsightRow {
   id: string;
@@ -41,7 +43,7 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
     <header className="insights-overview-heading"><div><span className="section-kicker">WHAT SHAPES YOUR PLAN</span><h2>What we’re learning about you</h2></div><p>{rows.length} {rows.length === 1 ? "observation" : "observations"} · {feedbackCount} {feedbackCount === 1 ? "experiment" : "experiments"} with feedback</p></header>
     {rows.map(row => <details className="insight-row learning-loop" id={`learning-${row.id}`} key={row.id}>
       <summary className="insight-overview-summary">
-        <span className="insight-overview-finding"><span className="insight-kind">{row.learning?.insight ? "Working insight" : row.learning || row.status === "To test" ? "Hypothesis" : "Your observation"}</span><small>{row.goalTitle} · {formatDate(row.date)}</small><strong>{row.learning?.insight ?? row.learning?.hypothesis ?? row.finding}</strong><span className="insight-status">{row.learning?.result ? "Feedback received" : row.learning ? "Testing" : row.status === "To test" ? "To test" : "Reported by you"} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</span></span>
+        <span className="insight-overview-finding"><span className="insight-kind">{row.learning?.insight ? "Working insight" : row.learning || row.status === "To test" ? "Hypothesis" : "Your observation"}</span><small>{row.goalTitle} · {formatDate(row.date)}</small><strong>{row.learning?.insight ?? row.learning?.hypothesis ?? row.finding}</strong><span className="insight-status">{row.learning?.result ? "Feedback received" : row.learning ? "Earlier hypothesis" : row.status === "To test" ? "To test" : "Reported by you"} · {row.sources.length} {row.sources.length === 1 ? "source" : "sources"}</span></span>
         <ArrowRight className="insight-implication-arrow" size={18} aria-hidden="true" />
         <span className="insight-overview-implication"><small>{row.implicationLabel}</small><span>{row.implication}</span></span>
         <span className="insight-open-label"><span>View evidence & reasoning</span><ChevronDown size={17} aria-hidden="true" /></span>
@@ -149,7 +151,16 @@ function resolveSource(id: string, data: Data): InsightRow["sources"][number] {
   };
 }
 export function Insights() {
-  const { data } = useStore();
+  const { data, flush, refresh } = useStore();
+  const [busy, setBusy] = useState(false);
+  async function control(record: LearningRecord, action: LearningControl) {
+    setBusy(true); setError("");
+    try {
+      await flush();
+      await api("learning", { id: record.id, version: currentLearningVersion(record).version, action, requestId: crypto.randomUUID() });
+      await refresh();
+    } catch (error) { setError((error as Error).message); } finally { setBusy(false); }
+  }
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [error, setError] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -163,6 +174,7 @@ export function Insights() {
   const rows: InsightRow[] = data.decisions
     .slice()
     .reverse()
+    .filter(decision => !(data.learning ?? []).some(record => record.versions.some(version => version.decisionId === decision.id) || record.reviews.some(review => review.decisionId === decision.id)))
     .flatMap((decision) =>
       (decision.insights ?? []).map((insight, i) => {
         const proposal = proposals.find((p) => p.decisionId === decision.id);
@@ -278,12 +290,13 @@ export function Insights() {
         </select>
       </label>
       {error && <p role="alert">{error}</p>}
+      <LearningDashboard data={data} goalId={goalId} onControl={(record, action) => void control(record, action)} busy={busy} />
       {rows.length ? (
         <section aria-label="Recorded insights">
           <h2 className="chart-screen-reader">Observations and plan changes</h2>
           <InsightsMatrix rows={rows} />
         </section>
-      ) : (
+      ) : !(data.learning ?? []).some(record => goalId === "all" || record.goalIds.includes(goalId)) ? (
         <div className="panel insights-empty">
           <h2>Start with what happened.</h2>
           <p>
@@ -292,7 +305,7 @@ export function Insights() {
           </p>
           <Link to={coachLink}>Share a check-in ↗</Link>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

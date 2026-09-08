@@ -442,27 +442,7 @@ export function GoalWorkspace({
           </div>
         </div>
       </details>
-      {data.decisions.some(
-        (d) => d.goalId === goal.id && d.insights?.length,
-      ) && (
-        <details className="journey-disclosure">
-          <summary>What Adler has noticed</summary>
-          {data.decisions
-            .filter((d) => d.goalId === goal.id && d.insights?.length)
-            .slice(-3)
-            .reverse()
-            .map((decision) => (
-              <article className="review-history-entry" key={decision.id}>
-                {decision.insights!.map((insight, i) => (
-                  <p key={i}>{insight.finding}</p>
-                ))}
-              </article>
-            ))}
-          <Link className="text-link" to={`/app/insights?goal=${goal.id}`}>
-            See observations & sources →
-          </Link>
-        </details>
-      )}
+      <Link className="text-link" to={`/app/insights?goal=${goal.id}`}>See what we’re learning about this goal →</Link>
       {editing && <EditPlan goal={goal} onClose={() => setEditing(false)} />}
       {statusChange && (
         <Modal

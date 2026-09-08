@@ -3,9 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import { todayStep } from "../shared/next-step";
 import { dateInZone } from "../shared/journey";
 import { useStore } from "./store";
-import { GoalWorkspace } from "./GoalWorkspace";
+import { GoalOverview } from "./GoalOverview";
 import { Onboarding } from "./Onboarding";
-import { WeeklyReview } from "./WeeklyReview";
 
 export function Today() {
   const { data } = useStore();
@@ -34,10 +33,12 @@ export function Today() {
           day: "numeric",
         })}
       </span>
-      {next.review && !chosenGoal ? (
-        <WeeklyReview embedded />
-      ) : goal ? (
-        <GoalWorkspace key={goal.id} focusedGoalId={goal.id} home />
+      {goal ? (
+        <>
+          <header className="today-goal-heading"><span className="section-kicker">YOUR NEXT ACTION</span><h1>{goal.title}</h1></header>
+          <GoalOverview key={goal.id} goal={goal} />
+          <nav className="today-plan-links" aria-label="More about this goal"><Link to={`/app/goals/${goal.id}`}>Plan & progress ↗</Link><Link to={`/app/insights?goal=${goal.id}`}>What we’re learning ↗</Link></nav>
+        </>
       ) : (
         <section className="next-step-card panel">
           <h1>A little space for what’s next.</h1>
@@ -47,6 +48,7 @@ export function Today() {
           </Link>
         </section>
       )}
+      {next.review && <p className="today-review-note">Ready to look back? <Link to="/app/check-in?prompt=Let’s%20review%20what%20happened%20this%20week%20and%20what%20to%20adjust.">Review your week in Check-in ↗</Link></p>}
       <details className="journey-disclosure focus-picker">
         <summary>Choose something else</summary>
         {data.goals

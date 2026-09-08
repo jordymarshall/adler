@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 export function Onboarding() {
-  const [goal, setGoal] = useState("");
+  const [goal, setGoal] = useState(() => sessionStorage.getItem("adler-first-goal") ?? "");
   const navigate = useNavigate();
   function begin(event: FormEvent) {
     event.preventDefault();
@@ -25,7 +25,7 @@ export function Onboarding() {
         <textarea
           id="first-goal"
           value={goal}
-          onChange={(e) => setGoal(e.target.value)}
+          onChange={(e) => { setGoal(e.target.value); sessionStorage.setItem("adler-first-goal", e.target.value); }}
           required
           rows={3}
           maxLength={1500}

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, ArrowLeft, ArrowRight } from "lucide-react";
 import { Footer, Logo } from "./components";
+import { RESEARCH_CLAIMS } from "../shared/research-claims";
 import { METHODS } from "./methods";
 export { Landing } from "./LandingCore";
 
@@ -35,6 +36,9 @@ export function PublicPage({
               Define a result, plan a realistic opportunity to work, record the
               outcome, and use the evidence to choose the next adjustment.
             </p>
+            <h2>From your experience to a useful change</h2>
+            <p>A suggestion connects what you reported, a specific behavioural principle and a possible effect to look for. In Check-in, you can inspect that reasoning before deciding. Insights keeps the prediction, review timing and later learning together.</p>
+            <p>Adler checks the evidence and the proposed wording before presenting a recommendation. This is an automated review, not expert certification. When an observation changes, dependent learning needs another look.</p>
             {METHODS.map((m) => (
               <section className="public-method" key={m.id}>
                 <h2>{m.name}</h2>
@@ -46,6 +50,7 @@ export function PublicPage({
                 <details>
                   <summary>Scope of the evidence</summary>
                   <p>{m.limit}</p>
+                  {RESEARCH_CLAIMS.filter(claim => claim.methodIds.includes(m.id)).map(claim => <details key={claim.id}><summary>{claim.construct}</summary><p>{claim.statement}</p><p>{claim.scope}</p><ul>{claim.limitations.map(limit => <li key={limit}>{limit}</li>)}</ul><a href={claim.source.url} target="_blank" rel="noreferrer">{claim.source.authors} ({claim.source.year}) ↗</a><p className="field-hint">{claim.role} · {claim.source.access} · {claim.locator} · version {claim.version}</p></details>)}
                 </details>
               </section>
             ))}
@@ -61,9 +66,7 @@ export function PublicPage({
             <p>
               These sources support individual methods in their studied
               settings. Adler’s combined program has not yet been evaluated for
-              effectiveness. Weekly reviews, time budgets, and the seven-day
-              freshness threshold are product choices you can inspect, not
-              claims of a scientifically optimal schedule.
+              effectiveness. Review timing, time budgets and projection ranges are practical choices with stated assumptions. The coach adapts them to the goal and available feedback; they are not scientifically optimal personal prescriptions.
             </p>
             <Link className="button primary" to="/app/settings/coaching">
               Open the editable program <ArrowRight size={15} />
@@ -149,21 +152,19 @@ export function PublicPage({
             <h2>Start with a measurable goal</h2>
             <p>
               Open <Link to="/app/goals">Goals</Link> to organize by area, tags,
-              and priority. Use the progress screen to record verified results
-              and edit dated checkpoints.
+              and priority. Use Check-in to report results or discuss a change. Each goal’s progress screen keeps its reports, timeline and assumptions together.
             </p>
             <h2>Find time and check in</h2>
             <p>
               Open <Link to="/app/calendar">Calendar</Link> to connect an
               account or schedule inside Adler. Record what happened in{" "}
-              <Link to="/app/today">Today</Link>. A work block and a result are
+              <Link to="/app/check-in">Check-in</Link>. A work block and a result are
               separate records.
             </p>
             <h2>Inspect Adler</h2>
             <p>
               The <Link to="/app/settings/coaching">coaching program</Link> contains
-              the sprint, capacity, enabled methods, context checks, and version
-              history. Choose your model and API key in AI provider settings.
+              your available time and review preferences. Methods, evidence checks and decision history are available in its advanced details. Choose your model and API key in AI provider settings.
               Use Connections to pair a phone or create an MCP token.
             </p>
             <h2>Export or start fresh</h2>

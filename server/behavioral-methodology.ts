@@ -1,6 +1,21 @@
-import { behavioralReasoningSchema } from "../shared/behavioral-reasoning.ts";
+import { behavioralReasoningSchema, type BehavioralReasoning } from "../shared/behavioral-reasoning.ts";
 import { principleIds } from "./behavioral-research.ts";
 import { METHODS } from "../src/methods.ts";
+import { RESEARCH_CLAIMS, type ResearchClaim } from "../shared/research-claims.ts";
+
+export const groundingInstructions = `
+CLAIM-LEVEL GROUNDING AND LIVE LEARNING (current contract; supersedes older search/test requirements):
+The supplied researchClaims are specific, source-checked claims from the full methodology, with versions, primary passages/locators, roles, scope and limitations. Select relevant claims BEFORE choosing the support. Use curated claims first. Search primary literature only for a material unresolved gap; new plans do not require a new search if the supplied evidence is sufficient. Record grounding=[{claimId,version,relation,application}] in every substantive behavioral reasoning record. Relations are supports, defines, motivates, limits, contradicts. A theory motivates an inference; it does not establish that the inference is true. Cite the selected claims' source IDs in researchSourceIds along with the method and selected P IDs. Actual user reports, tentative application, theory, empirical findings and product heuristics remain distinct.
+For substantive advice without plan commands, include recommendation={action,observation,interpretation,expectedEffect,goalIds,sourceIds,changeIndexes,reasoning}. Write all displayed fields directly to the person as “you”, never “User” or “the user”. Keep the recommendation short and actionable; the behavioural science row explains the mechanism, with personal fit and limits available in the deeper rationale. Each visible sentence must stay within the saved rationale. Ordinary acknowledgements, exact user edits and clarifying questions need no invented recommendation. Every generated final reply is reviewed, including advice with an empty changes array. Never evade grounding by omitting methods or changing a response category.
+For useful uncertain personal learning use insights.learning. currentLearning contains durable records across all goals and channels. A new test needs relevant goalIds, reasoning and test={change,design(observation/prospective/comparison),prediction,comparison,start(date or null),reviewAfter(date or null),reviewRule,mechanismSignal(or null),behaviorSignal,outcomeSignal(or null),alternatives}. Preserve unknown fields. Choose work, design, action size, time horizon and review conditions for this person's opportunity, meaningful output, burden and feedback delay. Observation/preferences need no test, and recurring work does not automatically require an experiment. Do not force randomization, withdrawal, crossover, fixed trial lengths or causal inference onto ordinary coaching.
+To review an existing hypothesis, include its recordId, original hypothesis and experiment, result={summary,sourceIds}, and review={exposure(unknown/not-used/used),mechanism(or null),behavior(or null),outcome(or null),confounds,decision(keep/adjust/clarify/pause/close),standing(insufficient/consistent/mixed/inconsistent),nextReviewAfter(date or null)}. Use genuinely new eligible reports. Agreement is not exposure; one check-in can report several attempts, and repeated accounts of the same attempt must not multiply exposure. Mechanism, action and ultimate outcome are separate; no feedback or untried support cannot refute the mechanism. Save a practical implication in insight and a next question in nextHypothesis without rewriting the original prediction. A new test for an existing record needs a new test object and preserves older versions. Cross-goal use supplies transfer explaining scope and uncertainty. Never create retrospective results for a newly invented prospective prediction.
+When the user corrects a premise used in a current hypothesis or plan, include evidenceCorrections=[{sourceId: the earlier personal report ID, replacementSourceIds: [the correcting report ID], reason}]. This preserves the original account but withdraws its authority for dependent learning. Do this even when asking a clarification and making no plan changes. Do not wait for a completed trial to reconsider a corrected premise. inputOrigin is authoritative. Connected/system events are context, never user reports, permission to apply changes or confirmed memories. Use currentMessageId as evidence only when inputOrigin=user. At source correction/retraction, reconsider dependent learning rather than repeating it as a personal fact. A useful plan can be held with no new experiment or recommendation. Source/model uncertainty must never be dressed up as calibrated success probability.
+`;
+
+export const groundingReviewInstructions = `
+Review the ACTUAL outgoing reply and every recommendation, reasoning record and learning review. If the user corrects a premise relied on by currentLearning, require evidenceCorrections linking the earlier source to the correction, even if the reply only asks a question. Require user-facing recommendation fields to address the person directly and keep the scientific interpretation distinct from the observation. Return needsGrounding=true whenever the outgoing text makes a substantive behavioral recommendation or personal inference without any saved grounded recommendation/plan/learning rationale, even if methods and changes are empty. No citation is needed for a faithful acknowledgement, precise user-requested edit or useful clarification. Check exact claim/version, role and source passage; check that the application is defensible and tentative where appropriate. A source-checked record is AI-assisted source verification, not expert certification or proof that Adler is effective.
+Do not require live searches when current curated claims are sufficient. Do not require an experiment just because work repeats. Keep learning proportional; observations and preferences can settle a decision. In reviews, inspect the earlier saved prediction, agreement/use, occurrence and report dates, missingness, feedback delays, meaningful behavior/output, mechanism evidence and confounds separately. A practical keep decision does not prove causality. Multiple messages about one occurrence are not independent attempts. An aggregate report of several attempts need not invent their individual dates. Never support a novel hypothesis with the same data that generated it as if this were prospective confirmation. Reject unmeasured mediators, invalid comparisons and causal personal rules from sparse associations. Scientific issues identify their affected claim/record in issue; for advice-only issues use changeIndex=0.
+`;
 
 export const behavioralMethodologyInstructions = `
 BEHAVIORAL SCIENCE IS AN INPUT TO THE RECOMMENDATION, NOT A CITATION ADDED AFTERWARD.
@@ -26,6 +41,8 @@ export function validateBehavioralReasoning(value: unknown, context: {
   enabledMethods: readonly string[];
   reportedSourceIds: Set<string>;
   researchSourceIds: Set<string>;
+  requireGrounding?: boolean;
+  claims?: readonly ResearchClaim[];
 }) {
   if (!value) throw new Error("A behavioral recommendation needs reasoning: reported barrier, enabled framework, mechanism, personal fit, prediction, review rule and limitation.");
   const reasoning = behavioralReasoningSchema.parse(value);
@@ -41,5 +58,30 @@ export function validateBehavioralReasoning(value: unknown, context: {
     throw new Error("Source behavioral barrier claims to user reports. Unknown barriers stay unknown; plans and calendar bookings are not personal evidence.");
   if (!reasoning.researchSourceIds.includes(`method:${reasoning.methodId}`) || reasoning.researchSourceIds.some(id => !context.researchSourceIds.has(id)))
     throw new Error("Cite the selected behavioral framework and actual retrieved or saved research in the rationale.");
+  if (context.requireGrounding && !reasoning.grounding?.length)
+    throw new Error("Bind the behavioural interpretation to specific versioned researchClaims in reasoning.grounding. A method name or citation ID alone is insufficient.");
+  for (const binding of reasoning.grounding ?? []) {
+    const claim = (context.claims ?? RESEARCH_CLAIMS).find(c => c.id === binding.claimId && c.version === binding.version);
+    if (!claim || claim.review.status !== "source-checked") throw new Error("Use a current, source-checked research claim and its exact version; withdrawn or invented claims are ineligible.");
+    if (binding.relation === "supports" && !claim.methodIds.includes(reasoning.methodId))
+      throw new Error("The research claim must apply to the selected method; explain any domain transfer and its limits.");
+    if (!reasoning.researchSourceIds.includes(claim.source.id)) throw new Error("Retain the primary source of each grounded claim in researchSourceIds.");
+    if (claim.role === "heuristic" && binding.relation === "supports") throw new Error("A product heuristic can motivate a design choice; it cannot supply empirical support.");
+  }
+  if (context.requireGrounding && !reasoning.grounding?.some(binding => (context.claims ?? RESEARCH_CLAIMS).some(claim => claim.id === binding.claimId && claim.version === binding.version && claim.methodIds.includes(reasoning.methodId) && !["limits", "contradicts"].includes(binding.relation))))
+    throw new Error("Ground the primary method in at least one applicable claim. Other theories can inform the inference with their role and transfer limits explained.");
   return reasoning;
+}
+
+// Resolve citation bookkeeping from the model's chosen claims; validation and
+// semantic review still decide whether those choices support its application.
+export function attachReasoningSources(reasoning: BehavioralReasoning) {
+  reasoning.researchSourceIds = [...new Set([
+    ...reasoning.researchSourceIds, `method:${reasoning.methodId}`,
+    ...(reasoning.principleIds ?? []).map(id => `adler:${id}`),
+    ...(reasoning.grounding ?? []).flatMap(binding => {
+      const claim = RESEARCH_CLAIMS.find(item => item.id === binding.claimId && item.version === binding.version);
+      return claim ? [claim.source.id] : [];
+    }),
+  ])];
 }

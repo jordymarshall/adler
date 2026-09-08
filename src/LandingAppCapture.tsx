@@ -7,14 +7,14 @@ const screens = {
   goals: { title: "Your goals", alt: "Adler’s categorized goals table with activity heatmaps, goal attainment, and projected finish dates." },
   calendar: { title: "Your calendar", alt: "Adler’s full month calendar with goal colours and highlighted plan sessions. Selecting a session shows its full details." },
   progress: { title: "Goal progress", alt: "The Read 30 books goal detail: reported books, projected finish, and a conditional scenario band with error bars extending to the goal horizon. The projection uses pages read per day and an assumed book length." },
-  insights: { title: "Insights", alt: "An overview of three personal observations and their planning implications. Open one to follow the observations, behavioural research, experiment, feedback and next question." },
+  insights: { title: "Insights", alt: "Two questions Adler is learning about, with current test status and review timing. Open the reading example to see the observation, specific research, change tried and tentative learning." },
 };
 
 export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) {
   const [expanded, setExpanded] = useState(false);
   const [paused, setPaused] = useState(false);
   const [frame, setFrame] = useState<number | null>(null);
-  const steps = screen === "progress" ? ["Goal projection", "Inputs & assumptions"] : screen === "insights" ? ["Your insights", "Evidence & test", "Feedback & learning"] : null;
+  const steps = screen === "progress" ? ["Goal projection", "Inputs & assumptions"] : screen === "insights" ? ["Learning now", "Why try this?", "What we learned"] : null;
   const { title, alt } = screens[screen];
   const point = points[screen];
   function capture(enlarged = false, detail = false, followup = false) {

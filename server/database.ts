@@ -19,6 +19,7 @@ import {
 import { EventEmitter } from "node:events";
 import { initialData, enrichData, type Data } from "../shared/workspace.ts";
 import { maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
+import { reconcileLearning } from "./learning.ts";
 
 export const digest = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -185,7 +186,11 @@ export class Database {
       .prepare("SELECT revision,json FROM state WHERE user_id=?")
       .get(userId) as { revision: number; json: string } | undefined;
     if (!row) throw new Error("Workspace not found.");
-    return { revision: row.revision, data: enrichData(JSON.parse(row.json)) };
+    const data = enrichData(JSON.parse(row.json));
+    const before = JSON.stringify({ learning: data.learning, evidenceCorrections: data.evidenceCorrections });
+    reconcileLearning(data);
+    const revision = before === JSON.stringify({ learning: data.learning, evidenceCorrections: data.evidenceCorrections }) ? row.revision : this.save(userId, data, row.revision, "system", "Reconsidered changed learning evidence.");
+    return { revision, data };
   }
   save(
     userId: string,
@@ -195,6 +200,7 @@ export class Database {
     summary: string,
   ) {
     maintainAdaptivePlans(data);
+    reconcileLearning(data);
     const result = this.sql
       .prepare(
         "UPDATE state SET revision=revision+1,json=? WHERE user_id=? AND revision=?",

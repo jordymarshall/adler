@@ -1,6 +1,8 @@
+import { evidenceRevision } from "../server/learning";
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot } from "./fixtures";
+import { seedCoaching, reviewedProposal } from "./fixtures";
 import { landingWorkspace, landingProposals, captureDate } from "../scripts/landing-workspace";
 import { dateInZone } from "../shared/journey";
 import type { Data } from "../shared/workspace";
@@ -22,7 +24,11 @@ async function example(page: Page) {
   data.goals.forEach(goal => goal.plans.forEach(plan => plan.adaptive?.steps.forEach(step => {
     if (step.recurrence?.weekdays) step.recurrence.weekdays = step.recurrence.weekdays.map(day => ((day + dayOffset) % 7 + 7) % 7);
   })));
-  await save(page, data, state.revision);
+  for (const record of data.learning ?? []) {
+    for (const version of record.versions) version.sources = version.sources.map(source => evidenceRevision(data, source.id)!);
+    for (const review of record.reviews) review.sources = review.sources.map(source => evidenceRevision(data, source.id)!);
+  }
+  await seedCoaching(page, data);
   return data;
 }
 
@@ -44,7 +50,7 @@ test("goal attainment has a full-horizon fan and its measured input evidence, se
   await expect(chart.getByRole("img", { name: /Measured pages per day/ })).toBeVisible();
   const assumptions = chart.getByRole("region", { name: "Projection assumptions" });
   await expect(assumptions.getByRole("heading")).toHaveText("What this projection assumes");
-  await expect(assumptions.locator("dt")).toContainText(["Model choice", "Future input pace", "Missing reports", "Input → outcome", "Feedback delay", "What the range means"]);
+  await expect(assumptions.locator("dt")).toContainText(["How this estimate works", "Starting from your last report", "Future work", "Gaps in the record", "How work relates to the result", "Feedback delay", "What the range means"]);
   await expect(assumptions).toContainText("No additional delay between input and outcome is assumed.");
   await expect(assumptions).toContainText("not a confidence interval or a guarantee");
   await page.setViewportSize({ width: 390, height: 844 });
@@ -76,38 +82,33 @@ test("a full month distinguishes goals and opens complete Adler event details on
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
-test("the reasoning path distinguishes evidence, hypotheses, experiments and feedback, with source links", async ({ page }) => {
+test("live learning distinguishes predictions, feedback and uncertainty with linked research", async ({ page }) => {
   await example(page);
-  await page.route("**/api/proposals", route => route.fulfill({ json: landingProposals }));
   await page.goto("/app/insights");
-  await expect(page.locator(".insight-overview-summary")).toHaveCount(3);
-  await expect(page.locator(".learning-loop[open]")).toHaveCount(0);
-  await expect(page.locator(".insight-overview-finding strong").first()).toContainText("we need more observations");
-  await expect(page.locator(".insight-kind")).toHaveText(["Working insight", "Your observation", "Your observation"]);
-  await expect(page.locator(".insight-overview-implication").first()).toContainText("In the saved plan");
-  await expect(page.locator(".insight-overview-implication").first()).toContainText("Choose a finish line");
-  await page.locator(".insight-overview-summary").first().click();
-  const loop = page.getByRole("list", { name: "Coaching reasoning from evidence to the next test" });
-  await expect(loop.getByRole("listitem")).toHaveCount(6);
-  await expect(loop.locator(".learning-stage")).toHaveText([/01OBSERVATION/, /02HYPOTHESIS/, /03TEST/, /04RESULT/, /05INFERENCE/, /06NEXT QUESTION/]);
-  await expect(loop.locator(".result-node")).toContainText("You reported completing two sessions");
-  await expect(loop.locator(".next-hypothesis-node")).toContainText("Could a smaller fallback help on crowded days?");
-  await expect(loop.locator(".behavioral-rationale summary")).toContainText("Specific goals with feedback");
-  await expect(loop.locator(".research-input-label")).toHaveText("Behavioural science informs this hypothesis");
-  await expect(loop.locator(".hypothesis-node .deduction-evidence > p")).toContainText("A specific finish criterion");
-  await loop.locator(".behavioral-rationale summary").click();
-  await expect(loop.locator(".behavioral-rationale")).toContainText("A specific finish criterion");
-  await expect(loop.locator(".behavioral-rationale")).toContainText("Two self-reports do not establish causation");
-  await loop.locator(".learning-research summary").click();
-  await expect(loop.locator(".learning-research a")).toHaveCount(3);
-  await loop.locator(".result-node summary").first().click();
-  await expect(loop.getByRole("link", { name: "Open result" })).toHaveAttribute("href", /progress#record-demo-portfolio-/);
+  await expect(page.locator(".learning-record")).toHaveCount(2);
+  await expect(page.locator(".learning-record[open]")).toHaveCount(0);
+  await expect(page.locator(".learning-record > summary").first()).toContainText("Keep your book beside your lunch spot");
+  await page.locator(".learning-record > summary").first().click();
+  const path = page.getByRole("list", { name: "From your experience to a useful change" });
+  await expect(path.locator(":scope > li")).toHaveCount(4);
+  await expect(path).toContainText("Two reported reading sessions, 20 pages each");
+  await expect(path).toContainText("Both days had a quiet lunch break");
+  const reasoning = path.locator(".behavioral-rationale");
+  await reasoning.locator(":scope > summary").click();
+  await expect(reasoning).toContainText("not a proven personal rule");
+  await reasoning.locator(".claim-evidence > details > summary").first().click();
+  await expect(reasoning.locator(".claim-evidence")).toContainText("Application here");
+  await expect(reasoning.locator(".claim-evidence a").first()).toHaveAttribute("href", /^https:/);
+  await expect(path.locator(".learning-review a").first()).toHaveAttribute("href", /progress#record-reading-/);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await page.getByRole("combobox").selectOption("reading");
-  await expect(page.locator(".insight-overview-summary")).toHaveCount(1);
-  await expect(page.locator(".insight-overview-summary")).toContainText("book is already beside my lunch spot");
-  await page.goto("/app/insights#learning-learned-rhythm-0");
-  await expect(page.locator("#learning-learned-rhythm-0")).toHaveAttribute("open", "");
+  await expect(page.locator(".learning-record")).toHaveCount(1);
+  await page.goto("/app/insights#record-reading-lunch");
+  await expect(page.locator("#record-reading-lunch")).toHaveAttribute("open", "");
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.locator("#record-reading-lunch > summary")).toContainText("Paused");
+  await page.reload();
+  await expect(page.locator("#record-reading-lunch > summary")).toContainText("Paused");
 });

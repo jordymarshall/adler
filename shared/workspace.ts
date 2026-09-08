@@ -1,7 +1,9 @@
+import { planNeedsReview } from "./learning.ts";
 import { dateInZone } from "./journey.ts";
 import type { PlanningBasis } from "./planning.ts";
 import { materializePlan, type AdaptivePlan, type AssessmentState } from "./adaptive-plan.ts";
 import type { Forecast } from "./forecast.ts";
+import type { EvidenceCorrection, LearningRecord } from "./learning.ts";
 import type {
   Checkpoint,
   CoachDecision,
@@ -119,6 +121,8 @@ export interface Conversation {
   createdAt: string;
 }
 export interface Message {
+  origin?: "user" | "connected" | "system";
+  requestHash?: string;
   id: string;
   goalId: string;
   role: "user" | "coach";
@@ -143,6 +147,8 @@ export interface Review {
 }
 export interface Data {
   schema: 1;
+  learning?: LearningRecord[];
+  evidenceCorrections?: EvidenceCorrection[];
   goals: Goal[];
   actions: Action[];
   messages: Message[];
@@ -199,6 +205,8 @@ export function resultLabel(goal: Goal) {
 export function initialData(): Data {
   return {
     schema: 1,
+    learning: [],
+    evidenceCorrections: [],
     goals: [],
     actions: [],
     messages: [],
@@ -278,6 +286,7 @@ export function currentProgram(data: Data) {
 export function startGoal(data: Data, goalId: string) {
   const goal = data.goals.find((g) => g.id === goalId);
   if (!goal || goal.status !== "Draft") return;
+  if (planNeedsReview(data, goal)) throw new Error("This plan relies on corrected evidence. Review the update in Check-in before starting, or edit the plan to reflect your choice.");
   goal.status = "Active";
   goal.startDate = dateInZone(data.timeZone);
   const program = currentProgram(data);
@@ -359,7 +368,20 @@ export function applyPlan(
   };
   if (plan.adaptive) {
     plan.adaptive = structuredClone(plan.adaptive);
-    if (!changes.adaptive) Object.assign(plan.adaptive.steps[0], { title: changes.action, criterion: changes.criterion, cue: changes.timing });
+    if (!changes.adaptive) {
+      const meaningChanged = changes.action !== previous.action || changes.criterion !== previous.criterion;
+      const supportChanged = meaningChanged || changes.timing !== previous.timing;
+      Object.assign(plan.adaptive.steps[0], { title: changes.action, criterion: changes.criterion, cue: changes.timing });
+      if (supportChanged) {
+        delete plan.adaptive.reasoning;
+        delete plan.adaptive.experiment;
+        plan.basis = undefined;
+      }
+      if (meaningChanged) {
+        delete plan.adaptive.projection;
+        delete plan.adaptive.steps[0].measure;
+      }
+    }
     const first = plan.adaptive.steps[0];
     Object.assign(plan, { action: first.title, criterion: first.criterion, timing: first.cue, durationMinutes: first.durationMinutes });
   }

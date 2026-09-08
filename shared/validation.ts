@@ -1,6 +1,8 @@
 import { planningBasisSchema, researchSearchSchema, researchSourceSchema } from "./planning.ts";
 import { z } from "zod";
-import { behavioralReasoningSchema } from "./behavioral-reasoning.ts";
+import { behavioralReasoningSchema, recommendationSchema } from "./behavioral-reasoning.ts";
+import { evidenceCorrectionSchema, evidenceRevisionSchema, learningRecordSchema, learningReviewInputSchema, learningTestSchema } from "./learning.ts";
+import { researchClaimSchema } from "./research-claims.ts";
 import type { Data, Goal, Action } from "./workspace.ts";
 import { reactionTypes } from "./workspace.ts";
 import { METHODS } from "../src/methods.ts";
@@ -179,6 +181,11 @@ export const reviewSchema = z
 export const insightSchema = z
   .object({
     learning: z.object({
+      recordId: z.string().min(1).max(150).optional(),
+      goalIds: z.array(id).min(1).max(10).optional(),
+      transfer: z.string().trim().min(1).max(1800).optional(),
+      test: learningTestSchema.optional(),
+      review: learningReviewInputSchema.optional(),
       reasoning: behavioralReasoningSchema.optional(),
       hypothesis: z.string().trim().min(1).max(1800),
       experiment: z.string().trim().min(1).max(1800),
@@ -196,6 +203,10 @@ export const insightSchema = z
   .strict();
 const decisionSchema = z
   .object({
+    recommendations: z.array(recommendationSchema).max(8).optional(),
+    researchClaims: z.array(researchClaimSchema).max(24).optional(),
+    evidenceRevisions: z.array(evidenceRevisionSchema).max(100).optional(),
+    scientificReview: z.object({ at: z.iso.datetime(), provider: text, model: text, policy: text, status: z.literal("checked") }).strict().optional(),
     id,
     date: text,
     goalId: z.string(),
@@ -264,6 +275,8 @@ export const automationSchema = z
 const workspaceSchema = z
   .object({
     schema: z.literal(1),
+    learning: z.array(learningRecordSchema).max(1000).default([]),
+    evidenceCorrections: z.array(evidenceCorrectionSchema).max(2000).default([]),
     goals: z.array(goalSchema).max(100),
     actions: z.array(actionSchema).max(10000),
     messages: z
@@ -273,6 +286,8 @@ const workspaceSchema = z
             id,
             goalId: text,
             role: z.enum(["user", "coach"]),
+            origin: z.enum(["user", "connected", "system"]).optional(),
+    requestHash: z.string().max(100).optional(),
             text,
             decisionId: id.optional(),
             conversationId: id.optional(),

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register, save, snapshot } from "./fixtures";
+import { register, save, seedCoaching, snapshot } from "./fixtures";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
 import { addDays, dateInZone } from "../shared/journey";
 import { weekStart } from "../shared/goal-execution";
@@ -8,7 +8,6 @@ import { type Outcome } from "../shared/workspace";
 
 test("weekly completion lines distinguish zero from unknown and retain the reports behind a week", async ({ page }) => {
   await register(page);
-  const state = await snapshot(page);
   const today = dateInZone("UTC");
   const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
   const monday = weekStart(today);
@@ -17,7 +16,7 @@ test("weekly completion lines distinguish zero from unknown and retain the repor
     { offset: -14 }, { offset: -7, outcome: "Didn’t happen" }, { offset: 0, outcome: "Done" }, { offset: 7 },
   ];
   data.actions = records.map((record, index) => ({ id: `report-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points", criterion: "Five points are written", timing: "After breakfast", date: addDays(monday, record.offset), planVersion: 1, outcome: record.outcome, history: [] }));
-  await save(page, data, state.revision);
+  await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   const chart = page.locator(".weekly-actions");
   await expect(chart.locator(".execution-metric")).toHaveText("Action completion (%)");
@@ -41,7 +40,6 @@ test("goals use a full-width categorized table and show reporting coverage witho
   page,
 }) => {
   await register(page);
-  const state = await snapshot(page);
   const today = dateInZone("UTC");
   const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
   data.goals[0].measure = {
@@ -61,7 +59,7 @@ test("goals use a full-width categorized table and show reporting coverage witho
       label: "Three published",
     },
   ];
-  await save(page, data, state.revision);
+  await seedCoaching(page, data);
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto("/app/goals");
   await expect(page.locator(".goal-table-row")).toHaveCount(1);
@@ -208,7 +206,7 @@ test("landing keeps the floating scroll hero, five chapters, shared goal plan, a
   expect(phoneRatio).toBeGreaterThan(1.8);
   expect(phoneRatio).toBeLessThan(2);
   await connections.getByRole("button", { name: "Try the example text check-in" }).click();
-  await expect(connections.locator(".phone-messages")).toContainText("check how it feels after two sessions");
+  await expect(connections.locator(".phone-messages")).toContainText("review the cue after your next few reports");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");

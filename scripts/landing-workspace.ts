@@ -3,6 +3,9 @@ import { addDays } from '../shared/journey.ts';
 import { demoGoal } from './portfolio-goal.ts';
 import type { Proposal } from '../server/service.ts';
 import { synthesisSources } from "../server/behavioral-research.ts";
+import { RESEARCH_CLAIMS } from "../shared/research-claims.ts";
+import { evidenceRevision } from "../server/learning.ts";
+import type { BehavioralReasoning } from "../shared/behavioral-reasoning.ts";
 import { methodSources } from '../server/research.ts';
 
 export const captureDate = '2026-10-17T16:00:00-04:00';
@@ -57,39 +60,30 @@ export function landingWorkspace(): Data {
     { id: 'polishing', date: '2026-10-15', text: 'I keep editing the same paragraph when I have no clear stopping point.' },
     { id: 'book-cue', date: '2026-10-16', text: 'I read more often when I leave my book beside my lunch spot.' },
   ];
-  data.decisions = [{ id: 'learned-rhythm', date: '2026-10-16', goalId: portfolio.id, programVersion: 1, planVersion: 1, mode: 'live', checks: [], methods: ['implementation-intentions'], summary: 'Keep the cue that helped. Test a smaller finish line.', status: 'Accepted', insights: [
-    { finding: 'A familiar cue makes it easier to start.', status: 'Reported', sourceIds: ['breakfast-cue', `${portfolio.id}-2026-10-15`], changeIndexes: [0] },
-    { finding: 'A clear stopping point may help with repeated polishing.', status: 'To test', sourceIds: ['polishing'], changeIndexes: [1] },
-    { finding: 'Keeping the book nearby helped you read.', status: 'Reported', sourceIds: ['book-cue'], changeIndexes: [2] },
-  ] }];
-  data.memories.find(m => m.id === 'polishing')!.date = '2026-10-05';
-  data.memories.find(m => m.id === 'breakfast-cue')!.date = '2026-10-01';
-  data.actions.find(a => a.id === `${portfolio.id}-2026-10-15`)!.note = 'I used the finish line, stopped polishing, and left a note for next time.';
-  const decision = data.decisions[0];
-  decision.methods = ['goal-definition', 'barriers', 'review'];
-  decision.frameworkVersion = 'besci-coaching-v1';
-  decision.researchSources = [...methodSources(), ...synthesisSources()].filter(source => ['method:goal-definition', 'adler:P3', 'adler:P4'].includes(source.id)).map(source => ({ ...source, retrievedAt: new Date(captureDate).toISOString() }));
-  decision.insights = [{ finding: 'I keep editing the same paragraph when I have no clear stopping point.', status: 'Reported', sourceIds: ['polishing', 'breakfast-cue'], changeIndexes: [1], learning: {
-    reasoning: {
-      principleIds: ['P3', 'P4'], goalRoute: 'session', ruleExceptions: ['A drafting session uses a chosen finish criterion, not a daily habit or automaticity threshold.'],
-      barrier: { domain: 'uncertain', status: 'tentative', explanation: 'You report repeated editing without a stopping point. That does not establish a capability or motivation problem.', sourceIds: ['polishing'] },
-      methodId: 'goal-definition', researchSourceIds: ['method:goal-definition', 'adler:P3', 'adler:P4'],
-      mechanism: 'A specific finish criterion can make the next action and its feedback clearer.',
-      fit: 'You already chose the drafting work. A stopping criterion addresses the ambiguity you reported without prescribing how to write.',
-      prediction: 'You can stop at the chosen finish line and identify a next step, instead of repeatedly polishing the same paragraph.',
-      reviewRule: 'Keep the finish criterion if your reports show it helps you move on. If not, inspect the obstacle before increasing the workload.',
-      limitation: 'Two self-reports do not establish causation; available time or draft difficulty may also have changed.',
-    },
-    hypothesis: 'A clear stopping point could reduce repeated polishing.',
-    experiment: 'Choose a finish line before opening the draft. Work for 25 minutes, then leave a note for next time.',
-    result: { summary: 'You reported completing two sessions. In the second, the finish line helped you stop polishing and leave a next step.', sourceIds: [`${portfolio.id}-2026-10-13`, `${portfolio.id}-2026-10-15`] },
-    insight: 'In two reported sessions, you finished the work. In one, you explicitly linked stopping to the finish line; we need more observations.', nextHypothesis: 'Could a smaller fallback help on crowded days?', previousInsightId: null,
-    researchSourceIds: ['method:goal-definition', 'adler:P3', 'adler:P4'],
-  } }];
-  decision.insights.push(
-    { finding: 'Starting after breakfast works better for me than leaving it until the evening.', status: 'Reported', sourceIds: ['breakfast-cue'], changeIndexes: [0] },
-    { finding: 'I read more often when my book is already beside my lunch spot.', status: 'Reported', sourceIds: ['book-cue'], changeIndexes: [2] },
-  );
+  data.memories.find(memory => memory.id === 'book-cue')!.text = 'I forget to pick up my book after lunch, even when I have time.';
+  data.memories.find(memory => memory.id === 'book-cue')!.date = '2026-10-09';
+  data.memories.find(memory => memory.id === 'polishing')!.date = '2026-10-10';
+  const claims = RESEARCH_CLAIMS.filter(claim => ['claim:implementation-if-then', 'claim:goal-specific-challenging'].includes(claim.id));
+  const learningExamples = [
+    { id: 'reading-lunch', goalId: 'reading', observationId: 'book-cue', method: 'implementation', principle: 'P2', claim: claims.find(claim => claim.id === 'claim:implementation-if-then')!, hypothesis: 'A visible book may make it easier to begin after lunch.', change: 'Keep your book beside your lunch spot.', mechanism: 'An if–then plan links a familiar cue to a chosen action. Leaving the book nearby is a practical way to make that cue easier to notice.', prediction: 'You notice the book and begin reading after lunch when there is time.', reviewAfter: '2026-10-22' },
+    { id: 'writing-finish', goalId: portfolio.id, observationId: 'polishing', method: 'goal-definition', principle: 'P3', claim: claims.find(claim => claim.id === 'claim:goal-specific-challenging')!, hypothesis: 'A chosen stopping point may help you move beyond repeated polishing.', change: 'Choose one finish line before opening the draft.', mechanism: 'Specific goals can direct attention and make feedback clearer. A stopping criterion is a tentative application to the repeated polishing you described.', prediction: 'You can stop at your chosen criterion and leave a next step.', reviewAfter: '2026-10-20' },
+  ];
+  data.decisions = [];
+  data.learning = learningExamples.map((example, index) => {
+    const observation = data.memories.find(memory => memory.id === example.observationId)!;
+    const reasoning: BehavioralReasoning = {
+      principleIds: [example.principle], goalRoute: index === 0 ? 'habit-shaped' : 'session', ruleExceptions: [],
+      barrier: { domain: 'uncertain', status: 'tentative', explanation: observation.text, sourceIds: [observation.id] },
+      methodId: example.method, researchSourceIds: [`method:${example.method}`, `adler:${example.principle}`, example.claim.source.id],
+      mechanism: example.mechanism, fit: example.hypothesis, prediction: example.prediction,
+      reviewRule: 'Review whether the change was used and whether it helped you begin or stop as intended. Keep the amount of useful work visible too.',
+      limitation: 'This is a possible explanation, not a proven personal rule. Available time and the difficulty of the work can also change.',
+      grounding: [{ claimId: example.claim.id, version: example.claim.version, relation: 'motivates', application: example.mechanism }],
+    };
+    const decisionId = `example-${example.id}`;
+    data.decisions.push({ id: decisionId, date: '2026-10-12', goalId: example.goalId, programVersion: 1, planVersion: 1, mode: 'live', checks: [], methods: [example.method], summary: example.change, status: 'Accepted', researchClaims: [example.claim], researchSources: [...methodSources(), ...synthesisSources(), ...claims.map(claim => claim.source)].filter(source => reasoning.researchSourceIds.includes(source.id)) });
+    return { id: example.id, goalIds: [example.goalId], state: index === 0 ? 'reviewed' : 'agreed', standing: index === 0 ? 'consistent' : 'untested', activeVersion: 1, versions: [{ version: 1, goalIds: [example.goalId], decisionId, at: '2026-10-12T12:00:00Z', observation: observation.text, hypothesis: example.hypothesis, reasoning, sources: [evidenceRevision(data, observation.id)!], test: { change: example.change, design: 'prospective', prediction: example.prediction, comparison: 'Compare your next reports with the starting difficulty you described; circumstances are not controlled.', start: '2026-10-12', reviewAfter: example.reviewAfter, reviewRule: reasoning.reviewRule, mechanismSignal: 'Whether you noticed the cue or stopping point.', behaviorSignal: index === 0 ? 'Whether you began reading, and how many pages you read.' : 'Whether you moved on at your chosen stopping point.', inputStepIds: [`${example.goalId}-session`], outcomeSignal: index === 0 ? 'Books finished may take longer to change.' : null, alternatives: ['Available time changed.', 'This week’s work was easier.'] }, transfer: null, proposalId: null }], reviews: index === 0 ? [{ id: 'reading-first-review', version: 1, decisionId, at: '2026-10-16T18:00:00Z', sources: ['reading-2026-10-13', 'reading-2026-10-15'].map(id => evidenceRevision(data, id)!), summary: 'You reported reading 20 pages on two days. On one day, seeing the book helped you remember to begin.', exposure: 'used', mechanism: 'You linked noticing the book to starting on one occasion.', behavior: 'Two reported reading sessions, 20 pages each.', outcome: null, confounds: ['Both days had a quiet lunch break.'], decision: 'keep', standing: 'consistent', nextReviewAfter: '2026-10-22', implication: 'Keep the book nearby while we learn whether the cue holds up on busier days.', nextQuestion: 'Does this still help when lunch is interrupted?' }] : [], events: [{ at: '2026-10-12T12:00:00Z', state: 'agreed', reason: 'You agreed to try the change.' }], invalidations: [] };
+  });
   return data;
 }
 export const landingProposals: Proposal[] = [{ id: 'rhythm-change', summary: 'Keep the helpful cues and test a clear finish line.', status: 'applied', expires: Date.parse('2026-11-01'), channel: 'web', goalId: 'demo-portfolio', decisionId: 'learned-rhythm', changes: [

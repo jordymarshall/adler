@@ -9,6 +9,8 @@ import { useStore, reactionTypes, reactionEmoji } from "./store";
 import { METHODS } from "./methods";
 import type { Proposal } from "../server/service";
 import { ProposalChanges, ProposalEssentials } from "./ProposalChanges";
+import { RecommendationReasons } from "./BehavioralRationale";
+import { currentLearningVersion, type LearningRecord } from "../shared/learning";
 export function LiveCoach() {
   const { data, flush, refresh } = useStore(),
     [params, setParams] = useSearchParams();
@@ -52,6 +54,7 @@ export function LiveCoach() {
     ) ?? goal;
   const hasPending = proposals.some((p) => p.status === "pending");
   const bottom = useRef<HTMLDivElement>(null),
+    composer = useRef<HTMLTextAreaElement>(null),
     request = useRef<{ text: string; goal: string; id: string } | null>(null);
   const messages = data.messages.filter((m) =>
     conversation
@@ -70,6 +73,8 @@ export function LiveCoach() {
     void reloadProposals().catch((e) => setError(e.message));
   }, [data]);
   useEffect(() => {
+    // A saved conversation may arrive over SSE before its reply; keep the draft until send settles.
+    if (sending) return;
     const draft = params.get("prompt") ?? sessionStorage.getItem(key) ?? "";
     setText(draft);
     if (draft) sessionStorage.setItem(key, draft);
@@ -108,12 +113,14 @@ export function LiveCoach() {
         requestId: request.current.id,
       });
       sessionStorage.removeItem(key);
+      sessionStorage.removeItem(`adler-coach-draft-${result.conversationId}`);
       setText("");
       selectChat(result.conversationId, selected);
       await refresh();
       await reloadProposals();
       request.current = null;
     } catch (e) {
+      await refresh().catch(() => {});
       setError(
         e instanceof Error
           ? e.message
@@ -137,6 +144,15 @@ export function LiveCoach() {
       setSending(false);
     }
   }
+  function discuss(summary: string, editing = false) {
+    const draft = editing ? `I’d like to edit “${summary}”. Change this: ` : `Let’s discuss “${summary}” before I decide. `;
+    setText(draft); sessionStorage.setItem(key, draft); composer.current?.focus();
+  }
+  async function chooseLearning(record: LearningRecord, action: "agree" | "decline") {
+    setSending(true); setError("");
+    try { await flush(); await api("learning", { id: record.id, version: currentLearningVersion(record).version, action, requestId: crypto.randomUUID() }); await refresh(); }
+    catch (error) { setError((error as Error).message); } finally { setSending(false); }
+  }
   return (
     <div className="coach-workspace focused-coach">
       <details className="chat-library-disclosure">
@@ -159,7 +175,7 @@ export function LiveCoach() {
         </div>
         <div className="coach-context-strip">
           {!service?.coach.configured && (
-            <Link to="/app/settings/provider">Connect your AI provider</Link>
+            <p>Your goal and draft are saved here. <Link to="/app/settings/provider">Connect an AI provider to talk with Adler ↗</Link></p>
           )}
         </div>
         <div
@@ -193,7 +209,7 @@ export function LiveCoach() {
                 {m.role === "coach" && <AdlerAvatar small />}
                 <div className="message-content">
                   <span className="message-author">
-                    {m.role === "coach" ? "Adler" : "You"}
+                    {m.role === "coach" ? "Adler" : m.origin === "connected" ? "Connected update" : "You"}
                     {m.channel && m.channel !== "web"
                       ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
                       : ""}
@@ -285,7 +301,11 @@ export function LiveCoach() {
                       </details>
                     )}
                   </div>
-                  {decision && (
+                  {decision?.recommendations?.length && !proposals.some(proposal => proposal.decisionId === decision.id && proposal.status === "pending") ? decision.recommendations.map((recommendation, index) => {
+                    const learning = data.learning?.find(record => record.versions.at(-1)?.decisionId === decision.id);
+                    return <section className="recommendation-card" key={index}><h3>{recommendation.action}</h3><RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /><div className="button-row">{learning?.state === "suggested" && !currentLearningVersion(learning).proposalId && <><button className="button primary" disabled={sending} onClick={() => void chooseLearning(learning, "agree")}>Try this</button><button className="button text-button" disabled={sending} onClick={() => void chooseLearning(learning, "decline")}>No thanks</button></>}<button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action)}>Discuss</button><button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action, true)}>Edit</button></div>{learning && <Link className="text-link" to={`/app/insights#record-${learning.id}`}>{learning.state === "suggested" ? "Review this suggestion" : "See what we’re learning"} ↗</Link>}</section>;
+                  }) : null}
+                  {decision && !decision.recommendations?.length && (
                     <details className="decision-inspector">
                       <summary>Why this suggestion?</summary>
                       <p>{decision.summary}</p>
@@ -325,10 +345,13 @@ export function LiveCoach() {
           })}
           {proposals
             .filter((p) => p.status === "pending")
-            .map((p) => (
+            .map((p) => {
+              const decision = data.decisions.find(item => item.id === p.decisionId);
+              return (
               <article className="live-proposal shared-proposal" key={p.id}>
-                <span className="section-kicker">PROPOSED CHANGES</span>
-                <h3>{p.summary}</h3>
+                <span className="section-kicker">A CHANGE TO CONSIDER</span>
+                <h3>{decision?.recommendations?.[0]?.action ?? p.summary}</h3>
+                {decision?.recommendations?.map((recommendation, index) => <div key={index}>{index > 0 && <h3>{recommendation.action}</h3>}<RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /></div>)}
                 <ProposalEssentials changes={p.changes} data={data} />
                 <details className="quiet-disclosure">
                   <summary>What changes & why</summary>
@@ -344,15 +367,17 @@ export function LiveCoach() {
                     disabled={sending || p.expires < Date.now()}
                     onClick={() => void review(p.id, "approve")}
                   >
-                    Confirm changes <Check size={15} />
+                    Try this <Check size={15} />
                   </button>
                   <button
                     className="button text-button"
                     disabled={sending}
                     onClick={() => void review(p.id, "dismiss")}
                   >
-                    Dismiss
+                    No thanks
                   </button>
+                  <button className="button text-button" disabled={sending} onClick={() => discuss(p.summary)}>Discuss</button>
+                  <button className="button text-button" disabled={sending} onClick={() => discuss(p.summary, true)}>Edit</button>
                 </div>
                 <p className="field-hint">
                   Expires {new Date(p.expires).toLocaleString()}. If your
@@ -360,7 +385,7 @@ export function LiveCoach() {
                   proposal.
                 </p>
               </article>
-            ))}
+            ); })}
           {latestApplied && !hasPending && (
             <Link
               className="button primary coach-continue"
@@ -387,6 +412,7 @@ export function LiveCoach() {
           )}
           <div>
             <textarea
+              ref={composer}
               aria-label="Message Adler"
               rows={2}
               maxLength={5000}

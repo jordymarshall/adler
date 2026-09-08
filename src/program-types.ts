@@ -1,5 +1,9 @@
-import type { BehavioralReasoning } from "../shared/behavioral-reasoning";
+import type { BehavioralReasoning, Recommendation } from "../shared/behavioral-reasoning";
 import type { ResearchSearch, ResearchSource } from "../shared/planning";
+import type { LearningTest, EvidenceRevision } from "../shared/learning";
+import type { ResearchClaim } from "../shared/research-claims";
+import type { z } from "zod";
+import type { learningReviewInputSchema } from "../shared/learning";
 export type GoalArea = "Unassigned" | "Career" | "Learning" | "Personal";
 export interface Checkpoint {
   id: string;
@@ -48,6 +52,11 @@ export interface DecisionCheck {
 }
 export interface CoachInsight {
   learning?: {
+    recordId?: string;
+    goalIds?: string[];
+    transfer?: string;
+    test?: LearningTest;
+    review?: z.infer<typeof learningReviewInputSchema>;
     reasoning?: BehavioralReasoning;
     hypothesis: string;
     experiment: string;
@@ -63,6 +72,10 @@ export interface CoachInsight {
   changeIndexes: number[];
 }
 export interface CoachDecision {
+  recommendations?: Recommendation[];
+  researchClaims?: ResearchClaim[];
+  evidenceRevisions?: EvidenceRevision[];
+  scientificReview?: { at: string; provider: string; model: string; policy: string; status: "checked" };
   frameworkVersion?: string;
   methodologyReadings?: string[];
   researchSources?: ResearchSource[];

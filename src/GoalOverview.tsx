@@ -1,3 +1,4 @@
+import { planNeedsReview } from "../shared/learning";
 import { useEffect, useState } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import { beginAction, goalStep } from "../shared/next-step";
@@ -43,6 +44,7 @@ export function GoalOverview({
   function ask(text = "") {
     navigate(`/app/check-in?goal=${goal.id}${text ? `&prompt=${encodeURIComponent(text)}` : ""}`);
   }
+  if (goal.status === "Draft" && planNeedsReview(data, goal)) return <section className="next-step-card panel"><span className="section-kicker">YOUR CONTEXT CHANGED</span><h2>Let’s update the first step.</h2><p>This suggestion relies on something you corrected. Adler can help adjust it before you begin.</p><Link className="button primary" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Please update this draft using my corrected context before I start.")}`}>Review in Check-in →</Link></section>;
   const pending = savedPending();
   if (pending?.goalId === goal.id)
     return (

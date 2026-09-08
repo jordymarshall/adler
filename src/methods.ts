@@ -25,7 +25,7 @@ export const METHODS = [
     source: "Gollwitzer & Sheeran, 2006",
     url: "https://www.socmot.uni-konstanz.de/publications/implementation-intentions-and-goal-achievement-meta-analysis-effects-and-processes",
     limit:
-      "Booking time creates an opportunity; it is not evidence that the work happened.",
+      "An if–then plan links a cue to an action. A calendar booking alone establishes neither a usable opportunity nor completed work.",
   },
   {
     id: "monitoring",
@@ -58,17 +58,17 @@ export const METHODS = [
   },
   {
     id: "retrieval",
-    name: "Practice retrieving, then check",
-    question: "Is practice testing the skill the goal requires?",
+    name: "Practice recalling what you learned",
+    question: "Does this goal involve remembering learned material?",
     action:
-      "Attempt the task without the answer, then compare your reasoning with an appropriate course source.",
+      "Try recalling studied material without rereading it. Choose a later check that matches what you want to remember.",
     example:
-      "Solve three statistics problems before opening the worked solutions, then record where the reasoning differed.",
+      "After reading a passage, write what you remember. Later, check what you can still recall.",
     evidence: "Retrieval practice",
     source: "Roediger & Karpicke, 2006",
     url: "https://pubmed.ncbi.nlm.nih.gov/16507066/",
     limit:
-      "The material and assessment need to match. Adler does not validate arbitrary generated tests.",
+      "This study tested recall of prose passages without feedback. It does not establish benefits for every skill, generated test, or feedback procedure.",
   },
   {
     id: "spacing",

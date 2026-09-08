@@ -5,9 +5,10 @@ import { initialData } from "../shared/workspace.ts";
 export function adaptiveFixture(start = "2026-09-07", end = "2026-09-11"): AdaptivePlan {
   return {
     reasoning: {
+      grounding: [{ claimId: "claim:implementation-if-then", version: "2026-09-07.1", relation: "motivates", application: "The specified cue can connect the chosen outline task to a feasible start; its usefulness for this person remains untested." }],
       principleIds: ["P2"], goalRoute: "session", ruleExceptions: ["Use a short drafting trial rather than a daily habit or automaticity target."],
       barrier: { domain: "uncertain", status: "unknown", explanation: "The person's starting obstacle is not established yet.", sourceIds: [] },
-      methodId: "implementation", researchSourceIds: ["method:implementation", "adler:P2"],
+      methodId: "implementation", researchSourceIds: ["method:implementation", "adler:P2", "curated:implementation-if-then"],
       mechanism: "An agreed cue can connect an intention to a concrete start.",
       fit: "The outline trial has a concrete first step and an after-breakfast cue; its usefulness is provisional.",
       prediction: "The person reports whether the cue made starting easier.",

@@ -1,3 +1,6 @@
+import { Database } from "../server/database";
+import { Service } from "../server/service";
+import type { Change } from "../server/commands";
 import { expect, type Page } from "@playwright/test";
 import { initialData, localDate, type Data } from "../shared/workspace";
 import { createGoal } from "../shared/validation";
@@ -93,4 +96,19 @@ export async function coachReply(page: Page, changes: import("../server/commands
     await save(page, state.data, state.revision);
     await route.fulfill({ json: { conversationId, data: state.data } });
   });
+}
+
+// Trusted, fictional coaching snapshots are test fixtures, never an HTTP bypass.
+// User edits in these tests still use save(), and server tests exercise review.
+export async function seedCoaching(page: Page, data: Data) {
+  const auth = await (await page.request.get("/api/auth")).json();
+  const db = new Database(process.env.ADLER_TEST_DATA_DIR!);
+  try { const current = db.snapshot(auth.user.id); db.save(auth.user.id, data, current.revision, "web", "Fictional browser fixture"); }
+  finally { db.close(); }
+}
+export async function reviewedProposal(page: Page, changes: Change[], summary: string) {
+  const auth = await (await page.request.get("/api/auth")).json();
+  const db = new Database(process.env.ADLER_TEST_DATA_DIR!);
+  try { return new Service(db).propose(auth.user.id, changes, summary, "web", "general", undefined, true); }
+  finally { db.close(); }
 }

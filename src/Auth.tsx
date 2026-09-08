@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useStore } from "./store";
 import { Logo } from "./components";
 export function SignIn() {
   const { authenticate } = useStore(),
-    navigate = useNavigate();
+    navigate = useNavigate(), location = useLocation();
   const [mode, setMode] = useState<"login" | "register">("register"),
     [username, setUsername] = useState(""),
     [password, setPassword] = useState(""),
@@ -16,7 +16,7 @@ export function SignIn() {
     setError("");
     try {
       await authenticate(mode, username, password);
-      navigate("/app/today");
+      navigate(location.pathname.startsWith("/app/") ? `${location.pathname}${location.search}${location.hash}` : "/app/today");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not sign in.");
     } finally {

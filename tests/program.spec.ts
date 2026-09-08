@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { register, snapshot, save, synced } from "./fixtures";
+import { seedCoaching, reviewedProposal } from "./fixtures";
 
 test("coach has only small message avatars and shows cross-channel proposals for approval", async ({
   page,
@@ -46,7 +47,7 @@ test("coach has only small message avatars and shows cross-channel proposals for
     "like",
   );
   expect((await snapshot(page)).data.memories).toHaveLength(0);
-  await page.getByRole("button", { name: "Confirm changes" }).click();
+  await page.getByRole("button", { name: "Try this" }).click();
   await expect(page.locator(".shared-proposal")).toHaveCount(0);
   expect((await snapshot(page)).data.memories[0].text).toBe(
     "I prefer mornings for drafting.",
@@ -138,6 +139,7 @@ test("local scheduling creates a synced work block without an external booking c
   expect(data.actions.some((a) => a.id === data.workBlocks[0].id)).toBeTruthy();
   expect(data.workBlocks[0].eventId).toBeUndefined();
   await page.goto("/app/settings/coaching");
+  await page.getByText("Methods, decisions & history", { exact: true }).click();
   const marker = page
     .locator(".plan-timeline")
     .getByRole("button", { name: new RegExp(data.workBlocks[0].action) });
@@ -156,15 +158,17 @@ test("program views preserve edits and show the context and settings behind each
 }) => {
   await register(page, true);
   await page.goto("/app/settings/coaching");
+  await expect(page.locator(".coaching-preferences")).toContainText("120 minutes per week");
+  await page.getByText("Methods, decisions & history", { exact: true }).click();
   await expect(page.locator(".program-roadmap")).toContainText(
     "Publish two essays",
   );
-  await page.getByRole("button", { name: "Edit program", exact: true }).click();
+  await page.getByRole("button", { name: "Edit preferences", exact: true }).click();
   await page.getByLabel("Minutes per week", { exact: true }).fill("180");
   await page
     .getByLabel("Reason for this revision", { exact: true })
     .fill("Reserve more time for the essay draft");
-  await page.getByRole("button", { name: /Save program v/ }).click();
+  await page.getByRole("button", { name: "Save preferences" }).click();
   await synced(page);
   await expect(page.locator(".program-budget h2")).toContainText("180");
   await page
@@ -192,6 +196,7 @@ test("program views preserve edits and show the context and settings behind each
     "Your first coaching decision starts here.",
   );
   await page.reload();
+  await page.getByText("Methods, decisions & history", { exact: true }).click();
   await expect(page.locator(".program-budget h2")).toContainText("180");
 });
 
@@ -290,7 +295,7 @@ test("a coordinated adjustment saves goal, approach, timing, and memory before o
   );
   expect((await snapshot(page)).data.memories).toHaveLength(0);
   await expect(page.locator(".coach-calendar-next")).toHaveCount(0);
-  await page.getByRole("button", { name: "Confirm changes" }).click();
+  await page.getByRole("button", { name: "Try this" }).click();
   await expect(adjustment).toHaveCount(0);
   const approved = (await snapshot(page)).data;
   expect(approved.goals[0].targetDate).toBe("2027-04-30");
@@ -422,11 +427,10 @@ test("a sourced insight opens its original chat and a reply links to the actual 
     text: "I prefer short sessions.",
     date: now.slice(0, 10),
   });
-  await save(page, state.data, state.revision);
+  await seedCoaching(page, state.data);
   await page.goto("/app/goals/essays/progress");
-  await page.getByText("What Adler has noticed", { exact: true }).click();
   await page
-    .getByRole("link", { name: "See observations & sources", exact: false })
+    .getByRole("link", { name: "See what we’re learning about this goal", exact: false })
     .click();
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await expect(page.getByRole("combobox")).toHaveValue("essays");
@@ -449,6 +453,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await page.getByRole("combobox").selectOption("all");
   await expect(page.locator(".insight-row")).toHaveCount(1);
+  await page.getByText("Saved context & preferences", { exact: true }).click();
   await expect(page.locator(".memory-card")).toContainText("I prefer short sessions.");
   await page.reload();
   await expect(page.getByRole("combobox")).toHaveValue("all");

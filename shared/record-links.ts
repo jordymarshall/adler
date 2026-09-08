@@ -5,6 +5,10 @@ export function resolveRecord(
   id: string,
 ): { href: string; goalId?: string } | undefined {
   const anchor = `#record-${encodeURIComponent(id)}`;
+  const learning = data.learning?.find(record => record.id === id);
+  if (learning) return { href: `/app/insights${anchor}`, goalId: learning.goalIds.length === 1 ? learning.goalIds[0] : undefined };
+  const decision = data.decisions.find(record => record.id === id);
+  if (decision) return { href: `/app/insights${anchor}`, goalId: decision.goalId };
   if (data.memories.some((m) => m.id === id))
     return { href: `/app/insights${anchor}` };
   const message = data.messages.find((m) => m.id === id);

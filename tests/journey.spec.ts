@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 import { register, save, snapshot, synced, coachReply } from "./fixtures";
+import { seedCoaching, reviewedProposal } from "./fixtures";
 import { addDays, dateInZone, reviewBlock } from "../shared/journey";
 import { createGoal } from "../shared/validation";
 import { basis, literature } from "./planning-fixture";
@@ -110,7 +111,7 @@ test("evidence is disclosed on request and action observations stay separate fro
     ...basis,
     sources: (await literature(["progress monitoring"])).sources,
   };
-  await save(page, state.data, state.revision);
+  await seedCoaching(page, state.data);
   await page.goto("/app/goals/essays");
   await expect(page.locator(".plan-explanation")).not.toBeVisible();
   await page
@@ -139,6 +140,7 @@ test("evidence is disclosed on request and action observations stay separate fro
   await page.getByLabel("Message Adler").fill("Done today, four outline points.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
+  await expect(page.getByLabel("Message Adler")).toHaveValue("");
   const { data } = await snapshot(page);
   expect(data.actions[0].amount).toBe(4);
   expect(data.goals[0].results.at(-1)?.value).toBe(0);
@@ -388,7 +390,7 @@ test("progress and insights frames remain readable on demand with reduced motion
     await progress.getByRole("button", { name: "1 Goal projection" }).click();
     await expect(progress.locator(".capture-detail")).toBeHidden();
     const insights = page.locator("#step-4 .app-capture-preview");
-    for (const [label, selector] of [["2 Evidence & test", ".capture-detail"], ["3 Feedback & learning", ".capture-followup"]]) {
+    for (const [label, selector] of [["2 Why try this?", ".capture-detail"], ["3 What we learned", ".capture-followup"]]) {
       const control = insights.getByRole("button", { name: label });
       await control.focus();
       await page.keyboard.press("Enter");
@@ -463,7 +465,7 @@ test("onboarding submits once, clarifies in place, then opens the researched dra
         "essay",
       );
     }
-    await save(page, state.data, state.revision);
+    await seedCoaching(page, state.data);
     await route.fulfill({
       json: { conversationId: input.conversationId, data: state.data },
     });
@@ -507,7 +509,7 @@ for (const finish of ["retry", "dismiss"] as const)
     await register(page, true);
     const state = await snapshot(page);
     state.data.actions[0].date = addDays(dateInZone(state.data.timeZone), 1);
-    await save(page, state.data, state.revision);
+    await seedCoaching(page, state.data);
     await page.route("**/api/status", async (route) => {
       const response = await route.fetch();
       const status = await response.json();
@@ -553,7 +555,7 @@ for (const finish of ["retry", "dismiss"] as const)
         expect(input.id).toBe(bookingId);
         current.data.workBlocks[0].checkInId = "check-in-event";
       }
-      await save(page, current.data, current.revision);
+      await seedCoaching(page, current.data);
       await route.fulfill({
         json: {
           id: input.id,
@@ -727,7 +729,7 @@ test("latest action observations use the last check-in when records share a date
     amount: 4,
     history: [{ outcome: "Done", amount: 4, at: "2026-09-01T15:00:00Z" }],
   });
-  await save(page, current.data, current.revision);
+  await seedCoaching(page, current.data);
   await page.goto("/app/goals/essays/progress");
   await expect(page.locator(".action-observations")).toContainText(
     "4 points recorded",

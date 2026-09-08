@@ -29,7 +29,7 @@ import { SignIn } from "./Auth";
 import { Connections, ProviderSettings } from "./Connections";
 import { useStore } from "./store";
 import { Today } from "./Today";
-import { NewGoal, SettingsPage, WeeklyReview } from "./Workspace";
+import { NewGoal, SettingsPage } from "./Workspace";
 import { GoalWorkspace } from "./GoalWorkspace";
 import { Coach, Memory } from "./Coach";
 import { Program } from "./Program";
@@ -43,7 +43,7 @@ function ScrollReset() {
     if (hash) {
       const frame = requestAnimationFrame(() =>
         (() => { const target = document.getElementById(decodeURIComponent(hash.slice(1)));
-          for (let node = target?.parentElement; node; node = node.parentElement) if (node instanceof HTMLDetailsElement) node.open = true;
+          for (let node = target; node; node = node.parentElement) if (node instanceof HTMLDetailsElement) node.open = true;
           target?.scrollIntoView(); })(),
       );
       return () => cancelAnimationFrame(frame);
@@ -194,11 +194,11 @@ export function App() {
           <Route path="goals/:goalId/:tab" element={<GoalWorkspace />} />
           <Route path="integrations" element={<AppIntegrations />} />
           <Route path="check-in" element={<Coach />} />
-          <Route path="insights" element={<><Insights /><Memory /></>} />
+          <Route path="insights" element={<><Insights /><details className="journey-disclosure"><summary>Saved context & preferences</summary><Memory /></details></>} />
           <Route path="coach" element={<LegacyCoachRedirect to="/app/check-in" />} />
           <Route path="coach/about-you" element={<LegacyCoachRedirect to="/app/insights" />} />
           <Route path="coach/program" element={<LegacyCoachRedirect to="/app/settings/coaching" />} />
-          <Route path="reviews/:reviewId" element={<WeeklyReview />} />
+          <Route path="reviews/:reviewId" element={<Navigate to="/app/check-in?intent=review&prompt=Let’s%20review%20what%20happened%20this%20week%20and%20what%20to%20adjust." replace />} />
           <Route path="calendar" element={<Calendar />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="settings/coaching" element={<Program />} />

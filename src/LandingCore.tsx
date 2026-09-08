@@ -16,6 +16,7 @@ import { Logo } from "./LandingArt";
 import { LandingHero } from "./LandingHero";
 import { LandingBackdrop } from "./LandingBackdrop";
 import { LandingAppCapture } from "./LandingAppCapture";
+import { FirstCoachingLoop } from "./FirstCoachingLoop";
 import { MountainFinale } from "./MountainFinale";
 import { ConnectionsPreview } from "./LandingConnectionsPreview";
 import "./landing-core.css";
@@ -28,7 +29,7 @@ const chapters = [
         Good intentions get lost. <em>Give your goals a clear home.</em>
       </>
     ),
-    body: "A project in your notes. A habit you keep restarting. A change you’ve been putting off. Bring them together in Adler, define what success means, and decide what matters now.",
+    body: "Bring your goals together. See what matters now, what you’ve done, and where a finish date is still uncertain.",
     visual: <LandingAppCapture screen="goals" />,
   },
   {
@@ -38,7 +39,7 @@ const chapters = [
         Your goals compete for time. <em>Give them one workable plan.</em>
       </>
     ),
-    body: "Planning each goal separately can leave you with more commitments than time. Adler organizes your goals into manageable actions, makes room for them in your week, and helps you adjust what no longer fits.",
+    body: "Adler turns your chosen work into manageable actions and fits them around your other goals and commitments. You approve calendar bookings.",
     visual: <LandingAppCapture screen="calendar" />,
   },
   {
@@ -48,7 +49,7 @@ const chapters = [
         It’s hard to see what’s working. <em>Make your progress visible.</em>
       </>
     ),
-    body: "See your reported progress, projected finish, and the range of possible timelines in one goal view. Open the inputs behind the projection to understand what it assumes and what your check-ins are showing.",
+    body: "See how your reported actions relate to your goal. Where the link supports an estimate, explore a projected finish and its conditional range.",
     visual: <LandingAppCapture screen="progress" />,
   },
   {
@@ -58,7 +59,7 @@ const chapters = [
         Your experience holds clues. <em>Build a plan that understands you.</em>
       </>
     ),
-    body: "See what Adler is learning about you and how each insight shapes your plan. Open an insight to follow your observations, the behavioural science behind a proposed change, and what your follow-up actually showed.",
+    body: "See what we’re trying, when we’ll review it, and what we’ve learned. Open a suggestion to follow your report, the research and what changed.",
     visual: <LandingAppCapture screen="insights" />,
   },
   {
@@ -68,7 +69,7 @@ const chapters = [
         Message your coach anywhere. <em>Let Adler schedule your next step.</em>
       </>
     ),
-    body: "Check in here, by text, or through connected AI tools like Claude and ChatGPT. Adler keeps the context together, finds time around your commitments, and books your next steps in your calendar with your approval.",
+    body: "The same coach and context in the app, text and compatible AI tools. Adler can find time and book your next step with your approval. Connections require setup.",
     visual: <ConnectionsPreview />,
   },
 ];
@@ -221,6 +222,7 @@ export function Landing() {
             </span>
           </div>
         </div>
+        <FirstCoachingLoop />
         <ThePath />
         <section className="approach-section section-wrap" id="approach">
           <div className="approach-heading reveal">
@@ -244,10 +246,10 @@ export function Landing() {
                 <span />
                 <span className="art-destination" />
               </div>
-              <h3>A behaviour worth testing.</h3>
+              <h3>A useful action to start.</h3>
               <p>
                 Adler helps you define success, understand what gets in your
-                way, and choose an execution experiment with a clear reason.
+                way, and choose a useful action with a clear reason.
               </p>
               <a
                 href="https://doi.org/10.1037/0003-066X.57.9.705"
@@ -321,7 +323,7 @@ export function Landing() {
             ],
             [
               "How is Adler’s coaching system improving?",
-              "Today, Adler combines retrieved behavioural research with your saved context, check-ins, and results. We plan to expand the system with additional model training and proprietary goal-attainment data.",
+              "Adler uses our behavioural research framework, specific source claims and your reports to guide suggestions. Each substantive recommendation is checked before you see it. This review can still miss errors; Adler’s combined coaching system has not yet been evaluated for effectiveness.",
             ],
             [
               "Do I stay in control?",

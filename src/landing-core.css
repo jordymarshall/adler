@@ -2207,3 +2207,22 @@
   .v2-landing .mountain-scroll-hint { font-size: 10px; }
   .v2-landing .mountain-start-copy { padding-bottom: 55px; }
 }
+
+/* A readable coaching example before the feature walkthrough. */
+.first-coaching-loop { padding-block: 100px; }
+.first-coaching-loop > header { margin-bottom: 40px; }
+.first-coaching-loop h2 { font-size: clamp(32px, 4vw, 56px); line-height: 1.15; letter-spacing: -.035em; margin: 15px 0; }
+.coaching-loop-example { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(0, 1fr); gap: 70px; margin-bottom: 30px; }
+.coaching-loop-steps { display: flex; flex-direction: column; gap: 8px; }
+.coaching-loop-steps button { display: flex; align-items: center; gap: 14px; text-align: left; padding: 22px 16px; border: 0; border-bottom: 1px solid #dce1d5; background: transparent; color: #697261; font: inherit; cursor: pointer; }
+.coaching-loop-steps button[aria-pressed="true"] { background: #eaf0e1; color: #294b3a; border-radius: 10px; }
+.coaching-loop-steps button > span { font-size: 12px; }
+.coaching-loop-steps button > svg { margin-left: auto; flex-shrink: 0; }
+.coaching-loop-moment { min-height: 305px; }
+.coaching-loop-moment > small { font-size: 11px; letter-spacing: .08em; color: #68735f; }
+.coaching-loop-moment blockquote { font-size: clamp(23px, 2.4vw, 34px); line-height: 1.4; margin: 14px 0 28px; letter-spacing: -.015em; }
+.coaching-loop-moment h3 { font-size: 17px; margin: 0 0 10px; }
+.coaching-loop-moment p { font-size: 16px; line-height: 1.7; max-width: 58ch; }
+.coaching-loop-moment > a { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.coaching-loop-moment > .coaching-example-note { display: block; margin-top: 24px; letter-spacing: 0; font-size: 12px; line-height: 1.6; }
+@media (max-width: 700px) { .first-coaching-loop { padding-block: 60px; } .coaching-loop-example { grid-template-columns: 1fr; gap: 30px; } .coaching-loop-steps button { padding: 16px 12px; } }

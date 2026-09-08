@@ -52,11 +52,11 @@ test("the example text check-in discusses a next step without rewriting recorded
   const recorded = (await recordedCapture.getAttribute("src"))!;
   const step = page.locator("#step-5");
   await step.getByRole("button", { name: "Try the example text check-in" }).click();
-  await expect(step.getByRole("log")).toContainText("One paragraph, then leave a note");
-  await expect(step.getByRole("log")).toContainText("check how it feels after two sessions");
+  await expect(step.getByRole("log")).toContainText("Try keeping the book beside your lunch spot");
+  await expect(step.getByRole("log")).toContainText("review the cue after your next few reports");
   await expect(recordedCapture).toHaveAttribute("src", recorded);
   await step.getByRole("button", { name: "Reset example text check-in" }).click();
-  await expect(step.getByRole("log")).not.toContainText("One paragraph, then leave a note");
+  await expect(step.getByRole("log")).not.toContainText("Yes, book 12:30.");
   await expect(recordedCapture).toHaveAttribute("src", recorded);
 });
 

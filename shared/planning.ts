@@ -11,7 +11,7 @@ export const researchSourceSchema = z
     url: z.url().refine((url) => url.startsWith("https://")),
     summary: z.string().max(9000),
     kind: z.string().max(500),
-    access: z.enum(["abstract", "method summary"]),
+    access: z.enum(["abstract", "method summary", "full text excerpt"]),
     retrievedAt: z.iso.datetime(),
   })
   .strict();

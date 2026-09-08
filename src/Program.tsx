@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { Check, Pencil } from "lucide-react";
 import { Modal } from "./components";
-import { currentProgram, localDate, reviseProgram, useStore } from "./store";
+import { currentProgram, reviseProgram, useStore } from "./store";
+import { useNavigate } from "react-router-dom";
 import { METHODS } from "./methods";
 import {
   ProgramContext,
@@ -13,12 +14,10 @@ import {
 export function Program() {
   const { data, commit } = useStore();
   const program = currentProgram(data);
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(program);
   const [tab, setTab] = useState("Program");
-  const [reviewing, setReviewing] = useState<string | null>(null);
-  const [reviewNote, setReviewNote] = useState("");
-  const [reviewChoice, setReviewChoice] = useState<"Keep" | "Revisit">("Keep");
   function save(e: FormEvent) {
     e.preventDefault();
     if (
@@ -29,7 +28,7 @@ export function Program() {
       return;
     if (
       commit(
-        (d) => reviseProgram(d, draft.version, draft),
+        (d) => reviseProgram(d, draft.version, { ...draft, reason: draft.reason.trim() || "You updated your coaching preferences." }),
         "Coaching program updated. Adler will use this version on the next turn.",
       )
     )
@@ -44,7 +43,7 @@ export function Program() {
           </span>
           <h1>Time & coaching</h1>
           <p>
-            Set your available time, preferred hours, review rhythm, and coaching methods.
+            Set when you have time and how often you want to look back.
             Each goal’s planning cycle adapts to your input.
           </p>
         </div>
@@ -55,9 +54,11 @@ export function Program() {
             setEditing(true);
           }}
         >
-          <Pencil size={16} /> Edit program
+          <Pencil size={16} /> Edit preferences
         </button>
       </div>
+      <section className="panel coaching-preferences"><h2>Your available time</h2><dl className="reasoning-details"><div><dt>Across all goals</dt><dd>{program.weeklyMinutes} minutes per week</dd></div><div><dt>Preferred days and hours</dt><dd>{program.workDays.map(day => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]).join(" · ")} · {program.workStart}–{program.workEnd}</dd></div><div><dt>Look back together</dt><dd>{program.reviewDay}. Each goal can have a different review rhythm.</dd></div></dl><p>These are planning preferences. Adler still checks your capacity and asks before booking time.</p></section>
+      <details className="journey-disclosure"><summary>Methods, decisions & history</summary>
       <div className="program-status-strip">
         <span>
           <i /> Program v{program.version}
@@ -94,138 +95,17 @@ export function Program() {
       {tab === "Decisions" && (
         <ProgramDecisions
           data={data}
-          onReview={(id) => {
-            setReviewing(id);
-            setReviewNote("");
-            setReviewChoice("Keep");
-          }}
+          onReview={(id) => navigate(`/app/check-in?prompt=${encodeURIComponent(`Let’s review this plan change (${id}). Here is what happened: `)}`)}
         />
       )}
       {tab === "Versions" && <ProgramVersions data={data} />}
-      {reviewing && (
-        <Modal
-          title="What happened when you tried it?"
-          onClose={() => setReviewing(null)}
-        >
-          <form
-            className="program-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (
-                commit((d) => {
-                  const decision = d.decisions.find((c) => c.id === reviewing)!;
-                  if (decision.status !== "Accepted")
-                    throw new Error("This change has already been reviewed.");
-                  decision.review = {
-                    date: localDate(),
-                    note: reviewNote.trim(),
-                    choice: reviewChoice,
-                  };
-                  decision.status = "Reviewed";
-                }, "Review saved. Adler will use this feedback in the next conversation.")
-              )
-                setReviewing(null);
-            }}
-          >
-            <p>
-              {
-                data.decisions.find((d) => d.id === reviewing)?.proposal
-                  ?.reviewAfter
-              }
-            </p>
-            <label>
-              What did you observe?
-              <textarea
-                required
-                maxLength={1000}
-                rows={4}
-                value={reviewNote}
-                onChange={(e) => setReviewNote(e.target.value)}
-                placeholder="e.g. Both sessions produced a complete rough draft. The second draft is ready for feedback."
-              />
-            </label>
-            <label>
-              What do you want to do next?
-              <select
-                value={reviewChoice}
-                onChange={(e) =>
-                  setReviewChoice(e.target.value as "Keep" | "Revisit")
-                }
-              >
-                <option value="Keep">Keep the current approach</option>
-                <option value="Revisit">Revisit the approach with Adler</option>
-              </select>
-            </label>
-            <p className="field-hint">
-              This saves your evaluation. Open the conversation to propose
-              another plan change.
-            </p>
-            <button className="button primary" disabled={!reviewNote.trim()}>
-              Save review <Check size={15} />
-            </button>
-          </form>
-        </Modal>
-      )}
+      </details>
       {editing && (
         <Modal
-          title="Edit your coaching program"
+          title="Edit time & coaching preferences"
           onClose={() => setEditing(false)}
         >
           <form className="program-form" onSubmit={save}>
-            <label>
-              Focus goal
-              <select
-                value={draft.focusGoalId}
-                onChange={(e) =>
-                  setDraft({ ...draft, focusGoalId: e.target.value })
-                }
-              >
-                <option value="">Choose a focus goal</option>
-                {data.goals
-                  .filter((g) => g.status === "Active")
-                  .map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.title}
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              Sprint result
-              <input
-                required
-                maxLength={300}
-                value={draft.sprintResult}
-                onChange={(e) =>
-                  setDraft({ ...draft, sprintResult: e.target.value })
-                }
-              />
-            </label>
-            <div className="form-row">
-              <label>
-                Sprint start
-                <input
-                  type="date"
-                  required
-                  value={draft.sprintStart}
-                  onChange={(e) =>
-                    setDraft({ ...draft, sprintStart: e.target.value })
-                  }
-                />
-              </label>
-              <label>
-                Sprint end
-                <input
-                  type="date"
-                  required
-                  min={draft.sprintStart}
-                  value={draft.sprintEnd}
-                  onChange={(e) =>
-                    setDraft({ ...draft, sprintEnd: e.target.value })
-                  }
-                />
-              </label>
-            </div>
             <div className="form-row">
               <label>
                 Minutes per week
@@ -329,6 +209,61 @@ export function Program() {
                 ))}
               </select>
             </label>
+            <details className="quiet-disclosure"><summary>Advanced coaching preferences</summary>
+            <label>
+              Focus goal
+              <select
+                value={draft.focusGoalId}
+                onChange={(e) =>
+                  setDraft({ ...draft, focusGoalId: e.target.value })
+                }
+              >
+                <option value="">Choose a focus goal</option>
+                {data.goals
+                  .filter((g) => g.status === "Active")
+                  .map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <label>
+              Sprint result
+              <input
+                required
+                maxLength={300}
+                value={draft.sprintResult}
+                onChange={(e) =>
+                  setDraft({ ...draft, sprintResult: e.target.value })
+                }
+              />
+            </label>
+            <div className="form-row">
+              <label>
+                Sprint start
+                <input
+                  type="date"
+                  required
+                  value={draft.sprintStart}
+                  onChange={(e) =>
+                    setDraft({ ...draft, sprintStart: e.target.value })
+                  }
+                />
+              </label>
+              <label>
+                Sprint end
+                <input
+                  type="date"
+                  required
+                  min={draft.sprintStart}
+                  value={draft.sprintEnd}
+                  onChange={(e) =>
+                    setDraft({ ...draft, sprintEnd: e.target.value })
+                  }
+                />
+              </label>
+            </div>
             <label>
               Current approach
               <textarea
@@ -361,10 +296,10 @@ export function Program() {
                 </label>
               ))}
             </fieldset>
+            </details>
             <label>
               Reason for this revision
               <input
-                required
                 maxLength={300}
                 value={draft.reason === program.reason ? "" : draft.reason}
                 onChange={(e) => setDraft({ ...draft, reason: e.target.value })}
@@ -377,7 +312,7 @@ export function Program() {
                   !draft.workDays.length || draft.workEnd <= draft.workStart
                 }
               >
-                <Check size={15} /> Save program v{draft.version + 1}
+                <Check size={15} /> Save preferences
               </button>
             </div>
           </form>

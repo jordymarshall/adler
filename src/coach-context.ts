@@ -1,3 +1,4 @@
+import { currentLearningVersion } from "../shared/learning.ts";
 import { checkInContext } from "../shared/check-in-context.ts";
 import { reviewSchedule } from "../shared/journey.ts";
 import type { Data } from "../shared/workspace.ts";
@@ -129,7 +130,12 @@ export function coachingContext(
       behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
       execution: executionSummary(data, g, today), learningEvidence: cycleEvidence(data, g, today), projection: goalProjection(data, g, today) })),
     recentActions: actions,
-    confirmedContext: data.memories,
+    confirmedContext: data.memories.filter(memory => !(data.evidenceCorrections ?? []).some(correction => correction.active && correction.source.id === memory.id)),
+    correctedContext: (data.evidenceCorrections ?? []).filter(correction => correction.active).map(correction => ({ ...correction, followUp: correction.replacements.map(source => data.messages.find(message => message.id === source.id)?.text ?? data.memories.find(memory => memory.id === source.id)?.text ?? "Open the correcting source record") })),
+    currentLearning: (data.learning ?? []).map(record => ({
+      id: record.id, goalIds: record.goalIds, pendingTest: record.versions.find(version => version.version === record.pendingVersion), state: record.state, standing: record.standing,
+      current: currentLearningVersion(record), reviews: record.reviews.slice(-3), invalidations: record.invalidations.filter(i => i.version === currentLearningVersion(record)?.version),
+    })),
     checkInPrompts: actions.filter(a => !a.outcome && !a.retiredAt && a.date && a.date <= today).slice(-5)
       .map(a => ({ actionId: a.id, goalId: a.goalId, context: checkInContext(data, a), instruction: "Ask what happened; this context does not confirm an outcome or its cause." })),
     workBlocks: blocks,

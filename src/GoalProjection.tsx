@@ -55,7 +55,7 @@ export function GoalProjection({ data, goal, today = dateInZone(data.timeZone) }
     {projection && <p className="small-text muted">Conditional on your input pace and the relationship holding. The range shows scenarios, not a success probability.</p>}
     {evidence && <div className="input-outcome-link">
       <div><span>{evidence.paceSource}</span><strong>{number(evidence.pace.expected)} {inputUnit} / day</strong><small>{evidence.measured} / {evidence.due} action quantities known</small></div><span className="relation-arrow" aria-hidden="true">→</span>
-      <div><span>{evidence.model.kind === "direct" ? "Conversion assumption" : "Relationship being learned"}</span><strong>{evidence.model.kind === "direct" ? `${number(evidence.model.inputPerOutcome!.expected * model.target)} ${inputUnit} for ${number(model.target)} ${goal.measure!.unit}` : projection ? `${number(projection.yieldRange.expected)} ${goal.measure!.unit} / ${inputUnit}` : "Waiting for paired observations"}</strong><small>{evidence.model.kind === "learned" ? `${evidence.pairs.length} matched intervals · ${evidence.model.feedbackDelayDays}-day feedback delay` : evidence.model.rationale}</small></div>
+      <div><span>{evidence.model.kind === "direct" ? "How the input adds up" : "What we’re learning about the link"}</span><strong>{evidence.model.kind === "direct" ? `${number(evidence.model.inputPerOutcome!.expected * model.target)} ${inputUnit} for ${number(model.target)} ${goal.measure!.unit}` : projection ? `${number(projection.yieldRange.expected)} ${goal.measure!.unit} / ${inputUnit}` : "We need input and result reports"}</strong><small>{evidence.model.kind === "learned" ? `${evidence.pairs.length} matched intervals · ${evidence.model.feedbackDelayDays}-day feedback delay` : evidence.model.rationale}</small></div>
     </div>}
     {evidence && <details className="projection-evidence"><summary>Explore the input and the evidence <span>+</span></summary>
       {!projection && <p>{evidence.model.rationale}</p>}
@@ -73,6 +73,6 @@ export function GoalProjection({ data, goal, today = dateInZone(data.timeZone) }
         <div className="projection-source-links">{evidence.sourceIds.slice(-6).map(id => <Link key={id} to={recordLink(data, id)!}>Input · {formatDate(data.actions.find(a => a.id === id)!.date)}</Link>)}{model.observations.slice(-3).map(r => <Link key={r.id} to={recordLink(data, r.id)!}>Outcome · {formatDate(r.date)}</Link>)}</div>
       </div>
     </details>}
-    <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Let’s review the input I can control, its relationship to this goal, and the projection assumptions.")}`}>Review this model in Check-in ↗</Link>
+    <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Let’s review the input I can control, its relationship to this goal, and the projection assumptions.")}`}>Discuss this estimate in Check-in ↗</Link>
   </section>;
 }

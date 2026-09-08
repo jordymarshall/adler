@@ -402,6 +402,10 @@ export function createRuntime(directory?: string) {
       }
       if (req.method === "GET" && url.pathname === "/api/proposals")
         return json(res, service.listProposals(id));
+      if (req.method === "POST" && url.pathname === "/api/learning") {
+        const input = z.object({ id: z.string().min(1).max(150), version: z.number().int().positive(), action: z.enum(["agree", "decline", "pause", "resume", "close"]), requestId: z.string().min(8).max(100) }).strict().parse(await body(req));
+        return json(res, await service.learningAction(id, input.id, input.version, input.action, input.requestId));
+      }
       if (req.method === "POST" && url.pathname === "/api/proposals") {
         const input = z
           .object({

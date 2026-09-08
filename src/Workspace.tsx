@@ -36,7 +36,7 @@ const draftDefaults = {
   why: "",
   area: "Unassigned",
   tags: "",
-  targetDate: localDate(28),
+  targetDate: "",
   assessmentTarget: "8",
   tracking: "milestones",
   measureLabel: "",
@@ -255,12 +255,11 @@ export function NewGoal() {
                 </select>
               </div>
               <div className="form-field">
-                <label htmlFor="goal-deadline">Target date</label>
+                <label htmlFor="goal-deadline">Target date (optional)</label>
                 <input
                   id="goal-deadline"
                   type="date"
                   min={localDate()}
-                  required
                   value={draft.targetDate}
                   onChange={(e) => field("targetDate", e.target.value)}
                 />
@@ -434,7 +433,7 @@ export function NewGoal() {
           <div>
             <span>Target date & organization</span>
             <p>
-              {draft.targetDate} · {draft.area}
+              {draft.targetDate || "No fixed deadline"} · {draft.area}
               {draft.tags ? ` · ${draft.tags}` : ""}
             </p>
           </div>

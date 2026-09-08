@@ -1,0 +1,318 @@
+.recommendation-reasons {
+  margin-top: 20px;
+}
+.recommendation-reasons > dl {
+  display: grid;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+.recommendation-reasons > dl > div {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 20px;
+}
+.recommendation-reasons dt,
+.reasoning-details dt {
+  color: var(--muted);
+  font-size: 13px;
+}
+.recommendation-reasons dd,
+.reasoning-details dd {
+  margin: 0;
+  line-height: 1.65;
+}
+.inline-science-source {
+  display: block;
+  font-size: 12px;
+  margin-top: 5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.reasoning-details {
+  display: grid;
+  gap: 14px;
+  margin: 18px 0;
+}
+.reasoning-details > div {
+  display: grid;
+  gap: 4px;
+}
+.reasoning-details small {
+  display: block;
+  color: var(--muted);
+}
+.claim-evidence > details {
+  border-top: 1px solid var(--line);
+  padding: 14px 0;
+}
+.claim-evidence p,
+.claim-evidence li {
+  max-width: 76ch;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.claim-evidence summary {
+  cursor: pointer;
+}
+.rationale-sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.learning-dashboard {
+  margin: 28px 0;
+}
+.learning-dashboard > section + section {
+  margin-top: 36px;
+}
+.learning-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 15px;
+}
+.learning-section-heading h2 {
+  font-size: 20px;
+  margin: 0;
+}
+.learning-section-heading > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.learning-record {
+  border-top: 1px solid var(--line);
+}
+.learning-record:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.learning-record > summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px 72px;
+  align-items: center;
+  gap: 28px;
+  padding: 23px 8px;
+}
+.learning-record > summary::-webkit-details-marker {
+  display: none;
+}
+.learning-record-main,
+.learning-record-timing {
+  display: grid;
+  gap: 7px;
+}
+.learning-record-main > small,
+.learning-record-main > span,
+.learning-record-timing > span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.learning-record-main > strong {
+  font-size: 19px;
+  line-height: 1.4;
+  font-weight: 650;
+}
+.learning-record-timing > b {
+  font-size: 13px;
+  font-weight: 650;
+}
+.learning-record-open {
+  font-size: 13px;
+}
+.learning-record[open] > summary {
+  background: var(--sage);
+  padding-inline: 20px;
+  border-radius: 10px;
+}
+.learning-record-body {
+  padding: 28px 20px;
+  max-width: 1040px;
+}
+.learning-correction {
+  padding: 14px 18px;
+  background: #faf1dc;
+  border-left: 3px solid #af8a40;
+  line-height: 1.6;
+}
+.reasoning-path {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.reasoning-path > li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 22px;
+  padding: 0 0 32px;
+}
+.reasoning-path > li:not(:last-child)::before {
+  content: "";
+  position: absolute;
+  width: 1px;
+  background: #cdd4c4;
+  top: 32px;
+  bottom: 0;
+  left: 15px;
+}
+.reasoning-step {
+  border: 1px solid #cdd4c4;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: var(--green);
+  background: var(--sage);
+}
+.reasoning-path h3 {
+  margin: 3px 0 12px;
+  font-size: 16px;
+}
+.reasoning-path p {
+  line-height: 1.7;
+  margin: 8px 0 12px;
+  max-width: 78ch;
+}
+.reasoning-path .behavioral-rationale {
+  margin-top: 15px;
+}
+.evidence-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 12px;
+}
+.evidence-links a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.learning-change {
+  padding: 13px 16px;
+  background: var(--sage);
+  border-radius: 8px;
+}
+.learning-timeline {
+  display: flex;
+  align-items: center;
+  margin: 23px 0 10px;
+  gap: 14px;
+  font-size: 12px;
+}
+.learning-timeline > span:not(.learning-timeline-line) {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.learning-timeline i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.learning-timeline-line {
+  flex: 1;
+  border-top: 1px dashed #aebba1;
+  min-width: 15px;
+}
+.learning-review + .learning-review {
+  border-top: 1px solid var(--line);
+  padding-top: 22px;
+  margin-top: 22px;
+}
+.learning-review > small {
+  color: var(--muted);
+  font-size: 12px;
+}
+.awaiting-learning {
+  color: var(--muted);
+}
+.learning-history {
+  margin-top: 25px;
+}
+.learning-history > div {
+  padding: 18px 0;
+}
+.today-goal-heading {
+  margin: 24px 0;
+}
+.today-goal-heading h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  margin: 8px 0;
+}
+.today-plan-links {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+  font-size: 14px;
+}
+.today-review-note {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.recommendation-card {
+  margin: 24px 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--line);
+}
+.recommendation-card h3 {
+  font-size: 20px;
+  line-height: 1.45;
+}
+.coach-workspace .live-proposal {
+  border-radius: 12px;
+  box-shadow: none;
+}
+@media (max-width: 720px) {
+  .recommendation-reasons > dl > div {
+    grid-template-columns: 1fr;
+    gap: 3px;
+  }
+  .learning-record > summary {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    padding: 20px 0;
+  }
+  .learning-record-main {
+    grid-column: 1 / -1;
+  }
+  .learning-record-timing {
+    gap: 3px;
+  }
+  .learning-record-open {
+    align-self: end;
+  }
+  .learning-record-body {
+    padding: 25px 0;
+  }
+  .reasoning-path > li {
+    grid-template-columns: 25px minmax(0, 1fr);
+    gap: 12px;
+  }
+  .reasoning-step {
+    height: 25px;
+    width: 25px;
+  }
+  .reasoning-path > li:not(:last-child)::before {
+    left: 12px;
+    top: 28px;
+  }
+  .learning-section-heading {
+    align-items: start;
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .coach-workspace * {
+    animation: none !important;
+    scroll-behavior: auto !important;
+  }
+}

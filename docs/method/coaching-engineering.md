@@ -1,6 +1,6 @@
 # Engineering the Adler Method
 
-Target design · 7 September 2026 · implementation has not begun
+Engineering design · 7 September 2026 · core implementation tracked in the [release checklist](../implementation-checklist.md)
 
 This is the deliberate implementation design for the user's [governing product direction](../product-principles.md). Read it with the [current runtime contract](adler-method.md), [domain language](../../CONTEXT.md), [experience plan](../product-core-and-experience-plan.md), [research-grounding design](../research/coaching-grounding-engineering.md) and [individual-learning methodology](../research/individual-learning-methodology.md). The product direction is accepted; proposed interface names, storage details and advanced statistical capabilities below are not assertions about delivered code.
 
@@ -256,4 +256,4 @@ Use fixed adversarial cases for hard invariants and held-out, multi-turn cases f
 
 Prefer extending current deep modules and replacing divergent paths as they are covered. Avoid keeping a new implementation beside an equally authoritative legacy one. Migrate old records honestly and retain history; do not require all existing users to repeat onboarding or retroactively manufacture experiments.
 
-This document records the engineering design work. Research curation, application implementation, model evaluations and usability studies remain work to execute; they have not been reported as complete merely because the design is saved.
+This remains the governing engineering design. The [current method](adler-method.md) records the delivered implementation; [release verification](../evaluation/shared-coaching-v2.md) separates deterministic checks and limited live smoke tests from outstanding expert adjudication, usability studies, hosted validation and outcome evaluation. Advanced causal/statistical capabilities above remain separate research work.

@@ -32,13 +32,13 @@ test("five pages a day toward thirty 300-page books projects 1,800 days, with go
   const result = goalProjection(data, data.goals[0], today);
   assert.equal(result.current, 0, "Input arithmetic must not fabricate a completed book report");
   assert.equal(result.evidence!.pace.expected, 5);
-  assert.equal(result.projection!.expectedDate, addDays("2026-09-01", 1800));
-  assert.equal(result.projection!.earliestDate, addDays("2026-09-01", 1500));
-  assert.equal(result.projection!.latestDate, addDays("2026-09-01", 2400));
+  assert.equal(result.projection!.expectedDate, addDays(today, 1800));
+  assert.equal(result.projection!.earliestDate, addDays(today, 1000));
+  assert.equal(result.projection!.latestDate, null);
   assert.equal(result.projection!.points[0].high, 0);
   const midpoint = result.projection!.points[10];
   assert.ok(midpoint.high > midpoint.expected && midpoint.expected > midpoint.low);
-  assert.equal(result.projection!.points.at(-1)!.low, 30);
+  assert.ok(result.projection!.points.at(-1)!.low < 30, "The slower scenario has not attained the goal within this horizon");
   assert.deepEqual(data, before);
 });
 
@@ -123,4 +123,26 @@ test("unknown baselines, paused goals and unreachable horizons do not invent att
   assert.equal(goalProjection(data, goal, today).projection, null);
   goal.status = "Active"; goal.results = []; goal.measure!.baseline = null;
   assert.equal(goalProjection(data, goal, today).projection, null);
+});
+
+test("a missing scheduled record is unknown and a stale outcome never projects an already-past finish", () => {
+  const data = reading(), goal = data.goals[0];
+  data.actions = data.actions.filter(action => action.date !== "2026-09-10");
+  const result = goalProjection(data, goal, today);
+  assert.equal(result.evidence!.daily.find(day => day.date === "2026-09-10")!.amount, null);
+  assert.equal(result.evidence!.paceSource, "Provisional input pace");
+  goal.measure!.target = 0.1;
+  assert.ok(goalProjection(data, goal, today).projection!.expectedDate! >= today);
+});
+
+test("identical input-return pairs remain uncertain and gaps cannot create a complete pair", () => {
+  const data = reading(), goal = data.goals[0], model = goal.plans[0].adaptive!.projection!;
+  model.kind = "learned"; model.inputMetric = "hours"; delete model.inputPerOutcome;
+  data.actions.forEach(action => { action.actualMinutes = 60; });
+  goal.results = [0, 1, 2, 3].map(index => ({ id: `outcome-${index}`, date: addDays("2026-09-01", index * 6), value: index * 60, source: "Reported total" }));
+  const result = goalProjection(data, goal, today);
+  assert.equal(result.evidence!.pairs.length, 3);
+  assert.ok(result.projection!.yieldRange.high > result.projection!.yieldRange.low);
+  data.actions = data.actions.filter(action => action.date !== "2026-09-03");
+  assert.equal(goalProjection(data, goal, today).evidence!.pairs.length, 2);
 });

@@ -68,8 +68,9 @@ export function Memory() {
                 <Check size={18} />
               </span>
               <div>
-                <Tag tone="sage">Confirmed by you · All goals</Tag>
+                <Tag tone="sage">{data.evidenceCorrections?.some(correction => correction.active && correction.source.id === m.id) ? "Corrected · Review this context" : "Confirmed by you · All goals"}</Tag>
                 <p>{m.text}</p>
+                {data.evidenceCorrections?.filter(correction => correction.active && correction.source.id === m.id).map(correction => <p className="field-hint" key={correction.id}>{correction.reason} Adler is holding this earlier statement for review. Edit it to save your current context.</p>)}
                 <span className="small-text muted">
                   {m.id === "memory-1"
                     ? "Fictional example context"

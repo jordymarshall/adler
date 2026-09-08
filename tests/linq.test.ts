@@ -1,3 +1,4 @@
+import { reviewed } from "./planning-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHmac, randomUUID } from "node:crypto";
@@ -95,7 +96,7 @@ function fixture(t: test.TestContext, runner?: typeof generate) {
     useServer: false,
   });
   db.setSecret(user.id, "model-gemini", { key: "fixture-provider-key" });
-  const service = new Service(db, runner);
+  const service = new Service(db, runner ? reviewed(runner) : undefined);
   const sends: { sid: string; body: string; deliveryId: string }[] = [];
   const channels = new Channels(
     db,

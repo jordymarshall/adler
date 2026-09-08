@@ -134,14 +134,12 @@ export function ConnectionsPreview() {
             >
               <img src="/brands/claude.svg" alt="" />
               <p>
-                You set aside 25 minutes after breakfast for your portfolio
-                draft.
+                Your next action is to read 20 pages after lunch, with your book beside your lunch spot.
               </p>
               <p>
-                Last check-in, you said it was hard to stop editing. Choose one
-                finish line before you start.
+                You said you forgot to pick up the book. Adler suggested a visible cue; we’re still learning whether it helps.
               </p>
-              <span className="phone-record-link">↗ Publish my portfolio</span>
+              <span className="phone-record-link">↗ Read 30 books</span>
               <span className="phone-record-link">↗ Your last check-in</span>
             </div>
             <div className="mock-phone-composer">
@@ -170,28 +168,26 @@ export function ConnectionsPreview() {
               aria-live="off"
             >
               <p className="phone-bubble incoming">
-                How did your portfolio session go?
+                How did reading after lunch go?
               </p>
               <p className="phone-bubble outgoing">
-                I started after breakfast, but kept editing the same paragraph.
+                I had time, but forgot to pick up my book.
               </p>
               <p className="phone-delivered">Delivered</p>
               <p className="phone-bubble incoming">
-                You made the start happen. Would a smaller stopping point help
-                next time?
+                Try keeping the book beside your lunch spot, so it’s easier to notice when you finish eating.
               </p>
               {sent && (
                 <>
                   <p className="phone-bubble outgoing">
-                    Yes. One paragraph, then leave a note for the next session.
+                    I’ll try that. Can you also make room in my calendar?
                   </p>
                   <p className="phone-bubble incoming">
-                    Let’s try that and check how it feels after two sessions.
-                    I found 8:30 tomorrow. Book 25 minutes?
+                    I found 12:30 tomorrow. Book 20 minutes for reading? We can review the cue after your next few reports.
                   </p>
                 </>
               )}
-              {phase === 3 && <><p className="phone-bubble outgoing">Yes, book 8:30.</p><p className="phone-bubble incoming">Booked in your calendar. Your next step is ready.</p></>}
+              {phase === 3 && <><p className="phone-bubble outgoing">Yes, book 12:30.</p><p className="phone-bubble incoming">Booked in your calendar. Your next step is ready.</p></>}
             </div>
             <button
               className="mock-phone-composer"
@@ -202,7 +198,7 @@ export function ConnectionsPreview() {
                   : "Try the example text check-in"
               }
             >
-              {sent ? "Replay check-in" : "Try a smaller finish line"}
+              {sent ? "Replay check-in" : "Try the book cue"}
               <ArrowUp size={15} />
             </button>
           </Phone>
@@ -227,30 +223,30 @@ export function ConnectionsPreview() {
               aria-label="Example calendar schedule"
             >
               <div>
-                <time>8 AM</time>
-                <span>Breakfast</span>
+                <time>12 PM</time>
+                <span>Lunch</span>
               </div>
               <div className={phase === 3 ? "calendar-focus-block phone-booking-reveal" : "calendar-open-slot"}>
-                <time>8:30</time>
+                <time>12:30</time>
                 {phase === 3 ? <span>
                   <CalendarDays size={14} />
-                  <b>My portfolio draft</b>
-                  <small>25 minutes · Added by Adler</small>
+                  <b>Read 20 pages</b>
+                  <small>20 minutes · Added by Adler</small>
                 </span> : <span>Available<small>Room for a next step</small></span>}
               </div>
               <div>
-                <time>9 AM</time>
+                <time>1 PM</time>
                 <span>Team catch-up</span>
               </div>
               <div>
-                <time>10 AM</time>
+                <time>2 PM</time>
                 <span>Project work</span>
               </div>
               <div className="calendar-reading-block">
                 <time>7 PM</time>
                 <span>
-                  <b>Read for enjoyment</b>
-                  <small>15 minutes · After dinner</small>
+                  <b>My portfolio draft</b>
+                  <small>25 minutes · After dinner</small>
                 </span>
               </div>
             </div>

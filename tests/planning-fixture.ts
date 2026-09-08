@@ -62,6 +62,12 @@ export const literature: typeof searchLiterature = async (queries) => ({
   ],
 });
 // Existing protocol tests script the final reply; include the research tool turn.
+export function reviewed(runner: typeof generate): typeof generate {
+  return async (config, instructions, context: any, schema, tokens) => {
+    if (context.task === "review-plan") return schema.parse({ issues: [] });
+    return runner(config, instructions, context, schema, tokens);
+  };
+}
 export function researched(runner: typeof generate): typeof generate {
   return async (config, instructions, context: any, schema, tokens) => {
     if (context.task === "review-plan") return schema.parse({ issues: [] });
