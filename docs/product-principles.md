@@ -38,6 +38,8 @@ A meaningful recommendation leads with the action and clear accept/decline/discu
 
 Keep consequential uncertainty and the effect of accepting a change visible. Routine check-ins stay brief. Today makes the next useful action apparent; goal detail makes the current plan and trajectory understandable; Insights shows attributable observations and preferences, current tests, review timelines and what learning changes in the plan. Useful context and insights can exist without a test; their evidence and status must remain clear.
 
+The app should feel interactive and intuitive. Organize screens into distinct, purposeful blocks with a clear next action and visible state. Use structured explanations, diagrams, dates, controls and progressive disclosure where they help; avoid pages that feel like unformatted reports. Chat remains conversational and readable. Blocks establish hierarchy without boxing every message or hiding essential uncertainty. Observations do not need empty hypothesis/test/result scaffolding.
+
 ## Measure useful work and results honestly
 
 Controllable inputs, action adherence, reported outcomes and conditional projections answer different questions. Preserve their meaning in every interface. Missing evidence remains unknown. A change in measurement cannot silently inherit the old relationship.

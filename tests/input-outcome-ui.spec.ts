@@ -112,3 +112,27 @@ test("live learning distinguishes predictions, feedback and uncertainty with lin
   await page.reload();
   await expect(page.locator("#record-reading-lunch > summary")).toContainText("Paused");
 });
+
+test("a standalone learning revision shows the proposed change and accepts that exact version", async ({ page }) => {
+  const data = await example(page), record = data.learning![0];
+  const next = structuredClone(record.versions[0]);
+  next.version = 2;
+  next.proposalId = null;
+  next.test.change = "Keep the book beside the chair you chose";
+  next.test.start = dateInZone(data.timeZone);
+  record.versions.push(next);
+  record.pendingVersion = 2;
+  record.activeVersion = 1;
+  await seedCoaching(page, data);
+  await page.goto(`/app/insights#record-${record.id}`);
+  const suggestion = page.getByRole("region", { name: "Revised suggestion" });
+  await expect(suggestion).toContainText(next.test.change);
+  await expect(page.locator(`#record-${record.id} > summary`)).toContainText(record.versions[0].test.change);
+  await suggestion.getByRole("button", { name: "Try this", exact: true }).click();
+  await expect(suggestion).toHaveCount(0);
+  await expect(page.locator(`#record-${record.id} > summary`)).toContainText(next.test.change);
+  const saved = (await snapshot(page)).data.learning!.find(item => item.id === record.id)!;
+  expect(saved.activeVersion).toBe(2);
+  expect(saved.versions[0].test.prediction).toBe(record.versions[0].test.prediction);
+  expect(saved.standing).toBe("untested");
+});

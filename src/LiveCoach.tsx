@@ -1,4 +1,4 @@
-import { referencedText } from "../shared/record-links";
+import { CoachMessage } from "./CoachMessage";
 import { Conversations } from "./Conversations";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams } from "react-router-dom";
@@ -10,7 +10,7 @@ import { METHODS } from "./methods";
 import type { Proposal } from "../server/service";
 import { ProposalChanges, ProposalEssentials } from "./ProposalChanges";
 import { RecommendationReasons } from "./BehavioralRationale";
-import { currentLearningVersion, type LearningRecord } from "../shared/learning";
+import { learningActionVersion, type LearningRecord } from "../shared/learning";
 export function LiveCoach() {
   const { data, flush, refresh } = useStore(),
     [params, setParams] = useSearchParams();
@@ -150,7 +150,7 @@ export function LiveCoach() {
   }
   async function chooseLearning(record: LearningRecord, action: "agree" | "decline") {
     setSending(true); setError("");
-    try { await flush(); await api("learning", { id: record.id, version: currentLearningVersion(record).version, action, requestId: crypto.randomUUID() }); await refresh(); }
+    try { await flush(); await api("learning", { id: record.id, version: learningActionVersion(record, action), action, requestId: crypto.randomUUID() }); await refresh(); }
     catch (error) { setError((error as Error).message); } finally { setSending(false); }
   }
   return (
@@ -214,18 +214,7 @@ export function LiveCoach() {
                       ? ` · ${m.channel === "job" ? "Scheduled check-in" : m.channel.toUpperCase()}`
                       : ""}
                   </span>
-                  <p>
-                    {referencedText(data, m.text, m.references).map(
-                      (part, index) =>
-                        part.href ? (
-                          <Link key={index} to={part.href}>
-                            {part.text}
-                          </Link>
-                        ) : (
-                          part.text
-                        ),
-                    )}
-                  </p>
+                  <CoachMessage data={data} message={m} />
                   {decision?.status === "Accepted" && (
                     <span className="insight-change-status">
                       Saved to your workspace
@@ -302,8 +291,11 @@ export function LiveCoach() {
                     )}
                   </div>
                   {decision?.recommendations?.length && !proposals.some(proposal => proposal.decisionId === decision.id && proposal.status === "pending") ? decision.recommendations.map((recommendation, index) => {
-                    const learning = data.learning?.find(record => record.versions.at(-1)?.decisionId === decision.id);
-                    return <section className="recommendation-card" key={index}><h3>{recommendation.action}</h3><RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /><div className="button-row">{learning?.state === "suggested" && !currentLearningVersion(learning).proposalId && <><button className="button primary" disabled={sending} onClick={() => void chooseLearning(learning, "agree")}>Try this</button><button className="button text-button" disabled={sending} onClick={() => void chooseLearning(learning, "decline")}>No thanks</button></>}<button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action)}>Discuss</button><button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action, true)}>Edit</button></div>{learning && <Link className="text-link" to={`/app/insights#record-${learning.id}`}>{learning.state === "suggested" ? "Review this suggestion" : "See what we’re learning"} ↗</Link>}</section>;
+                    const matches = (version: LearningRecord["versions"][number]) => version.decisionId === decision.id && JSON.stringify(version.reasoning) === JSON.stringify(recommendation.reasoning);
+                    const learning = data.learning?.find(record => record.versions.some(matches));
+                    const version = learning?.versions.find(matches);
+                    const canDecide = learning && version && (learning.state === "suggested" || learning.pendingVersion) && learningActionVersion(learning, "agree") === version.version && !version.proposalId;
+                    return <section className="recommendation-card" key={index}><h3>{recommendation.action}</h3><RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /><div className="button-row">{canDecide && <><button className="button primary" disabled={sending} onClick={() => void chooseLearning(learning, "agree")}>Try this</button><button className="button text-button" disabled={sending} onClick={() => void chooseLearning(learning, "decline")}>No thanks</button></>}<button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action)}>Discuss</button><button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action, true)}>Edit</button></div>{learning && <Link className="text-link" to={`/app/insights#record-${learning.id}`}>{learning.state === "suggested" ? "Review this suggestion" : "See what we’re learning"} ↗</Link>}</section>;
                   }) : null}
                   {decision && !decision.recommendations?.length && (
                     <details className="decision-inspector">
@@ -406,9 +398,10 @@ export function LiveCoach() {
         </div>
         <form className="live-composer" onSubmit={send}>
           {error && (
-            <p className="inline-error" role="alert">
-              {error}
-            </p>
+            <div className="inline-error" role="alert">
+              <p>{error.length > 240 ? "Adler couldn’t finish this request. Try again or adjust the request." : error}</p>
+              {error.length > 240 && <details><summary>What happened</summary><p>{error}</p></details>}
+            </div>
           )}
           <div>
             <textarea

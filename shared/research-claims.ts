@@ -8,6 +8,7 @@ export const researchClaimSchema = z
     statement: z.string().min(1).max(1800),
     role: z.enum(["theory", "technique", "empirical", "heuristic"]),
     construct: z.string().min(1).max(300),
+    label: z.string().min(1).max(100).optional(),
     methodIds: z.array(z.string()).min(1).max(7),
     principleIds: z
       .array(z.string().regex(/^P\d+$/))
@@ -38,6 +39,7 @@ export type ResearchClaim = z.infer<typeof researchClaimSchema>;
 export const RESEARCH_CLAIMS: ResearchClaim[] = [
   {
     id: "claim:goal-specific-challenging",
+    label: "Clear goals and a suitable challenge",
     version: "2026-09-07.1",
     statement:
       "The reviewed studies generally found better task performance with specific, difficult goals than with instructions to do one's best; specificity alone was insufficient.",
@@ -78,6 +80,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:goal-feedback-progress",
+    label: "Feedback on your progress",
     version: "2026-09-07.1",
     statement:
       "In the reviewed comparisons, goals accompanied by feedback about progress were more effective than goals alone.",
@@ -117,6 +120,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:goal-learning-before-performance",
+    label: "Learn a useful approach first",
     version: "2026-09-07.1",
     statement:
       "For unfamiliar complex tasks, the reviewed evidence supports considering strategy-learning goals when difficult performance targets interfere with acquiring an effective strategy.",
@@ -157,6 +161,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:implementation-if-then",
+    label: "Link a familiar moment to an action",
     version: "2026-09-07.1",
     statement:
       "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
@@ -196,6 +201,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:implementation-attainment",
+    label: "Cue-based action planning",
     version: "2026-09-07.1",
     statement:
       "Across 94 independent tests in this meta-analysis, implementation intentions improved goal attainment on average relative to comparison conditions.",
@@ -235,6 +241,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:monitoring-attainment",
+    label: "Keep track of meaningful progress",
     version: "2026-09-07.1",
     statement:
       "Across 138 studies involving 19,951 participants, interventions that increased progress monitoring improved goal attainment on average compared with controls.",
@@ -276,6 +283,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:com-b-opportunity",
+    label: "Time and space to act · COM-B",
     version: "2026-09-07.1",
     statement:
       "COM-B treats opportunity as external conditions that make a behaviour possible or prompt it, distinct from capability and motivation.",
@@ -316,6 +324,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:retrieval-delayed-retention",
+    label: "Practise recalling what you learn",
     version: "2026-09-07.1",
     statement:
       "In students learning prose passages, prior free-recall testing without feedback improved retention after two days or one week compared with restudy; restudy performed better after five minutes.",
@@ -355,6 +364,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:spacing-retention-horizon",
+    label: "Space your learning over time",
     version: "2026-09-07.1",
     statement:
       "In factual learning with delayed tests, the spacing gap associated with the best retention depended on how long the material needed to be retained.",
@@ -395,6 +405,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:review-debrief-performance",
+    label: "Learn from a structured review",
     version: "2026-09-07.1",
     statement:
       "Across 46 samples involving 2,136 participants, individual and team debriefs improved subsequent performance on average relative to controls.",
@@ -435,6 +446,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:individual-inference-transfer",
+    label: "Research averages and your experience",
     version: "2026-09-07.1",
     statement:
       "In the analyzed datasets, group-level estimates did not reliably describe individuals' within-person distributions and relationships.",
@@ -483,6 +495,7 @@ export const RESEARCH_CLAIMS: ResearchClaim[] = [
   },
   {
     id: "claim:review-proportionate-design",
+    label: "Choose a useful review point",
     version: "2026-09-07.1",
     statement:
       "Choose the least burdensome learning approach adequate for the pending decision, and revisit a change when relevant opportunities and interpretable feedback can inform that decision.",

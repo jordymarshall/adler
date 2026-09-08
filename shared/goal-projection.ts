@@ -59,24 +59,37 @@ export function goalProjection(data: Data, goal: Goal, today: string) {
   if (pace.low === pace.high && pace.expected > 0) { pace.low = pace.expected * .5; pace.high = pace.expected * 1.5; }
   const paceSource = weeklyRates.length >= 2 ? "Observed input pace" : "Provisional input pace";
   const pairs: { input: number; outcome: number; start: string; end: string; sourceIds: string[] }[] = [];
+  const excludedPeriods: { input: number | null; outcome: number; start: string; end: string; sourceIds: string[]; reason: string }[] = [];
+  let unresolvedOutcome = false;
   if (model.kind === "learned") {
     for (let index = 1; index < observations.length; index++) {
       const before = observations[index - 1], after = observations[index];
       const from = addDays(before.date, -model.feedbackDelayDays), to = addDays(after.date, -model.feedbackDelayDays);
-      if (from < model.observationStart || to <= from || after.value < before.value) continue;
       const inputs = records.filter(a => a.date > from && a.date <= to);
-      if (!inputs.length || inputs.some(a => quantity(a) === null)) continue;
-      const period = Array.from({ length: daysBetween(from, to) }, (_, day) => inputDay(addDays(from, day + 1)));
-      if (period.some(day => day.status === "unknown")) continue;
-      const input = inputs.reduce((sum, a) => sum + quantity(a)!, 0);
-      if (input > 0) pairs.push({ input, outcome: after.value - before.value, start: before.date, end: after.date, sourceIds: [before.id, after.id, ...inputs.map(a => a.id)] });
+      const period = Array.from({ length: Math.max(0, daysBetween(from, to)) }, (_, day) => inputDay(addDays(from, day + 1)));
+      const input = !inputs.length || inputs.some(a => quantity(a) === null) || period.some(day => day.status === "unknown")
+        ? null : inputs.reduce((sum, a) => sum + quantity(a)!, 0);
+      const interval = { input, outcome: after.value - before.value, start: before.date, end: after.date, sourceIds: [before.id, after.id, ...inputs.map(a => a.id)] };
+      let reason = "";
+      if (from < model.observationStart || to <= from) reason = "Outside the comparable observation window or without a distinct reporting interval.";
+      else if (interval.outcome < 0) {
+        reason = "The outcome decreased. Clarify refunds, corrections or a reset before estimating a return from this history.";
+        unresolvedOutcome = true;
+      } else if (input === null) reason = "Input reports are missing or their quantities are unknown.";
+      else if (input === 0) {
+        reason = interval.outcome > 0 ? "The outcome increased without recorded input. Check earlier work, other causes and feedback delay before estimating a return." : "No recorded input or outcome change; this does not define an input-to-outcome return.";
+        if (interval.outcome > 0) unresolvedOutcome = true;
+      }
+      if (reason) excludedPeriods.push({ ...interval, reason });
+      else pairs.push({ ...interval, input: input! });
     }
   }
-  const evidence = { model, unit, daily, pace, paceSource, pairs,
+  const evidence = { model, unit, daily, pace, paceSource, pairs, excludedPeriods,
     measured: records.filter(a => quantity(a) !== null).length, due: records.length,
     plannedDaily, sourceIds: records.filter(a => quantity(a) !== null).map(a => a.id) };
   if (current === null) return { ...base, status: "Record a starting outcome", projection: null, evidence };
   if (goal.status !== "Active" && goal.status !== "Draft") return { ...base, status: goal.status, projection: null, evidence };
+  if (unresolvedOutcome) return { ...base, status: "Review the outcome changes", projection: null, evidence };
   if (model.kind === "learned" && !pairs.length)
     return { ...base, status: "Learning the input–outcome link", projection: null, evidence };
   const conversion = model.inputPerOutcome;
@@ -109,7 +122,7 @@ export function goalProjection(data: Data, goal: Goal, today: string) {
     projection: { origin, horizon, points, expectedDate, earliestDate, latestDate, yieldRange,
       assumptions: [
         { label: "How this estimate works", text: model.rationale },
-        { label: "Starting from your last report", text: `The scenario starts today from ${current} ${measure.unit}${latest ? ` last reported on ${latest.date}` : " as the saved baseline"}. Any unreported outcome change is unknown; update it to revise this estimate.` },
+        { label: "Starting from your last report", text: `The scenario starts today. Last reported ${measure.label.toLowerCase()}: ${current}${latest ? ` (${latest.date})` : " (saved baseline)"}. Changes since that report are unknown; update it to revise this estimate.` },
         { label: "Future work", text: paceSource === "Provisional input pace" ? "Until two complete weeks are measured, the saved input budget is a scenario, with half to one-and-a-half times that pace. This is a provisional sensitivity range." : "The scenario uses complete weeks of recorded scheduled work. Identical weeks use a provisional half-to-one-and-a-half range instead of implying certainty. Unscheduled work is not estimated." },
         { label: "Gaps in the record", text: "Missing expected records and unanswered quantities are unknown and exclude a week or matched period. Days without planned work are labelled separately, not recorded as failed or zero-activity days." },
         { label: "How work relates to the result", text: model.kind === "direct" ? "The saved input-to-outcome conversion continues to apply." : "Future return is explored from zero to twice the observed average, or the largest observed return if higher. This is a provisional sensitivity range; association does not establish cause." },

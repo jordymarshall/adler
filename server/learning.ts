@@ -4,7 +4,9 @@ import type { CoachInsight } from "../src/program-types.ts";
 import type { Change } from "./commands.ts";
 import {
   currentLearningVersion,
+  learningActionVersion,
   learningRecordSchema,
+  type LearningAction,
   type EvidenceRevision,
   type LearningRecord,
   type LearningTest,
@@ -104,6 +106,8 @@ export function reconcileLearning(
   for (const record of data.learning ?? []) {
     if (
       record.state === "suggested" &&
+      record.activeVersion &&
+      currentLearningVersion(record).proposalId &&
       record.goalIds.some(
         (id) =>
           previous?.goals.find((g) => g.id === id)?.status === "Draft" &&
@@ -155,13 +159,19 @@ export function reconcileLearning(
     ];
     for (const source of references) {
       const now = evidenceRevision(data, source.id);
+      const correction = data.evidenceCorrections?.find(
+        (item) =>
+          item.active &&
+          item.source.id === source.id &&
+          item.source.version === source.version,
+      );
       if (
         source.kind === "measurement" &&
         record.state === "suggested" &&
         record.pendingVersion
       )
         continue;
-      if (now?.version === source.version) continue;
+      if (now?.version === source.version && !correction) continue;
       if (
         !record.invalidations.some(
           (i) => i.sourceId === source.id && i.version === current.version,
@@ -170,10 +180,19 @@ export function reconcileLearning(
         record.invalidations.push({
           at,
           sourceId: source.id,
+          ...(correction
+            ? {
+                replacementSourceIds: correction.replacements.map(
+                  (item) => item.id,
+                ),
+              }
+            : {}),
           version: current.version,
-          reason: now
-            ? "The source was corrected or its measurement changed."
-            : "The source is no longer available.",
+          reason: correction
+            ? correction.reason
+            : now
+              ? "The source was corrected or its measurement changed."
+              : "The source is no longer available.",
         });
       record.standing = "reconsider";
     }
@@ -205,6 +224,88 @@ export function reconcileLearning(
         });
     }
   }
+}
+
+export function applyLearningAction(
+  data: Data,
+  input: LearningAction,
+  proposals: { id: string; status: string }[],
+  at = new Date().toISOString(),
+) {
+  const { id, version, action } = input;
+  const record = data.learning?.find((record) => record.id === id);
+  if (!record || learningActionVersion(record, action) !== version)
+    throw new Error(
+      "This learning record changed. Review the current version.",
+    );
+  const deciding = action === "agree" || action === "decline";
+  const pending =
+    deciding && record.pendingVersion
+      ? record.versions.find((item) => item.version === record.pendingVersion)
+      : undefined;
+  const test = pending ?? currentLearningVersion(record);
+  if (deciding && !pending && record.state !== "suggested")
+    throw new Error("Only a pending suggestion can be accepted or declined.");
+  if (
+    action === "agree" &&
+    record.standing === "reconsider" &&
+    test.version === currentLearningVersion(record).version
+  )
+    throw new Error(
+      "The evidence changed. Discuss a fresh review in Check-in first.",
+    );
+  if (
+    deciding &&
+    test.proposalId &&
+    !proposals.some(
+      (proposal) =>
+        proposal.id === test.proposalId && proposal.status === "applied",
+    )
+  )
+    throw new Error(
+      "Review and accept the linked proposal so the actual plan and test stay together.",
+    );
+  if (action === "resume" && record.state !== "paused")
+    throw new Error("Only a paused test can be resumed.");
+  if (action === "pause" && !["agreed", "reviewed"].includes(record.state))
+    throw new Error("Only an agreed or reviewed test can be paused.");
+  if (
+    action === "close" &&
+    ["suggested", "declined", "closed"].includes(record.state)
+  )
+    throw new Error("Choose a current test to finish.");
+  if (action === "agree" || action === "resume") {
+    const preview = structuredClone(data),
+      candidate = preview.learning!.find((item) => item.id === id)!;
+    candidate.activeVersion = test.version;
+    candidate.goalIds = test.goalIds ?? candidate.goalIds;
+    candidate.state = "agreed";
+    candidate.standing = pending ? "untested" : candidate.standing;
+    delete candidate.pendingVersion;
+    reconcileLearning(preview, at);
+    if (candidate.standing === "reconsider")
+      throw new Error(
+        "The evidence changed. Discuss a fresh review in Check-in first.",
+      );
+    record.goalIds = candidate.goalIds;
+    record.activeVersion = test.version;
+    if (action === "agree") {
+      delete record.pendingVersion;
+      record.standing = "untested";
+    }
+    record.state = "agreed";
+  } else if (action === "decline") {
+    delete record.pendingVersion;
+    if (!record.activeVersion || record.activeVersion === test.version)
+      record.state = "declined";
+  } else record.state = action === "pause" ? "paused" : "closed";
+  record.events.push({
+    at,
+    state: record.state,
+    reason: deciding
+      ? `You ${action === "agree" ? "agreed to try" : "declined"} version ${version}. This is not evidence of use or effect.`
+      : `You chose to ${action} this test. This does not establish whether it worked.`,
+  });
 }
 
 export function setLearningAgreement(
@@ -282,7 +383,10 @@ export function saveLearning(
     const plan = JSON.parse(change.values).adaptive as AdaptivePlan | undefined;
     if (
       !plan?.reasoning ||
-      candidates.some((i) => i.learning && i.changeIndexes.includes(index))
+      candidates.some(
+        (i) =>
+          i.learning && !i.learning.result && i.changeIndexes.includes(index),
+      )
     )
       continue;
     const goalId = change.entity === "goal" ? change.id : change.parentId;
@@ -293,6 +397,9 @@ export function saveLearning(
       sourceIds: plan.reasoning.barrier.sourceIds,
       changeIndexes: [index],
       learning: {
+        recordId: candidates.find(
+          (i) => i.learning?.result && i.changeIndexes.includes(index),
+        )?.learning?.recordId,
         goalIds: [goalId],
         reasoning: plan.reasoning,
         hypothesis: plan.experiment?.hypothesis ?? plan.reasoning.fit,
@@ -525,7 +632,11 @@ export function saveLearning(
       events: [],
       invalidations: [],
     };
-    if (!previous || applied) record.goalIds = goalIds;
+    const implementsTest = insight.changeIndexes.some((index) =>
+      ["goal", "plan"].includes(changes[index]?.entity),
+    );
+    const testApplied = applied && implementsTest;
+    if (!previous || testApplied) record.goalIds = goalIds;
     record.versions.push({
       version,
       goalIds,
@@ -543,9 +654,9 @@ export function saveLearning(
       ],
       test,
       transfer: loop.transfer ?? null,
-      proposalId,
+      proposalId: implementsTest ? proposalId : null,
     });
-    if (applied) {
+    if (testApplied) {
       record.activeVersion = version;
       record.state = goalIds.some(
         (id) => data.goals.find((g) => g.id === id)?.status === "Draft",
@@ -553,7 +664,13 @@ export function saveLearning(
         ? "suggested"
         : "agreed";
       record.standing = "untested";
-    } else record.pendingVersion = version;
+    } else {
+      record.pendingVersion = version;
+      if (!record.activeVersion) {
+        record.state = "suggested";
+        record.standing = "untested";
+      }
+    }
     record.events.push({
       at,
       state: record.state,

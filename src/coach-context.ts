@@ -29,6 +29,7 @@ export function coachingContext(
   const goal = data.goals.find((g) => g.id === goalId);
   const goals = data.goals.filter((g) => g.status === "Active");
   const actions = data.actions.slice(-60);
+  const confirmedContext = data.memories.filter(memory => !(data.evidenceCorrections ?? []).some(correction => correction.active && correction.source.id === memory.id));
   const blocks = data.workBlocks.filter(
     (b) =>
       b.start.slice(0, 10) >= program.sprintStart &&
@@ -97,10 +98,10 @@ export function coachingContext(
     {
       id: "memory",
       label: "Confirmed context",
-      finding: data.memories.length
-        ? data.memories.map((m) => m.text).join("\n")
+      finding: confirmedContext.length
+        ? confirmedContext.map((m) => m.text).join("\n")
         : "No personal context saved. Adler should ask before assuming a preference.",
-      sources: data.memories.map((m) => m.id),
+      sources: confirmedContext.map((m) => m.id),
     },
     {
       id: "methods",
@@ -130,7 +131,7 @@ export function coachingContext(
       behavior: planProgress(data, g).map(({ actions, ...summary }) => ({ ...summary, records: actions.map(a => ({ id: a.id, date: a.date, outcome: a.outcome, amount: a.amount, note: a.note })) })),
       execution: executionSummary(data, g, today), learningEvidence: cycleEvidence(data, g, today), projection: goalProjection(data, g, today) })),
     recentActions: actions,
-    confirmedContext: data.memories.filter(memory => !(data.evidenceCorrections ?? []).some(correction => correction.active && correction.source.id === memory.id)),
+    confirmedContext,
     correctedContext: (data.evidenceCorrections ?? []).filter(correction => correction.active).map(correction => ({ ...correction, followUp: correction.replacements.map(source => data.messages.find(message => message.id === source.id)?.text ?? data.memories.find(memory => memory.id === source.id)?.text ?? "Open the correcting source record") })),
     currentLearning: (data.learning ?? []).map(record => ({
       id: record.id, goalIds: record.goalIds, pendingTest: record.versions.find(version => version.version === record.pendingVersion), state: record.state, standing: record.standing,
@@ -150,7 +151,7 @@ export function coachingContext(
           : goalId === "general" || m.goalId === goalId,
       )
       .slice(-12)
-      .map((m) => ({ id: m.id, goalId: m.goalId, role: m.role, text: m.text, at: m.at })),
+      .map((m) => ({ id: m.id, goalId: m.goalId, role: m.role, origin: m.origin ?? (m.channel === "job" ? "connected" : m.role === "user" ? "user" : "system"), channel: m.channel, text: m.text, at: m.at })),
     checks,
   };
 }

@@ -11,7 +11,7 @@ import type { ResearchSource } from "../shared/planning";
 import { recordLink } from "../shared/record-links";
 import "./learning-loops.css";
 import { LearningDashboard, type LearningControl } from "./LearningDashboard";
-import { currentLearningVersion, type LearningRecord } from "../shared/learning";
+import { learningActionVersion, type LearningRecord } from "../shared/learning";
 
 export interface InsightRow {
   id: string;
@@ -49,7 +49,7 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
         <span className="insight-open-label"><span>View evidence & reasoning</span><ChevronDown size={17} aria-hidden="true" /></span>
       </summary>
       {row.learning?.previousInsightId && <a className="previous-loop" href={`#learning-${row.learning.previousInsightId}`}>↳ Builds on an earlier learning cycle</a>}
-      <ol className="learning-canvas" role="list" aria-label="Coaching reasoning from evidence to the next test">
+      {row.learning ? <ol className="learning-canvas" role="list" aria-label="Coaching reasoning from evidence to the next test">
         <li className="learning-node observation-node">
           <div className="learning-stage"><b>01</b><span>OBSERVATION<small>Your reports</small></span></div>
           <div className="deduction-claim"><h3>What you reported</h3><p>{row.status === "Reported" ? row.finding : "Your check-ins provide the starting evidence."}</p></div>
@@ -80,7 +80,10 @@ export function InsightsMatrix({ rows }: { rows: InsightRow[] }) {
           <div className="deduction-claim"><h3>What to investigate next</h3><p>{row.learning?.nextHypothesis ?? "The next question follows from what we learn."}</p></div>
           <aside className="deduction-evidence"><small>The next experiment builds on this evidence. Earlier reasoning stays available.</small></aside>
         </li>
-      </ol>
+      </ol> : <div className="observation-detail">
+        <section><h3>What you told Adler</h3><p>{row.finding}</p><div className="insight-sources">{row.sources.map((source, index) => <details key={index}><summary>{source.label} <span>+</span></summary><p>{source.text}</p>{source.href && <Link to={source.href}>Open source ↗</Link>}</details>)}</div></section>
+        <section><h3>How this shapes your plan</h3><p>{row.implication}</p>{row.effect}</section>
+      </div>}
     </details>)}
   </div>;
 }
@@ -157,7 +160,7 @@ export function Insights() {
     setBusy(true); setError("");
     try {
       await flush();
-      await api("learning", { id: record.id, version: currentLearningVersion(record).version, action, requestId: crypto.randomUUID() });
+      await api("learning", { id: record.id, version: learningActionVersion(record, action), action, requestId: crypto.randomUUID() });
       await refresh();
     } catch (error) { setError((error as Error).message); } finally { setBusy(false); }
   }

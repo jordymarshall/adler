@@ -146,3 +146,25 @@ test("identical input-return pairs remain uncertain and gaps cannot create a com
   data.actions = data.actions.filter(action => action.date !== "2026-09-03");
   assert.equal(goalProjection(data, goal, today).evidence!.pairs.length, 2);
 });
+
+test("refunds and zero-input gains remain visible and cannot selectively improve the estimated return", () => {
+  const data = reading(), goal = data.goals[0], model = goal.plans[0].adaptive!.projection!;
+  model.kind = "learned"; model.inputMetric = "hours"; delete model.inputPerOutcome;
+  data.actions.forEach(action => { action.actualMinutes = 60; });
+  goal.results = [
+    { id: "start", date: "2026-09-01", value: 0, source: "Starting revenue" },
+    { id: "sale", date: "2026-09-08", value: 100, source: "A sale" },
+    { id: "refund", date: "2026-09-15", value: 50, source: "Refunded half" },
+  ];
+  const refund = goalProjection(data, goal, today);
+  assert.equal(refund.projection, null);
+  assert.equal(refund.evidence!.excludedPeriods.at(-1)!.outcome, -50);
+  assert.ok(refund.evidence!.excludedPeriods.at(-1)!.sourceIds.includes("refund"));
+  goal.results[2].value = 150;
+  data.actions.filter(action => action.date > "2026-09-08" && action.date <= "2026-09-15").forEach(action => { action.outcome = "Didn’t happen"; });
+  const noInput = goalProjection(data, goal, today);
+  assert.equal(noInput.projection, null);
+  assert.equal(noInput.evidence!.excludedPeriods.at(-1)!.input, 0);
+  assert.equal(noInput.evidence!.excludedPeriods.at(-1)!.outcome, 50);
+  assert.match(noInput.evidence!.excludedPeriods.at(-1)!.reason, /without recorded input/);
+});

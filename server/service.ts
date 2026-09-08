@@ -1,4 +1,4 @@
-import { currentLearningVersion, planNeedsReview } from "../shared/learning.ts";
+import { learningActionSchema, planNeedsReview } from "../shared/learning.ts";
 import { recordLink, resolveRecord } from "../shared/record-links.ts";
 import { currentRecord } from "../shared/change-record.ts";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -22,7 +22,7 @@ import { attachReasoningSources, behavioralMethodologyInstructions, groundingIns
 import { recommendationSchema, type Recommendation } from "../shared/behavioral-reasoning.ts";
 import { RESEARCH_CLAIMS } from "../shared/research-claims.ts";
 import { adaptiveInstructions } from "./adaptive-instructions.ts";
-import { evidenceRevision, reconcileLearning, saveLearning, setLearningAgreement, correctLearningEvidence } from "./learning.ts";
+import { evidenceRevision, reconcileLearning, saveLearning, setLearningAgreement, correctLearningEvidence, applyLearningAction } from "./learning.ts";
 import { executionSummary } from "../shared/goal-execution.ts";
 import {
   reactionTypes,
@@ -43,6 +43,7 @@ const replySchema = z
   .object({
     evidenceCorrections: z.array(z.object({ sourceId: z.string().min(1).max(150), replacementSourceIds: z.array(z.string().min(1).max(150)).min(1).max(10), reason: z.string().min(1).max(1200) }).strict()).max(10).default([]),
     recommendation: recommendationSchema.nullable().default(null),
+    learningActions: z.array(learningActionSchema).max(6).default([]),
     nextAssessmentAt: z.iso.datetime({ offset: true }).nullable().default(null),
     planCheck: z.array(changeSchema).max(20).default([]),
     reply: z.string().min(1).max(5000),
@@ -150,21 +151,7 @@ export class Service {
         return this.db.snapshot(userId);
       }
       const snapshot = this.db.snapshot(userId);
-      const record = snapshot.data.learning?.find(r => r.id === id);
-      if (!record || currentLearningVersion(record).version !== version) throw new Error("This learning record changed. Review the current version.");
-      const test = currentLearningVersion(record);
-      if (action === "agree" && record.state !== "suggested") throw new Error("This suggestion has already been considered.");
-      if (action === "decline" && record.state !== "suggested") throw new Error("Only an unstarted suggestion can be declined.");
-      if (action === "resume" && record.state !== "paused") throw new Error("Only a paused test can be resumed.");
-      if ((action === "agree" || action === "resume") && record.standing === "reconsider") throw new Error("The evidence changed. Discuss a fresh review in Check-in first.");
-      if ((action === "agree" || action === "decline") && test.proposalId && this.listProposals(userId).some(p => p.id === test.proposalId && p.status !== "applied"))
-        throw new Error("Review and accept the linked proposal so the actual plan and test stay together.");
-      if (action === "pause" && !["agreed", "reviewed"].includes(record.state)) throw new Error("Only an agreed or reviewed test can be paused.");
-      if (action === "close" && ["suggested", "declined", "closed"].includes(record.state)) throw new Error("Choose a current test to finish.");
-      if (action === "agree") { record.activeVersion = test.version; delete record.pendingVersion; }
-      if (action === "decline") delete record.pendingVersion;
-      record.state = action === "decline" ? "declined" : action === "pause" ? "paused" : action === "close" ? "closed" : "agreed";
-      record.events.push({ at: new Date().toISOString(), state: record.state, reason: action === "agree" || action === "resume" ? "You chose to try this support. Its use and effect still need your feedback." : `You chose to ${action} this test. This does not establish whether it worked.` });
+      applyLearningAction(snapshot.data, { id, version, action }, this.listProposals(userId));
       const saved = this.db.transaction(() => {
         const revision = this.db.save(userId, snapshot.data, snapshot.revision, channel, "Updated the learning test at your request.");
         const result = { revision, data: snapshot.data };
@@ -822,6 +809,8 @@ export class Service {
             if (loop.previousInsightId && !snapshot.data.decisions.some(d => d.insights?.some((_, index) => `${d.id}-${index}` === loop.previousInsightId)))
               throw new Error("Link a learning loop only to an existing insight ID from a previous decision.");
           }
+          if (result.learningActions.length && (externalContext || result.confirmProposalId))
+            throw new Error("Only the user can decide a learning test; keep it separate from confirming a plan proposal.");
           for (const correction of result.evidenceCorrections) {
             if (externalContext || !reportedSourceIds.has(correction.sourceId) || correction.sourceId === userMessageId || correction.replacementSourceIds.some(id => !reportedSourceIds.has(id)))
               throw new Error("An evidence correction needs an earlier personal source and the actual user report that corrects it. Connected context cannot correct a personal fact.");
@@ -844,12 +833,13 @@ export class Service {
           {
             const reviewedData = applyChanges(snapshot.data, result.changes, dayInZone(snapshot.data));
             if (!externalContext && !reviewedData.messages.some(m => m.id === userMessageId)) reviewedData.messages.push({ id: userMessageId, goalId: focusGoalId ?? goalId, role: "user", origin: "user", requestHash, text: message, at: new Date().toISOString(), channel });
+            for (const action of result.learningActions) applyLearningAction(reviewedData, action, this.listProposals(userId));
             correctLearningEvidence(reviewedData, result.evidenceCorrections, snapshot.data);
             saveLearning(reviewedData, "preview-decision", result.insights, result.changes, null, false, new Date().toISOString(), recommendations);
             const review = await this.runner(config, researchReviewInstructions + groundingReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              recommendations, currentLearning: context.currentLearning, proposedLearning: reviewedData.learning, researchClaims: turn.researchClaims, reportedSourceIds: [...reportedSourceIds], inputOrigin: turn.inputOrigin,
+              learningActions: result.learningActions, requestedExecution: result.execution, recommendations, currentLearning: context.currentLearning, proposedLearning: reviewedData.learning, researchClaims: turn.researchClaims, reportedSourceIds: [...reportedSourceIds], inputOrigin: turn.inputOrigin,
               changes: result.changes, insights: result.insights, evidenceCorrections: result.evidenceCorrections, coachingFramework: COACHING_FRAMEWORK, behavioralResearch, methodologyReadings, evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)), researchSources: literature, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
               executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...executionSummary(reviewedData, g) })),
             }, researchReviewSchema, 2200);
@@ -1029,6 +1019,7 @@ export class Service {
             .prepare("UPDATE proposals SET json=? WHERE id=?")
             .run(JSON.stringify(proposal), proposal.id);
         }
+        for (const action of result.learningActions) applyLearningAction(data, action, this.listProposals(userId));
         correctLearningEvidence(data, result.evidenceCorrections, snapshot.data);
         saveLearning(data, decisionId, result.insights, result.changes, proposal?.id ?? null, Boolean(applyNow), new Date().toISOString(), recommendations, applyNow ? data : applyChanges(data, result.changes, dayInZone(data)));
         reconcileLearning(data);

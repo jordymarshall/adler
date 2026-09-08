@@ -29,6 +29,7 @@ export function LearningDashboard({
   );
   const current = records.filter(
     (record) =>
+      !!record.pendingVersion ||
       ["suggested", "agreed", "paused"].includes(record.state) ||
       record.standing === "reconsider" ||
       (record.state === "reviewed" && record.reviews.at(-1)?.nextReviewAfter),
@@ -36,6 +37,9 @@ export function LearningDashboard({
   const past = records.filter((record) => !current.includes(record));
   function renderRecord(record: LearningRecord) {
     const version = currentLearningVersion(record);
+    const pending = record.versions.find(
+      (item) => item.version === record.pendingVersion,
+    );
     const reviews = record.reviews.filter(
       (review) => review.version === version.version,
     );
@@ -78,11 +82,56 @@ export function LearningDashboard({
           </span>
         </summary>
         <div className="learning-record-body">
-          {record.pendingVersion && record.activeVersion && (
-            <p className="learning-change">
-              A revised suggestion is waiting in <Link to={chat}>Check-in</Link>
-              . Your agreed test remains current until you accept it.
-            </p>
+          {pending && record.activeVersion && (
+            <section
+              className="learning-change"
+              aria-label="Revised suggestion"
+            >
+              <h3>A revised suggestion</h3>
+              <p>
+                <strong>{pending.test.change}</strong>
+              </p>
+              <p>
+                Your agreed test below remains current until you accept this
+                suggestion.
+              </p>
+              <BehavioralRationale
+                reasoning={pending.reasoning}
+                sources={
+                  data.decisions.find((item) => item.id === pending.decisionId)
+                    ?.researchSources
+                }
+                claims={
+                  data.decisions.find((item) => item.id === pending.decisionId)
+                    ?.researchClaims
+                }
+              />
+              <div className="button-row">
+                {onControl && !pending.proposalId && (
+                  <>
+                    <button
+                      className="button primary"
+                      disabled={busy}
+                      onClick={() => onControl(record, "agree")}
+                    >
+                      Try this
+                    </button>
+                    <button
+                      className="button text-button"
+                      disabled={busy}
+                      onClick={() => onControl(record, "decline")}
+                    >
+                      No thanks
+                    </button>
+                  </>
+                )}
+                <Link
+                  to={`/app/check-in?${new URLSearchParams({ prompt: `Let's discuss the pending suggestion “${pending.test.change}” (learning ${record.id}, version ${pending.version}) before I decide.` })}`}
+                >
+                  Discuss or edit in Check-in ↗
+                </Link>
+              </div>
+            </section>
           )}
           {record.standing === "reconsider" && (
             <p className="learning-correction" role="status">
@@ -307,13 +356,22 @@ export function LearningDashboard({
               record.standing !== "reconsider" &&
               record.state === "suggested" &&
               !version.proposalId && (
-                <button
-                  className="button secondary"
-                  disabled={busy}
-                  onClick={() => onControl(record, "agree")}
-                >
-                  Try this
-                </button>
+                <>
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => onControl(record, "agree")}
+                  >
+                    Try this
+                  </button>
+                  <button
+                    className="button text-button"
+                    disabled={busy}
+                    onClick={() => onControl(record, "decline")}
+                  >
+                    No thanks
+                  </button>
+                </>
               )}
             {onControl && ["agreed", "reviewed"].includes(record.state) && (
               <button

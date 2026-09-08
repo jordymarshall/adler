@@ -316,3 +316,75 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Short, distinct blocks keep the decision readable before the deeper method. */
+.recommendation-reasons > dl {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.recommendation-reasons > dl > div {
+  display: block;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 75%, var(--sage));
+}
+.recommendation-reasons > dl > div:nth-child(2) {
+  background: var(--sage);
+}
+.recommendation-reasons dt {
+  margin-bottom: 9px;
+  color: var(--green);
+  font-weight: 650;
+  line-height: 1.45;
+}
+.recommendation-reasons dd { font-size: 14px; line-height: 1.6; }
+.reasoning-path > li > div {
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--paper) 85%, var(--sage));
+}
+.reasoning-path > li:nth-child(2) > div {
+  background: color-mix(in srgb, var(--paper) 55%, var(--sage));
+}
+.reasoning-path > li:nth-child(3) > div { border-color: #aebba1; }
+.reasoning-path .reasoning-details,
+.behavioral-rationale > .reasoning-details,
+.coaching-preferences > .reasoning-details,
+.observation-detail {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.reasoning-path .reasoning-details > div,
+.behavioral-rationale > .reasoning-details > div,
+.coaching-preferences > .reasoning-details > div,
+.observation-detail > section {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 14px;
+  background: var(--paper);
+}
+.reasoning-path .reasoning-details dt { font-weight: 650; }
+.reasoning-path .reasoning-details dd { font-size: 14px; }
+.observation-detail { display: grid; padding: 22px 0; }
+.observation-detail h3 { font-size: 16px; margin: 0 0 12px; }
+.observation-detail p { line-height: 1.65; max-width: 60ch; }
+.coach-message-body > p + p,
+.coach-message-body > ul { margin-top: 14px; }
+.coach-message-body ul { padding-left: 22px; line-height: 1.65; }
+.coach-message-body li + li { margin-top: 9px; }
+.coach-message-body h4 { margin: 20px 0 8px; font-size: 15px; }
+.coach-message-body > :first-child { margin-top: 0; }
+.coach-message-body > :last-child { margin-bottom: 0; }
+.learning-controls { flex-wrap: wrap; }
+@media (max-width: 760px) {
+  .recommendation-reasons > dl,
+  .reasoning-path .reasoning-details,
+  .behavioral-rationale > .reasoning-details,
+  .coaching-preferences > .reasoning-details,
+  .observation-detail { grid-template-columns: 1fr; }
+  .recommendation-reasons > dl > div,
+  .reasoning-path > li > div { padding: 15px; }
+}

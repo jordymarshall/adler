@@ -75,7 +75,7 @@ export function BehavioralRationale({
           <details key={`${binding.claimId}:${binding.version}`}>
             <summary>
               {claim
-                ? `${roles[claim.role]} · ${claim.construct}`
+                ? `${roles[claim.role]} · ${claim.label ?? claim.construct}`
                 : "Earlier research reference"}
             </summary>
             {claim ? (
@@ -228,7 +228,7 @@ export function ScienceSource({
       target="_blank"
       rel="noreferrer"
     >
-      {source.construct} ↗
+      {source.label ?? source.construct} ↗
     </a>
   ) : null;
 }

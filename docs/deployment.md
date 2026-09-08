@@ -87,4 +87,4 @@ This version has no email verification/password recovery, managed identity provi
 
 ## Deployment status
 
-The production Node server has been tested locally. Vercel configuration and backend origin/session checks are prepared. A live Vercel + backend deployment still requires account access and a real persistent backend URL; no hosted app URL has been verified yet.
+The v2 production Node server passed a local browser-created account/goal, full restart persistence, session continuity and two-account isolation smoke test. See [release verification](evaluation/shared-coaching-v2.md). Vercel configuration and backend origin/session checks are prepared. The available Vercel login exposes only the unrelated `rio-domingo` project, and no Adler persistent backend origin or hosting credentials are configured. The hosting target has been requested. No hosted Adler app URL has been verified; deploying assets alone is not a successful app deployment.

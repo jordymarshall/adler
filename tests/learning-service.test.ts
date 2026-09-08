@@ -8,6 +8,14 @@ import { Service } from "../server/service.ts";
 import { adaptiveWorkspace, adaptiveFixture } from "./adaptive-fixture.ts";
 import { researched, literature, basis } from "./planning-fixture.ts";
 import { dateInZone } from "../shared/journey.ts";
+import { coachingContext } from "../src/coach-context.ts";
+import {
+  saveLearning,
+  reconcileLearning,
+  applyLearningAction,
+} from "../server/learning.ts";
+import { currentLearningVersion } from "../shared/learning.ts";
+import type { CoachInsight } from "../src/program-types.ts";
 
 test("accepting an adjustment preserves its prospective prediction and a corrected report reopens its evidence", async (t) => {
   const directory = mkdtempSync(join(tmpdir(), "adler-learning-"));
@@ -464,6 +472,22 @@ test("an explicit correction withdraws a hypothesis without rewriting the origin
     result.data.learning[0].invalidations[0].replacementSourceIds?.length,
   );
   const saved = db.snapshot(user.id);
+  const context = coachingContext(
+    saved.data,
+    "essay",
+    "Review the corrected availability",
+    today,
+  );
+  assert.equal(context.confirmedContext.length, 0);
+  assert.deepEqual(
+    context.checks.find((check) => check.id === "memory")!.sources,
+    [],
+  );
+  assert.ok(
+    !context.checks
+      .find((check) => check.id === "memory")!
+      .finding.includes("Breakfast is quiet every day"),
+  );
   await assert.rejects(
     correcting.learningAction(
       user.id,
@@ -484,4 +508,288 @@ test("an explicit correction withdraws a hypothesis without rewriting the origin
     correcting.update(user.id, spoofed, saved.revision, "unreviewed-science"),
     /shared coach/,
   );
+});
+
+test("standalone revisions can be declined or accepted across channels without activating unrelated advice", async (t) => {
+  const directory = mkdtempSync(join(tmpdir(), "adler-standalone-"));
+  const db = new Database(directory);
+  t.after(() => {
+    db.close();
+    rmSync(directory, { recursive: true, force: true });
+  });
+  const user = db.createUser("standalone", "a-long-test-password", "UTC");
+  const today = dateInZone("UTC"),
+    adaptive = adaptiveFixture(today, today);
+  const data = adaptiveWorkspace(adaptive),
+    reasoning = adaptive.reasoning!;
+  const insight: CoachInsight = {
+    finding: "A setup to try",
+    status: "To test",
+    sourceIds: [],
+    changeIndexes: [],
+    learning: {
+      goalIds: ["essay"],
+      hypothesis: reasoning.fit,
+      experiment: "Keep the draft open",
+      reasoning,
+      researchSourceIds: reasoning.researchSourceIds,
+      result: null,
+      insight: null,
+      nextHypothesis: null,
+      previousInsightId: null,
+      test: {
+        change: "Keep the draft open",
+        design: "prospective",
+        prediction: reasoning.prediction,
+        comparison: "No starting comparison",
+        start: today,
+        reviewAfter: today,
+        reviewRule: reasoning.reviewRule,
+        mechanismSignal: null,
+        behaviorSignal: "Whether you start",
+        outcomeSignal: null,
+        alternatives: [reasoning.limitation],
+      },
+    },
+  };
+  saveLearning(
+    data,
+    "first-advice",
+    [insight],
+    [
+      {
+        entity: "action",
+        operation: "update",
+        id: data.actions[0].id,
+        parentId: null,
+        values: JSON.stringify({ outcome: "Done" }),
+      },
+    ],
+    "unrelated-report",
+    true,
+  );
+  assert.equal(
+    data.learning![0].state,
+    "suggested",
+    "Saving an action report does not accept accompanying advice",
+  );
+  assert.equal(data.learning![0].versions[0].proposalId, null);
+  const beforeStart = structuredClone(data);
+  beforeStart.goals[0].status = "Draft";
+  reconcileLearning(data, new Date().toISOString(), beforeStart);
+  assert.equal(
+    data.learning![0].state,
+    "suggested",
+    "Starting a goal does not accept unrelated standalone advice",
+  );
+  db.save(user.id, data, 0, "web", "Suggested support");
+  const service = new Service(db),
+    id = data.learning![0].id;
+  await service.learningAction(user.id, id, 1, "agree", "try-first", "sms");
+  let state = db.snapshot(user.id);
+  insight.learning!.recordId = id;
+  insight.learning!.test!.prediction = "A different cue may help";
+  saveLearning(state.data, "second-advice", [insight], [], null, false);
+  db.save(user.id, state.data, state.revision, "web", "Second suggestion");
+  await service.learningAction(
+    user.id,
+    id,
+    2,
+    "decline",
+    "decline-second",
+    "mcp",
+  );
+  state = db.snapshot(user.id);
+  assert.equal(state.data.learning![0].activeVersion, 1);
+  assert.equal(state.data.learning![0].pendingVersion, undefined);
+  assert.equal(state.data.learning![0].state, "agreed");
+  saveLearning(state.data, "third-advice", [insight], [], null, false);
+  db.save(user.id, state.data, state.revision, "web", "Third suggestion");
+  await service.learningAction(user.id, id, 3, "agree", "accept-third", "sms");
+  const final = db.snapshot(user.id).data.learning![0];
+  assert.equal(final.activeVersion, 3);
+  assert.equal(final.pendingVersion, undefined);
+  assert.equal(final.versions.length, 3);
+  assert.equal(final.standing, "untested");
+  db.setSecret(user.id, "model-choice", {
+    provider: "gemini",
+    model: "fixture",
+    useServer: false,
+  });
+  db.setSecret(user.id, "model-gemini", { key: "fixture-only" });
+  const conversational = new Service(
+    db,
+    async (_config, _instructions, context: any, schema) => {
+      if (context.task === "review-plan") {
+        assert.deepEqual(context.learningActions, [
+          { id, version: 3, action: "pause" },
+        ]);
+        return schema.parse({ issues: [] });
+      }
+      return schema.parse({
+        reply: "Paused this test at your request.",
+        summary: "Pause the current test",
+        methods: [],
+        changes: [],
+        learningActions: [{ id, version: 3, action: "pause" }],
+      });
+    },
+  );
+  await conversational.chat(
+    user.id,
+    "Pause that test",
+    "essay",
+    "sms",
+    "pause-through-chat",
+  );
+  const paused = db.snapshot(user.id).data.learning![0];
+  assert.equal(paused.state, "paused");
+  await conversational.chat(
+    user.id,
+    "Pause that test",
+    "essay",
+    "sms",
+    "pause-through-chat",
+  );
+  assert.equal(
+    db.snapshot(user.id).data.learning![0].events.length,
+    paused.events.length,
+  );
+});
+
+test("reviewing an old test also preserves the prospective replacement attached to a new plan", () => {
+  const today = dateInZone("UTC"),
+    adaptive = adaptiveFixture(today, today),
+    data = adaptiveWorkspace(adaptive);
+  const change = {
+    entity: "plan" as const,
+    operation: "update" as const,
+    id: null,
+    parentId: "essay",
+    values: JSON.stringify({ adaptive }),
+  };
+  saveLearning(data, "original", [], [change], "initial-plan", true);
+  const record = data.learning![0];
+  data.messages.push({
+    id: "later-feedback",
+    role: "user",
+    origin: "user",
+    goalId: "essay",
+    text: "I tried the cue but was interrupted.",
+    at: new Date().toISOString(),
+  });
+  const next = structuredClone(adaptive);
+  next.reasoning!.prediction = "A lunch cue may make it easier to start";
+  next.reasoning!.barrier.sourceIds = ["later-feedback"];
+  const review: CoachInsight = {
+    finding: "The first cue was interrupted",
+    status: "To test",
+    sourceIds: ["later-feedback"],
+    changeIndexes: [0],
+    learning: {
+      recordId: record.id,
+      goalIds: ["essay"],
+      hypothesis: record.versions[0].hypothesis,
+      experiment: "Review the original cue",
+      reasoning: adaptive.reasoning!,
+      researchSourceIds: adaptive.reasoning!.researchSourceIds,
+      result: {
+        summary: "The cue was tried, but the window was interrupted",
+        sourceIds: ["later-feedback"],
+      },
+      insight: "The available window remains uncertain",
+      nextHypothesis: null,
+      previousInsightId: null,
+      review: {
+        exposure: "used",
+        mechanism: null,
+        behavior: "Interrupted",
+        outcome: null,
+        confounds: ["Meeting timing"],
+        decision: "adjust",
+        standing: "insufficient",
+        nextReviewAfter: null,
+      },
+    },
+  };
+  saveLearning(
+    data,
+    "review-and-adjust",
+    [review],
+    [{ ...change, values: JSON.stringify({ adaptive: next }) }],
+    "new-plan",
+    false,
+  );
+  assert.equal(record.reviews.length, 1);
+  assert.equal(record.versions.length, 2);
+  assert.equal(record.activeVersion, 1);
+  assert.equal(record.pendingVersion, 2);
+  assert.equal(record.versions[1].proposalId, "new-plan");
+  assert.equal(record.versions[1].test.prediction, next.reasoning!.prediction);
+});
+
+test("a new suggestion after an unstarted decline becomes the visible pending version", () => {
+  const today = dateInZone("UTC"),
+    adaptive = adaptiveFixture(today, today),
+    data = adaptiveWorkspace(adaptive);
+  saveLearning(
+    data,
+    "initial",
+    [],
+    [
+      {
+        entity: "plan",
+        operation: "update",
+        id: null,
+        parentId: "essay",
+        values: JSON.stringify({ adaptive }),
+      },
+    ],
+    null,
+    false,
+  );
+  const record = data.learning![0];
+  applyLearningAction(
+    data,
+    { id: record.id, version: 1, action: "decline" },
+    [],
+  );
+  assert.equal(record.state, "declined");
+  const previous = record.versions[0];
+  saveLearning(
+    data,
+    "revised",
+    [
+      {
+        finding: "Another setup to consider",
+        status: "To test",
+        sourceIds: [],
+        changeIndexes: [],
+        learning: {
+          recordId: record.id,
+          goalIds: ["essay"],
+          hypothesis: previous.hypothesis,
+          experiment: "A revised setup",
+          reasoning: previous.reasoning,
+          researchSourceIds: previous.reasoning.researchSourceIds,
+          test: {
+            ...previous.test,
+            change: "Open the draft before your chosen session",
+          },
+          result: null,
+          insight: null,
+          nextHypothesis: null,
+          previousInsightId: null,
+        },
+      },
+    ],
+    [],
+    null,
+    false,
+  );
+  assert.equal(record.state, "suggested");
+  assert.equal(record.standing, "untested");
+  assert.equal(currentLearningVersion(record).version, 2);
+  assert.equal(record.activeVersion, undefined);
+  assert.equal(record.versions.length, 2);
 });

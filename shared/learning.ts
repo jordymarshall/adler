@@ -148,11 +148,29 @@ export const learningRecordSchema = z
   .strict();
 export type LearningRecord = z.infer<typeof learningRecordSchema>;
 export type LearningTest = z.infer<typeof learningTestSchema>;
+export const learningActionSchema = z
+  .object({
+    id,
+    version: z.number().int().positive(),
+    action: z.enum(["agree", "decline", "pause", "resume", "close"]),
+  })
+  .strict();
+export type LearningAction = z.infer<typeof learningActionSchema>;
+
+export function learningActionVersion(
+  record: LearningRecord,
+  action: LearningAction["action"],
+) {
+  return (action === "agree" || action === "decline") && record.pendingVersion
+    ? record.pendingVersion
+    : currentLearningVersion(record).version;
+}
 
 export function currentLearningVersion(record: LearningRecord) {
   return (
     record.versions.find(
-      (version) => version.version === record.activeVersion,
+      (version) =>
+        version.version === (record.activeVersion ?? record.pendingVersion),
     ) ?? record.versions[0]
   );
 }
