@@ -35,7 +35,7 @@ All earlier integrity work remains in scope: provenance, unknown versus zero act
 
 ## Landing page: demonstrate the value before the interface
 
-Keep the chosen headline, five-section structure and established visual style as the starting point. Change the information hierarchy and the examples before revisiting decorative design. This is a recommendation to test, not evidence that five sections is optimal.
+Update, 7 September 2026: the user requests one continuous goal-to-outcome journey. The [landing journey implementation](landing-journey-implementation.md) supersedes the earlier introductory example plus five feature chapters. Keep the chosen headline and established visual brand; organize each stage around what happened and why the next action follows. The story order remains a product hypothesis to test, not a validated conversion result.
 
 The hero should immediately show a small, understandable example of **a report leading to a specific adjustment**. The visitor should not have to reach section 04 to discover that Adler learns from check-ins. Keep the headline, product explanation and call to action readable without scrolling through an animation.
 
@@ -54,7 +54,7 @@ Each section needs a specific benefit, one short explanation and one visually do
 
 ### Make real app demonstrations readable
 
-- Use the actual app's components or focused captures, with the same states and data definitions as the app. Offer the full screen as optional inspection. Do not build a separate marketing version of the product's behaviour.
+- Use focused captures of the actual app as the main demonstrations, with the same saved states and data definitions as the app. Offer enlargement for inspection. Do not build a separate marketing version of the product's behaviour.
 - Show less interface at a larger readable size. Higher image resolution cannot solve text displayed too small. Preserve the selected goal, status, units and context needed to understand the fragment.
 - Direct attention to one change: the recommendation, its accepted schedule, the new report or the reviewed hypothesis. A pointer can clarify an interaction; it should not compete with a moving background and another changing screen.
 - Use motion to connect before and after, then settle. Support manual progression, pause and reduced motion. The first static frame and nearby page text must already explain the point.

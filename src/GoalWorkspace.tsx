@@ -220,6 +220,9 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
+      <nav className="goal-section-index" aria-label="Goal sections">
+        {[["goal-overview", "Overview"], ["goal-plan", "Plan & timeline"], ["goal-progress", "Progress"], ["plan-learning", "Learning"], ["goal-details", "History & settings"]].map(([id, label]) => <Link key={id} to={`#${id}`}>{label}</Link>)}
+      </nav>
       <GoalPlan goal={goal}>
       <GoalOverview
         key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`}
@@ -227,11 +230,13 @@ export function GoalWorkspace({
         actionId={actionId ?? query.get("action") ?? undefined}
       />
       </GoalPlan>
+      <section id="goal-details" className="goal-section" aria-label="Goal history and settings" tabIndex={-1}>
+      <h2>History & settings</h2>
       <details
         className="journey-disclosure"
         open={tab === "plan" || undefined}
       >
-        <summary>Why this plan?</summary>
+        <summary>Why this plan? · Current reasoning & earlier versions</summary>
         <div className="goal-content">
           <p>{goal.success}</p>
           <button
@@ -279,7 +284,7 @@ export function GoalWorkspace({
         open={tab === "progress" || undefined}
       >
         <summary>
-          Progress & history · {goal.results.at(-1)?.value ?? "—"} /{" "}
+          Reports & measurement settings · {goal.results.at(-1)?.value ?? "—"} /{" "}
           {goal.target ?? goal.milestones.length} {goal.unit ?? "milestones"}
         </summary>
         <div className="goal-progress-layout journey-progress">
@@ -442,7 +447,7 @@ export function GoalWorkspace({
           </div>
         </div>
       </details>
-      <Link className="text-link" to={`/app/insights?goal=${goal.id}`}>See what we’re learning about this goal →</Link>
+      </section>
       {editing && <EditPlan goal={goal} onClose={() => setEditing(false)} />}
       {statusChange && (
         <Modal

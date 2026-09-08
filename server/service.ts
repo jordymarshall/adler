@@ -742,6 +742,8 @@ export class Service {
             if (creating || values.adaptive || (revising && result.execution === "propose")) {
               if (!values.adaptive) throw new Error("Include an adaptive plan: choose a concrete planning window, executable steps, feedback and assessment timing.");
               values.adaptive = adaptivePlanSchema.parse(values.adaptive);
+              if (!values.adaptive.projection && !values.adaptive.projectionUnavailableReason)
+                throw new Error("Make a deliberate projection decision: provide adaptive.projection or a plain-language projectionUnavailableReason. Choose the useful input and outcome tracking for the person; explain any missing relationship without asking them to configure an empty graph.");
               if (values.adaptive.reasoning) attachReasoningSources(values.adaptive.reasoning);
               if (values.adaptive.forecast) throw new Error("Omit legacy forecast settings. Define the controllable inputs and learning experiment instead.");
               for (const step of values.adaptive.steps) {

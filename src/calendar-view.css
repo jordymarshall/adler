@@ -3,7 +3,7 @@
 .calendar-view-switch { display: flex; padding: 3px; border: 1px solid var(--line); border-radius: 8px; }
 .calendar-view-switch button { border: 0; border-radius: 5px; background: transparent; color: var(--muted); padding: 6px 12px; font-size: 12px; }
 .calendar-view-switch button[aria-pressed="true"] { background: var(--sage); color: var(--ink); }
-.full-calendar .entry-work { color: var(--goal-color); border-color: var(--goal-color); background: color-mix(in srgb, var(--goal-color) 12%, var(--paper)); }
+.full-calendar .entry-work { color: var(--ink); border-color: var(--goal-color); background: color-mix(in srgb, var(--goal-color) 12%, var(--paper)); }
 .month-calendar-scroll { overflow-x: auto; margin-top: 22px; }
 .month-calendar { min-width: 770px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .month-weekdays, .month-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
@@ -42,4 +42,4 @@
   .full-calendar .calendar-legend { gap: 10px 16px; font-size: 10px; }
 }
 
-[data-theme="dark"] .full-calendar .entry-work { color: color-mix(in srgb, var(--goal-color) 35%, white); }
+[data-theme="dark"] .full-calendar .entry-work { color: var(--ink); }

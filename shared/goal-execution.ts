@@ -87,6 +87,14 @@ export function goalExecution(
     });
   }
   const markers = [
+    ...(plan.adaptive && goal.assessment?.nextAt !== null ? [{
+      id: `review-${plan.version}`,
+      label: "Review this plan",
+      date: dateInZone(data.timeZone, new Date(goal.assessment?.nextAt ?? plan.adaptive.assessment.at)),
+      detail: plan.adaptive.assessment.question,
+      done: false,
+      kind: "Review",
+    }] : []),
     ...goal.milestones.map((m) => ({
       id: m.id,
       label: m.title,

@@ -13,13 +13,13 @@ const scenes = [
     label: "02 · A shared plan",
   },
   {
-    title: "A smaller start. A real attempt.",
+    title: "One change. A real test.",
     body: "Some actions get easier. Others still don’t happen. Your check-in helps explain why.",
     label: "03 · Try it in real life",
   },
   {
     title: "A setback gives us something to learn.",
-    body: "Notice the friction. Try a better cue, a different time, or a lighter commitment.",
+    body: "Compare what you expected with what happened. Use the context to revisit the next step.",
     label: "04 · Learn and adjust",
   },
   {
@@ -145,8 +145,8 @@ export function LearningPreview({ stage }: { stage: number }) {
                 </g>
               </svg>
               <span className="learning-join-dot" aria-hidden="true" />
-              <span className="learning-adjustment first">A smaller start</span>
-              <span className="learning-adjustment second">A better cue</span>
+              <span className="learning-adjustment first">Test one change</span>
+              <span className="learning-adjustment second">Revise the hypothesis</span>
               <span className="learning-adjustment third">
                 A rhythm that fits
               </span>

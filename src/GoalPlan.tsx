@@ -3,11 +3,14 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Check, RefreshCw } from "lucide-react";
 import { currentPlan, formatDate, useStore, type Goal } from "./store";
 import { dateInZone } from "../shared/journey";
-import { goalExecution, cycleEvidence } from "../shared/goal-execution";
+import { goalExecution } from "../shared/goal-execution";
 import { CycleTimeline, WeeklyActions } from "./ExecutionTimeline";
 import { api, type ServiceStatus } from "./api";
 import type { Proposal } from "../server/service";
+import { LearningDashboard } from "./LearningDashboard";
 import { recordLink } from "../shared/record-links";
+import "./goal-structure.css";
+import "./coaching-learning.css";
 import { ProposalChanges } from "./ProposalChanges";
 import { GoalProjection } from "./GoalProjection";
 
@@ -22,9 +25,11 @@ export function GoalPlan({
   const plan = currentPlan(goal);
   const adaptive = plan.adaptive;
   const today = dateInZone(data.timeZone);
+  const reviewAt = goal.assessment?.nextAt === null ? null : goal.assessment?.nextAt ?? adaptive?.assessment.at;
+  const reviewLabel = reviewAt ? `Review ${formatDate(reviewAt)}` : "Review after useful feedback";
   const execution = goalExecution(data, goal, today);
   const summary = execution.summary;
-  const learning = cycleEvidence(data, goal, today);
+  const hasLearning = data.learning?.some(record => record.goalIds.includes(goal.id));
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [service, setService] = useState<ServiceStatus | null>(null);
   const [jobs, setJobs] = useState<
@@ -49,29 +54,11 @@ export function GoalPlan({
       .catch((e) => {
         if (live) setError(e.message);
       });
-    return () => {
-      live = false;
-    };
+    return () => { live = false; };
   }, [data]);
-  const pending = proposals.filter(
-    (p) =>
-      p.status === "pending" &&
-      p.expires > Date.now() &&
-      (p.goalId === goal.id ||
-        p.changes.some(
-          (c) =>
-            c.parentId === goal.id || (c.entity === "goal" && c.id === goal.id),
-        )),
-  );
-  const job = jobs.find(
-    (j) =>
-      j.goalId === goal.id &&
-      ["pending", "running", "failed"].includes(j.status),
-  );
-  const decisions = data.decisions
-    .filter((d) => d.goalId === goal.id)
-    .slice(-3)
-    .reverse();
+  const pending = proposals.filter(proposal => proposal.status === "pending" && proposal.expires > Date.now() &&
+    (proposal.goalId === goal.id || proposal.changes.some(change => change.parentId === goal.id || (change.entity === "goal" && change.id === goal.id))));
+  const job = jobs.find(item => item.goalId === goal.id && ["pending", "running", "failed"].includes(item.status));
   async function review(proposal: Proposal, choice: "approve" | "dismiss") {
     setBusy(true);
     setError("");
@@ -81,234 +68,33 @@ export function GoalPlan({
       await refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not update the plan.");
-    } finally {
-      setBusy(false);
-    }
-  }
-  function sourceText(id: string) {
-    const action = data.actions.find((a) => a.id === id);
-    if (action)
-      return `${action.date || "Unscheduled"}: ${action.title} · ${action.outcome ?? "Unknown"}${action.amount === undefined ? "" : ` · ${action.amount} recorded`}${action.note ? ` — ${action.note}` : ""}`;
-    return (
-      data.memories.find((m) => m.id === id)?.text ??
-      data.messages.find((m) => m.id === id)?.text ??
-      goal.results
-        .filter((r) => r.id === id)
-        .map(
-          (r) =>
-            `${r.date}: ${r.value} ${goal.measure?.unit ?? goal.unit ?? ""} — ${r.source}`,
-        )[0] ??
-      goal.milestones.find((m) => m.id === id)?.criterion ??
-      (id === goal.id
-        ? goal.success
-        : "This source record is no longer available.")
-    );
+    } finally { setBusy(false); }
   }
   return (
     <div className="goal-plan">
-      <section className="execution-status" aria-label="Goal and current cycle">
-        <div>
-          <span>What you’re working toward</span>
-          <strong>{goal.success}</strong>
-          <small>
-            {goal.targetDate
-              ? `${goal.deadline === "firm" ? "Firm deadline" : "Flexible target"} · ${formatDate(goal.targetDate)}`
-              : "No fixed deadline"}
-          </small>
+      <section id="goal-overview" className="goal-section" aria-label="Goal overview" tabIndex={-1}>
+        <div className="execution-status" role="region" aria-label="Goal and current cycle">
+          <div><span>What you’re working toward</span><strong>{goal.success}</strong><small>{goal.targetDate ? `${goal.deadline === "firm" ? "Firm deadline" : "Flexible target"} · ${formatDate(goal.targetDate)}` : "No fixed deadline"}</small></div>
+          <div><span>Current plan</span><strong>{adaptive?.window.label ?? "First action"}</strong><small>{adaptive ? `${formatDate(adaptive.window.start)}–${formatDate(adaptive.window.end)} · ${goal.status === "Draft" ? "Ready to start" : goal.status !== "Active" ? goal.status : today > adaptive.window.end ? "Ready for review" : today < adaptive.window.start ? "Starts soon" : "In progress"}` : "Review after your first action report"}</small></div>
+          <div><span>Reported so far</span><strong>{summary.done} / {summary.planned} actions done</strong><small>{summary.partial} partly · {summary.missed} didn’t happen<br />{summary.unknown} awaiting check-in · {summary.upcoming} upcoming</small></div>
         </div>
-        <div>
-          <span>{adaptive ? "Current planning cycle" : "Planning cycle"}</span>
-          <strong>{adaptive?.window.label ?? "Choose the first cycle"}</strong>
-          <small>
-            {adaptive
-              ? `${formatDate(adaptive.window.start)}–${formatDate(adaptive.window.end)} · ${goal.status !== "Active" ? (goal.status === "Draft" ? "Ready to start" : goal.status) : today > adaptive.window.end ? "Ready for review" : today < adaptive.window.start ? "Starts soon" : "In progress"}`
-              : "Define it together in Check-in"}
-          </small>
-        </div>
-        <div>
-          <span>{adaptive ? "Actions in this cycle" : "Saved actions"}</span>
-          <strong>
-            {summary.done} / {summary.planned} done
-          </strong>
-          <small>
-            {summary.partial} partly · {summary.missed} didn’t happen
-            <br />
-            {summary.unknown} awaiting check-in · {summary.upcoming} upcoming
-          </small>
-        </div>
+        <div className="execution-next">{children}</div>
       </section>
-      <GoalProjection data={data} goal={goal} today={today} />
-      <CycleTimeline data={data} goal={goal} today={today} />
-      <section className="plan-approach" aria-label="Behavioral approach">
-        <h2>How you’ll make room for the work</h2>
-        <p>
-          {adaptive?.approach ??
-            plan.basis?.strategy ??
-            "Choose a manageable action, a cue to start, and what you’ll learn from trying it."}
-        </p>
-        {adaptive && (
-          <p className="muted small-text">
-            {adaptive.window.rationale} · {adaptive.window.capacityMinutes}{" "}
-            minutes available this cycle
-            {adaptive.window.capacityStatus === "provisional"
-              ? " (provisional)"
-              : ""}
-          </p>
-        )}
+      <section id="goal-plan" className="goal-section" aria-label="Plan and timeline" tabIndex={-1}>
+        <div className="goal-section-heading"><div><span className="section-kicker">THE WORK BETWEEN HERE AND THE GOAL</span><h2>Plan & timeline</h2></div><Link className="text-link" to={`/app/check-in?${new URLSearchParams({ goal: goal.id, prompt: "Review my current planning window, actions and milestones. Suggest any useful changes and explain what follows this step." })}`}>Adjust with Adler ↗</Link></div>
+        <p className="goal-section-intro">{adaptive?.approach ?? plan.action}</p>
+        {adaptive && <details className="quiet-disclosure plan-approach"><summary>Why this planning period?</summary><p>{adaptive.window.rationale}</p><p>{adaptive.window.capacityMinutes} minutes {adaptive.window.capacityStatus === "provisional" ? "proposed" : "available"} · {reviewLabel}</p></details>}
+        {adaptive && <ol className="plan-step-sequence" aria-label="Actions in the current plan">{adaptive.steps.map((step, index) => <li key={step.id}><span className="plan-step-order">{index + 1}</span><div><strong>{step.title}</strong><p>{step.cue} · {step.durationMinutes} min{step.measure?.target ? ` · ${step.measure.target} ${step.measure.unit}` : ""}</p><details><summary>When it happens & what counts</summary><p>{formatDate(step.scheduledDate)}{step.recurrence ? ` to ${formatDate(step.recurrence.until)} · ${step.recurrence.weekdays ? step.recurrence.weekdays.map(day => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day]).join(", ") : `every ${step.recurrence.everyDays} ${step.recurrence.everyDays === 1 ? "day" : "days"}`}` : ""}</p><p>Finished when: {step.criterion}</p>{step.dependsOn.length > 0 && <p>After: {step.dependsOn.map(id => adaptive.steps.find(item => item.id === id)?.title).filter(Boolean).join("; ")}</p>}{step.milestoneId && <p>Contributes to: {goal.milestones.find(item => item.id === step.milestoneId)?.title}</p>}{step.fallback && <p>If the plan does not fit: {step.fallback}</p>}</details></div></li>)}</ol>}
+        <CycleTimeline data={data} goal={goal} today={today} />
+        <div className="plan-next-decision"><span>AFTER THIS STEP</span><p>{adaptive?.assessment.adaptation ?? "Tell Adler what happened with the first action. Use that experience to choose the next useful step."}</p><small>Later work can change with your feedback. A milestone is a verified result; a planning cycle is the work we choose before reviewing.</small></div>
       </section>
-      <WeeklyActions key={goal.id} data={data} goal={goal} today={today} />
-      <div className="execution-next">{children}</div>
-      <section
-        className="panel plan-learning"
-        id="plan-learning"
-        aria-label="Learning and adaptations"
-      >
-        <div className="list-heading">
-          <h2>What we’re learning</h2>
-          <RefreshCw size={18} />
-        </div>
-        {adaptive && (
-          <>
-            <p>
-              {adaptive.experiment?.hypothesis ?? adaptive.assessment.question}
-            </p>
-            <p className="small-text muted">
-              {goal.assessment?.nextAt === null
-                ? "Waiting for your input or new evidence"
-                : `Next assessment: ${new Date(goal.assessment?.nextAt ?? adaptive.assessment.at).toLocaleString(undefined, { timeZone: data.timeZone })}`}
-            </p>
-            <p className="small-text">
-              What we’ll reconsider: {adaptive.assessment.adaptation}
-            </p>
-          </>
-        )}
-        {adaptive?.experiment && (
-          <details className="learning-method quiet-disclosure">
-            <summary>How we’ll test this</summary>
-            <p>
-              <b>Signal to watch:</b> {adaptive.experiment.outcomeSignal}
-            </p>
-            <p>
-              <b>
-                Starting comparison
-                {adaptive.experiment.comparisonStatus === "unknown"
-                  ? " · not yet known"
-                  : " · reported"}
-                :
-              </b>{" "}
-              {adaptive.experiment.comparison}
-            </p>
-            {adaptive.experiment.comparisonSourceIds.map((id) => (
-              <p key={id}>
-                <Link
-                  to={recordLink(data, id) ?? `/app/check-in?goal=${goal.id}`}
-                >
-                  {sourceText(id)}
-                </Link>
-              </p>
-            ))}
-            <p>
-              <b>How we’ll decide:</b> {adaptive.experiment.decisionRule}
-            </p>
-            {!!adaptive.experiment.alternativeExplanations.length && (
-              <p>
-                <b>Other possible explanations:</b>{" "}
-                {adaptive.experiment.alternativeExplanations.join("; ")}
-              </p>
-            )}
-          </details>
-        )}
-        {learning && (
-          <>
-            <p className="small-text">
-              <b>{learning.status}</b> · {learning.feedbackDelayDays} days
-              allowed for feedback
-              {learning.firstFeedbackDate
-                ? ` · First feedback expected from ${formatDate(learning.firstFeedbackDate)}`
-                : ""}
-            </p>
-            <div className="cycle-evidence">
-              <div>
-                <h3>What you did</h3>
-                <p>
-                  {learning.counts.done} done · {learning.counts.partial} partly
-                  · {learning.counts.missed} didn’t happen ·{" "}
-                  {learning.counts.unknown} awaiting check-in
-                </p>
-                <details className="quiet-disclosure">
-                  <summary>Action evidence</summary>
-                  {learning.records.map((a) => (
-                    <p key={a.id}>
-                      <Link to={recordLink(data, a.id)!}>
-                        {formatDate(a.date)} · {a.title}
-                      </Link>{" "}
-                      · {a.outcome ?? "Awaiting check-in"}
-                      {a.note ? ` — ${a.note}` : ""}
-                    </p>
-                  ))}
-                </details>
-              </div>
-              <div>
-                <h3>What changed in the outcome</h3>
-                <p>
-                  {learning.baseline ? (
-                    <>
-                      Starting observation:{" "}
-                      <Link to={recordLink(data, learning.baseline.id)!}>
-                        {learning.baseline.value}{" "}
-                        {goal.measure?.unit ?? goal.unit} ·{" "}
-                        {formatDate(learning.baseline.date)}
-                      </Link>
-                    </>
-                  ) : (
-                    "No outcome recorded before this cycle."
-                  )}
-                </p>
-                {learning.results.length ? (
-                  learning.results.slice(-3).map((r) => (
-                    <p key={r.id}>
-                      <Link to={recordLink(data, r.id)!}>
-                        {formatDate(r.date)} · {r.value}{" "}
-                        {goal.measure?.unit ?? goal.unit}
-                      </Link>{" "}
-                      — {r.source}
-                    </p>
-                  ))
-                ) : (
-                  <p>
-                    No new numerical outcome observations. Review qualitative
-                    feedback in Check-in too.
-                  </p>
-                )}
-                {learning.notes.length > 0 && (
-                  <details className="quiet-disclosure">
-                    <summary>What you shared</summary>
-                    {learning.notes.map((m) => (
-                      <p key={m.id}>
-                        <Link to={recordLink(data, m.id)!}>{m.text}</Link>
-                      </p>
-                    ))}
-                  </details>
-                )}
-              </div>
-            </div>
-            <p className="small-text muted">
-              Review these together. A pattern can guide the next experiment; it
-              does not establish what caused the result.
-            </p>
-          </>
-        )}
-        {goal.assessment?.summary && <p>{goal.assessment.summary}</p>}
-        {!adaptive && (
-          <>
-            <h3>Review updated plan</h3>
-            <p>
-              Adler can connect this goal to executable work, a suitable
-              planning window, and regular feedback. Your results and booked
-              work stay with the goal.
-            </p>
-          </>
-        )}
+      <section id="goal-progress" className="goal-section" aria-label="Goal progress" tabIndex={-1}>
+        <GoalProjection data={data} goal={goal} today={today} />
+        <details className="quiet-disclosure action-history-chart"><summary>Explore action reports by week</summary><WeeklyActions key={goal.id} data={data} goal={goal} today={today} /></details>
+      </section>
+      <section className="plan-learning goal-section" id="plan-learning" aria-label="Learning and adaptations" tabIndex={-1}>
+        <div className="goal-section-heading"><div><span className="section-kicker">WHAT CHANGES WITH EXPERIENCE</span><h2>Your learning journey</h2></div><RefreshCw size={18} /></div>
+        {hasLearning ? <LearningDashboard data={data} goalId={goal.id} /> : <div className="plan-learning-start"><p>{adaptive?.experiment?.hypothesis ?? adaptive?.assessment.question ?? "Your first action is the starting point. Tell Adler what helped or got in the way."}</p><small>{adaptive ? `${reviewLabel} · ${adaptive.experiment?.comparison ?? "Your first reports will establish a useful comparison."}` : "No personal explanation has been tested yet."}</small>{adaptive?.experiment && <details className="quiet-disclosure learning-method"><summary>How we’ll test this</summary><dl className="reasoning-details"><div><dt>Starting comparison · {adaptive.experiment.comparisonStatus === "reported" ? "reported" : "not yet known"}</dt><dd>{adaptive.experiment.comparison}</dd><div className="evidence-links">{adaptive.experiment.comparisonSourceIds.map((id, index) => <Link key={id} to={recordLink(data, id) ?? `/app/check-in?goal=${goal.id}`}>Starting report {index + 1} ↗</Link>)}</div></div><div><dt>Signal to watch</dt><dd>{adaptive.experiment.outcomeSignal}</dd></div><div><dt>How we’ll decide</dt><dd>{adaptive.experiment.decisionRule}</dd></div>{adaptive.experiment.alternativeExplanations.length > 0 && <div><dt>Other possible explanations</dt><dd><ul>{adaptive.experiment.alternativeExplanations.map(explanation => <li key={explanation}>{explanation}</li>)}</ul></dd></div>}</dl></details>}</div>}
         {!service?.coach.configured && service && (
           <p className="small-text">
             <Link to="/app/settings/provider">Connect your coach</Link> to
@@ -355,43 +141,9 @@ export function GoalPlan({
             </div>
           </article>
         ))}
-        {decisions
-          .filter((d) => d.insights?.length)
-          .map((d) => (
-            <article className="plan-insight" key={d.id}>
-              <small>
-                {formatDate(d.date)} · {d.status}
-              </small>
-              {d.insights?.map((insight, i) => (
-                <div key={i}>
-                  <p>
-                    <b>
-                      {insight.status === "To test"
-                        ? "Explanation to test"
-                        : "Reported"}
-                      :
-                    </b>{" "}
-                    {insight.finding}
-                  </p>
-                  <details className="quiet-disclosure">
-                    <summary>Evidence behind this observation</summary>
-                    {insight.sourceIds.map((id) => (
-                      <p key={id}>{sourceText(id)}</p>
-                    ))}
-                  </details>
-                </div>
-              ))}
-            </article>
-          ))}
-        {!pending.length && (
-          <Link
-            className="text-link"
-            to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent(adaptive ? "Help me review my behavior and what we should adjust in this plan." : "Help me update this plan around my behavior and what you know about me. Preserve my history and bookings.")}`}
-          >
-            {adaptive ? "Continue in Check-in" : "Discuss an updated plan"}{" "}
-            <ArrowRight size={15} />
-          </Link>
-        )}
+
+        <Link className="text-link" to={`/app/check-in?${new URLSearchParams({ goal: goal.id, prompt: adaptive ? `Let’s check in on this plan. You wanted to know: ${adaptive.assessment.question} Here is what happened: ` : "Help me review my first action and develop the next planning period. Choose useful tracking and keep my history and bookings." })}`}>{adaptive ? "Continue in Check-in" : "Discuss an updated plan"} <ArrowRight size={15} /></Link>
+        <Link className="text-link goal-all-insights" to={`/app/insights?goal=${goal.id}`}>All insights for this goal ↗</Link>
       </section>
     </div>
   );

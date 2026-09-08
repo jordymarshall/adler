@@ -15,6 +15,8 @@ import {
 } from "./BehavioralRationale";
 import { formatDate, type Data } from "./store";
 
+import { LearningJourney } from "./LearningJourney";
+
 export type LearningControl =
   "agree" | "decline" | "pause" | "resume" | "close";
 export function LearningDashboard({
@@ -54,7 +56,7 @@ export function LearningDashboard({
     );
     const reviewDate = review?.nextReviewAfter ?? version.test.reviewAfter;
     const goals = data.goals.filter((goal) => record.goalIds.includes(goal.id));
-    const chat = `/app/check-in?${new URLSearchParams({ goal: goals.length === 1 ? goals[0].id : "general", prompt: `Let's review “${version.test.change}” (${record.id}). Here is what happened: ` })}`;
+    const chat = `/app/check-in?${new URLSearchParams({ goal: goals.length === 1 ? goals[0].id : "general", prompt: `Let's discuss “${version.test.change}” (${record.id}, version ${version.version}) and whether it fits me.` })}`;
     const sources = version.sources.filter(
       (source) => source.kind !== "measurement",
     );
@@ -83,7 +85,7 @@ export function LearningDashboard({
             </span>
           </span>
           <span className="learning-record-open">
-            See why <span aria-hidden="true">↗</span>
+            Explore <span aria-hidden="true">↗</span>
           </span>
         </summary>
         <div className="learning-record-body">
@@ -144,6 +146,69 @@ export function LearningDashboard({
               Adler before using it to guide a new plan.
             </p>
           )}
+          <LearningJourney data={data} record={record} />
+                <div className="button-row learning-controls">
+                  {onControl &&
+                    record.standing !== "reconsider" &&
+                    record.state === "suggested" &&
+                    !version.proposalId && (
+                      <>
+                        <button
+                          className="button primary"
+                          disabled={busy}
+                          onClick={() => onControl(record, "agree")}
+                        >
+                          Try this
+                        </button>
+                        <button
+                          className="button text-button"
+                          disabled={busy}
+                          onClick={() => onControl(record, "decline")}
+                        >
+                          No thanks
+                        </button>
+                      </>
+                    )}
+                  <Link className="button secondary" to={chat}>
+                    {record.standing === "reconsider"
+                      ? "Review what changed"
+                      : "Discuss in Check-in"}
+                  </Link>
+                  {onControl &&
+                    ["agreed", "reviewed"].includes(record.state) && (
+                      <button
+                        className="button text-button"
+                        disabled={busy}
+                        onClick={() => onControl(record, "pause")}
+                      >
+                        Pause
+                      </button>
+                    )}
+                  {onControl &&
+                    record.state === "paused" &&
+                    record.standing !== "reconsider" && (
+                      <button
+                        className="button secondary"
+                        disabled={busy}
+                        onClick={() => onControl(record, "resume")}
+                      >
+                        Resume
+                      </button>
+                    )}
+                  {onControl &&
+                    !["closed", "declined", "suggested"].includes(
+                      record.state,
+                    ) && (
+                      <button
+                        className="button text-button"
+                        disabled={busy}
+                        onClick={() => onControl(record, "close")}
+                      >
+                        Finish trying this
+                      </button>
+                    )}
+                </div>
+          <details className="current-test-reasoning"><summary>Why this test? · Behavioural science & evidence</summary>
           <ol
             className="reasoning-path inference-layout"
             aria-label="From your experience to a useful change"
@@ -206,70 +271,9 @@ export function LearningDashboard({
                 <span className="section-kicker">
                   {record.state === "suggested"
                     ? "A CHANGE TO TRY"
-                    : "THE CHANGE"}
+                    : "CURRENT TEST"}
                 </span>
                 <h3>{version.test.change}</h3>
-                <div className="button-row learning-controls">
-                  {onControl &&
-                    record.standing !== "reconsider" &&
-                    record.state === "suggested" &&
-                    !version.proposalId && (
-                      <>
-                        <button
-                          className="button primary"
-                          disabled={busy}
-                          onClick={() => onControl(record, "agree")}
-                        >
-                          Try this
-                        </button>
-                        <button
-                          className="button text-button"
-                          disabled={busy}
-                          onClick={() => onControl(record, "decline")}
-                        >
-                          No thanks
-                        </button>
-                      </>
-                    )}
-                  <Link className="button secondary" to={chat}>
-                    {record.standing === "reconsider"
-                      ? "Review what changed"
-                      : "Discuss in Check-in"}
-                  </Link>
-                  {onControl &&
-                    ["agreed", "reviewed"].includes(record.state) && (
-                      <button
-                        className="button text-button"
-                        disabled={busy}
-                        onClick={() => onControl(record, "pause")}
-                      >
-                        Pause
-                      </button>
-                    )}
-                  {onControl &&
-                    record.state === "paused" &&
-                    record.standing !== "reconsider" && (
-                      <button
-                        className="button secondary"
-                        disabled={busy}
-                        onClick={() => onControl(record, "resume")}
-                      >
-                        Resume
-                      </button>
-                    )}
-                  {onControl &&
-                    !["closed", "declined", "suggested"].includes(
-                      record.state,
-                    ) && (
-                      <button
-                        className="button text-button"
-                        disabled={busy}
-                        onClick={() => onControl(record, "close")}
-                      >
-                        Finish trying this
-                      </button>
-                    )}
-                </div>
                 <dl className="reasoning-details">
                   <div>
                     <dt>Expected effect</dt>
@@ -449,6 +453,7 @@ export function LearningDashboard({
               </div>
             </li>
           </ol>
+          </details>
           <details className="quiet-disclosure learning-history">
             <summary>
               Original reasoning & history · {record.versions.length}{" "}
@@ -474,6 +479,26 @@ export function LearningDashboard({
                       ?.researchClaims
                   }
                 />
+                {item.version !== version.version && record.reviews
+                  .filter(review => review.version === item.version)
+                  .map(review => <article className="learning-review" key={review.id}>
+                    <h5>Review · {formatDate(review.at)}</h5>
+                    <small>{learningStanding[review.standing]} · earlier version</small>
+                    <p>{review.summary}</p>
+                    <details className="quiet-disclosure review-observations">
+                      <summary>What you reported</summary>
+                      <dl className="reasoning-details">
+                        <div><dt>Was the change used?</dt><dd>{review.exposure === "unknown" ? "Not established" : review.exposure === "used" ? "Reported as used" : "Reported as not used"}</dd></div>
+                        {review.mechanism && <div><dt>What helped or got in the way</dt><dd>{review.mechanism}</dd></div>}
+                        {review.behavior && <div><dt>What you did</dt><dd>{review.behavior}</dd></div>}
+                        {review.outcome && <div><dt>Goal result</dt><dd>{review.outcome}</dd></div>}
+                      </dl>
+                    </details>
+                    {review.implication && <p><b>For the plan then:</b> {review.implication}</p>}
+                    {review.nextQuestion && <p><b>Next question:</b> {review.nextQuestion}</p>}
+                    {review.confounds.length > 0 && <p><b>Other explanations:</b> {review.confounds.join(" ")}</p>}
+                    <div className="evidence-links">{review.sources.map(source => <Link key={source.id} to={recordLink(data, source.id) ?? chat}>Original report ↗</Link>)}</div>
+                  </article>)}
               </div>
             ))}
             {record.events.map((event, index) => (

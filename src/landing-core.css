@@ -1750,185 +1750,7 @@
   color: #626957;
   padding-bottom: 12px;
 }
-@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
-  .v2-landing .journey-hero {
-    height: 640svh;
-  }
-  .v2-landing .hero-sticky {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    padding: 125px 24px 0;
-  }
-  .v2-landing .hero-intro-v2 {
-    opacity: clamp(0, calc(1 - var(--journey) * 7), 1);
-    transform: translateY(calc(var(--journey) * -100px));
-  }
-  .v2-landing .hero-objects {
-    display: block;
-    position: absolute;
-    left: 50%;
-    top: 540px;
-    width: min(1200px, calc(100% - 80px));
-    height: 420px;
-    transform: translate(-50%, calc(var(--journey) * -250px));
-    opacity: clamp(0, calc(2.5 - var(--journey) * 12), 1);
-  }
-  .v2-landing .hero-connecting-path {
-    position: absolute;
-    left: -6%;
-    top: -30px;
-    width: 112%;
-    height: 100%;
-  }
-  .v2-landing .hero-float {
-    position: absolute;
-    padding: 24px;
-    background: #fffefa;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    box-shadow: 0 15px 45px #344a2b0c;
-  }
-  .v2-landing .hero-float small {
-    display: block;
-    font-size: 9px;
-    letter-spacing: 0.06em;
-    color: #626957;
-  }
-  .v2-landing .hero-float h3 {
-    font-size: 25px;
-    line-height: 1.25;
-    margin: 15px 0 10px;
-    letter-spacing: -0.03em;
-  }
-  .v2-landing .hero-float p {
-    font-size: 12px;
-    color: #626957;
-  }
-  .v2-landing .floating-goal {
-    left: calc(70% - var(--gather) * 35%);
-    top: 5px;
-    width: 290px;
-    transform: rotate(calc(4deg - var(--gather) * 4deg));
-  }
-  .v2-landing .floating-goal > svg {
-    margin-bottom: 15px;
-    color: #657347;
-  }
-  .v2-landing .floating-progress {
-    left: calc(1% + var(--gather) * 30%);
-    top: 65px;
-    width: 310px;
-    transform: rotate(calc(-6deg + var(--gather) * 6deg));
-  }
-  .v2-landing .floating-progress .progress-viz svg text {
-    font-size: 22px;
-  }
-  .v2-landing .floating-progress .chart-legend,
-  .v2-landing .floating-progress .chart-footer {
-    display: none;
-  }
-  .v2-landing .floating-action {
-    left: calc(43% - var(--gather) * 8%);
-    top: 95px;
-    width: 270px;
-    background: #edf2df;
-    transform: rotate(calc(-3deg + var(--gather) * 3deg));
-  }
-  .v2-landing .floating-coach {
-    left: calc(33% + var(--gather) * 2%);
-    top: 305px;
-    width: 330px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transform: rotate(calc(2deg - var(--gather) * 2deg));
-  }
-  .v2-landing .hero-assembled {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    max-width: none;
-    height: 100%;
-    margin: 0;
-    opacity: clamp(0, calc(var(--journey) * 14 - 2.8), 1);
-    transform: none;
-  }
-}
-@media (min-width: 900px) and (min-height: 700px) and (max-height: 850px) and (prefers-reduced-motion: no-preference) {
-  .v2-landing .hero-sticky {
-    padding-top: 105px;
-  }
-  .v2-landing .hero-intro-v2 h1 {
-    font-size: 78px;
-  }
-  .v2-landing .hero-intro-v2 > p {
-    margin-top: 18px;
-  }
-  .v2-landing .hero-objects {
-    top: 440px;
-    transform: translate(-50%, calc(var(--journey) * -220px)) scale(0.9);
-  }
-  .v2-landing .hero-assembled > h2 {
-    font-size: 36px;
-    margin-bottom: 16px;
-  }
-}
-@media (max-width: 650px) {
-  .v2-landing .hero-sticky {
-    padding: 135px 24px 55px;
-  }
-  .v2-landing .hero-assembled {
-    margin-top: 45px;
-  }
-  .v2-landing .hero-assembled > h2 {
-    font-size: 33px;
-  }
-  .v2-landing .hero-assembled .preview-content {
-    padding: 20px;
-  }
-  .v2-landing .journey-preview {
-    padding: 20px;
-  }
-  .v2-landing .journey-preview > h4 {
-    font-size: 25px;
-  }
-  .v2-landing .chapter-label {
-    margin-bottom: 12px;
-  }
-}
-
-/* Five focused chapters, with a static flow on small screens and reduced motion. */
-.v2-landing .adaptive-path { padding: 0 5vw; }
-.v2-landing .focus-chapter { position: relative; isolation: isolate; border-bottom: 1px solid var(--line); scroll-margin-top: 40px; }
-.v2-landing .chapter-stage { display: grid; grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); gap: 7vw; align-items: center; max-width: 1300px; margin: auto; padding: 80px 0; }
-.v2-landing .focus-chapter .chapter-copy h2 { font-size: clamp(37px, 4.4vw, 65px); line-height: 1.1; letter-spacing: -.045em; margin: 25px 0; text-wrap: balance; }
-.v2-landing .focus-chapter .chapter-copy h2 em { color: #6b7e4e; display: block; }
-.v2-landing .focus-chapter .chapter-copy > p { font-size: 15px; max-width: 440px; color: #626957; }
-.v2-landing .focus-number { display: inline-flex; width: 31px; height: 31px; border: 1px solid #cad4b7; border-radius: 50%; align-items: center; justify-content: center; margin-right: 12px; letter-spacing: 0; }
-.v2-landing .chapter-position { display: flex; gap: 7px; margin-top: 32px; }
-.v2-landing .chapter-position a { width: 35px; height: 18px; position: relative; }
-.v2-landing .chapter-position a::after { content: ""; position: absolute; inset: 7px 0; border-radius: 3px; background: #d8dfca; }
-.v2-landing .chapter-position a[aria-current]::after { background: #6d8050; }
-.v2-landing .focus-chapter .journey-preview { max-width: none; padding: 30px; border-radius: 18px; box-shadow: 0 20px 70px #35492109; }
-.v2-landing .focus-chapter .journey-preview h3 { font-size: 28px; line-height: 1.2; }
-@media (min-width: 1000px) and (min-height: 760px) and (prefers-reduced-motion: no-preference) {
-  .v2-landing .focus-chapter { min-height: 155svh; }
-  .v2-landing .chapter-stage { position: sticky; top: 0; min-height: 100svh; padding-block: 35px; transform: scale(calc(.92 + var(--chapter-focus, 1) * .08)); opacity: calc(.45 + var(--chapter-focus, 1) * .55); }
-}
-@media (max-width: 800px) {
-  .v2-landing .adaptive-path { padding: 0 24px; }
-  .v2-landing .chapter-stage { grid-template-columns: 1fr; gap: 32px; padding: 65px 0; }
-  .v2-landing .focus-chapter .chapter-copy > p { max-width: none; font-size: 14px; }
-  .v2-landing .focus-chapter .journey-preview { padding: 23px 18px; }
-  .v2-landing .chapter-position { margin-top: 20px; }
-}
-
-.v2-landing .focus-chapter .journey-preview > h3 { margin: 18px 0 26px; }
-
 /* Captures of the real app, with native mobile screens and a larger view. */
-.v2-landing .focus-chapter:has(.app-capture-preview) .chapter-stage { grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 5vw; max-width: 1360px; }
 .v2-landing .app-capture-preview { margin: 0 0 0 auto; min-width: 0; width: 100%; max-width: 700px; --cursor-x: var(--cursor-desktop-x); --cursor-y: var(--cursor-desktop-y); }
 .v2-landing .app-capture-window { display: block; width: 100%; padding: 0; overflow: hidden; text-align: left; border: 1px solid #dce1d3; border-radius: 13px; background: #faf9f6; box-shadow: 0 24px 65px #293a2d12, 0 2px 8px #293a2d06; cursor: zoom-in; }
 .v2-landing .app-capture-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e2e5d9; background: #f0f2e9; font-size: 11px; color: #536148; }
@@ -1941,7 +1763,6 @@
 .v2-landing .capture-cursor { position: absolute; left: 78%; top: 78%; color: #fffefa; fill: #293a2d; filter: drop-shadow(0 1px 2px #293a2d40); opacity: 0; animation: capture-cursor 9s infinite; pointer-events: none; }
 .v2-landing .capture-click { position: absolute; left: var(--cursor-x); top: var(--cursor-y); width: 28px; height: 28px; margin: -14px; border: 1px solid #677e48; border-radius: 50%; opacity: 0; animation: capture-click 9s infinite; pointer-events: none; }
 .v2-landing .app-capture-preview .capture-animation { animation-play-state: paused; }
-.v2-landing .focus-chapter.is-current .app-capture-preview[data-paused="false"] .capture-animation { animation-play-state: running; }
 .v2-landing .capture-playback { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 6px; margin: -4px 0 -4px auto; border: 0; background: transparent; color: inherit; font-size: inherit; }
 .v2-landing .app-capture-preview[data-guided="true"] .capture-animation { animation-duration: 18s; }
 .v2-landing .capture-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
@@ -1961,22 +1782,14 @@
 .v2-landing .app-capture-preview .modal { width: 1440px; max-width: calc(100vw - 48px); padding: 22px; }
 .v2-landing .app-capture-preview .modal-header { margin-bottom: 18px; }
 .v2-landing .app-capture-preview .modal-header h2 { font-size: 24px; }
-@media (max-width: 800px) {
-  .v2-landing .focus-chapter:has(.app-capture-preview) .chapter-stage { grid-template-columns: 1fr; gap: 32px; }
-}
 @media (max-width: 650px) {
   .v2-landing .app-capture-preview { max-width: 320px; margin-inline: auto; --cursor-x: var(--cursor-mobile-x); --cursor-y: var(--cursor-mobile-y); }
   .v2-landing .app-capture-preview .modal { max-width: calc(100vw - 20px); padding: 12px; }
 }
 
-/* Restore the floating-card hero while keeping the five focused chapters. */
+/* Landing typography and the connected-phone demonstration. */
 .v2-landing .hero-intro-v2 h1 { max-width: 920px; margin-inline: auto; font-size: clamp(44px, 5.6vw, 78px); text-wrap: balance; line-height: 1.07; }
 .v2-landing .hero-intro-v2 > p { max-width: 630px; margin-inline: auto; text-wrap: balance; }
-.v2-landing .hero-action-chart { display: block; width: 100%; margin: 18px 0 2px; fill: none; stroke: #a37459; stroke-width: 2; }
-.v2-landing .floating-goal .hero-action-chart { stroke: #7b8a63; }
-.v2-landing .floating-action .hero-action-chart { stroke: #73949f; }
-.v2-landing .hero-float > svg:not(.hero-action-chart) { margin-bottom: 15px; color: #657347; }
-.v2-landing #step-5 .chapter-stage { grid-template-columns: minmax(0, .75fr) minmax(0, 1.25fr); gap: 4vw; }
 .v2-landing .connections-showcase { text-align: center; min-width: 0; padding: 25px 0; }
 .v2-landing .connection-phones { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; perspective: 1600px; padding: 80px 8px; }
 .v2-landing .connection-phone { flex: 0 0 31%; max-width: 195px; aspect-ratio: 0.54; padding: 5px; border: 1px solid #747771; border-radius: 31px; background: linear-gradient(110deg, #656960, #171b17 20%, #4b5148 60%, #1c211b); box-shadow: 1px 16px 30px #27352426, inset 0 0 0 2px #a9ada433; position: relative; }
@@ -2016,7 +1829,7 @@
 .v2-landing .texting-phone header svg { width: 21px; height: 21px; }
 .v2-landing .texting-phone .phone-messages { padding: 0; display: flex; flex-direction: column; gap: 9px; }
 .v2-landing .texting-phone .phone-bubble { font-size: 9px; line-height: 1.45; border-radius: 10px; padding: 8px; margin: 0; max-width: 91%; text-align: left; }
-.v2-landing .texting-phone .phone-bubble.outgoing { background: #0878f9; color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+.v2-landing .texting-phone .phone-bubble.outgoing { background: #006be6; color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
 .v2-landing .texting-phone .phone-bubble.incoming { background: #e9e9eb; color: #1c1c1e; border-bottom-left-radius: 3px; }
 .v2-landing .texting-phone .phone-delivered { margin: -5px 3px 0; font-size: 6px; text-align: right; color: #5a6650; }
 .v2-landing .connections-caption-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 16px; font-size: 10px; color: #58664b; margin: 16px 0; }
@@ -2024,7 +1837,6 @@
 .v2-landing .connections-upcoming span { font-size: 9px; padding: 4px 7px; margin-left: 8px; background: #eaf0dd; border-radius: 8px; white-space: nowrap; }
 .v2-landing .connections-showcase > .text-link { display: inline-flex; margin-top: 14px; font-size: 12px; gap: 8px; align-items: center; }
 @media (max-width: 800px) {
-  .v2-landing #step-5 .chapter-stage { grid-template-columns: 1fr; }
   .v2-landing .connection-phone-screen { padding-inline: 6px; }
   .v2-landing .hero-intro-v2 h1 { font-size: clamp(39px, 7vw, 60px); }
 }
@@ -2207,22 +2019,3 @@
   .v2-landing .mountain-scroll-hint { font-size: 10px; }
   .v2-landing .mountain-start-copy { padding-bottom: 55px; }
 }
-
-/* A readable coaching example before the feature walkthrough. */
-.first-coaching-loop { padding-block: 100px; }
-.first-coaching-loop > header { margin-bottom: 40px; }
-.first-coaching-loop h2 { font-size: clamp(32px, 4vw, 56px); line-height: 1.15; letter-spacing: -.035em; margin: 15px 0; }
-.coaching-loop-example { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(0, 1fr); gap: 70px; margin-bottom: 30px; }
-.coaching-loop-steps { display: flex; flex-direction: column; gap: 8px; }
-.coaching-loop-steps button { display: flex; align-items: center; gap: 14px; text-align: left; padding: 22px 16px; border: 0; border-bottom: 1px solid #dce1d5; background: transparent; color: #697261; font: inherit; cursor: pointer; }
-.coaching-loop-steps button[aria-pressed="true"] { background: #eaf0e1; color: #294b3a; border-radius: 10px; }
-.coaching-loop-steps button > span { font-size: 12px; }
-.coaching-loop-steps button > svg { margin-left: auto; flex-shrink: 0; }
-.coaching-loop-moment { min-height: 305px; }
-.coaching-loop-moment > small { font-size: 11px; letter-spacing: .08em; color: #68735f; }
-.coaching-loop-moment blockquote { font-size: clamp(23px, 2.4vw, 34px); line-height: 1.4; margin: 14px 0 28px; letter-spacing: -.015em; }
-.coaching-loop-moment h3 { font-size: 17px; margin: 0 0 10px; }
-.coaching-loop-moment p { font-size: 16px; line-height: 1.7; max-width: 58ch; }
-.coaching-loop-moment > a { font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
-.coaching-loop-moment > .coaching-example-note { display: block; margin-top: 24px; letter-spacing: 0; font-size: 12px; line-height: 1.6; }
-@media (max-width: 700px) { .first-coaching-loop { padding-block: 60px; } .coaching-loop-example { grid-template-columns: 1fr; gap: 30px; } .coaching-loop-steps button { padding: 16px 12px; } }

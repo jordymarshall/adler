@@ -13,11 +13,11 @@ test("one goal screen connects the approach, behavior, check-in, timeline, and c
   await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Check-in", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "How you’ll make room for the work", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Plan & timeline", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Goal and current cycle" }).getByText("Outline experiment", { exact: true })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("0 / 3 done");
+  await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("0 / 3 actions done");
   await expect(page.getByRole("region", { name: "Cycles and milestones" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "What we’re learning", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your learning journey", exact: true })).toBeVisible();
   await coachReply(page, [{ entity: "action", operation: "update", id: data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 5 }) }]);
   await page.getByRole("button", { name: "Start action", exact: true }).click();
   await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
@@ -26,6 +26,7 @@ test("one goal screen connects the approach, behavior, check-in, timeline, and c
   await page.getByRole("button", { name: "Send message", exact: true }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
   await page.goto("/app/goals/essay");
+  await page.getByText("Explore action reports by week", { exact: true }).click();
   await page.locator(".execution-action").first().locator("summary").click();
   await expect(page.locator(".execution-action").first()).toContainText("5 points recorded");
   const saved = await snapshot(page);
@@ -42,7 +43,7 @@ test("one goal screen connects the approach, behavior, check-in, timeline, and c
 test("a legacy goal previews and accepts an upgrade on its existing screen", async ({ page }) => {
   await register(page, true);
   await page.goto("/app/goals/essays");
-  await expect(page.getByRole("heading", { name: "Review updated plan", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Starting timeline", exact: true })).toBeVisible();
   const state = await snapshot(page);
   const plan = state.data.goals[0].plans[0];
   const today = dateInZone(state.data.timeZone);
@@ -87,7 +88,7 @@ test("reported revenue does not invent an achievement pace or change action exec
   await save(page, fresh.data, fresh.revision);
   await page.reload();
   await expect(page.getByRole("region", { name: "Goal and current cycle" })).toHaveText(before, { useInnerText: true });
-  await expect(page.locator(".cycle-evidence")).toContainText("44 CAD");
+  await expect(page.locator(".projection-heading")).toContainText("44 / 100 CAD");
   await page.getByRole("button", { name: "Start action", exact: true }).click();
   await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
   await expect(page.getByLabel("Message Adler")).toContainText("check in");

@@ -19,9 +19,21 @@ export function GoalProjection({ data, goal, today = dateInZone(data.timeZone) }
   }, []);
   const model = goalProjection(data, goal, today);
   const { projection, evidence } = model;
-  if (model.target <= 0) return <section className="goal-projection"><h2>Progress toward what matters to you</h2><p>This goal has no numerical finish line. Use check-ins to review what is changing and choose a useful outcome signal.</p><Link className="text-link" to={`/app/check-in?goal=${goal.id}`}>Review progress in Check-in ↗</Link></section>;
-  const end = [today, projection?.points.at(-1)!.date ?? goal.targetDate ?? addDays(today, 90)].sort().at(-1)!;
-  const start = [model.observations[0]?.date ?? today, projection?.origin ?? today, today].sort()[0];
+  const plan = goal.plans.at(-1)!;
+  const projectionModel = plan.adaptive?.projection;
+  const input = projectionModel
+    ? plan.adaptive?.steps.find(step => step.id === projectionModel.driverStepId)?.measure
+    : plan.adaptive?.steps.find(step => step.measure)?.measure ?? plan.basis?.actionMeasure;
+  const inputLabel = projectionModel?.inputMetric === "hours" ? "Reported work time (hours)" : input ? `${input.label} (${input.unit})` : "Action reports";
+  const tracking = goal.measure?.label ?? (goal.milestones.length ? "Verified milestones" : goal.success);
+  const noEstimate = plan.adaptive?.projectionUnavailableReason ?? (goal.measure
+    ? "Your results are tracked. Adler can review which input supports an estimate as you report what happens."
+    : "Your actions and verified results are tracked separately. Completing an action does not predict when the whole goal will be finished.");
+  const editTracking = `/app/check-in?${new URLSearchParams({ goal: goal.id, prompt: "Review the tracking you chose for this goal. Suggest the most useful controllable input and outcome, explain your choice, and let me edit it." })}`;
+  const trackingSummary = <div className="projection-tracking"><div><small>WHAT WE’RE TRACKING</small><p>{inputLabel} <span aria-hidden="true">·</span> {tracking}</p></div><Link className="text-link" to={editTracking}>Edit tracking ↗</Link></div>;
+  if (model.target <= 0) return <section className="goal-projection" aria-label={`Goal timeline for ${goal.title}`}><h2>Progress toward what matters to you</h2>{trackingSummary}<p>{noEstimate}</p><Link className="text-link" to={`/app/check-in?goal=${goal.id}`}>Review progress in Check-in ↗</Link></section>;
+  const end = [today, projection?.points.at(-1)!.date ?? goal.targetDate ?? today].sort().at(-1)!;
+  const start = [model.observations[0]?.date ?? goal.startDate ?? today, projection?.origin ?? today, today].sort()[0];
   const span = Math.max(86400000, Date.parse(end) - Date.parse(start));
   const chartWidth = compact ? 400 : 800;
   const right = chartWidth - (compact ? 16 : 52);
@@ -48,16 +60,19 @@ export function GoalProjection({ data, goal, today = dateInZone(data.timeZone) }
         <path className="outcome-recorded" d={path(model.observations)} />
         {model.observations.map(p => <circle className="outcome-point" key={p.id} cx={x(p.date)} cy={y(p.value)} r="4"><title>{formatDate(p.date)}: {number(p.value)} {goal.measure?.unit ?? goal.unit}</title></circle>)}
         {!projection && <text x={chartWidth / 2} y="147" textAnchor="middle">{model.status}</text>}
-        {(compact ? [0, .5, 1] : [0, .25, .5, .75, 1]).map(f => { const date = addDays(start, Math.round(span / 86400000 * f)); return <text key={f} x={x(date)} y="277" textAnchor={f === 0 ? "start" : f === 1 ? "end" : "middle"}>{formatDate(date, { month: "short", year: "numeric" })}</text>; })}
+        {(Date.parse(end) - Date.parse(start) < 86400000 ? [0] : compact ? [0, .5, 1] : [0, .25, .5, .75, 1]).map(f => { const date = addDays(start, Math.round(span / 86400000 * f)); return <text key={f} x={x(date)} y="277" textAnchor={f === 0 ? "start" : f === 1 ? "end" : "middle"}>{formatDate(date, { month: "short", ...(span < 90 * 86400000 ? { day: "numeric" } : { year: "numeric" }) })}</text>; })}
       </svg>
-      <figcaption><span><i className="outcome-key actual" />Reported outcome</span><span><i className="outcome-key projected" />Projected outcome</span><span><i className="outcome-key range" />Conditional scenario range</span><span>Time →</span></figcaption>
+      <figcaption><span><i className="outcome-key actual" />Reported outcome</span>{projection && <><span><i className="outcome-key projected" />Projected outcome</span><span><i className="outcome-key range" />Conditional scenario range</span></>}<span>Time →</span></figcaption>
     </figure>
+    {trackingSummary}
+    {!projection && <p className="small-text muted">{noEstimate}</p>}
     {projection && <p className="small-text muted">Conditional on your input pace and the relationship holding. The range shows scenarios, not a success probability.</p>}
-    {evidence && <div className="input-outcome-link">
+    {evidence && <details className="projection-evidence"><summary>Explore the input and the evidence <span>+</span></summary>
+      <div className="input-outcome-link">
       <div><span>{evidence.paceSource}</span><strong>{number(evidence.pace.expected)} {inputUnit} / day</strong><small>{evidence.measured} / {evidence.due} action quantities known</small></div><span className="relation-arrow" aria-hidden="true">→</span>
       <div><span>{evidence.model.kind === "direct" ? "How the input adds up" : "What we’re learning about the link"}</span><strong>{evidence.model.kind === "direct" ? `${number(evidence.model.inputPerOutcome!.expected * model.target)} ${inputUnit} for ${number(model.target)} ${goal.measure!.unit}` : projection ? `${number(projection.yieldRange.expected)} ${goal.measure!.unit} / ${inputUnit}` : "We need input and result reports"}</strong><small>{evidence.model.kind === "learned" ? `${evidence.pairs.length} matched intervals · ${evidence.model.feedbackDelayDays}-day feedback delay` : evidence.model.rationale}</small></div>
-    </div>}
-    {evidence && <details className="projection-evidence"><summary>Explore the input and the evidence <span>+</span></summary>
+    </div>
+
       {!projection && <p>{evidence.model.rationale}</p>}
       {evidence.excludedPeriods.length > 0 && <section className="reasoning-details"><h3>Periods that need context</h3><p>These reports remain part of your history. They are not silently treated as successful input–outcome evidence.</p>{evidence.excludedPeriods.map((period, index) => <div key={index}><strong>{formatDate(period.start)}–{formatDate(period.end)}</strong><span>{period.input === null ? "Unknown input" : `${number(period.input)} ${inputUnit}`} · Outcome change: {number(period.outcome)} {goal.measure!.unit}</span><p>{period.reason}</p><div className="projection-source-links">{period.sourceIds.slice(0, 2).map(id => <Link key={id} to={recordLink(data, id)!}>Outcome report ↗</Link>)}</div></div>)}</section>}
       <div className="input-evidence-plot"><h3>{inputUnit} per day</h3><svg viewBox="0 0 760 130" role="img" aria-label={`Measured ${inputUnit} per day. Missing quantities leave gaps.`}>

@@ -9,9 +9,9 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
-  await expect(page.locator(".app-capture-window .capture-still img")).toHaveCount(4);
-  await expect(page.locator("#step-4 figcaption")).toContainText("Actual app · Example workspace");
-  await expect(page.locator("#step-5")).toContainText("Coming soon");
+  await expect(page.locator(".app-capture-window .capture-still img")).toHaveCount(6);
+  await expect(page.locator("#step-4 figcaption").first()).toContainText("Actual app · Example workspace");
+  await expect(page.locator("#step-4")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
     .first()
@@ -80,7 +80,15 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   expect(data.actions[0].date).toBe("");
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
   await expect(page.getByRole("region", { name: "Cycles and milestones" })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("Choose the first cycle");
+  await expect(page.getByRole("region", { name: "Goal and current cycle" })).not.toContainText("Choose the first cycle");
+  await expect(page.locator(".goal-projection")).not.toContainText("Choose what to track");
+  await expect(page.getByRole("region", { name: "Cycles and milestones" })).toContainText("Sketch three thumbnails");
+  await expect(page.locator(".projection-tracking")).toContainText("Verified milestones");
+  await page.getByRole("navigation", { name: "Goal sections" }).getByRole("link", { name: "Progress", exact: true }).click();
+  await expect(page).toHaveURL(/#goal-progress$/);
+  await page.getByRole("link", { name: "Edit tracking" }).click();
+  await expect(page).toHaveURL(/\/app\/check-in/);
+  await expect(page.getByLabel("Message Adler")).toContainText("Review the tracking you chose");
   await page.goto("/app/goals");
   await page.getByText("Find or filter a goal", { exact: true }).click();
   await expect(page.getByLabel("Search goals", { exact: true })).toBeVisible();

@@ -48,12 +48,13 @@ test("the integration catalog distinguishes plans from working setup paths", asy
 
 test("the example text check-in discusses a next step without rewriting recorded work", async ({ page }) => {
   await page.goto("/");
-  const recordedCapture = page.locator("#step-3 .app-capture-window .capture-still img");
+  const recordedCapture = page.locator('[data-screen="progress"] .app-capture-window .capture-still img');
   const recorded = (await recordedCapture.getAttribute("src"))!;
-  const step = page.locator("#step-5");
+  await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
+  const step = page.locator("#step-4");
   await step.getByRole("button", { name: "Try the example text check-in" }).click();
-  await expect(step.getByRole("log")).toContainText("Try keeping the book beside your lunch spot");
-  await expect(step.getByRole("log")).toContainText("review the cue after your next few reports");
+  await expect(step.getByRole("log")).toContainText("Keep home-day reading");
+  await expect(step.getByRole("log")).toContainText("review whether the window helped after your next few reports");
   await expect(recordedCapture).toHaveAttribute("src", recorded);
   await step.getByRole("button", { name: "Reset example text check-in" }).click();
   await expect(step.getByRole("log")).not.toContainText("Yes, book 12:30.");
@@ -86,7 +87,7 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await expect(page.locator(".journey-hero")).toHaveCSS("position", "relative");
-  await expect(page.locator(".reveal").first()).toHaveCSS(
+  await expect(page.locator(".journey-step").first()).toHaveCSS(
     "animation-name",
     "none",
   );

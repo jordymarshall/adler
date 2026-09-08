@@ -54,15 +54,16 @@
   font-weight: var(--body-weight);
   --body-font: "Adler Warm", ui-rounded, system-ui, sans-serif;
   font-family: var(--body-font);
-  color: #263d32;
+  color: var(--ink);
   background: #faf9f6;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   --bg: #faf9f6;
   --paper: #fffefa;
-  --ink: #263d32;
-  --muted: #74796f;
+  --ink: #202020;
+  --muted: #505050;
+  --heading-ink: #263d32;
   --line: #e6e7df;
   --green: #294b3a;
   --sage: #edf0e5;
@@ -143,6 +144,7 @@ h1,
 h2,
 h3,
 h4 {
+  color: var(--heading-ink);
   font-weight: var(--heading-weight);
 }
 h1,
@@ -500,8 +502,9 @@ details > summary:focus-visible {
 .public-page {
   --bg: #faf9f6;
   --paper: #fffefa;
-  --ink: #263d32;
-  --muted: #74796f;
+  --ink: #202020;
+  --muted: #505050;
+  --heading-ink: #263d32;
   --line: #e6e7df;
   --green: #294b3a;
   --sage: #edf0e5;
@@ -3688,8 +3691,9 @@ details > summary:focus-visible {
 [data-theme="dark"] {
   --bg: #1d2822;
   --paper: #25322a;
-  --ink: #e0e8d6;
-  --muted: #a4b59a;
+  --ink: #ededed;
+  --muted: #c0c0c0;
+  --heading-ink: #e0e8d6;
   --line: #394638;
   --green: #4e7045;
   --sage: #303e2c;
@@ -6809,7 +6813,7 @@ details > summary:focus-visible {
 }
 
 [data-theme="dark"] .app-shell {
-  --supporting-ink: #b5c4a7;
+  --supporting-ink: var(--ink);
 }
 [data-theme="dark"] .app-shell .section-kicker,
 [data-theme="dark"] .help-start,
@@ -9827,13 +9831,15 @@ details > summary:focus-visible {
 }
 
 .app-shell {
-  --muted: #606957;
+  --muted: #454545;
+  --supporting-ink: var(--ink);
+  color: var(--ink);
 }
 .app-shell .field-hint {
   color: var(--muted);
 }
 [data-theme="dark"] .app-shell {
-  --muted: #b0bbaa;
+  --muted: #c0c0c0;
 }
 .goal-progress-layout .panel > .text-link {
   min-height: 30px;
@@ -11792,7 +11798,7 @@ input[type="checkbox"] {
 }
 
 [data-theme="dark"] .integrations-page.in-app {
-  --muted: #b0bbaa;
+  --muted: #c0c0c0;
 }
 
 /* One coaching area, with clear destinations for each part of the loop. */
@@ -12323,3 +12329,21 @@ input[type="checkbox"] {
 @media (prefers-reduced-motion: reduce) {
   .focused-coach .live-message, .coach-working { animation: none; }
 }
+
+/* Neutral reading text; colour carries headings, controls and plotted data. */
+.app-shell .tag, .app-shell .tag.sage,
+.app-shell .help-start, .app-shell .help-start:hover,
+.app-shell .suggested-prompts > button,
+.app-shell .completed-section > summary,
+.app-shell .milestone-card.complete .milestone-status,
+.app-shell .text-link:hover, .app-shell .text-button:hover,
+.app-shell .decision-calendar-step a, .app-shell .change-evidence-link,
+.app-shell .decision-change-row > summary .change-to,
+.app-shell .week-day-headings .is-today,
+.app-shell .entry-work, .app-shell .entry-review,
+.app-shell .behavior-chart-heading strong,
+.app-shell .recommendation-reasons dt,
+.app-shell .learning-chronology .learning-stage-current small { color: var(--ink); }
+.app-shell :is(h1, h2, h3, h4) { color: var(--heading-ink); }
+.app-shell .text-link, .app-shell .text-button { text-underline-offset: 3px; }
+.app-shell .text-link:hover, .app-shell .text-button:hover { text-decoration: underline; }

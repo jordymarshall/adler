@@ -1,176 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  ArrowRight,
   ArrowUpRight,
-  BookOpen,
-  Briefcase,
   Menu,
-  PenLine,
   Plus,
-  Sun,
   X,
 } from "lucide-react";
 import { Logo } from "./LandingArt";
 
+import { LandingImmersiveGraph } from "./LandingImmersiveGraph";
 import { LandingHero } from "./LandingHero";
 import { LandingBackdrop } from "./LandingBackdrop";
-import { LandingAppCapture } from "./LandingAppCapture";
-import { FirstCoachingLoop } from "./FirstCoachingLoop";
+import { LandingJourney } from "./LandingJourney";
 import { MountainFinale } from "./MountainFinale";
-import { ConnectionsPreview } from "./LandingConnectionsPreview";
 import "./landing-core.css";
-
-const chapters = [
-  {
-    label: "Set and manage your goals",
-    title: (
-      <>
-        Good intentions get lost. <em>Give your goals a clear home.</em>
-      </>
-    ),
-    body: "Bring your goals together. See what matters now, what you’ve done, and where a finish date is still uncertain.",
-    visual: <LandingAppCapture screen="goals" />,
-  },
-  {
-    label: "A plan Adler helps you manage",
-    title: (
-      <>
-        Your goals compete for time. <em>Give them one workable plan.</em>
-      </>
-    ),
-    body: "Adler turns your chosen work into manageable actions and fits them around your other goals and commitments. You approve calendar bookings.",
-    visual: <LandingAppCapture screen="calendar" />,
-  },
-  {
-    label: "Track and visualize your progress",
-    title: (
-      <>
-        It’s hard to see what’s working. <em>Make your progress visible.</em>
-      </>
-    ),
-    body: "See how your reported actions relate to your goal. Where the link supports an estimate, explore a projected finish and its conditional range.",
-    visual: <LandingAppCapture screen="progress" />,
-  },
-  {
-    label: "Behavioural science, personal to you",
-    title: (
-      <>
-        Your experience holds clues. <em>Build a plan that understands you.</em>
-      </>
-    ),
-    body: "See what we’re trying, when we’ll review it, and what we’ve learned. Open a suggestion to follow your report, the research and what changed.",
-    visual: <LandingAppCapture screen="insights" />,
-  },
-  {
-    label: "Adler connects to your life",
-    title: (
-      <>
-        Message your coach anywhere. <em>Let Adler schedule your next step.</em>
-      </>
-    ),
-    body: "The same coach and context in the app, text and compatible AI tools. Adler can find time and book your next step with your approval. Connections require setup.",
-    visual: <ConnectionsPreview />,
-  },
-];
-function ThePath() {
-  const flow = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const node = flow.current!;
-    const panels = [...node.querySelectorAll<HTMLElement>(".focus-chapter")];
-    const motion = matchMedia(
-      "(min-width: 1000px) and (min-height: 760px) and (prefers-reduced-motion: no-preference)",
-    );
-    let frame = 0;
-    function update() {
-      frame = 0;
-      panels.forEach((panel) => {
-        const box = panel.getBoundingClientRect();
-        const focus = motion.matches
-          ? Math.min(1, Math.max(0, (innerHeight - box.top) / innerHeight))
-          : 1;
-        panel.style.setProperty("--chapter-focus", String(focus));
-        panel.classList.toggle(
-          "is-current",
-          box.top <= innerHeight * 0.5 && box.bottom > innerHeight * 0.5,
-        );
-      });
-    }
-    function scroll() {
-      if (!frame) frame = requestAnimationFrame(update);
-    }
-    update();
-    addEventListener("scroll", scroll, { passive: true });
-    addEventListener("resize", scroll);
-    motion.addEventListener("change", scroll);
-    return () => {
-      removeEventListener("scroll", scroll);
-      removeEventListener("resize", scroll);
-      motion.removeEventListener("change", scroll);
-      cancelAnimationFrame(frame);
-    };
-  }, []);
-  return (
-    <section
-      className="adaptive-path"
-      id="the-path"
-      aria-label="How Adler works"
-    >
-      <div ref={flow}>
-        {chapters.map((chapter, index) => (
-          <article
-            className="focus-chapter"
-            id={`step-${index + 1}`}
-            aria-labelledby={`chapter-title-${index}`}
-            key={chapter.label}
-          >
-            <div className="chapter-stage">
-              <div className="chapter-copy">
-                <span className="chapter-label">
-                  <span className="focus-number">0{index + 1}</span>
-                  {chapter.label}
-                </span>
-                <h2 id={`chapter-title-${index}`}>{chapter.title}</h2>
-                <p>{chapter.body}</p>
-                <div
-                  className="chapter-position"
-                  aria-label={`Step ${index + 1} of 5`}
-                >
-                  {chapters.map((item, i) => (
-                    <a
-                      href={`#step-${i + 1}`}
-                      key={item.label}
-                      aria-label={item.label}
-                      aria-current={i === index ? "step" : undefined}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="chapter-visual">{chapter.visual}</div>
-            </div>
-          </article>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 export function Landing() {
   const [menu, setMenu] = useState(false);
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) =>
-        entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add("in-view");
-            observer.unobserve(e.target);
-          }
-        }),
-      { threshold: 0.12 },
-    );
-    document.querySelectorAll(".reveal").forEach((e) => observer.observe(e));
-    return () => observer.disconnect();
-  }, []);
   return (
     <div className="v2-landing">
       <LandingBackdrop />
@@ -178,7 +24,7 @@ export function Landing() {
         <Logo />
         <nav aria-label="Main navigation" className={menu ? "menu-open" : ""}>
           <a href="#the-path" onClick={() => setMenu(false)}>
-            The way forward
+            How it works
           </a>
           <a href="#approach" onClick={() => setMenu(false)}>
             Our approach
@@ -201,110 +47,18 @@ export function Landing() {
       </header>
       <main id="main-content">
         <LandingHero />
-        <div className="possibility-strip">
-          <span>FOR WHATEVER FORWARD MEANS TO YOU.</span>
+        <LandingImmersiveGraph />
+        <LandingJourney />
+        <section className="journey-method section-wrap" id="approach">
           <div>
-            <span>
-              <Briefcase />
-              Take the next career step
-            </span>
-            <span>
-              <PenLine />
-              Make something yours
-            </span>
-            <span>
-              <BookOpen />
-              Learn something new
-            </span>
-            <span>
-              <Sun />
-              Find a better rhythm
-            </span>
+            <span className="section-kicker">THE THINKING BEHIND YOUR PLAN</span>
+            <h2>Research informs the suggestion.<br /><em>Your experience informs what happens next.</em></h2>
           </div>
-        </div>
-        <FirstCoachingLoop />
-        <ThePath />
-        <section className="approach-section section-wrap" id="approach">
-          <div className="approach-heading reveal">
-            <h2>
-              Behavioural science.
-              <br />
-              <em>In your corner.</em>
-            </h2>
-            <p>
-              You shouldn’t need a professional coach to get thoughtful help
-              with your goals. Adler brings behavioural research into everyday
-              planning, with ongoing support to build a workable rhythm, make
-              time, and adapt when life changes.
-            </p>
+          <div>
+            <p>Adler connects your reports to specific behavioural research, saves what we’re testing, and revisits it as you learn. You can inspect the reasoning and correct what it remembers.</p>
+            <Link className="text-link" to="/method">Explore the coaching method <ArrowUpRight size={15} /></Link>
+            <small>Research-informed coaching. Adler’s effectiveness has not yet been evaluated.</small>
           </div>
-          <div className="principles">
-            <article className="reveal">
-              <div className="principle-art art-clarity">
-                <span />
-                <span />
-                <span />
-                <span className="art-destination" />
-              </div>
-              <h3>A useful action to start.</h3>
-              <p>
-                Adler helps you define success, understand what gets in your
-                way, and choose a useful action with a clear reason.
-              </p>
-              <a
-                href="https://doi.org/10.1037/0003-066X.57.9.705"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Goal-setting research <ArrowUpRight size={13} />
-              </a>
-            </article>
-            <article className="reveal">
-              <div className="principle-art art-rhythm">
-                {[0, 1, 2, 3, 4, 5, 6].map((i) => (
-                  <span key={i} />
-                ))}
-              </div>
-              <h3>A plan it helps you manage.</h3>
-              <p>
-                Give your intentions a cue, a manageable commitment, and a time
-                to reflect. Adler helps you revisit timing and priorities as
-                your circumstances change.
-              </p>
-              <a
-                href="https://doi.org/10.1016/S0065-2601(06)38002-1"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Action-planning research <ArrowUpRight size={13} />
-              </a>
-            </article>
-            <article className="reveal">
-              <div className="principle-art art-memory" aria-hidden="true">
-                <BookOpen size={34} />
-                <span>Remember</span>
-                <ArrowRight size={18} />
-                <span>Refine</span>
-              </div>
-              <h3>Coaching that learns about you.</h3>
-              <p>
-                Your check-ins, results, and saved preferences inform later
-                conversations. Adler uses that history to suggest changes, then
-                reviews whether they helped.
-              </p>
-              <a
-                href="https://doi.org/10.1037/bul0000025"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Progress-monitoring research <ArrowUpRight size={13} />
-              </a>
-            </article>
-          </div>
-          <p className="science-note">
-            Built on behavioural science. Refined through your check-ins,
-            results, and reviews.
-          </p>
         </section>
         <section className="v2-faq section-wrap">
           <h2>A little more clarity.</h2>
@@ -352,7 +106,7 @@ export function Landing() {
           <br />A meaningful difference.
         </p>
         <div>
-          <a href="#the-path">The way forward</a>
+          <a href="#the-path">How it works</a>
           <a href="#approach">Our approach</a>
           <Link to="/app/today">
             Explore the app <ArrowUpRight size={12} />

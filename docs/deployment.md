@@ -100,3 +100,7 @@ This version has no email verification/password recovery, managed identity provi
 ## Deployment status
 
 The v2 production Node server passed a local browser-created account/goal, full restart persistence, session continuity and two-account isolation smoke test. See [release verification](evaluation/shared-coaching-v2.md). The Vercel project and both domain configurations are verified as described above. The remaining deployment dependency is an actual persistent Adler backend and its hosting access; this has been requested. No hosted Adler app has passed health, authentication or persistence checks yet.
+
+### Marketplace investigation, 7 September 2026
+
+The free Turso database option was investigated as a possible remote SQLite backend for Vercel. The CLI refused provisioning until the account owner accepts Turso’s marketplace terms at the [Vercel acceptance page](https://vercel.com/adler7/~/integrations/accept-terms/tursocloud?source=cli). No marketplace installation exists yet and no paid plan was selected. A terms acceptance is not sufficient to deploy the current code: remote database encryption-key persistence, cross-instance coordination, background jobs and streaming would require implementation and verification. The current supported deployment above remains a persistent Node process. No production deployment is claimed.

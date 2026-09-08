@@ -1,0 +1,152 @@
+/* One goal stays in view while the plan, evidence and next decision evolve. */
+.v2-landing .journey-introduction { height: auto; min-height: 0; padding: clamp(145px, 17vh, 200px) 24px 65px; }
+.v2-landing .journey-introduction .hero-intro-v2 { position: relative; transform: none; opacity: 1; }
+.v2-landing .goal-journey { max-width: 1400px; padding-block: 50px 40px; }
+.v2-landing .journey-opening { text-align: center; margin: 0 auto 65px; }
+.v2-landing .journey-opening h2 { font-size: clamp(30px, 3.7vw, 49px); line-height: 1.15; letter-spacing: -.035em; margin: 20px 0; }
+.v2-landing .journey-opening p { font-size: 13px; color: #626957; }
+.v2-landing .journey-opening em, .v2-landing .journey-step h2 em, .v2-landing .journey-method em { color: #64784d; }
+.v2-landing .journey-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: clamp(35px, 5vw, 80px); align-items: start; }
+.v2-landing .journey-index { position: sticky; top: 120px; padding-block: 25px; }
+.v2-landing .journey-goal-anchor { display: flex; gap: 12px; align-items: center; margin-bottom: 30px; font-size: 17px; }
+.v2-landing .journey-goal-anchor svg { color: #687c4f; }
+.v2-landing .journey-goal-anchor small { display: block; font-size: 11px; color: #626957; margin-top: 7px; }
+.v2-landing .journey-index ol { list-style: none; padding: 0; margin: 0; }
+.v2-landing .journey-index li { position: relative; }
+.v2-landing .journey-index li:not(:last-child)::after { content: ""; position: absolute; left: 16px; top: 44px; bottom: -8px; border-left: 1px solid #d2dcc4; }
+.v2-landing .journey-index a { display: flex; align-items: center; gap: 14px; min-height: 62px; color: #67715e; font-size: 13px; }
+.v2-landing .journey-index-number { display: grid; place-items: center; width: 33px; height: 33px; flex-shrink: 0; border: 1px solid #d0d9c3; border-radius: 50%; font-size: 11px; background: var(--paper); transition: background .2s; }
+.v2-landing .journey-index a[aria-current] { color: #2e472e; }
+.v2-landing .journey-index a[aria-current] .journey-index-number { background: #304a34; color: #fffefa; border-color: #304a34; }
+.v2-landing .journey-stages { min-width: 0; }
+.v2-landing .journey-step { scroll-margin-top: 110px; padding: 30px 0 0; }
+.v2-landing .journey-step + .journey-step { border-top: 1px solid #d6dfca; padding-top: 70px; }
+.v2-landing .journey-step-heading { max-width: 690px; margin-bottom: 30px; }
+.v2-landing .journey-eyebrow { display: inline-flex; align-items: center; gap: 8px; color: #626e56; font-size: 10px; letter-spacing: .09em; line-height: 1.6; }
+.v2-landing .journey-step h2 { font-size: clamp(32px, 3.8vw, 49px); letter-spacing: -.04em; line-height: 1.14; margin: 17px 0; }
+.v2-landing .journey-step-heading p { font-size: 16px; max-width: 58ch; color: #59654f; }
+.v2-landing .journey-step h3 { font-size: 22px; line-height: 1.3; letter-spacing: -.02em; }
+.v2-landing .journey-step small:not(.connection-phone small) { color: #64715b; font-size: 12px; line-height: 1.65; }
+.v2-landing .journey-transition { display: flex; align-items: center; gap: 12px; color: #5d6c50; font-size: 13px; padding: 35px 0 40px; }
+.v2-landing .journey-transition svg { flex-shrink: 0; }
+.v2-landing .journey-in-life { margin-top: 25px; }
+.v2-landing .journey-in-life > p { font-size: 14px; color: #59674f; margin-top: 10px; max-width: 65ch; }
+.v2-landing .journey-app-detail { margin-top: 18px; border-bottom: 1px solid #d8e0cd; }
+.v2-landing .journey-app-detail > summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 0; list-style: none; font-size: 13px; cursor: pointer; }
+.v2-landing .journey-app-detail > summary::-webkit-details-marker { display: none; }
+.v2-landing .journey-app-detail > summary > span { font-size: 21px; transition: transform .2s; }
+.v2-landing .journey-app-detail[open] > summary > span { transform: rotate(45deg); }
+.v2-landing .journey-app-detail > .app-capture-preview { margin: 15px auto 28px; max-width: 780px; }
+.v2-landing .journey-step.is-current .journey-app-detail[open] .app-capture-preview[data-paused="false"] .capture-animation { animation-play-state: running; }
+.v2-landing .journey-progress { margin: 0; background: #fffefa; border: 1px solid #d8e1cd; border-radius: 12px; overflow: hidden; }
+.v2-landing .journey-progress > div { padding: 24px 25px 10px; }
+.v2-landing .journey-progress h3 { margin-top: 10px; }
+.v2-landing .journey-progress picture, .v2-landing .journey-progress img { display: block; width: 100%; height: auto; }
+.v2-landing .journey-progress figcaption { padding: 15px 25px 24px; color: #5d6b52; font-size: 12px; line-height: 1.65; }
+.v2-landing .journey-finish { display: flex; gap: 22px; align-items: flex-start; padding: 35px 0; }
+.v2-landing .journey-finish > svg { margin-top: 20px; color: #6b8250; }
+.v2-landing .journey-finish blockquote { font-size: 28px; line-height: 1.3; margin: 12px 0; letter-spacing: -.025em; }
+.v2-landing .journey-finish p { font-size: 15px; }
+.v2-landing .journey-finish small { display: block; margin-top: 12px; }
+.v2-landing .journey-method { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; padding-block: 80px; margin-top: 60px; border-block: 1px solid #d6e0c9; }
+.v2-landing .journey-method h2 { font-size: 30px; line-height: 1.25; letter-spacing: -.03em; margin-top: 18px; }
+.v2-landing .journey-method p { font-size: 15px; }
+.v2-landing .journey-method a { margin-top: 20px; }
+.v2-landing .journey-method small { display: block; font-size: 12px; color: #65705c; line-height: 1.6; margin-top: 20px; }
+@media (max-width: 900px) {
+  .v2-landing .journey-layout { grid-template-columns: 1fr; gap: 30px; }
+  .v2-landing .journey-index { position: static; padding-block: 0 20px; border-bottom: 1px solid #d5dfc9; }
+  .v2-landing .journey-goal-anchor { margin-bottom: 15px; }
+  .v2-landing .journey-index ol { display: flex; flex-wrap: wrap; gap: 6px 15px; }
+  .v2-landing .journey-index li:not(:last-child)::after { display: none; }
+  .v2-landing .journey-index a { min-height: 44px; gap: 8px; font-size: 12px; }
+  .v2-landing .journey-index-number { width: 27px; height: 27px; font-size: 10px; }
+  .v2-landing .journey-opening { margin-bottom: 35px; }
+  .v2-landing .journey-method { gap: 35px; }
+}
+@media (max-width: 600px) {
+  .v2-landing .journey-introduction { padding: 135px 24px 50px; }
+  .v2-landing .goal-journey { padding-top: 30px; }
+  .v2-landing .journey-opening { text-align: left; }
+  .v2-landing .journey-step + .journey-step { padding-top: 45px; }
+  .v2-landing .journey-step-heading p { font-size: 15px; }
+  .v2-landing .journey-app-detail > summary { font-size: 13px; line-height: 1.5; }
+  .v2-landing .journey-progress > div, .v2-landing .journey-progress figcaption { padding-inline: 18px; }
+  .v2-landing .journey-method { grid-template-columns: 1fr; gap: 25px; padding-block: 50px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .v2-landing .journey-index-number, .v2-landing .journey-app-detail > summary > span { transition: none; }
+}
+
+/* An immediate product overview, followed by the preserved immersive graph. */
+.v2-landing .journey-app-demo { margin: 30px 0; }
+.v2-landing .journey-app-demo .app-capture-preview { margin-inline: 0; }
+.v2-landing .journey-step.is-current .journey-app-demo .capture-animation { animation-play-state: running; }
+.v2-landing .journey-step.is-current .journey-app-demo .app-capture-preview[data-paused="true"] .capture-animation { animation-play-state: paused; }
+.v2-landing .journey-capture-note { max-width: 64ch; color: #626957; font-size: 13px; line-height: 1.7; }
+.v2-landing .journey-app-demo.journey-progress { background: transparent; border: 0; padding: 0; }
+.v2-landing .hero-downloads { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 12px; margin: 28px auto 0; }
+.v2-landing .store-download { padding: 0; border: 0; background: transparent; height: 51px; display: flex; align-items: center; }
+.v2-landing .apple-download img { display: block; width: 153px; height: 51px; }
+.v2-landing .google-download { width: 172px; overflow: hidden; border-radius: 7px; }
+.v2-landing .google-download img { display: block; width: 198px; height: auto; max-width: none; margin-left: -13px; }
+.v2-landing .hero-downloads > .btn { min-height: 51px; margin-left: 8px; }
+.v2-landing .hero-intro-v2 > .hero-availability { font-size: 12px; margin-top: 15px; min-height: 21px; }
+.v2-landing .hero-mobile-screens { display: flex; justify-content: center; align-items: flex-start; gap: 25px; margin: 55px auto 0; max-width: 1020px; padding: 0 35px; }
+.v2-landing .hero-mobile-preview { margin: 0; min-width: 0; width: 29%; max-width: 285px; }
+.v2-landing .hero-mobile-phone { position: relative; padding: 24px 5px 12px; display: block; width: 100%; background: #f8f8f4; border: 5px solid #2a302a; border-radius: 35px; box-shadow: 0 0 0 1px #858c80, 0 24px 40px #293a2d1a, inset 0 0 0 1px #d5dace; overflow: hidden; cursor: zoom-in; }
+.v2-landing .hero-mobile-phone > img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.v2-landing .hero-phone-camera { position: absolute; width: 63px; height: 16px; border-radius: 12px; background: #242824; top: 5px; left: 50%; transform: translateX(-50%); }
+.v2-landing .hero-phone-home { position: absolute; width: 70px; height: 3px; border-radius: 3px; background: #4d5649; bottom: 4px; left: 50%; transform: translateX(-50%); }
+.v2-landing .hero-mobile-progress { transform: rotate(-5deg) translateY(32px); }
+.v2-landing .hero-mobile-insights { transform: rotate(5deg) translateY(32px); }
+.v2-landing .hero-mobile-check-in { position: relative; z-index: 1; }
+.v2-landing .hero-mobile-preview figcaption { margin-top: 20px; text-align: center; font-size: 13px; line-height: 1.4; }
+.v2-landing .hero-overview-caption { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 15px 35px; margin-top: 65px; }
+.v2-landing .hero-overview-caption small { color: #647057; font-size: 12px; }
+.v2-landing .hero-overview-caption a { font-size: 13px; }
+.v2-landing .hero-screen-expanded { display: block; width: 390px; max-width: 100%; height: auto; margin: 0 auto; }
+.v2-landing .graph-journey { position: relative; --journey: 0; padding: 0; }
+.v2-landing .graph-journey .hero-sticky { padding-block: 50px; }
+.v2-landing .graph-journey .hero-assembled { opacity: 1; }
+@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .v2-landing .graph-journey { height: 640svh; }
+  .v2-landing .graph-journey .hero-sticky { position: sticky; top: 0; height: 100svh; padding: 0; }
+  .v2-landing .graph-journey .hero-assembled { position: absolute; inset: 0; width: 100%; max-width: none; height: 100%; margin: 0; transform: none; }
+}
+@media (max-width: 600px) {
+  .v2-landing .hero-mobile-screens { gap: 6px; padding: 0; margin-top: 30px; }
+  .v2-landing .hero-mobile-preview { width: 32%; }
+  .v2-landing .hero-mobile-phone { border-width: 2px; border-radius: 15px; padding: 12px 2px 7px; }
+  .v2-landing .hero-mobile-phone > img { border-radius: 5px; }
+  .v2-landing .hero-phone-camera { width: 25px; height: 6px; top: 3px; }
+  .v2-landing .hero-phone-home { width: 28px; height: 2px; bottom: 2px; }
+  .v2-landing .hero-mobile-progress, .v2-landing .hero-mobile-insights { transform: translateY(18px); }
+  .v2-landing .hero-mobile-preview figcaption { font-size: 11px; margin-top: 12px; }
+  .v2-landing .hero-overview-caption { margin-top: 45px; text-align: center; }
+  .v2-landing .hero-downloads { gap: 8px; }
+  .v2-landing .apple-download img { width: 132px; height: 44px; }
+  .v2-landing .store-download { height: 44px; }
+  .v2-landing .google-download { width: 148px; }
+  .v2-landing .google-download img { width: 170px; margin-left: -11px; }
+  .v2-landing .hero-downloads > .btn { margin: 5px 0 0; min-height: 45px; }
+}
+
+/* The three real screens gather into one system as the connecting paths fold. */
+.v2-landing .hero-phone-stage { --phone-gather: 0; position: relative; margin-top: 55px; }
+.v2-landing .hero-mobile-screens { position: relative; margin-top: 0; isolation: isolate; }
+.v2-landing .hero-phone-curves { position: absolute; z-index: -1; inset: -8% -15%; width: 130%; height: 115%; pointer-events: none; overflow: visible; transform: scale(calc(1 - var(--phone-gather) * .45), calc(1 - var(--phone-gather) * .75)); }
+.v2-landing .hero-phone-curves path { stroke: #a5b68b; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.v2-landing .hero-phone-curves path + path { stroke: #bcc7a9; stroke-dasharray: 5 7; }
+.v2-landing .hero-phone-curves circle { fill: #819b5d; }
+@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
+  .v2-landing .hero-phone-stage { height: 125svh; min-height: 1020px; }
+  .v2-landing .hero-mobile-screens { position: sticky; top: 100px; }
+  .v2-landing .hero-mobile-progress { transform: translateX(calc(var(--phone-gather) * 96%)) translateY(calc(32px + var(--phone-gather) * 10px)) rotate(calc(-5deg + var(--phone-gather) * 5deg)) scale(calc(1 - var(--phone-gather) * .1)); }
+  .v2-landing .hero-mobile-insights { transform: translateX(calc(var(--phone-gather) * -96%)) translateY(calc(32px + var(--phone-gather) * 10px)) rotate(calc(5deg - var(--phone-gather) * 5deg)) scale(calc(1 - var(--phone-gather) * .1)); }
+  .v2-landing .hero-mobile-progress figcaption, .v2-landing .hero-mobile-insights figcaption { opacity: calc(1 - var(--phone-gather)); }
+}
+@media (max-width: 600px) {
+  .v2-landing .hero-phone-stage { margin-top: 30px; }
+  .v2-landing .hero-phone-curves { inset-inline: -6%; width: 112%; }
+}

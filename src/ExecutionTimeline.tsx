@@ -30,11 +30,25 @@ export function CycleTimeline({
     2 + (96 * (Date.parse(date) - Date.parse(execution.start))) / span;
   const date = (value: string) =>
     formatDate(value, { month: "short", day: "numeric", year: "numeric" });
+  if (!execution.cycles.length) {
+    const first = execution.actions.find(action => !action.outcome) ?? execution.actions.at(-1);
+    return <section className="execution-horizon" aria-label="Cycles and milestones">
+      <div className="list-heading"><h2>Starting timeline</h2><span className="small-text muted">Dates stay flexible</span></div>
+      <ol className="starting-timeline">
+        <li><time>{formatDate(goal.startDate ?? goal.plans[0].date)}</time><div><strong>Starting point</strong><p>{goal.results[0] ? `${goal.results[0].value} ${goal.measure?.unit ?? goal.unit}` : "First outcome report still needed"}</p></div></li>
+        {first && <li><time>{first.date ? formatDate(first.date) : "First action"}</time><div><strong>{first.title}</strong><p>{first.criterion}</p></div></li>}
+        <li><time>Then review</time><div><strong>What helped or got in the way?</strong><p>Use your first report to choose what comes next.</p></div></li>
+        {goal.milestones.map(milestone => <li key={milestone.id}><time>{milestone.dueDate ? formatDate(milestone.dueDate) : "Milestone"}</time><div><strong>{milestone.title}</strong><p>{milestone.criterion} · {milestone.done ? "Verified" : "Not yet verified"}</p></div></li>)}
+        {goal.targetDate && <li><time>{formatDate(goal.targetDate)}</time><div><strong>Goal target</strong><p>{goal.deadline === "firm" ? "Firm deadline" : "Flexible target"}</p></div></li>}
+      </ol>
+      <p className="small-text muted">This is the sequence for your saved starting plan. Adler can propose dates and a suitable review period in Check-in.</p>
+    </section>;
+  }
   return (
     <section className="execution-horizon" aria-label="Cycles and milestones">
       <div className="list-heading">
         <h2>Cycles & milestones</h2>
-        <span className="small-text muted">Agreed dates</span>
+        <span className="small-text muted">{goal.status === "Draft" ? "Proposed dates" : "Saved dates"}</span>
       </div>
       <div className="execution-axis">
         <span>{date(execution.start)}</span>
@@ -88,6 +102,8 @@ export function CycleTimeline({
                   </span>
                 </summary>
                 <p>{m.detail}</p>
+                {goal.plans.at(-1)?.adaptive?.steps.filter(step => step.milestoneId === m.id).map(step => <p key={step.id}>Contributing action: {step.title}</p>)}
+                {m.kind === "Review" && <Link className="text-link" to={`/app/check-in?${new URLSearchParams({ goal: goal.id, prompt: `Let’s review this plan. The question was: ${m.detail} Here is what happened: ` })}`}>Review in Check-in ↗</Link>}
               </details>
             </div>
           ))}
@@ -123,7 +139,7 @@ export function CycleTimeline({
       <p className="small-text muted">
         {execution.current
           ? `Work is committed through ${date(execution.current.end)}. Review what happened before defining the next cycle.`
-          : "Define the first cycle in Check-in. Existing actions and milestone dates stay visible."}
+          : "Your saved actions and milestone dates remain visible."}
       </p>
     </section>
   );

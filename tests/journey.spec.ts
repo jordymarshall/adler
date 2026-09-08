@@ -116,7 +116,7 @@ test("evidence is disclosed on request and action observations stay separate fro
   await expect(page.locator(".plan-explanation")).not.toBeVisible();
   await page
     .locator(".journey-disclosure > summary")
-    .filter({ hasText: /^Why this plan\?$/ })
+    .filter({ hasText: /^Why this plan\?/ })
     .click();
   await page
     .getByText("Alternatives Adler considered", { exact: true })
@@ -298,19 +298,19 @@ test("the simplified journey works on a phone with accessible disclosure control
   }
 });
 
-test("the landing uses Adler Warm and five focused chapters on desktop and mobile", async ({ page }) => {
+test("the landing uses Adler Warm throughout its connected goal journey", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".journey-hero h1")).toHaveText("Reach your goals with a system that understands you.");
-  const typography = await page.locator(".journey-hero h1, .chapter-copy h2, .mountain-finale h2").evaluateAll(elements =>
+  await expect(page.locator(".journey-introduction h1")).toHaveText("Reach your goals with a system that understands you.");
+  const typography = await page.locator(".journey-introduction h1, .journey-step-heading h2, .mountain-finale h2").evaluateAll(elements =>
     elements.map(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight })),
   );
   expect(typography.every(font => font.family.includes("Adler Warm") && font.weight === "550")).toBeTruthy();
-  await expect(page.locator(".hero-intro-v2 > p")).toHaveCSS("font-weight", "500");
-  await expect(page.locator(".focus-chapter")).toHaveCount(5);
-  await expect(page.locator(".hero-assembled")).toHaveCount(1);
-  await expect(page.locator("#step-5")).toContainText("Apple Health");
-  await expect(page.locator("#step-5 .connections-upcoming")).toContainText("Shared goals & stakes");
-  await expect(page.locator("#step-5 .connections-upcoming")).toContainText("Coming soon");
+  await expect(page.locator(".hero-intro-v2 > p").first()).toHaveCSS("font-weight", "500");
+  await expect(page.locator(".journey-step")).toHaveCount(5);
+  await expect(page.getByRole("navigation", { name: "Your goal journey" }).getByRole("link")).toHaveCount(5);
+  await expect(page.locator("#step-4")).toContainText("Apple Health");
+  await expect(page.locator("#step-4 .connections-upcoming")).toContainText("Shared goals & stakes");
+  await expect(page.locator("#step-4 .connections-upcoming")).toContainText("Coming soon");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -321,13 +321,15 @@ test("landing app captures load the desktop and native mobile screens", async ({
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-    for (const [index, screen] of ["goals", "calendar", "progress", "insights"].entries()) {
-      const capture = page.locator(`#step-${index + 1} .app-capture-window .capture-still img`);
+    for (const screen of ["goals", "plan", "checkin", "calendar", "progress", "insights"]) {
+      const details = page.locator(`[data-screen="${screen}"]`);
+      if (screen === "calendar") await details.locator("summary").first().click();
+      const capture = details.locator(".app-capture-window .capture-still img");
       await capture.scrollIntoViewIfNeeded();
       await expect.poll(() => capture.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
       const image = await capture.evaluate((el: HTMLImageElement) => ({ src: el.currentSrc, pixels: el.naturalWidth, width: el.getBoundingClientRect().width }));
       expect(image.src).toContain(`/media/app/${screen}-${width === 390 ? "mobile" : "desktop"}.webp`);
-      expect(image.pixels).toBe(width === 390 ? 780 : index >= 2 ? 1680 : 2000);
+      expect(image.pixels).toBe(width === 390 ? 780 : ["goals", "calendar"].includes(screen) ? 2000 : 1680);
       expect(image.width).toBeGreaterThan(width === 390 ? 300 : 600);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
@@ -337,7 +339,7 @@ test("landing app captures load the desktop and native mobile screens", async ({
 test("landing capture interactions pause and respect reduced motion", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  const preview = page.locator("#step-4 .app-capture-preview");
+  const preview = page.locator('[data-screen="insights"] .app-capture-preview');
   await preview.getByRole("button", { name: "Pause Insights animation" }).scrollIntoViewIfNeeded();
   await expect(page.locator("#step-4")).toHaveClass(/is-current/);
   const cursor = preview.locator(".capture-cursor");
@@ -361,7 +363,7 @@ test("landing app screenshots enlarge with the keyboard and restore focus", asyn
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-    const opener = page.getByRole("button", { name: "Enlarge Goal progress screenshot" });
+      const opener = page.getByRole("button", { name: "Enlarge Goal progress screenshot" });
     await opener.focus();
     await page.keyboard.press("Enter");
     const dialog = page.getByRole("dialog", { name: "Goal progress" });
@@ -380,7 +382,7 @@ test("progress and insights frames remain readable on demand with reduced motion
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-    const progress = page.locator("#step-3 .app-capture-preview");
+      const progress = page.locator('[data-screen="progress"] .app-capture-preview');
     await progress.getByRole("button", { name: "2 Inputs & assumptions" }).click();
     await expect(progress.locator(".capture-detail")).toBeVisible();
     await expect(progress.locator(".capture-detail")).toHaveCSS("opacity", "1");
@@ -389,8 +391,8 @@ test("progress and insights frames remain readable on demand with reduced motion
     await page.keyboard.press("Escape");
     await progress.getByRole("button", { name: "1 Goal projection" }).click();
     await expect(progress.locator(".capture-detail")).toBeHidden();
-    const insights = page.locator("#step-4 .app-capture-preview");
-    for (const [label, selector] of [["2 Why try this?", ".capture-detail"], ["3 What we learned", ".capture-followup"]]) {
+      const insights = page.locator('[data-screen="insights"] .app-capture-preview');
+    for (const [label, selector] of [["2 The learning journey", ".capture-detail"], ["3 Why this test?", ".capture-followup"]]) {
       const control = insights.getByRole("button", { name: label });
       await control.focus();
       await page.keyboard.press("Enter");
@@ -740,29 +742,69 @@ test("latest action observations use the last check-in when records share a date
   );
 });
 
-test("each of the five chapters holds its own viewport and remains readable without motion", async ({ page }) => {
+test("the journey index follows the reader and lets them choose a step", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
-  const panels = page.locator(".focus-chapter");
+  const index = page.getByRole("navigation", { name: "Your goal journey" });
   for (let i = 0; i < 5; i++) {
-    const panel = panels.nth(i);
-    await panel.evaluate(node => window.scrollTo({ top: scrollY + node.getBoundingClientRect().top + 20, behavior: "instant" }));
-    await expect(panel).toHaveClass(/is-current/);
-    await expect(panel.locator(".chapter-stage")).toHaveCSS("position", "sticky");
-    await expect(panel.locator(".chapter-copy h2")).toBeInViewport();
+    await index.getByRole("link").nth(i).click();
+    await expect(index.getByRole("link").nth(i)).toHaveAttribute("aria-current", "step");
+    await expect(page.locator(`#step-${i + 1} h2`).first()).toBeInViewport();
   }
+  await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(panels.nth(1).locator(".chapter-stage")).toHaveCSS("position", "static");
+  await expect(index).toHaveCSS("position", "static");
 });
 
-test("the opening animation uses a concrete nonfitness goal and respects reduced motion", async ({ page }) => {
+test("the first screen leads straight into the story without a mandatory animation", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
-  await expect(page.locator(".hero-objects")).toContainText("Publish my portfolio");
-  await expect(page.locator(".hero-objects")).toContainText("Read more often");
-  await expect(page.locator(".hero-objects")).toContainText("Find my next role");
-  await expect(page.locator(".hero-float")).toHaveCount(4);
+  await page.getByRole("link", { name: "Follow one goal" }).click();
+  await expect(page.locator(".journey-opening h2")).toBeInViewport();
+  await expect(page.locator(".journey-goal-anchor")).toContainText("Read 30 books");
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".journey-hero")).toHaveAttribute("data-scene", "static");
-  await expect(page.locator(".hero-sticky")).not.toHaveCSS("position", "sticky");
-  await expect(page.getByRole("heading", { name: "A clear next step." })).toHaveCount(0);
+  await expect(page.locator(".journey-hero")).not.toHaveCSS("position", "sticky");
+  await expect(page.locator(".hero-float")).toHaveCount(0);
+});
+
+test("three real mobile screens and coming-soon store buttons lead into the immersive graph", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  const hero = page.getByRole("region", { name: "A system that understands you" });
+  await expect(hero.locator(".hero-mobile-phone")).toHaveCount(3);
+  for (const img of await hero.locator(".hero-mobile-phone img").all()) {
+    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth === 780)).toBe(true);
+  }
+  await hero.getByRole("button", { name: "Download on the App Store" }).click();
+  await expect(hero.getByRole("status")).toContainText("App Store version is coming soon");
+  await hero.getByRole("button", { name: "Get it on Google Play" }).click();
+  await expect(hero.getByRole("status")).toContainText("Google Play version is coming soon");
+  await expect(hero.getByRole("link", { name: "Get started on web" })).toHaveAttribute("href", "/app/goals/new");
+  const opener = hero.getByRole("button", { name: "Enlarge Check in with Adler" });
+  await opener.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("dialog", { name: "Check in with Adler" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(opener).toBeFocused();
+  const graph = page.getByRole("region", { name: "From scattered goals to a plan that learns" });
+  const move = async (progress: number) => graph.evaluate((el, p) => window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + (el.clientHeight - innerHeight) * p, behavior: "instant" }), progress);
+  await move(.52);
+  await expect(graph.locator(".learning-preview")).toHaveAttribute("data-stage", "2");
+  const viewport = (await graph.locator(".learning-chart-viewport").boundingBox())!;
+  const camera = graph.locator(".learning-chart-world");
+  expect((await camera.boundingBox())!.width / viewport.width).toBeGreaterThan(3);
+  const before = (await camera.boundingBox())!.x;
+  await move(.7);
+  await expect(graph.locator(".learning-preview")).toHaveAttribute("data-stage", "4");
+  expect((await camera.boundingBox())!.x).toBeLessThan(before);
+  await move(1);
+  await expect(graph.locator(".learning-preview")).toHaveAttribute("data-stage", "5");
+  expect(Math.abs((await camera.boundingBox())!.width - viewport.width)).toBeLessThan(2);
+  await expect(graph.locator(".learning-example-note")).toContainText("illustration");
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(graph).toHaveAttribute("data-scene", "static");
+  await expect(graph.locator(".hero-sticky")).not.toHaveCSS("position", "sticky");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

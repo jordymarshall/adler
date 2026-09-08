@@ -48,7 +48,7 @@ Keep the outcome-versus-time graph, target and conditional forward range where t
 
 ## Low friction through product understanding
 
-The landing page demonstrates a specific check-in, useful adjustment and later learning early, then shows how the features support that experience. Use readable parts of the real product, clear visual focus and controllable motion. The value should remain understandable without enlarging a screenshot or waiting for animation.
+The landing page follows one goal from setting it to working toward its reported completion: a chosen action, a setback, a research-informed explanation, a test and subsequent adaptation. Demonstrate how the coach revisits an explanation when reality differs; an isolated practical tip is not the product’s value. Features support this continuous journey rather than restarting it as separate tours. Use readable parts of the real product, clear visual focus and controllable motion. The value should remain understandable without enlarging a screenshot or waiting for animation.
 
 Onboarding reaches a feasible first action using only information needed for the next decision. Later use develops the personal context. Connections and advanced configuration appear when useful. The person should understand what they contribute and what Adler manages.
 
@@ -59,3 +59,9 @@ For each iteration, design the best defensible way to deliver the intended user 
 Specify the evidence, decision process, data semantics, failure cases, user control and observable acceptance criteria before calling the work complete. Keep usability, methodological fidelity, model reliability and actual coaching effectiveness as separate evaluation questions. Longer reasoning, more citations or more sophisticated statistics are not evidence of better coaching by themselves.
 
 The [accepted experience plan](product-core-and-experience-plan.md) and [original review](scientific-disclosure-product-proposal.md) supply concrete examples and identified gaps. Current user instructions take precedence. This guidance creates no additional approval gates.
+
+## Structure and visual continuity
+
+Give each goal a visible index, orient the person with the outcome and current work, then disclose the timeline, progress, learning and history. Use time for actions and revisions, dependencies for planned work, and input→outcome relationships for forecasts. A grid of unrelated boxes adds no meaning. Show selected tracking even when a finish cannot yet be estimated. Keep ordinary app text neutral and readable; headings and plotted signals carry colour.
+
+Landing demonstrations use actual app captures of the relevant saved state, in causal narrative order: the earlier plan must precede the report and refinement. Preserve approved interactions through future iterations: three actual mobile screens, connecting curves that gather with scrolling, and the immersive chart. The Today timeline redesign is deferred while core coaching and learning clarity are the priority.

@@ -15,6 +15,7 @@ export const behaviorMeasureSchema = z.object({
 }).strict();
 export const adaptivePlanSchema = z.object({
   projection: projectionModelSchema.optional(),
+  projectionUnavailableReason: description.optional(),
   reasoning: behavioralReasoningSchema.optional(),
   approach: description,
   window: z.object({

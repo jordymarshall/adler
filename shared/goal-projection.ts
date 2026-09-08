@@ -16,7 +16,9 @@ export function goalProjection(data: Data, goal: Goal, today: string) {
   const target = measure?.target ?? goal.target ?? goal.milestones.length;
   const progress = current === null || target <= 0 ? null : Math.min(100, 100 * current / target);
   const base = { current, target, progress, observations, observedAt: latest?.date ?? null };
-  if (!model || !plan || !measure) return { ...base, status: "Choose what to track", projection: null, evidence: null };
+  if (!model || !plan || !measure) return { ...base,
+    status: measure ? "Tracking results · finish not yet estimated" : goal.milestones.length ? "Tracking milestones" : "Tracking your reported experience",
+    projection: null, evidence: null };
   const step = plan.steps.find(s => s.id === model.driverStepId);
   if (!step || (model.inputMetric === "amount" && !step.measure) || model.outcomeUnit !== measure.unit || measure.aggregation !== "cumulative")
     return { ...base, status: "Review what you’re measuring", projection: null, evidence: null };

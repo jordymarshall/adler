@@ -49,6 +49,26 @@ test("new coach plans must contain executable structure and receive repair feedb
   assert.equal(result.data.actions.length, 1);
 });
 
+test("the shared coach repairs an omitted projection decision before saving a new goal", async t => {
+  const { db, user, input, adaptive } = fixture(t);
+  let attempts = 0;
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    attempts++;
+    if (attempts === 2) assert.match(context.validationError, /projection.*reason/i);
+    const plan = { ...adaptive, projectionUnavailableReason: undefined };
+    if (attempts === 2) Object.assign(plan, { projectionUnavailableReason: "An outline attempt does not determine when the essay will be published. Track attempts and the published result separately." });
+    return schema.parse({ reply: "Review your starting plan.", summary: "Track outline attempts and the published result", execution: "apply", methods: [], changes: [{
+      entity: "goal", operation: "create", id: "essay", parentId: null,
+      values: JSON.stringify({ ...input, adaptive: plan }), reason: "You asked for a plan.",
+    }] });
+  }), literature);
+  const result = await service.chat(user.id, "Create my goal and choose how to track it", "general", "mcp", "complete-setup");
+  assert.equal(attempts, 2);
+  assert.match(result.data.goals[0].plans[0].adaptive.projectionUnavailableReason, /Track attempts/);
+  assert.ok(result.data.goals[0].plans[0].adaptive.window.end);
+  assert.equal(result.data.goals[0].results[0].value, 0);
+});
+
 test("an existing goal's upgrade remains a proposal until accepted and preserves records", async t => {
   const { db, user, input, adaptive, today } = fixture(t);
   const saved = db.snapshot(user.id);

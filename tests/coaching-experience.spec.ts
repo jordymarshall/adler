@@ -50,31 +50,3 @@ test("Today leads with the action, with the full goal view one step away", async
   ).toBe(true);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
-
-test("the landing makes the report, adjustment and learning readable without motion", async ({
-  page,
-}) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  const story = page.getByRole("region", {
-    name: "A check-in that changes the plan",
-  });
-  await expect(story).toContainText("forgot to pick up my book");
-  await story
-    .getByRole("button", { name: /Choose a useful adjustment/ })
-    .click();
-  await expect(story).toContainText(
-    "Try keeping your book beside your lunch spot",
-  );
-  await expect(
-    story.getByRole("link", { name: /Implementation intentions/ }),
-  ).toBeVisible();
-  await story.getByRole("button", { name: /Learn what helps you/ }).click();
-  await expect(story).toContainText("not a proven personal rule");
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth + 1,
-    ),
-  ).toBe(true);
-});

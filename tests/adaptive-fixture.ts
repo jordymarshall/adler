@@ -4,6 +4,7 @@ import { initialData } from "../shared/workspace.ts";
 
 export function adaptiveFixture(start = "2026-09-07", end = "2026-09-11"): AdaptivePlan {
   return {
+    projectionUnavailableReason: "Outline attempts and a published essay are tracked separately. There is no established conversion from outline points to a publication date.",
     reasoning: {
       grounding: [{ claimId: "claim:implementation-if-then", version: "2026-09-07.1", relation: "motivates", application: "The specified cue can connect the chosen outline task to a feasible start; its usefulness for this person remains untested." }],
       principleIds: ["P2"], goalRoute: "session", ruleExceptions: ["Use a short drafting trial rather than a daily habit or automaticity target."],

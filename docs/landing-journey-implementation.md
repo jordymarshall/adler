@@ -1,0 +1,31 @@
+# One continuous goal journey
+
+7 September 2026. Implements the user's latest direction: explain the journey from setting a goal to reaching it, and make Adler's ongoing, hypothesis-driven coaching the reason to use it. This supersedes the separate introductory example followed by five feature chapters.
+
+## Decisions
+
+- Keep the selected headline, subheadline, typography, textured paper and mountain/Adler-mark ending. Show three actual mobile web-app screens with connecting curves that gather as you scroll, then preserve the immersive graph (the user explicitly reaffirmed it). Replace the separate tip example and feature chapters with one readable journey.
+- Add App Store and Google Play buttons as clearly identified coming-soon placeholders, alongside the working web-app entry. Screen enlargement works with keyboard and touch.
+- Follow the existing fictional Read 30 books goal. Demonstrate evolving judgment: a smaller evening target still conflicts with work; reported context motivates trying another window; follow-up qualifies the hypothesis and informs the next test.
+- Show goal → first plan → understand the setback → test and adapt → progress and completion. Calendar, check-ins, memory, research and projection serve this story rather than starting separate tours.
+- Use actual-app captures as the main demonstration in all five steps, with focused mobile captures, click-through animation and enlargement. Capture the earlier saved plan before showing the check-in and revision that follow it. Keep connected-phone demonstrations available on demand. Preserve the outcome axes, forward projection and conditional range. Changing a plan does not immediately change the observed forecast.
+- Bind COM-B's opportunity construct to the reported constraint, distinguish theory from efficacy, and identify the scheduling change as a hypothesis. The review uses P3's structured review and preserves the P24 constraint boundary, P29 transfer limits and uncertain personal inference required by the current Adler Method.
+- Label this as a fictional walkthrough of supported workflows, not a customer result. Reaching the target requires an outcome report.
+
+The shared coach already has these gates, research bindings, durable test versions and cross-channel tools. This change demonstrates those abilities; it does not create a second scripted coaching engine or a universal intake/review cadence.
+
+## Acceptance checklist
+
+- [x] One ordered journey; the goal and each transition are understandable without opening a screenshot.
+- [x] Observations, research interpretation, tentative hypothesis, chosen change and later feedback stay distinct.
+- [x] New context qualifies a hypothesis, with a dated next review and saved memory, without claiming causality.
+- [x] Calendar booking follows user approval; connected context does not become reported behaviour.
+- [x] Full app screens remain available; the outcome line, full projection range and mobile axes are readable by default.
+- [x] Keyboard, reduced motion, desktop/mobile layout and capture expansion work. The main narrative changes only on request. Preserve scroll-controlled camera motion and its static mobile/reduced-motion overview.
+- [x] Browser checks, typecheck/build and independent review.
+- [ ] Commit/push to main.
+- [ ] Public deployment, pending a persistent backend.
+
+## Basis and limits
+
+Applies the existing [product-comprehension research](research/product-comprehension-ux.md): representative examples, workflow continuity, contextual disclosure and a useful static starting view. The sequence and density are product hypotheses, not validated conversion improvements. A user study should ask visitors to explain what the coach learned, why the plan changed, and what they must do next; preference alone is insufficient.

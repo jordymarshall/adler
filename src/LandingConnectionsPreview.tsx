@@ -134,10 +134,10 @@ export function ConnectionsPreview() {
             >
               <img src="/brands/claude.svg" alt="" />
               <p>
-                Your next action is to read 20 pages after lunch, with your book beside your lunch spot.
+                Your next action is to read 20 pages after lunch at home on Tuesday.
               </p>
               <p>
-                You said you forgot to pick up the book. Adler suggested a visible cue; we’re still learning whether it helps.
+                Quiet lunches seemed helpful in two reports. Office days still need a capacity check; we’re keeping that distinction in the plan.
               </p>
               <span className="phone-record-link">↗ Read 30 books</span>
               <span className="phone-record-link">↗ Your last check-in</span>
@@ -168,14 +168,14 @@ export function ConnectionsPreview() {
               aria-live="off"
             >
               <p className="phone-bubble incoming">
-                How did reading after lunch go?
+                How did the lunch plan go?
               </p>
               <p className="phone-bubble outgoing">
-                I had time, but forgot to pick up my book.
+                Lunch works at home, Tuesday and Thursday. Office days are full of meetings.
               </p>
               <p className="phone-delivered">Delivered</p>
               <p className="phone-bubble incoming">
-                Try keeping the book beside your lunch spot, so it’s easier to notice when you finish eating.
+                Keep home-day reading. We’ll check office-day capacity before adding a session.
               </p>
               {sent && (
                 <>
@@ -183,7 +183,7 @@ export function ConnectionsPreview() {
                     I’ll try that. Can you also make room in my calendar?
                   </p>
                   <p className="phone-bubble incoming">
-                    I found 12:30 tomorrow. Book 20 minutes for reading? We can review the cue after your next few reports.
+                    I found 12:30 on Tuesday. Book 20 minutes for reading? We can review whether the window helped after your next few reports.
                   </p>
                 </>
               )}
@@ -198,7 +198,7 @@ export function ConnectionsPreview() {
                   : "Try the example text check-in"
               }
             >
-              {sent ? "Replay check-in" : "Try the book cue"}
+              {sent ? "Replay check-in" : "Try the check-in"}
               <ArrowUp size={15} />
             </button>
           </Phone>
@@ -212,8 +212,8 @@ export function ConnectionsPreview() {
               <Plus size={17} />
             </header>
             <div className="phone-calendar-date">
-              <small>FRIDAY</small>
-              <strong>16</strong>
+              <small>TUESDAY</small>
+              <strong>20</strong>
               <span>Room for your goals.</span>
             </div>
             <div

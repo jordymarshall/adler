@@ -47,6 +47,7 @@ test("the connected phones share an animated check-in and booking, with pause an
   const demo = page.locator(".connections-showcase");
   await page.clock.runFor(5000);
   await expect(demo).toHaveAttribute("data-phase", "0");
+  await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
   await demo.scrollIntoViewIfNeeded();
   await page.clock.runFor(4100);
   await expect(demo).toHaveAttribute("data-phase", "1");

@@ -4,17 +4,19 @@ import { Modal } from "./components";
 import points from "./landing-capture-points.json";
 
 const screens = {
+  plan: { title: "Your plan", alt: "The actual Adler goal page: current actions, a chosen planning period, milestones and a review point on the timeline." },
+  checkin: { title: "Check-in", alt: "An actual Adler conversation about the user’s available reading time, with links to the saved learning and goal." },
   goals: { title: "Your goals", alt: "Adler’s categorized goals table with activity heatmaps, goal attainment, and projected finish dates." },
   calendar: { title: "Your calendar", alt: "Adler’s full month calendar with goal colours and highlighted plan sessions. Selecting a session shows its full details." },
   progress: { title: "Goal progress", alt: "The Read 30 books goal detail: reported books, projected finish, and a conditional scenario band with error bars extending to the goal horizon. The projection uses pages read per day and an assumed book length." },
-  insights: { title: "Insights", alt: "Two questions Adler is learning about, with current test status and review timing. Open the reading example to see the observation, specific research, change tried and tentative learning." },
+  insights: { title: "Insights", alt: "Two questions Adler is learning about, with current test status and review timing. Open the reading example to see how reported evening work constraints inform a lunch-window hypothesis, its specific research, and the next review." },
 };
 
 export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) {
   const [expanded, setExpanded] = useState(false);
   const [paused, setPaused] = useState(false);
   const [frame, setFrame] = useState<number | null>(null);
-  const steps = screen === "progress" ? ["Goal projection", "Inputs & assumptions"] : screen === "insights" ? ["Learning now", "Why try this?", "What we learned"] : null;
+  const steps = screen === "progress" ? ["Goal projection", "Inputs & assumptions"] : screen === "insights" ? ["Learning now", "The learning journey", "Why this test?"] : null;
   const { title, alt } = screens[screen];
   const point = points[screen];
   function capture(enlarged = false, detail = false, followup = false) {
@@ -22,13 +24,13 @@ export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) 
     const hidden = !enlarged && (frame === null ? detail || followup : frame !== (followup ? 2 : detail ? 1 : 0));
     const description = screen === "progress" && (detail || (enlarged && frame === 1))
       ? "The inputs behind Read 30 books: measured pages per day, book-length assumptions, unknown quantities and linked reports."
-      : screen === "insights" && followup ? "Reported follow-up, a tentative working insight, and the next question to test."
-      : screen === "insights" && detail ? "Reported observations lead to a research-informed hypothesis and a change to test. The behavioural mechanism and source links remain visible."
+      : screen === "insights" && followup ? "The current hypothesis and its specific behavioural-science interpretation, with research and source links."
+      : screen === "insights" && detail ? "The saved starting point, first test, reported feedback and revised current test appear in date order."
       : alt;
     return (
       <picture className={enlarged ? "capture-expanded" : followup ? "capture-followup capture-animation" : detail ? "capture-detail capture-animation" : "capture-still"} aria-hidden={hidden || undefined}>
         <source media="(max-width: 650px)" srcSet={`/media/app/${screen}-mobile${suffix}.webp`} width="780" height="2100" />
-        <img src={`/media/app/${screen}-desktop${suffix}.webp`} alt={hidden ? "" : enlarged && screen === "insights" ? "The complete reasoning behind a working insight, from reported evidence through the next experiment." : description} width={steps ? 1680 : 2000} height="1800" loading={enlarged ? "eager" : "lazy"} decoding="async" />
+        <img src={`/media/app/${screen}-desktop${suffix}.webp`} alt={hidden ? "" : enlarged && screen === "insights" ? "The complete reasoning behind a working insight, from reported evidence through the next experiment." : description} width={["progress", "insights", "plan", "checkin"].includes(screen) ? 1680 : 2000} height="1800" loading={enlarged ? "eager" : "lazy"} decoding="async" />
       </picture>
     );
   }

@@ -430,7 +430,7 @@ test("a sourced insight opens its original chat and a reply links to the actual 
   await seedCoaching(page, state.data);
   await page.goto("/app/goals/essays/progress");
   await page
-    .getByRole("link", { name: "See what we’re learning about this goal", exact: false })
+    .getByRole("link", { name: "All insights for this goal", exact: false })
     .click();
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays$/);
   await expect(page.getByRole("combobox")).toHaveValue("essays");
