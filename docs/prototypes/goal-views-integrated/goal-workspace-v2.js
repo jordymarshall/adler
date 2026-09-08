@@ -5,7 +5,6 @@ const params=new URLSearchParams(location.search);
 let variant=variants.includes(params.get('variant'))?params.get('variant'):'C';
 let goal=['reading','revenue','day'].includes(params.get('goal'))?params.get('goal'):'reading';
 let selectedAction='read',selectedDay=8,windowOffset=0,stage='current',lastUndo=null,noticeTimer;
-let activityExpanded=false;
 const fixtures={
   reading:{
     title:'Read 30 books',category:'Learning',targetLabel:'Target · 31 Dec 2027',outcome:6,total:30,outcomeUnit:'books',
@@ -143,7 +142,7 @@ function attempt(a,d){
   return '<div class="attempt-slot"><button class="attempt '+status+(selected?' selected':'')+'" style="--fill:'+Math.min(100,n/target*100)+'%" data-attempt="'+a.id+':'+d+'" aria-pressed="'+selected+'" aria-label="'+esc(label)+'"><b>'+text+'</b>'+(sub?'<span class="attempt-status">'+sub+'</span>':'')+'</button></div>';
 }
 function streakLane(days){
-  const signal=planSignals();if(goal==='day'||variant==='C')return '';
+  const signal=planSignals();if(goal==='day')return '';
   const first=signal.through-signal.run+1;
   return '<div class="streak-lane"><div class="row-label"><strong>Streak</strong>'+(signal.unconfirmed?'<small>Report needed</small>':'')+'</div><div class="days">'+days.map(d=>{
     const active=!signal.unconfirmed&&signal.run&&d>=first&&d<=signal.through,off=!f().actions.some(a=>a.days.includes(d));
@@ -185,30 +184,6 @@ function inputSection(large=false){
   const a=action(),cutoff=variant==='C'&&stage==='before'?6:7,targets=a.days.map(d=>[d,settings(a,d).target]),t=goalInputComparison(targets,s().reports[a.id],goal==='day'?14:cutoff);
   const note=!t.count&&!t.unknown?'Not due yet':t.unknown?t.unknown+' past report'+(t.unknown===1?'':'s')+' missing':t.below?t.below+' '+a.unit+' below plan'+(t.above?' · '+t.above+' extra elsewhere':''):t.above?t.above+' '+a.unit+' above plan':'Planned amount met';
   return '<div class="input-section"'+(variant==='C'?' id="input"':'')+'><div class="input-summary"><strong>'+(a.target===1?'Action progress':a.unit.charAt(0).toUpperCase()+a.unit.slice(1)+' per planned day')+'</strong><span>'+(goal==='day'?'Through 2 pm':'Through '+cutoff+' Sep')+'</span></div><div class="plan-comparison"><span>'+(t.count?'<b>'+t.reported+'</b> reported <span class="comparison-divider">/</span> <b>'+t.planned+'</b> '+a.unit+' planned'+(t.unknown?' on reported days':''):t.unknown?'No quantities reported yet':'Next planned · '+dayLabel(a.days.find(d=>d>(goal==='day'?14:7))||a.days.at(-1)))+'</span><span class="quantity-gap '+(!t.count||t.unknown?'unknown':t.below?'below':t.above?'above':'met')+'">'+note+'</span></div><div class="graph input-graph" data-graph="input" data-large="'+large+'"></div><div class="input-legend"><span><i class="sample-line"></i>Reported</span><span><i class="sample-line planned"></i>Planned</span>'+(t.below?'<span><i class="sample-gap"></i>Below plan</span>':'')+(t.above?'<span><i class="sample-gap above"></i>Above plan</span>':'')+'<span class="graph-instruction">Select a report to inspect it</span></div></div>';
-}
-
-// A calendar of the goal's reported work, not a new score or a forecast input.
-function activityDay(day){
-  const due=f().actions.filter(a=>a.days.includes(day)),earlier=stage==='before',cutoff=earlier?6:8;
-  const known=due.filter(a=>report(a,day)!==undefined),met=known.filter(a=>report(a,day)>=settings(a,day).target);
-  const detail=due.map(a=>actionName(a,day)+': '+(day>cutoff?'planned':report(a,day)===undefined?'not reported':amountLabel(report(a,day),a)+' reported')+' / '+settings(a,day).target+' '+a.unit+' planned').join('; ');
-  if(!due.length)return {kind:day>28?'unscheduled':'rest',symbol:day>28?'–':'○',label:day>28?'Not scheduled yet':'No actions planned',detail:''};
-  if(day>cutoff)return {kind:'future',symbol:'·',label:'Planned',detail};
-  if(known.length<due.length)return {kind:'unknown',symbol:'?',label:(day===8?'Today · ':'')+(due.length-known.length)+' report'+(due.length-known.length===1?'':'s')+' '+(day===8?'pending':'missing'),detail};
-  if(met.length===due.length)return {kind:'met',symbol:'✓',label:'Planned amounts met',detail};
-  if(known.some(a=>report(a,day)>0))return {kind:'partial',symbol:'◧',label:'Some work reported · planned amounts not all met',detail};
-  return {kind:'missed',symbol:'×',label:'Reported: didn’t happen',detail};
-}
-function activityProgress(){
-  const cutoff=stage==='before'?6:7,signal=planSignals(),firstStreak=signal.through-signal.run+1;
-  const cells=Array.from({length:35},(_,i)=>{
-    const day=i;
-    if(day<1||day>30)return '<span class="activity-empty" aria-hidden="true"></span>';
-    const item=activityDay(day),inStreak=stage!=='before'&&!signal.unconfirmed&&signal.run&&day>=firstStreak&&day<=signal.through;
-    const label=day+' September: '+item.label+(item.detail?'. '+item.detail:'')+(inStreak?'. Part of the current streak.':'');
-    return '<button class="activity-cell '+item.kind+(day===selectedDay?' selected':'')+(inStreak?' in-streak':'')+'" data-activity-day="'+day+'" aria-label="'+esc(label)+'" title="'+esc(label)+'" aria-pressed="'+(day===selectedDay)+'"><span aria-hidden="true">'+item.symbol+'</span></button>';
-  }).join('');
-  return '<div class="activity-and-graph"><details class="activity-history"'+(innerWidth>700||activityExpanded?' open':'')+'><summary><strong>Plan activity</strong><span>September 2026</span><i aria-hidden="true">⌄</i></summary><div class="activity-content"><div class="activity-calendar" aria-label="September plan activity, Monday to Sunday">'+['M','T','W','T','F','S','S'].map(d=>'<span class="activity-weekday" aria-hidden="true">'+d+'</span>').join('')+cells+'</div><div class="activity-key"><span><i class="met">✓</i>Met plan</span><span><i class="partial">◧</i>Some work</span><span><i class="missed">×</i>Didn’t happen</span><span><i class="unknown">?</i>No report</span><span><i class="rest">○</i>Day off</span><span><i class="future">·</i>Planned</span></div><p class="activity-footnote">'+(stage==='before'?'Earlier record · through 6 Sep.':'Streak through '+cutoff+' Sep. Planned rest preserves an intact run.')+'</p></div></details>'+inputSection(true)+'</div>';
 }
 
 function selectedWork(withGraph=true){
@@ -293,7 +268,7 @@ function stageEvidence(){
 }
 function renderC(){
   const c=f().change,historical=stage==='before';
-  return '<div class="variant-c integrated-goal '+(goal==='day'?'one-day':'')+'">'+header()+'<nav class="goal-index" aria-label="Within this goal"><a href="#plan">Plan & actions</a>'+(goal!=='day'?'<a href="#outlook">Goal outlook</a>':'')+(c?'<a href="#learning">Learning & history</a>':'')+'</nav><div class="learning-layout"><section class="evidence-canvas" id="plan">'+milestoneFocus()+(historical?'<div class="history-banner"><span>You’re inspecting the earlier arrangement. Only its reports can be corrected here.</span><button data-stage="current">Return to current plan →</button></div>':'')+'<div class="plan-period"><span>'+(historical?'Earlier action opportunities':goal==='day'?'Actions toward this goal':'Actions in this plan')+'</span>'+windowControls()+'</div>'+timeline()+selectedWork(false)+(goal==='day'||action().target===1?'':activityProgress())+(c&&!historical&&action().id===c.actionId?'<div class="current-learning"><div><span class="eyebrow">What we’re learning</span><strong>'+(goal==='reading'?'Does reading after lunch fit your day?':'Does the morning window stay available?')+'</strong><small>'+learningSummary()+'</small></div><button data-dialog="review">Review with Coach ↗</button></div>':'')+'</section>'+journeyRail()+(goal!=='day'?'<section id="outlook" class="goal-outlook"><div class="section-title"><div><span class="eyebrow">Current goal outlook</span><h2>Where this work could lead</h2></div><button class="text-button" data-dialog="outcome">Update reported result ↗</button></div>'+outcomePanel()+'</section>':'')+'</div></div>';
+  return '<div class="variant-c integrated-goal '+(goal==='day'?'one-day':'')+'">'+header()+'<nav class="goal-index" aria-label="Within this goal"><a href="#plan">Plan & actions</a>'+(goal!=='day'?'<a href="#outlook">Goal outlook</a>':'')+(c?'<a href="#learning">Learning & history</a>':'')+'</nav><div class="learning-layout"><section class="evidence-canvas" id="plan">'+milestoneFocus()+(historical?'<div class="history-banner"><span>You’re inspecting the earlier arrangement. Only its reports can be corrected here.</span><button data-stage="current">Return to current plan →</button></div>':'')+'<div class="plan-period"><span>'+(historical?'Earlier action opportunities':goal==='day'?'Actions toward this goal':'Actions in this plan')+'</span>'+windowControls()+'</div>'+timeline()+selectedWork(false)+(goal==='day'||action().target===1?'':inputSection(true))+(c&&!historical&&action().id===c.actionId?'<div class="current-learning"><div><span class="eyebrow">What we’re learning</span><strong>'+(goal==='reading'?'Does reading after lunch fit your day?':'Does the morning window stay available?')+'</strong><small>'+learningSummary()+'</small></div><button data-dialog="review">Review with Coach ↗</button></div>':'')+'</section>'+journeyRail()+(goal!=='day'?'<section id="outlook" class="goal-outlook"><div class="section-title"><div><span class="eyebrow">Current goal outlook</span><h2>Where this work could lead</h2></div><button class="text-button" data-dialog="outcome">Update reported result ↗</button></div>'+outcomePanel()+'</section>':'')+'</div></div>';
 }
 
 function render(){
@@ -356,7 +331,7 @@ function drawOutcome(width,height){
 }
 function drawInput(width,height,large,element){
   const a=action(),days=windowDays();
-  const lane=large&&!element?.closest('.activity-and-graph')?document.querySelector('.evidence-canvas .action-row.active .days'):null;
+  const lane=large?document.querySelector('.evidence-canvas .action-row.active .days'):null;
   const laneRect=lane?.getBoundingClientRect(),graphRect=element?.getBoundingClientRect();
   const left=laneRect?Math.max(30,laneRect.left-graphRect.left):30,right=laneRect?Math.max(0,graphRect.right-laneRect.right):12;
   const top=large?35:17,bottom=height-24,w=width-left-right,h=bottom-top;
@@ -491,20 +466,6 @@ function chooseGoal(key){
 }
 document.addEventListener('click',event=>{
   const el=event.target.closest('button,[data-attempt]');if(!el)return;
-  if(el.dataset.activityDay){
-    const day=Number(el.dataset.activityDay),due=f().actions.filter(a=>a.days.includes(day));
-    if(!due.length){
-      openDialog('state');document.getElementById('dialog-title').textContent=activityDay(day).label;
-      document.getElementById('dialog-kind').textContent='Plan · '+dayLabel(day);
-      document.getElementById('dialog-body').innerHTML='<p class="dialog-intro">'+(day>28?'This date is beyond the saved plan. It is not a missed action or a scheduled day off.':'There is no work scheduled for this goal on this date. Planned rest can preserve an existing streak; it does not add completed work or move the goal projection.')+'</p>';
-      return;
-    }
-    selectedAction=due.find(a=>a.id===selectedAction)?.id||due[0].id;selectedDay=day;
-    stage=day<7?'before':'current';windowOffset=0;
-    if(!windowDays().includes(day))windowOffset=Math.max(0,day-windowDays().length+1);
-    render();document.querySelector('[data-activity-day="'+day+'"]')?.focus({preventScroll:true});
-    return;
-  }
   if(el.dataset.dialog){if(el.hasAttribute('data-review-report')){selectedAction=f().actions[0].id;selectedDay=8;stage='current';render();}openDialog(el.dataset.dialog);return;}
   if(el.dataset.attempt){const [id,day]=el.dataset.attempt.split(':');selectedAction=id;selectedDay=Number(day);const fromGraph=el.getAttribute('role')==='button';render();if(fromGraph)document.querySelector('.graph-report[data-attempt="'+id+':'+day+'"]')?.focus({preventScroll:true});return;}
   if(el.dataset.selectAction){if(stage==='before')stage='current';selectedAction=el.dataset.selectAction;const a=action();selectedDay=a.days.includes(goal==='day'?17:8)?(goal==='day'?17:8):a.days.find(d=>d>=(goal==='day'?14:8))||a.days.at(-1);
@@ -538,17 +499,11 @@ document.addEventListener('click',event=>{
   if(el.hasAttribute('data-undo')){if(lastUndo){state=JSON.parse(lastUndo);lastUndo=null;render();document.getElementById('notice').hidden=true;}return;}
 });
 document.getElementById('fixture').onchange=e=>chooseGoal(e.target.value);
-document.addEventListener('toggle',e=>{if(e.target.matches('.activity-history'))activityExpanded=e.target.open;},true);
 document.getElementById('prev-variant').onclick=()=>switchVariant(-1);
 document.getElementById('next-variant').onclick=()=>switchVariant(1);
 document.getElementById('close-dialog').onclick=closeDialog;
 document.getElementById('demo-state').onclick=()=>openDialog('state');
 document.getElementById('reset-demo').onclick=()=>{state=initialState();lastUndo=null;resetSelection();render();document.getElementById('notice').hidden=true;};
-document.addEventListener('keydown',e=>{
-  if(!e.target.matches('[data-activity-day]'))return;
-  const step={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7}[e.key];
-  if(step){e.preventDefault();e.stopImmediatePropagation();document.querySelector('[data-activity-day="'+(Number(e.target.dataset.activityDay)+step)+'"]')?.focus();}
-});
 document.addEventListener('keydown',e=>{if(e.target.matches('[data-attempt][role=button]')&&(e.key==='Enter'||e.key===' ')){e.preventDefault();e.target.dispatchEvent(new MouseEvent('click',{bubbles:true}));return;}if(e.target.closest('input,textarea,select,[contenteditable],dialog')||document.getElementById('inspector').open)return;if(e.key==='ArrowRight'){e.preventDefault();switchVariant(1);}if(e.key==='ArrowLeft'){e.preventDefault();switchVariant(-1);}});
 document.getElementById('inspector').addEventListener('click',e=>{if(e.target.id==='inspector'){const r=e.target.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog();}});
 let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(render,100);});

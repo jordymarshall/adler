@@ -1,5 +1,7 @@
 # Plan activity beside the graph
 
+**Rejected and removed.** The user clarified that the compact activity grid belongs only in All Goals, matching the landing-page goals table. This document preserves the rejected Goal C experiment for history; do not treat its placement, calendar controls or proposed extensions as accepted. Goal detail has been restored to its pre-calendar source. See `OVERVIEW-ACTIVITY.md` for the correction.
+
 8 September 2026. Disposable refinement of the selected Goal C, reachable from All Goals A. No production changes or deployment.
 
 Question: does a compact calendar make the streak's underlying record legible while the existing graphs explain work and the conditional goal implication?

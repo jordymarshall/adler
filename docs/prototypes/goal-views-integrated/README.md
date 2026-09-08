@@ -54,4 +54,4 @@ The next production slices follow `docs/product-coaching-second-pass.md`: shared
 
 Verdict: A/C direction and the second-pass requirements were accepted. This implementation illustrates them and passed the checks above; visual feedback on this revised iteration is pending. Preserve this source and verdict on the prototype archive branch.
 
-Follow-up: the user responded positively and suggested a GitHub-like streak calendar beside the graph. `ACTIVITY-GRID.md` records the resulting C refinement, source connection, checks and further proposals. The earlier thin streak row is replaced by the calendar in C; the flame and original graphs remain. The calendar rendering itself is ready for feedback.
+Follow-up correction: the user rejected the calendar added to C and clarified that the compact grid belongs only in All Goals, matching the landing-page table. Goal detail is restored to this integrated baseline. `OVERVIEW-ACTIVITY.md` records the corrected A-only implementation; `ACTIVITY-GRID.md` is retained as rejected history.

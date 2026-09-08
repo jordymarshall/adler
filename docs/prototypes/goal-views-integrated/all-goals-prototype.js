@@ -81,20 +81,40 @@ function inputGraph(g){
   return '<a class="mini-chart" data-focus="input" data-goal="'+g.id+'" href="goal-workspace-v2.html?variant=C&goal='+g.id+'" aria-label="Open '+g.title+' input history"><svg viewBox="0 0 '+w+' '+h+'" role="img" aria-label="'+g.input+' from 1 to 8 September. Solid marks are reports; dashed line is the plan; question marks are unreported opportunities.">'+gaps+stems+'<path d="'+planned+'" fill="none" stroke="#b6c1b1" stroke-dasharray="3 4"/><line x1="29" y1="44" x2="319" y2="44" stroke="#dbe1d5"/><text x="0" y="14" fill="#66705f" font-size="10">'+max+'</text><text x="12" y="48" fill="#66705f" font-size="10">0</text><path d="'+path+'" stroke="'+g.color+'" fill="none" stroke-width="2.2"/>'+g.reports.map(([d,v])=>'<circle cx="'+x(d)+'" cy="'+y(v)+'" r="3.2" fill="'+g.color+'"><title>'+d+' Sep: '+v+' '+g.inputUnit+' reported</title></circle>').join('')+targets.filter(([d])=>!reports.has(d)).map(([d])=>'<text x="'+x(d)+'" y="32" text-anchor="middle" fill="#737e6d" font-size="13">?<title>'+d+' Sep: no report yet, not zero</title></text>').join('')+[[1,'1 Sep'],[4,'4 Sep'],[8,'8 Sep']].map(([d,label])=>'<text x="'+x(d)+'" y="69" text-anchor="middle" fill="#65705f" font-size="10">'+label+'</text>').join('')+'</svg></a>';
 }
 
+// Match the landing page's GoalActivity display, using this prototype's report records.
+function rowActivity(g){
+  const current=goalState(g),saved=state.workspaceState?.[g.id];
+  let records;
+  if(g.id==='day')records=[{day:8,amount:saved?saved.reports.find[11]:1,target:1},{day:8,amount:saved?.reports.cancel[17],target:1}];
+  else{
+    const reports=Object.fromEntries(current.reports);
+    records=(current.inputTargets||[1,2,3,4,7,8].map(d=>[d,g.target])).filter(([day])=>day<=8).map(([day,target])=>({day,target,amount:reports[day]}));
+    if(g.id==='revenue')records.push({day:4,target:1,amount:saved?saved.reports.feedback[4]:1});
+  }
+  const reported=records.filter(r=>r.amount!==undefined),done=reported.filter(r=>r.amount>=r.target),unknown=records.length-reported.length;
+  const label=reported.length?Math.round(100*done.length/reported.length)+'% completed · '+reported.length+' reported':'No reports yet';
+  return '<a class="row-activity" data-goal="'+g.id+'" data-focus="plan" href="goal-workspace-v2.html?variant=C&goal='+g.id+'" aria-label="'+esc(g.title+'. '+label+'. '+unknown+' unreported actions. Open goal plan.')+'"><div class="activity-cells" role="img" aria-label="Last 12 weeks of reported action completions. Darker squares mean more completed actions; dotted outlines indicate unreported actions.">'+Array.from({length:84},(_,i)=>{
+    const day=8-83+i,items=records.filter(r=>r.day===day),count=items.filter(r=>r.amount!==undefined&&r.amount>=r.target).length,pending=items.filter(r=>r.amount===undefined).length;
+    const date=new Date(Date.UTC(2026,8,day)).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'});
+    const detail=items.length?count+' completed, '+items.filter(r=>r.amount>0&&r.amount<r.target).length+' partly, '+items.filter(r=>r.amount===0).length+' didn’t happen, '+pending+' unreported':'No action record';
+    return '<span class="activity-day level-'+Math.min(4,count)+(pending?' unknown':'')+'" title="'+esc(date+': '+detail)+'"></span>';
+  }).join('')+'</div><small>'+label+'</small></a>';
+}
+
 function goalRow(g){
   const current=goalState(g),t=g.id==='day'?null:rowComparison(g);
   const r=state.workspaceSummaries[g.id]?.milestoneProjection||(!state.workspaceSummaries[g.id]&&g.id==='reading'?{current:20,early:17,late:25}:null);
   const date=d=>new Date(Date.UTC(2026,8,d)).toLocaleDateString('en-GB',{day:'numeric',month:'short',timeZone:'UTC'}).replace('Sept','Sep');
   let outlook=g.id==='reading'?(current.outcome>=30?'Goal completion reported':r?'Around '+date(r.current):'More reports needed'):g.id==='revenue'?'Finish date still unknown':current.outcome?'Cancellation confirmed':'Cancellation planned · 5 pm';
   const meaning=g.id==='reading'?(r?'At recent pace · '+date(r.early)+'–'+date(r.late):'Update your reading progress'):g.id==='revenue'?'Learning how your chosen work relates to results':current.outcome?'Goal result reported':'Due today · before 6 pm';
-  return '<tr style="--goal:'+g.color+'"><td>'+goalButton(g)+'<span class="reported">'+outcome(g)+'</span><div class="goal-meta"><span>'+g.area+'</span><span>'+g.priority+'</span></div></td><td><div class="work-label"><strong>'+g.input+'</strong>'+(t?'<span>'+(t.count?t.reported+' / '+t.planned+' '+g.inputUnit+(t.unknown?' on reported days':''):'No quantities reported')+'</span>':'')+'</div>'+inputGraph(g)+(t?'<div class="overview-report-note"><span>Amounts through 7 Sep</span><span>'+(t.unknown?t.unknown+' past reports missing':t.below?t.below+' '+g.inputUnit+' below plan':t.above?t.above+' '+g.inputUnit+' above plan':'Planned amount met')+'</span></div>':'')+'</td><td><span class="eyebrow">'+(g.id==='day'?'Current action':'Next milestone')+'</span><span class="milestone-label">'+(g.id==='day'?'Cancel the subscription':current.milestone)+'</span><button class="outlook-main text-button" data-goal="'+g.id+'" data-focus="plan">'+outlook+' ↗</button><small class="outlook-note">'+meaning+'</small></td></tr>';
+  return '<tr style="--goal:'+g.color+'"><td>'+goalButton(g)+'<span class="reported">'+outcome(g)+'</span><div class="goal-meta"><span>'+g.area+'</span><span>'+g.priority+'</span></div></td><td class="activity-column">'+rowActivity(g)+'</td><td><div class="work-label"><strong>'+g.input+'</strong>'+(t?'<span>'+(t.count?t.reported+' / '+t.planned+' '+g.inputUnit+(t.unknown?' on reported days':''):'No quantities reported')+'</span>':'')+'</div>'+inputGraph(g)+(t?'<div class="overview-report-note"><span>Amounts through 7 Sep</span><span>'+(t.unknown?t.unknown+' past reports missing':t.below?t.below+' '+g.inputUnit+' below plan':t.above?t.above+' '+g.inputUnit+' above plan':'Planned amount met')+'</span></div>':'')+'</td><td><span class="eyebrow">'+(g.id==='day'?'Current action':'Next milestone')+'</span><span class="milestone-label">'+(g.id==='day'?'Cancel the subscription':current.milestone)+'</span><button class="outlook-main text-button" data-goal="'+g.id+'" data-focus="plan">'+outlook+' ↗</button><small class="outlook-note">'+meaning+'</small></td></tr>';
 }
 function compactCapacity(){
   const limit=available(),total=planned(),over=overage();
   return '<details class="capacity-disclosure"><summary><span>This week · 7–13 Sep</span><strong>'+minutes(total)+' planned'+(limit===null?'':' / '+minutes(limit)+' available')+'</strong><span class="capacity-consequence '+(over?'over':'')+'">'+(limit===null?'Available time unknown':over?minutes(over)+' over available time':minutes(limit-total)+' unallocated')+'</span><span class="expand-caption">Breakdown ⌄</span></summary>'+capacity()+'</details>';
 }
 
-function VariantA(){return heading('Your current work and where it leads.')+compactCapacity()+'<section aria-label="Goals and their progress"><table class="goals-table"><thead><tr><th scope="col">Goal & reported result</th><th scope="col">Work over time · 1–8 Sep</th><th scope="col">Where this work leads</th></tr></thead><tbody>'+goals.map(goalRow).join('')+'</tbody></table><div class="row-footer"><span>Open a goal to act on its plan.</span><span>Solid = reported · dashed = planned · shaded = difference</span></div></section>';}
+function VariantA(){return heading('Your current work and where it leads.')+compactCapacity()+'<section aria-label="Goals and their progress"><table class="goals-table"><thead><tr><th scope="col">Goal & reported result</th><th scope="col">Activity · last 12 weeks</th><th scope="col">Work over time · 1–8 Sep</th><th scope="col">Where this work leads</th></tr></thead><tbody>'+goals.map(goalRow).join('')+'</tbody></table><div class="row-footer"><span>Open a goal to act on its plan.</span><span>Solid = reported · dashed = planned · shaded = difference</span></div></section>';}
 
 function VariantB(){
   const total=planned(),limit=available(),over=overage(),dayTotals=totals();
