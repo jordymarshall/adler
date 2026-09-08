@@ -53,3 +53,5 @@ The graph still uses explicit illustrative reading assumptions. Production caden
 The next production slices follow `docs/product-coaching-second-pass.md`: shared-state meaning and decision evaluation, evidence-appropriate outlook, the selected interface, then comprehension and outcome evaluation. Formal causal experimentation and calibrated probabilities require their own validated implementation. The exact streak reset/recovery policy remains an open product decision; this iteration preserves the existing illustrative counter.
 
 Verdict: A/C direction and the second-pass requirements were accepted. This implementation illustrates them and passed the checks above; visual feedback on this revised iteration is pending. Preserve this source and verdict on the prototype archive branch.
+
+Follow-up: the user responded positively and suggested a GitHub-like streak calendar beside the graph. `ACTIVITY-GRID.md` records the resulting C refinement, source connection, checks and further proposals. The earlier thin streak row is replaced by the calendar in C; the flame and original graphs remain. The calendar rendering itself is ready for feedback.

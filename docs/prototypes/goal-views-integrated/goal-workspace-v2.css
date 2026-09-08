@@ -111,3 +111,37 @@
 .integrated-goal.one-day .evidence-canvas{max-width:100%}
 @media(max-width:650px){.integrated-goal .journey-stage{border-top:0;border-left:1px solid #d8ded3}.integrated-goal .journey-stage:before{left:-5px;top:5px}.integrated-goal .journey-stage strong,.integrated-goal .journey-stage small{max-width:none}.integrated-goal .focus-paces{gap:26px}.integrated-goal .focus-paces strong{font-size:21px}.integrated-goal .focus-range{text-align:left;font-size:11px}.integrated-goal .attempt{width:22px;height:32px}}
 .integrated-goal .selection-milestone{display:block;font-size:11px;margin:7px 0;color:#4d5648}
+
+/* The activity calendar and quantity graph share selection, with separate time scales. */
+.activity-and-graph{display:grid;grid-template-columns:216px minmax(0,1fr);gap:24px;padding:20px 24px;align-items:start}
+.activity-history{min-width:0;border-right:1px solid var(--line);padding-right:20px}
+.activity-history>summary{list-style:none;cursor:pointer;position:relative;color:#252c27}
+.activity-history>summary::-webkit-details-marker{display:none}
+.activity-history>summary strong{display:block;font-size:13px}
+.activity-history>summary span{display:block;margin-top:4px;font-size:11px;color:#525a52}
+.activity-history>summary i{position:absolute;right:0;top:2px;font-style:normal}
+.activity-history[open]>summary i{transform:rotate(180deg)}
+.activity-calendar{display:grid;grid-template-columns:repeat(7,24px);gap:4px;margin-top:14px}
+.activity-weekday{font-size:10px;text-align:center;color:#586157;line-height:17px}
+.activity-cell,.activity-empty{width:24px;height:24px}
+.activity-cell{border:1px solid #c7d1c3;border-radius:4px;padding:0;font-size:13px;font-weight:650;line-height:22px;background:#f5f7f2;color:#344133;position:relative}
+.activity-cell.met,.activity-key .met{background:#365f47;color:#fff;border-color:#365f47}
+.activity-cell.partial,.activity-key .partial{background:#dce8d6;color:#344933;border-color:#a6baa0}
+.activity-cell.missed,.activity-key .missed{background:#f0f0ec;color:#52564f;border-color:#bdc3b8}
+.activity-cell.unknown,.activity-key .unknown{background:white;border-style:dashed;color:#555d53}
+.activity-cell.rest,.activity-key .rest{background:transparent;border-color:transparent;color:#707b6c}
+.activity-cell.future,.activity-key .future{background:#f5f6f2;border-color:#e2e6dc;color:#77836f}
+.activity-cell.unscheduled{background:transparent;border-color:transparent;color:#a3ab9d}
+.activity-cell.in-streak:after{content:'';position:absolute;bottom:-3px;left:4px;right:4px;height:2px;background:#d88940;border-radius:2px}
+.activity-cell.selected{outline:2px solid #597cb4;outline-offset:1px}
+.activity-cell:focus-visible{outline:2px solid #252c27;outline-offset:2px}
+.activity-key{display:grid;grid-template-columns:1fr 1fr;gap:6px 8px;margin-top:14px;font-size:10px;color:#475143}
+.activity-key>span{display:flex;align-items:center;gap:5px;white-space:nowrap}
+.activity-key i{font-style:normal;width:15px;height:15px;display:inline-flex;justify-content:center;align-items:center;border:1px solid #c7d1c3;border-radius:3px;font-size:10px}
+.activity-footnote{font-size:10px;color:#586153;line-height:1.5;margin:10px 0 0}
+.activity-and-graph>.input-section{min-width:0}
+.activity-and-graph .input-graph{height:210px;margin-top:12px}
+.activity-and-graph .plan-comparison{align-items:flex-start;flex-direction:column;gap:5px;margin-top:12px}
+.activity-and-graph .input-legend{margin-top:10px}
+@media(min-width:701px){.activity-history>summary{pointer-events:none}.activity-history>summary i{display:none}}
+@media(max-width:700px){.activity-and-graph{display:flex;flex-direction:column;gap:17px;padding:16px 12px}.activity-history{border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px;width:100%}.activity-history>summary strong,.activity-history>summary span{display:inline;font-size:12px;margin:0 9px 0 0}.activity-history>summary{padding:3px 20px 3px 0}.activity-history>summary i{top:1px}.activity-content{max-width:290px;margin:0 auto}.activity-calendar{grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.activity-cell,.activity-empty{width:100%;height:32px;line-height:30px}.activity-weekday{font-size:11px}.activity-key{grid-template-columns:repeat(3,1fr);gap:8px 7px;font-size:10px}.activity-key>span{gap:4px}.activity-footnote{font-size:11px;margin-top:12px}.activity-and-graph>.input-section{width:100%}.activity-and-graph .input-graph{height:190px}.activity-and-graph .input-legend{margin-top:5px}}
