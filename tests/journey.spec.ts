@@ -531,11 +531,14 @@ for (const finish of ["retry", "dismiss"] as const)
       }),
     );
     let attempts = 0;
+    let releaseBooking!: () => void;
+    const bookingResponse = new Promise<void>(resolve => { releaseBooking = resolve; });
     let bookingId = "";
     await page.route("**/api/bookings", async (route) => {
       const input = route.request().postDataJSON();
       const current = await snapshot(page);
       if (!attempts++) {
+        await bookingResponse;
         bookingId = input.id;
         current.data.workBlocks.push({
           id: input.id,
@@ -580,9 +583,10 @@ for (const finish of ["retry", "dismiss"] as const)
     await page
       .getByRole("button", { name: "Confirm booking", exact: true })
       .click();
-    await expect(
-      page.getByRole("button", { name: "Retry confirmation", exact: true }),
-    ).toBeVisible();
+    const retry = page.getByRole("button", { name: "Retry confirmation", exact: true });
+    await expect(retry).toBeDisabled();
+    releaseBooking();
+    await expect(retry).toBeEnabled();
     await expect(page.locator('[data-phase="waiting"]')).toHaveCount(0);
     const partial = await snapshot(page);
     await page.clock.setFixedTime(

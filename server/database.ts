@@ -54,7 +54,7 @@ export class Database {
     this.sql = new DatabaseSync(file);
     chmodSync(file, 0o600);
     this.sql
-      .exec(`PRAGMA journal_mode = DELETE; PRAGMA foreign_keys = ON; PRAGMA busy_timeout = 5000;
+      .exec(`PRAGMA busy_timeout = 5000; PRAGMA journal_mode = DELETE; PRAGMA foreign_keys = ON;
       CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, created INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS sessions (hash TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id), expires INTEGER NOT NULL);
       CREATE TABLE IF NOT EXISTS state (user_id TEXT PRIMARY KEY REFERENCES users(id), revision INTEGER NOT NULL, json TEXT NOT NULL);
