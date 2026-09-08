@@ -295,7 +295,7 @@ export function LiveCoach() {
                     const learning = data.learning?.find(record => record.versions.some(matches));
                     const version = learning?.versions.find(matches);
                     const canDecide = learning && version && (learning.state === "suggested" || learning.pendingVersion) && learningActionVersion(learning, "agree") === version.version && !version.proposalId;
-                    return <section className="recommendation-card" key={index}><h3>{recommendation.action}</h3><RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /><div className="button-row">{canDecide && <><button className="button primary" disabled={sending} onClick={() => void chooseLearning(learning, "agree")}>Try this</button><button className="button text-button" disabled={sending} onClick={() => void chooseLearning(learning, "decline")}>No thanks</button></>}<button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action)}>Discuss</button><button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action, true)}>Edit</button></div>{learning && <Link className="text-link" to={`/app/insights#record-${learning.id}`}>{learning.state === "suggested" ? "Review this suggestion" : "See what we’re learning"} ↗</Link>}</section>;
+                    return <section className="recommendation-card" key={index}><h2>{recommendation.action}</h2><div className="button-row">{canDecide && <><button className="button primary" disabled={sending} onClick={() => void chooseLearning(learning, "agree")}>Try this</button><button className="button text-button" disabled={sending} onClick={() => void chooseLearning(learning, "decline")}>No thanks</button></>}<button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action)}>Discuss</button><button className="button text-button" disabled={sending} onClick={() => discuss(recommendation.action, true)}>Edit</button></div><RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} />{learning && <Link className="text-link" to={`/app/insights#record-${learning.id}`}>{learning.state === "suggested" ? "Review this suggestion" : "See what we’re learning"} ↗</Link>}</section>;
                   }) : null}
                   {decision && !decision.recommendations?.length && (
                     <details className="decision-inspector">
@@ -342,8 +342,7 @@ export function LiveCoach() {
               return (
               <article className="live-proposal shared-proposal" key={p.id}>
                 <span className="section-kicker">A CHANGE TO CONSIDER</span>
-                <h3>{decision?.recommendations?.[0]?.action ?? p.summary}</h3>
-                {decision?.recommendations?.map((recommendation, index) => <div key={index}>{index > 0 && <h3>{recommendation.action}</h3>}<RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /></div>)}
+                <h2>{decision?.recommendations?.[0]?.action ?? p.summary}</h2>
                 <ProposalEssentials changes={p.changes} data={data} />
                 <details className="quiet-disclosure">
                   <summary>What changes & why</summary>
@@ -376,6 +375,7 @@ export function LiveCoach() {
                   workspace has changed, Adler will need to make an updated
                   proposal.
                 </p>
+                {decision?.recommendations?.map((recommendation, index) => <div key={index}>{index > 0 && <h3>{recommendation.action}</h3>}<RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /></div>)}
               </article>
             ); })}
           {latestApplied && !hasPending && (

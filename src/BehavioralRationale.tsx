@@ -4,6 +4,7 @@ import type {
 } from "../shared/behavioral-reasoning";
 import type { ResearchSource } from "../shared/planning";
 import { RESEARCH_CLAIMS, type ResearchClaim } from "../shared/research-claims";
+import { ArrowDown, BookOpen, MessageCircle } from "lucide-react";
 
 const roles = {
   theory: "Framework idea",
@@ -15,10 +16,12 @@ export function BehavioralRationale({
   reasoning,
   sources = [],
   claims = RESEARCH_CLAIMS,
+  label = "Why this may help",
 }: {
   reasoning: BehavioralReasoning;
   sources?: ResearchSource[];
   claims?: ResearchClaim[];
+  label?: string;
 }) {
   const bindings = (reasoning.grounding ?? []).map((binding) => ({
     binding,
@@ -29,7 +32,7 @@ export function BehavioralRationale({
   return (
     <details className="behavioral-rationale">
       <summary>
-        Why this may help <span>+</span>
+        {label} <span>+</span>
       </summary>
       <dl className="reasoning-details">
         <div>
@@ -177,17 +180,20 @@ export function RecommendationReasons({
 }) {
   return (
     <div className="recommendation-reasons">
-      <dl>
-        <div>
+      <dl className="inference-layout">
+        <div className="inference-input">
           <dt>
+            <MessageCircle size={15} aria-hidden="true" />
             {recommendation.reasoning.barrier.status === "unknown"
               ? "What we know"
-              : "What you told me"}
+              : "From your check-in"}
           </dt>
           <dd>{recommendation.observation}</dd>
         </div>
-        <div>
-          <dt>Behavioural science</dt>
+        <div className="inference-input inference-research">
+          <dt>
+            <BookOpen size={15} aria-hidden="true" /> From behavioural science
+          </dt>
           <dd>
             {recommendation.interpretation}
             <ScienceSource
@@ -196,8 +202,9 @@ export function RecommendationReasons({
             />
           </dd>
         </div>
-        <div>
-          <dt>What we’re testing</dt>
+        <div className="inference-conclusion">
+          <InferenceJoin />
+          <dt>What this change could help with</dt>
           <dd>{recommendation.expectedEffect}</dd>
         </div>
       </dl>
@@ -205,8 +212,17 @@ export function RecommendationReasons({
         reasoning={recommendation.reasoning}
         sources={sources}
         claims={claims}
+        label="Inspect the evidence and reasoning"
       />
     </div>
+  );
+}
+
+export function InferenceJoin() {
+  return (
+    <span className="inference-join" aria-hidden="true">
+      <ArrowDown size={20} />
+    </span>
   );
 }
 

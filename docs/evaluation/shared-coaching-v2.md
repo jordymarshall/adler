@@ -12,7 +12,7 @@ Implementation date: 7 September 2026. Baseline: `fbc804e`. Scope: the accepted 
 
 ## Deterministic and browser checks
 
-`npm run test:server`: **107 passed** in the complete run after the workspace retry fix. Coverage includes unsupported grounding, semantic-repair stubs, raw scientific-write rejection, corrected premises, proposal/learning agreement, measurement changes, unknown activity, sparse outcome projections, stale/repeated requests, provider configuration, origin/account isolation, messaging and calendar idempotency.
+`npm run test:server`: **108 passed** in the complete run after the workspace retry and concurrent database opening fixes. Coverage includes unsupported grounding, semantic-repair stubs, raw scientific-write rejection, corrected premises, proposal/learning agreement, measurement changes, unknown activity, sparse outcome projections, stale/repeated requests, provider configuration, origin/account isolation, messaging and calendar idempotency.
 
 The complete browser suite contains **67 scenarios**, including accessibility assertions on mobile/desktop, navigation, first goal, scheduling, recommendation controls, live learning, linked evidence, correction-related states, real capture playback and reduced motion. All 67 passed in the final full run, including the added exact-version acceptance journey. Review findings are recorded below and in the checklist. A final send-completion assertion exposed a real draft race: a newly saved conversation could arrive over SSE before the coach response and restore the old contextual prompt. The composer now keeps the in-flight draft and clears both relevant draft keys after success.
 
@@ -45,7 +45,11 @@ Review counts: **Standards 3 resolved, 0 open; Spec 4 resolved, 0 open** within 
 
 ## Interactive presentation and production smoke
 
-The user's follow-up about intuitive, structured pages is recorded in the product principles. Recommendation reasons, learning stages, preferences and projection assumptions now form purposeful blocks. Conversation replies support separate paragraphs and lists with their record links intact. Plain observations expose context and planning implications without empty experiment stages. Updated actual-app captures were checked on desktop and mobile.
+The user's follow-up about intuitive, structured pages is recorded in the product principles. Position now explains the relationship: personal observations and specific research meet at a working explanation; the action holds its controls and review timing; later feedback follows. Recommendations lead with the actionable choice. Plain observations connect context to a planning implication without empty experiment stages. Supporting detail expands in place, and conversation replies retain readable paragraphs/lists and record links. Updated actual-app captures were checked on desktop and mobile.
+
+The follow-up against `ec811ef` passed both review axes with no new findings. Seven affected browser journeys passed. A separate desktop/mobile Check-in inspection found and corrected a skipped heading level; the subsequent accessibility, overflow, evidence disclosure and contextual Discuss checks passed at 1320px and 390px. These are implementation checks and visual inspection, not a user comprehension study.
+
+The final full run initially exposed connection contention and a premature booking-test assertion. A minimized worker test reproduced the database lock; configuring its existing wait timeout before journal setup fixed it. The booking trace showed the work block persisted normally after the test had already read the earlier revision. A gated response now verifies retry stays disabled until confirmation finishes before checking persistence. Both reproductions passed after correction; both review axes found no further issues.
 
 The built Node server was started locally with production configuration in an isolated temporary data directory. A real account created a manual goal through the browser; after a complete server restart, the same session could read the same goal. Anonymous access was refused and a second account remained empty. Built assets were served successfully. The smoke removed its temporary accounts/data afterward. This verifies the local production process and persistence path, **not a hosted deployment**.
 

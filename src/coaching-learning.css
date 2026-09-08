@@ -1,22 +1,85 @@
 .recommendation-reasons {
   margin-top: 20px;
 }
-.recommendation-reasons > dl {
+.inference-layout {
   display: grid;
-  gap: 14px;
-  margin: 0 0 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
-.recommendation-reasons > dl > div {
-  display: grid;
-  grid-template-columns: 150px minmax(0, 1fr);
-  gap: 20px;
+.inference-input {
+  min-width: 0;
+  border-top: 2px solid var(--line);
+  padding-top: 14px;
 }
-.recommendation-reasons dt,
+.inference-research {
+  border-color: #aebba1;
+}
+.inference-input h3,
+.inference-input dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inference-input svg {
+  flex-shrink: 0;
+  color: var(--green);
+}
+.inference-conclusion {
+  grid-column: 1 / -1;
+  position: relative;
+  min-width: 0;
+}
+/* Two sources meet at one explanation; this join is not a causal effect arrow. */
+.inference-join {
+  position: absolute;
+  top: -32px;
+  left: 0;
+  width: 100%;
+  height: 32px;
+  color: #849379;
+}
+.inference-join::before {
+  content: "";
+  position: absolute;
+  left: calc(25% - 8px);
+  width: calc(50% + 16px);
+  height: 12px;
+  border: 1px solid #aebba1;
+  border-top: 0;
+  border-radius: 0 0 6px 6px;
+}
+.inference-join svg {
+  position: absolute;
+  top: 11px;
+  left: calc(50% - 10px);
+}
+.recommendation-reasons dt {
+  color: var(--green);
+  font-weight: 650;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+.recommendation-reasons dd {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.recommendation-reasons .inference-conclusion {
+  padding: 16px 20px;
+  border-left: 3px solid #aebba1;
+  background: var(--sage);
+}
+.recommendation-reasons > .behavioral-rationale {
+  margin-top: 16px;
+}
 .reasoning-details dt {
   color: var(--muted);
   font-size: 13px;
+  font-weight: 650;
 }
-.recommendation-reasons dd,
 .reasoning-details dd {
   margin: 0;
   line-height: 1.65;
@@ -129,7 +192,6 @@
 }
 .learning-record-body {
   padding: 28px 20px;
-  max-width: 1040px;
 }
 .learning-correction {
   padding: 14px 18px;
@@ -137,49 +199,83 @@
   border-left: 3px solid #af8a40;
   line-height: 1.6;
 }
-.reasoning-path {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-.reasoning-path > li {
-  position: relative;
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr);
-  gap: 22px;
-  padding: 0 0 32px;
-}
-.reasoning-path > li:not(:last-child)::before {
-  content: "";
-  position: absolute;
-  width: 1px;
-  background: #cdd4c4;
-  top: 32px;
-  bottom: 0;
-  left: 15px;
-}
-.reasoning-step {
-  border: 1px solid #cdd4c4;
-  border-radius: 50%;
-  height: 30px;
-  width: 30px;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  color: var(--green);
-  background: var(--sage);
-}
 .reasoning-path h3 {
-  margin: 3px 0 12px;
-  font-size: 16px;
+  margin: 0 0 10px;
+  font-size: 15px;
+  line-height: 1.5;
 }
 .reasoning-path p {
-  line-height: 1.7;
+  line-height: 1.65;
   margin: 8px 0 12px;
   max-width: 78ch;
+  font-size: 15px;
 }
-.reasoning-path .behavioral-rationale {
-  margin-top: 15px;
+.working-explanation {
+  text-align: center;
+}
+.working-explanation h3 {
+  color: var(--muted);
+  font-size: 13px;
+}
+.working-explanation p {
+  margin: 8px auto 14px;
+  max-width: 65ch;
+  font-size: 18px;
+}
+.learning-test > .behavioral-rationale {
+  margin: 16px 0;
+}
+.learning-experiment {
+  margin-top: 24px;
+  padding: 24px;
+  background: var(--sage);
+  border: 1px solid #aebba1;
+  border-radius: 12px;
+}
+.learning-experiment > h3 {
+  font-size: 21px;
+  margin: 8px 0 16px;
+}
+.learning-controls {
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.learning-experiment > .reasoning-details {
+  border-top: 1px solid #ccd5c1;
+  padding-top: 18px;
+}
+.learning-experiment .reasoning-details > div,
+.behavioral-rationale > .reasoning-details > div,
+.learning-review .reasoning-details > div {
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 20px;
+}
+.learning-experiment .reasoning-details dd,
+.learning-review .reasoning-details dd {
+  font-size: 14px;
+}
+.learning-feedback {
+  grid-column: 1 / -1;
+  position: relative;
+  min-width: 0;
+  border-top: 1px solid var(--line);
+  padding: 22px 0 0;
+}
+.feedback-connector {
+  position: absolute;
+  top: -32px;
+  left: calc(50% - 10px);
+  color: #849379;
+}
+.learning-feedback h3 {
+  font-size: 20px;
+  margin: 9px 0 12px;
+}
+.awaiting-learning {
+  border-top-style: dashed;
+}
+.review-observations {
+  margin: 14px 0;
 }
 .evidence-links {
   display: flex;
@@ -262,7 +358,8 @@
   padding: 22px 0;
   border-top: 1px solid var(--line);
 }
-.recommendation-card h3 {
+.recommendation-card h2,
+.coach-workspace .live-proposal > h2 {
   font-size: 20px;
   line-height: 1.45;
 }
@@ -271,10 +368,6 @@
   box-shadow: none;
 }
 @media (max-width: 720px) {
-  .recommendation-reasons > dl > div {
-    grid-template-columns: 1fr;
-    gap: 3px;
-  }
   .learning-record > summary {
     grid-template-columns: 1fr auto;
     gap: 12px;
@@ -292,18 +385,6 @@
   .learning-record-body {
     padding: 25px 0;
   }
-  .reasoning-path > li {
-    grid-template-columns: 25px minmax(0, 1fr);
-    gap: 12px;
-  }
-  .reasoning-step {
-    height: 25px;
-    width: 25px;
-  }
-  .reasoning-path > li:not(:last-child)::before {
-    left: 12px;
-    top: 28px;
-  }
   .learning-section-heading {
     align-items: start;
     flex-direction: column;
@@ -317,74 +398,134 @@
   }
 }
 
-/* Short, distinct blocks keep the decision readable before the deeper method. */
-.recommendation-reasons > dl {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-.recommendation-reasons > dl > div {
-  display: block;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--paper) 75%, var(--sage));
-}
-.recommendation-reasons > dl > div:nth-child(2) {
-  background: var(--sage);
-}
-.recommendation-reasons dt {
-  margin-bottom: 9px;
-  color: var(--green);
-  font-weight: 650;
-  line-height: 1.45;
-}
-.recommendation-reasons dd { font-size: 14px; line-height: 1.6; }
-.reasoning-path > li > div {
-  min-width: 0;
-  padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--paper) 85%, var(--sage));
-}
-.reasoning-path > li:nth-child(2) > div {
-  background: color-mix(in srgb, var(--paper) 55%, var(--sage));
-}
-.reasoning-path > li:nth-child(3) > div { border-color: #aebba1; }
-.reasoning-path .reasoning-details,
-.behavioral-rationale > .reasoning-details,
-.coaching-preferences > .reasoning-details,
-.observation-detail {
+.coaching-preferences > .reasoning-details {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-.reasoning-path .reasoning-details > div,
-.behavioral-rationale > .reasoning-details > div,
-.coaching-preferences > .reasoning-details > div,
-.observation-detail > section {
+.coaching-preferences > .reasoning-details > div {
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 14px;
   background: var(--paper);
 }
-.reasoning-path .reasoning-details dt { font-weight: 650; }
-.reasoning-path .reasoning-details dd { font-size: 14px; }
-.observation-detail { display: grid; padding: 22px 0; }
-.observation-detail h3 { font-size: 16px; margin: 0 0 12px; }
-.observation-detail p { line-height: 1.65; max-width: 60ch; }
+.observation-detail {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 40px;
+  padding: 22px 0;
+}
+.observation-detail h3 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+.observation-detail p {
+  line-height: 1.65;
+  max-width: 60ch;
+}
+.observation-detail > section {
+  min-width: 0;
+}
+.observation-detail > section + section {
+  position: relative;
+  padding-left: 20px;
+  border-left: 2px solid #aebba1;
+}
+.observation-detail > section + section::before {
+  content: "→";
+  position: absolute;
+  left: -30px;
+  top: 0;
+  color: var(--green);
+}
 .coach-message-body > p + p,
-.coach-message-body > ul { margin-top: 14px; }
-.coach-message-body ul { padding-left: 22px; line-height: 1.65; }
-.coach-message-body li + li { margin-top: 9px; }
-.coach-message-body h4 { margin: 20px 0 8px; font-size: 15px; }
-.coach-message-body > :first-child { margin-top: 0; }
-.coach-message-body > :last-child { margin-bottom: 0; }
-.learning-controls { flex-wrap: wrap; }
-@media (max-width: 760px) {
-  .recommendation-reasons > dl,
-  .reasoning-path .reasoning-details,
-  .behavioral-rationale > .reasoning-details,
+.coach-message-body > ul {
+  margin-top: 14px;
+}
+.coach-message-body ul {
+  padding-left: 22px;
+  line-height: 1.65;
+}
+.coach-message-body li + li {
+  margin-top: 9px;
+}
+.coach-message-body h4 {
+  margin: 20px 0 8px;
+  font-size: 15px;
+}
+.coach-message-body > :first-child {
+  margin-top: 0;
+}
+.coach-message-body > :last-child {
+  margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  .inference-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .inference-input {
+    margin-left: 14px;
+    padding-left: 16px;
+    border-top: 0;
+    border-left: 2px solid var(--line);
+    padding-top: 0;
+  }
+  .inference-research {
+    border-left-color: #aebba1;
+  }
+  .inference-input h3,
+  .inference-input dt {
+    padding-top: 0;
+  }
+  .inference-conclusion {
+    margin-top: 20px;
+  }
+  .inference-join {
+    top: -36px;
+  }
+  .inference-join::before {
+    left: 14px;
+    width: calc(50% - 14px);
+    height: 16px;
+    border-right: 0;
+    border-radius: 0 0 0 6px;
+  }
+  .inference-join svg {
+    top: 15px;
+  }
+  .working-explanation {
+    text-align: left;
+  }
+  .working-explanation p {
+    font-size: 16px;
+  }
+  .learning-experiment {
+    padding: 18px;
+  }
+  .learning-experiment > h3 {
+    font-size: 19px;
+  }
+  .learning-experiment .reasoning-details > div,
+  .behavioral-rationale > .reasoning-details > div,
+  .learning-review .reasoning-details > div {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .learning-feedback {
+    margin-top: 20px;
+  }
   .coaching-preferences > .reasoning-details,
-  .observation-detail { grid-template-columns: 1fr; }
-  .recommendation-reasons > dl > div,
-  .reasoning-path > li > div { padding: 15px; }
+  .observation-detail {
+    grid-template-columns: 1fr;
+  }
+  .observation-detail > section + section {
+    border-left: 0;
+    border-top: 2px solid #aebba1;
+    padding: 18px 0 0;
+  }
+  .observation-detail > section + section::before {
+    content: "↓";
+    top: -30px;
+    left: 10px;
+  }
 }

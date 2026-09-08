@@ -54,7 +54,7 @@ The agreed verification boundaries are the shared command/workspace API, coachin
   - [x] Run affected deterministic and multi-turn cases, full server suite, full browser suite, accessibility checks and production build.
   - [x] Evaluate live generation/review where credentials are available; record limitations without claiming clinical or causal efficacy.
   - [x] Review standards and spec coverage against `fbc804e`, fix material findings, and update the current method with delivered capabilities.
-  - [ ] Commit implementation, push main and verify remote commit.
+  - [x] Commit implementation, push main and verify remote commit (`967c60d`, then `ec811ef`; both main and reengineeredv2 verified at `ec811ef`).
   - [ ] Deploy frontend and persistent backend, verify health and authenticated persistence through the canonical site, and record the actual URL/status.
 
 ## Release record
@@ -62,7 +62,7 @@ The agreed verification boundaries are the shared command/workspace API, coachin
 Core implementation is complete. The [verification record](evaluation/shared-coaching-v2.md) describes the checks, limited live evaluation and material limitations. Final review and release status are recorded below. Advanced causal experiments, calibrated probabilities and long-term effectiveness are separate research capabilities in the design; do not label them implemented without their required data and validation.
 
 
-- Full server suite: 107/107 passed.
+- Full server suite: 108/108 passed, including concurrent database opening.
 - Production build/typecheck: passed, with a non-blocking bundle-size advisory.
 - Browser suite: 67/67 passed, including accessibility, source links, motion controls and exact pending-version acceptance.
 - Production process: isolated local account/goal creation, restart persistence, session continuity and two-account isolation passed.
@@ -71,4 +71,4 @@ Core implementation is complete. The [verification record](evaluation/shared-coa
 - Deployment: blocked by the missing Adler hosting target and persistent backend. Existing Vercel login can access only the unrelated `rio-domingo` project. Backend origin and hosting access have been requested; no hosted Adler URL verified.
 
 - Standards review: three findings corrected and rechecked. Spec review: four findings corrected; added regression coverage for each lifecycle/evidence boundary.
-- Follow-up UX: structured recommendation reasons, connected learning blocks, scannable assumptions/preferences, readable conversation paragraphs/lists; no empty experiment stages for ordinary observations. Saved as standing product guidance.
+- Follow-up UX: position and emphasis express the reasoning relationship. Personal context and cited research meet at a working explanation; action, controls and timing stay together; later feedback follows. Scannable assumptions/preferences and readable conversation paragraphs/lists remain; ordinary observations have no empty experiment stages. Saved as standing product guidance. Both follow-up review axes reported no new findings.
