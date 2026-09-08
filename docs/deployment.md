@@ -4,6 +4,18 @@ The prepared setup is Vercel for the landing page/app assets, plus one persisten
 
 Local SQLite files cannot be the persistent database of Vercel Functions. Vercel supports external API rewrites, so the current backend can stay intact on a host with a persistent disk. [SQLite on Vercel](https://vercel.com/kb/guide/is-sqlite-supported-in-vercel), [external rewrites](https://vercel.com/docs/routing/rewrites)
 
+## Canonical production target
+
+The user confirmed **withadler.com** on 7 September 2026. The domain is owned in the Vercel team `adler7` (Adler). Its dedicated [Adler project](https://vercel.com/adler7/adler) has now been created and linked to this workspace:
+
+- Project ID: `prj_06taXGC5GtVXnKWkSAtAIth7f2iN`.
+- Canonical origin: `https://withadler.com`.
+- `www.withadler.com` is configured to redirect to the canonical domain with HTTP 308.
+- Vercel reports both domains verified and correctly configured.
+- Project settings: Vite, Node 24, `npm ci`, `npm run build`, output `dist`.
+
+No production deployment exists yet. The project has no backend environment variable, and an existing Adler API host has not been identified. Domain ownership and DNS verification do not establish working accounts or durable storage. Keep `ADLER_BACKEND_URL` unset until the actual backend passes its health and persistence checks; do not supply a placeholder to bypass deployment validation.
+
 ## 1. Host the persistent server
 
 Use a Node/Docker host with an always-running instance and a persistent disk. For example, Render supports persistent disks on paid services. Its free/ephemeral filesystem is insufficient for this app. Keep one instance; the API and queue worker run in the same process. [Render disks](https://render.com/docs/disks)
@@ -26,12 +38,12 @@ NODE_ENV=production
 PORT=8080
 ADLER_DATA_DIR=/data
 PUBLIC_URL=https://your-backend.example.com
-FRONTEND_ORIGIN=https://your-adler-app.vercel.app
+FRONTEND_ORIGIN=https://withadler.com
 ADLER_REGISTRATION=open
 ADLER_ALLOW_SERVER_KEYS=false
 ```
 
-Use the actual mount path for `ADLER_DATA_DIR`. Ensure the process can write to it. `PUBLIC_URL` must match the backend's public HTTPS domain exactly; the server checks Host and uses this URL to verify Twilio callbacks. Reverse proxies must preserve that Host. `FRONTEND_ORIGIN` is the exact stable Vercel/custom-domain origin used by the browser; add it once the frontend domain is known, then restart the backend.
+Use the actual mount path for `ADLER_DATA_DIR`. Ensure the process can write to it. `PUBLIC_URL` must match the backend's public HTTPS domain exactly; the server checks Host and uses this URL to verify Twilio callbacks. Reverse proxies must preserve that Host. `FRONTEND_ORIGIN` is the exact canonical origin used by the browser: `https://withadler.com`.
 
 Leave server-funded AI disabled for a public deployment. Users can add their own keys in Settings. For a private deployment where you intend to pay for every permitted user's AI calls, add a provider key and explicitly set `ADLER_ALLOW_SERVER_KEYS=true`.
 
@@ -46,7 +58,7 @@ The root `vercel.ts` uses the Vite preset, builds `dist`, proxies `/api/*` and `
 
    ```sh
    export ADLER_BACKEND_URL='https://your-backend.example.com'
-   npx vercel link
+   npx vercel link --yes --scope adler7 --project adler
    ```
 
 3. Add **ADLER_BACKEND_URL** with that same value in Vercel project settings for **Production**, or run `npx vercel env add ADLER_BACKEND_URL production`. Changing this build-time value requires a redeploy. [Vercel programmatic configuration](https://vercel.com/docs/project-configuration/vercel-ts)
@@ -56,7 +68,7 @@ The root `vercel.ts` uses the Vite preset, builds `dist`, proxies `/api/*` and `
    npx vercel deploy --prod
    ```
 
-5. Set the backend's `FRONTEND_ORIGIN` to the resulting stable production domain, restart it, then verify signup/sign-in and saving from that domain.
+5. Confirm the backend's `FRONTEND_ORIGIN` is `https://withadler.com`, restart it if changed, then verify signup/sign-in and saving from that domain.
 
 No Linq, Twilio, model, calendar, or database secret belongs in the Vercel frontend environment. `.vercelignore` excludes local credentials, data, and workspace attachments from CLI uploads. The `.vercel` project-link directory is also Git-ignored.
 
@@ -66,7 +78,7 @@ Preview environments need an explicitly allowed frontend origin and preferably a
 
 - Follow [Linq setup](imessage-setup.md) for native iMessage with RCS/SMS fallback. [Twilio setup](twilio-setup.md) remains available for SMS-only deployments. Messaging webhooks go directly to the backend’s `PUBLIC_URL`.
 - In the app, **Settings → AI provider → Save & test connection** verifies the selected API account and model. Coaching is available automatically with a configured provider.
-- Google sign-in is deferred. If you later connect **Google Calendar**, register `https://your-adler-app.vercel.app/api/calendar/google/callback` and set the backend's `GOOGLE_REDIRECT_URI` to that exact frontend URL. The callback must pass through the same frontend domain that holds the login cookie.
+- Google sign-in is deferred. If you later connect **Google Calendar**, register `https://withadler.com/api/calendar/google/callback` and set the backend's `GOOGLE_REDIRECT_URI` to that exact frontend URL. The callback must pass through the same frontend domain that holds the login cookie.
 - MCP clients can use the backend's `/mcp` endpoint with a personal token from Connections. Its `coach_message` tool invokes the same Adler service as app chat and texting.
 
 ## 4. Verify the hosted app
@@ -87,4 +99,4 @@ This version has no email verification/password recovery, managed identity provi
 
 ## Deployment status
 
-The v2 production Node server passed a local browser-created account/goal, full restart persistence, session continuity and two-account isolation smoke test. See [release verification](evaluation/shared-coaching-v2.md). Vercel configuration and backend origin/session checks are prepared. The available Vercel login exposes only the unrelated `rio-domingo` project, and no Adler persistent backend origin or hosting credentials are configured. The hosting target has been requested. No hosted Adler app URL has been verified; deploying assets alone is not a successful app deployment.
+The v2 production Node server passed a local browser-created account/goal, full restart persistence, session continuity and two-account isolation smoke test. See [release verification](evaluation/shared-coaching-v2.md). The Vercel project and both domain configurations are verified as described above. The remaining deployment dependency is an actual persistent Adler backend and its hosting access; this has been requested. No hosted Adler app has passed health, authentication or persistence checks yet.
