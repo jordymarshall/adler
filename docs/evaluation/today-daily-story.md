@@ -1,0 +1,32 @@
+# Today: the daily story
+
+Implemented 9 September 2026, following the user's request for an immersive daily experience organized around doing, progress and learning, with swipe navigation and every goal compared with its plan.
+
+## Delivered experience
+
+Today has three numbered cards, with one filling the available viewport at a time. Native horizontal scroll snapping supports touch swipes and trackpads; arrow keys, chapter buttons and previous/next controls provide alternatives. Navigation stays visible, longer content scrolls within its card, resizing preserves the current chapter, and inactive slides are inert and hidden from the accessibility tree. The selected card is kept in the Today URL, so direct links, reloads and browser Back preserve it without adding a history entry for every swipe. A fresh Today visit starts with Do. Shared sync warnings appear above the deck and failed saves retain the existing rollback and retry behavior. The action card retains the shared next-step selection, lets the person choose among today's saved actions, start work, open scheduling, and report or correct what happened in place. New users still enter the existing onboarding. Drafts, unscheduled work, earlier reports, future bookings and quiet days retain their actual states.
+
+The progress card includes every goal, including drafts, paused and completed goals. Each row places its recorded result and target beside a timeline of observed values and saved checkpoints, with the relevant gap, missing evidence, next checkpoint and a route to update or review the plan. Numeric measures retain their own units. Milestones use verified counts and dated commitments, while the comparison also checks which specific milestones remain open. A report older than the due checkpoint does not establish a current numeric gap. Future reports are excluded; undated completions do not receive invented dates. A saved baseline is identified as a starting point. Goals without an outcome measure receive no fabricated target. A target to reduce a measured value is not colored as failure merely because its result is below a checkpoint.
+
+Checkpoints are discrete commitments, drawn as steps, with a separately marked current date and distinguishable result points. A deadline alone does not create a linear daily requirement. Lines connect observations and do not assert measured progress between them. No aggregate percentage mixes different goals' units, and action completion remains separate from outcome progress.
+
+The learning card reads durable learning records. It shows the saved change, observation, hypothesis, relevant feedback or observable signal, evidence standing and review timing. Evidence changes and due reviews come first; other questions are accessible using the previous/next controls. A pending revision does not replace the agreed test. The existing experiment detail opens in place with its scientific rationale, sources, history and shared controls. Discussion returns to canonical Check-in with the record and version. If there is no current learning record, the page can show a saved personal observation and invite a brief update without inventing an experiment.
+
+SVG/CSS supply the progress ring, rotating motif, chart entrance and sliding transitions. Information is readable immediately; motion can be paused and the system's reduced-motion preference is respected. No raster generation or additional animation dependency is needed.
+
+## Method connection and limits
+
+This presentation serves the Observe and Learn gates. P1 (A / high) motivates low-friction reporting, while P4–P5 (A / high) support descriptive, task-level feedback. See the owned [BCT review](../research/deep/bct-effectiveness.md), [feedback review](../research/deep/feedback-and-progress.md) and [synthesis](../research/behavioural-science-synthesis.md). Those findings do not establish that this visual treatment improves adherence, learning or daily return. The card layout, checkpoint visualization and animation choices are product design judgments.
+
+The [individual-inference review](../research/deep/idiographic-inference.md) and current method constrain interpretation: sparse reports, agreement and elapsed time cannot establish a personal causal rule. This change adds no behavioral inference, model prompt, learning schema, forecast or automatic experiment. It renders the existing saved rationale and delegates state changes to existing validated paths. Source grades, claim versions and transfer limitations remain available in the shared evidence disclosure.
+
+## Verification
+
+- Fifteen targeted logic checks cover next-step selection, account dates, due work and retained reports, goal-specific checkpoint comparisons, stale/future evidence, deadline-only plans, milestone identity/dates and saved correction history, missing measurement, decreasing targets, inactive goals and learning priority.
+- Thirteen browser checks cover the existing Today contracts plus native touch gestures, keyboard navigation, preserving the chapter on resize, inactive-slide semantics, all-goal comparisons, reporting/correction persistence, action switching, scheduling, shared experiment controls, pending revisions, corrected evidence, quiet days, direct card links, saved progress from Check-in updating an open Today tab, browser return/reload, and failed-save recovery.
+- All three cards pass axe checks at 390px in light and dark themes. Pause and reduced-motion behavior are checked, with no page overflow and navigation remaining visible.
+- Desktop (1440px) and phone (390px) screenshots with fictional test data were inspected for each card: `.context/today-do-1440.png`, `.context/today-progress-1440.png`, `.context/today-learn-1440.png` and corresponding `-390.png` files.
+- TypeScript and production build pass. Vite retains its existing bundle-size advisory.
+- The built app was also exercised through `npm start` with real HTTP authentication and persistence in a separate test account, without request mocks. The smoke check covers the default app route, reporting, separation of action and goal results, all three cards, restoring the card on reload and successful asset loading. Browser tests substitute deterministic coaching replies; they do not assess live model quality.
+
+These are implementation and accessibility checks, not an evaluation of coaching efficacy or retention. No hosted deployment was performed.

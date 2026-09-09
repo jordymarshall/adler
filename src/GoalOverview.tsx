@@ -16,9 +16,11 @@ import { actionStep } from "../shared/adaptive-plan";
 export function GoalOverview({
   goal,
   actionId,
+  compact = false,
 }: {
   goal: Goal;
   actionId?: string;
+  compact?: boolean;
 }) {
   const { data, commit } = useStore();
   const navigate = useNavigate();
@@ -61,7 +63,7 @@ export function GoalOverview({
         />
       </section>
     );
-  if (action && (mode === "schedule" || (phase === "schedule" && !plan.adaptive)))
+  if (action && (mode === "schedule" || (phase === "schedule" && !plan.adaptive && !compact)))
     return (
       <section className="next-step-card panel" data-phase="schedule">
         <span className="section-kicker">MAKE ROOM FOR THE FIRST STEP</span>
@@ -92,7 +94,7 @@ export function GoalOverview({
       data-phase={phase}
       aria-label="Your next step"
     >
-      <span className="section-kicker">
+      {!compact && <span className="section-kicker">
         {phase === "draft"
           ? "YOUR PLAN IS READY"
           : phase === "waiting"
@@ -104,7 +106,7 @@ export function GoalOverview({
                 : phase === "inactive"
                   ? goal.status.toUpperCase()
                   : "YOUR NEXT STEP"}
-      </span>
+      </span>}
       <h2>
         {phase === "next"
           ? saved
@@ -166,22 +168,21 @@ export function GoalOverview({
           <Play size={16} /> Start action
         </button>
       )}
-      {phase === "schedule" && plan.adaptive && action && <div className="plan-actions">
+      {phase === "schedule" && (plan.adaptive || compact) && action && <div className="plan-actions">
         <button className="button primary" onClick={() => { commit(d => beginAction(d, action.id), "Action started."); setNow(new Date()); }}><Play size={16} /> I’ll do it now</button>
         <button className="button secondary" onClick={() => setMode("schedule")}>Choose a time</button>
       </div>}
       {(phase === "working" || phase === "checkin") && action && (
         <>
-          <p>
+          {!compact && <p>
             When you’re ready, tell your coach what happened. Your update can include results, blockers, or a change of plan.
-          </p>
+          </p>}
           <Link className="text-link" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`}>Continue in Check-in <ArrowRight size={16} /></Link>
         </>
       )}
       {phase === "waiting" && (
         <p>
-          You can leave things here. Your check-in will appear after the
-          session.
+          {compact ? "Scheduled. Check in after this session." : "You can leave things here. Your check-in will appear after the session."}
         </p>
       )}
       {phase === "next" && (
