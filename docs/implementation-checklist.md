@@ -1,5 +1,7 @@
 # Shared coaching system implementation
 
+Scope note, 8 September 2026: completed items below record the earlier shared-coaching release. They do not mark the later UX grilling, selected A/C prototypes or second-pass coaching requirements as implemented. See [structure decisions and remaining work](product-structure-status.md) for the current reconciliation.
+
 Started 7 September 2026. Authorized scope: implement the accepted product principles, experience plan and engineering design, commit/push to main and deploy. Starting implementation baseline: `fbc804e`.
 
 ## Delivery rules and verification

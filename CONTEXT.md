@@ -4,7 +4,13 @@ Adler helps people pursue their own goals through feasible actions, research-inf
 
 ## Goals and work
 
-**Goal**: A result the person wants, with their own meaning of success and relevant constraints. A goal's outcome is distinct from the work they can control.
+**Goal**: An aim the person wants to pursue, with their own meaning of success and relevant constraints. Success may be a desired outcome or the chosen behaviour itself; the goal gives the plan its purpose.
+
+**Plan**: The organized work toward a goal, expressed through milestones and contributing actions. An ongoing action can continue across milestones. The plan evolves as the coach and person learn what fits and what produces useful results.
+
+**Milestone**: An intermediate stage in a goal's plan that groups contributing actions and has its own success criterion. That criterion can be the work itself or a result supported by the work.
+
+**Action**: A piece of work the person can perform within a goal's plan. An ongoing action retains its identity and learning history across milestones, with its dated work linked to the milestone it contributes to. Its quantity and reported completion remain distinct from the outcome it is intended to support.
 
 **Controllable input**: Work or a behaviour the person can choose to perform, including its meaningful quantity or quality. It is not another person's response or an assumed return from the work.
 
@@ -15,6 +21,8 @@ Adler helps people pursue their own goals through feasible actions, research-inf
 **Planning cycle**: A bounded period of concrete work selected for the goal and the person's circumstances. Its length need not equal the goal horizon or a calendar week.
 
 **Review point**: A date, event or evidence condition at which Adler evaluates what to keep, change or clarify. Reaching it does not guarantee enough evidence for a conclusion.
+
+**Progress**: Evidence of how a goal's work and results change over time. Action completion, measured input, milestone status, observed outcome and conditional projection describe different aspects of that progress.
 
 ## Evidence and learning
 
@@ -32,17 +40,21 @@ Adler helps people pursue their own goals through feasible actions, research-inf
 
 **Hypothesis**: A revisable explanation or prediction connecting observations, a behavioural mechanism and an expected effect in a stated context. It remains distinct from a user-confirmed fact.
 
-**Test**: A prospective attempt to learn from a specified change, useful observations and a review rule. A test is not necessarily a randomized or causal experiment.
+**Experiment (test)**: A learning attempt the coach selects using behavioural science when observations of the person's behaviour reveal an opportunity to improve their actions. It has a hypothesis, useful observations and a review rule; it is not necessarily randomized or capable of establishing causation.
 
 **Test result**: The observations obtained during the test, including what is missing or incomparable. The result is distinct from the interpretation made from it.
 
-**Working insight**: A provisional interpretation of reviewed evidence, with its scope and implication for future planning. It can remain worth using without becoming a proven personal rule.
+**Insight (working insight)**: An inference informed by behavioural research and the person's memory, with a stated scope, evidence strength and implication for future planning. It can remain useful without becoming a proven personal rule.
 
 **Transfer**: Applying a mechanism or working insight to a different goal or context. Evidence from the original setting informs that application without establishing the same effect in the new setting.
 
-**Memory**: The person's retained context, observations, current hypotheses, tests and learning history. Memory includes uncertain interpretations as well as confirmed context, with those roles kept distinct.
+**Memory**: Retained personal context, observations, hypotheses, experiments, insights and their learning history. It includes uncertain interpretations as well as confirmed context, with those roles kept distinct.
 
 ## Coaching decisions
+
+**Coach**: Adler's shared coaching system, which uses the person's goals and memory, behavioural research and connected context to guide work and learning. Its tools include planning, calendars, capacity, connections and reminders.
+
+**Check-in**: An interaction with the coach to report experience or review what happened. Planning, discussing suggestions and checking in are interactions with the same coach.
 
 **Recommendation**: A suggested action or adjustment with a reason grounded in the person's context and applicable methodology. Suggesting or accepting it is not evidence that it happened or worked.
 

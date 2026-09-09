@@ -46,6 +46,8 @@ Controllable inputs, action adherence, reported outcomes and conditional project
 
 Keep the outcome-versus-time graph, target and conditional forward range where the relationship supports them. Complex outcomes can have an unknown relationship and no defensible finish date. A shaded range is not automatically a calibrated interval, and behavioural literature cannot establish a personal dollars-per-hour return.
 
+Tie each progress visual to its practical implication and the next useful decision: what the reported work means for a milestone or goal, what remains unknown, and whether to review the plan or continue. A difference from the plan is evidence to investigate, not an explanation of its cause. Changing the plan, accepting a different timeline and maintaining a useful routine can all be appropriate; a completion score or streak is not the objective to maximize.
+
 ## Low friction through product understanding
 
 The landing page follows one goal from setting it to working toward its reported completion: a chosen action, a setback, a research-informed explanation, a test and subsequent adaptation. Demonstrate how the coach revisits an explanation when reality differs; an isolated practical tip is not the product’s value. Features support this continuous journey rather than restarting it as separate tours. Use readable parts of the real product, clear visual focus and controllable motion. The value should remain understandable without enlarging a screenshot or waiting for animation.
@@ -60,7 +62,11 @@ Specify the evidence, decision process, data semantics, failure cases, user cont
 
 The [accepted experience plan](product-core-and-experience-plan.md) and [original review](scientific-disclosure-product-proposal.md) supply concrete examples and identified gaps. Current user instructions take precedence. This guidance creates no additional approval gates.
 
+The accepted [second-pass coaching design](product-coaching-second-pass.md) sharpens the implementation requirements: distinguish what helps the person perform meaningful work from whether that work advances the goal; choose decision-relevant learning and feedback timing; preserve useful success; and make the evidence determine the authority of an outlook. Its prototype and evaluation recommendations are not claims of implemented forecasting or demonstrated effectiveness.
+
 ## Structure and visual continuity
+
+The compact activity grid shown in the landing-page goals table belongs only in All Goals, beside each goal's graph. Do not turn it into a calendar panel in the individual goal workspace. The user explicitly rejected that placement and the added controls and explanation.
 
 Give each goal a visible index, orient the person with the outcome and current work, then disclose the timeline, progress, learning and history. Use time for actions and revisions, dependencies for planned work, and input→outcome relationships for forecasts. A grid of unrelated boxes adds no meaning. Show selected tracking even when a finish cannot yet be estimated. Keep ordinary app text neutral and readable; headings and plotted signals carry colour.
 
