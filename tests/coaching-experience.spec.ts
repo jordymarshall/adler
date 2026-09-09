@@ -39,7 +39,7 @@ test("Today leads with the action, with the full goal view one step away", async
   await expect(page.locator(".goal-projection")).toHaveCount(0);
   await page.getByRole("link", { name: "Plan & progress" }).click();
   await expect(
-    page.getByRole("region", { name: "Cycles and milestones" }),
+    page.getByRole("region", { name: "Milestone and goal outlook" }),
   ).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/app/today");

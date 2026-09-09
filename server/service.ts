@@ -1,4 +1,5 @@
 import { learningActionSchema, planNeedsReview } from "../shared/learning.ts";
+import { isDeepStrictEqual } from "node:util";
 import { recordLink, resolveRecord } from "../shared/record-links.ts";
 import { currentRecord } from "../shared/change-record.ts";
 import { randomBytes, randomUUID } from "node:crypto";
@@ -181,10 +182,10 @@ export class Service {
       data.decisions = structuredClone(existing.decisions);
       for (const goal of data.goals) {
         const prior = existing.goals.find(item => item.id === goal.id);
-        const rationale = (plan: Data["goals"][number]["plans"][number]) => JSON.stringify({ basis: plan.basis, reasoning: plan.adaptive?.reasoning, experiment: plan.adaptive?.experiment });
+        const rationale = (plan: Data["goals"][number]["plans"][number]) => ({ basis: plan.basis, reasoning: plan.adaptive?.reasoning, experiment: plan.adaptive?.experiment });
         for (const plan of goal.plans) {
           if (!plan.basis && !plan.adaptive?.reasoning && !plan.adaptive?.experiment) continue;
-          if (!prior?.plans.some(before => rationale(before) === rationale(plan)))
+          if (!prior?.plans.some(before => isDeepStrictEqual(rationale(before), rationale(plan))))
             throw new Error("New coaching explanations must use the shared coach, where their research and learning are reviewed. Manual edits can save your chosen work without adding a scientific claim.");
         }
       }

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowUpRight,
@@ -14,16 +14,20 @@ import {
   useStore,
   type Goal,
 } from "./store";
-import { BehaviorChart } from "./BehaviorChart";
+import { WeeklyCapacity } from "./WeeklyCapacity";
+import { GoalInputChart } from "./GoalInputChart";
+import { actionSeries } from "../shared/goal-view";
+import "./goal-views.css";
 import { GoalActivity } from "./GoalActivity";
 import { goalProjection } from "../shared/goal-projection";
-import { dateInZone } from "../shared/journey";
+import { addDays, dateInZone } from "../shared/journey";
 import { projectionDate } from "./GoalProjection";
 import { goalColor } from "./goal-colors";
 import type { GoalArea } from "./program-types";
 
 export function OrganizedGoals() {
   const { data } = useStore();
+  const today = dateInZone(data.timeZone);
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All");
   const [area, setArea] = useState("All areas");
@@ -42,13 +46,13 @@ export function OrganizedGoals() {
     <div className="organized-goals">
       <div className="page-heading">
         <div>
-          <h1>Your goals</h1>
+          <h1>All goals</h1>
         </div>
         <Link className="button primary" to="/app/goals/new">
           <Plus size={17} /> New goal
         </Link>
       </div>
-      {data.goals.length > 0 && <details className="goal-overview-disclosure"><summary>{data.goals.filter(g => g.status === "Active").length} active goals · Explore activity across goals <span>+</span></summary><BehaviorChart data={data} /></details>}
+      {data.goals.length > 0 && <WeeklyCapacity data={data} />}
       {data.goals.length > 0 && (
         <>
           <details className="quiet-disclosure">
@@ -117,16 +121,27 @@ export function OrganizedGoals() {
         </>
       )}
       <div className="goal-groups goal-table-scroll">
-        {goals.length > 0 && <table className="goals-table"><caption>Goals, activity and projected outcomes</caption><thead><tr><th scope="col">Goal</th><th scope="col">Last 12 weeks</th><th scope="col">Goal attained</th><th scope="col">Projected finish</th></tr></thead>
-          {[...new Set(goals.map(g => g.area ?? "Unassigned"))].map(category => <tbody key={category}><tr className="goal-category"><th colSpan={4} scope="rowgroup">{category} <span>{goals.filter(g => (g.area ?? "Unassigned") === category).length}</span></th></tr>
-            {goals.filter(g => (g.area ?? "Unassigned") === category).map(goal => { const progress = goalProjection(data, goal, dateInZone(data.timeZone)); return <tr className="goal-table-row" key={goal.id}>
-              <th scope="row"><Link to={`/app/goals/${goal.id}`}><i style={{ background: goalColor(goal.id) }} /><span>{goal.title} <ArrowUpRight size={14}/></span></Link><small>{goal.status} · {goal.priority ?? "Maintain"}</small><p>{goal.success}</p></th>
-              <td><GoalActivity data={data} goal={goal} /></td>
-              <td><strong>{progress.progress === null ? "—" : `${Math.round(progress.progress)}%`}</strong><small>{progress.current === null ? "Starting point unknown" : `${progress.current} / ${progress.target} ${goal.measure?.unit ?? goal.unit ?? "milestones"}`}</small></td>
-              <td><strong>{progress.projection ? projectionDate(progress.projection.expectedDate) : progress.status}</strong><small>{progress.projection ? `${projectionDate(progress.projection.earliestDate)} – ${projectionDate(progress.projection.latestDate)}` : "Review the model in Check-in"}</small><small>{goal.targetDate ? `Target ${projectionDate(goal.targetDate)}` : "Flexible timeline"}</small></td>
-            </tr>; })}
+        {goals.length > 0 && <table className="goals-table goal-overview-table"><caption>Goals, reported work and the next milestone</caption>
+          <thead><tr><th scope="col">Goal & reported result</th><th scope="col">Activity · last 12 weeks</th><th scope="col">Controllable work · last 14 days</th><th scope="col">Next milestone & outlook</th></tr></thead>
+          {[...new Set(goals.map(goal => goal.area ?? "Unassigned"))].map(category => <tbody key={category}>
+            <tr className="goal-category"><th colSpan={4} scope="rowgroup">{category}</th></tr>
+            {goals.filter(goal => (goal.area ?? "Unassigned") === category).map(goal => {
+              const plan = goal.plans.at(-1)!;
+              const step = plan.adaptive?.steps.find(step => step.id === plan.adaptive?.projection?.driverStepId) ?? plan.adaptive?.steps[0];
+              const series = actionSeries(data, goal, plan, step?.id, addDays(today, -13), today, today);
+              const progress = goalProjection(data, goal, today);
+              const milestone = goal.milestones.find(item => !item.done);
+              const href = `/app/goals/${goal.id}`;
+              return <tr className="goal-table-row" key={goal.id} style={{ "--input-color": goalColor(goal.id) } as CSSProperties}>
+                <th scope="row"><Link to={href}><i style={{ background: goalColor(goal.id) }} /><span>{goal.title} <ArrowUpRight size={14} /></span></Link><small>{goal.status}</small><strong className="goal-row-result">{progress.current === null ? "No outcome reported" : `${progress.current} / ${progress.target} ${goal.measure?.unit ?? goal.unit ?? "milestones"}`}</strong>{progress.observedAt && <small>Reported {formatDate(progress.observedAt)}</small>}</th>
+                <td><GoalActivity data={data} goal={goal} /></td>
+                <td><Link className="goal-row-graph" to={href} aria-label={`Open the plan for ${goal.title}`}>{step?.type === "behavior" ? <GoalInputChart series={series} compact /> : <div className="goal-row-work"><small>Action</small><strong>{step?.title ?? plan.action}</strong><span>{data.actions.filter(action => action.goalId === goal.id && action.outcome === "Done").length} completed · open plan ↗</span></div>}</Link></td>
+                <td><small>{milestone ? "Next milestone" : "Goal"}</small><Link to={href}><strong>{milestone?.title ?? goal.success}</strong></Link>{milestone?.dueDate && <small>Milestone target · {formatDate(milestone.dueDate)}</small>}<Link className="goal-row-outlook" to={href}>{progress.projection ? `Goal estimate · ${projectionDate(progress.projection.expectedDate)}` : "Goal finish not yet estimated"} ↗</Link>{progress.projection && <small>Conditional on input pace</small>}</td>
+              </tr>;
+            })}
           </tbody>)}
         </table>}
+
       </div>
       {!goals.length && (
         <div className="empty-state">

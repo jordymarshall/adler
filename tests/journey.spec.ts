@@ -114,26 +114,24 @@ test("evidence is disclosed on request and action observations stay separate fro
   await seedCoaching(page, state.data);
   await page.goto("/app/goals/essays");
   await expect(page.locator(".plan-explanation")).not.toBeVisible();
-  await page
-    .locator(".journey-disclosure > summary")
-    .filter({ hasText: /^Why this plan\?/ })
-    .click();
-  await page
+  await page.getByRole("button", { name: /Inspect reasoning/ }).click();
+  await page.getByRole("dialog")
     .getByText("Alternatives Adler considered", { exact: true })
     .click();
   await expect(
-    page.getByText("Minutes spent writing", { exact: true }),
+    page.getByRole("dialog").getByText("Minutes spent writing", { exact: true }),
   ).toBeVisible();
-  await page
+  await page.getByRole("dialog")
     .getByText("Research & applicability · 1 sources", { exact: false })
     .click();
-  await expect(page.locator(".research-source")).toContainText(
+  await expect(page.getByRole("dialog").locator(".research-source")).toContainText(
     "does not establish an optimal metric",
   );
-  await expect(page.locator(".research-source a")).toHaveAttribute(
+  await expect(page.getByRole("dialog").locator(".research-source a")).toHaveAttribute(
     "href",
     "https://europepmc.org/article/MED/26479070",
   );
+  await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Start action", exact: true }).click();
   await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 4 }) }]);
   await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
@@ -185,6 +183,7 @@ test("Today follows the account date and current scheduled work takes priority o
   await page.clock.setFixedTime(new Date("2026-09-06T23:00:00Z"));
   const state = await snapshot(page);
   state.data.timeZone = "Asia/Tokyo";
+  state.data.goals[0].results.forEach(result => { result.date = "2026-09-07"; });
   state.data.actions[0].date = "2026-09-07";
   state.data.actions.push({
     ...state.data.actions[0],

@@ -176,29 +176,27 @@ export function planProgress(data: Data, goal: Goal, now = new Date()) {
   });
 }
 
-function weeklyCommitments(data: Data) {
-  const loads = new Map<string, number>();
+export function scheduledCommitments(data: Data, today = dateInZone(data.timeZone)) {
+  const commitments: { goalId: string; actionId?: string; date: string; minutes: number }[] = [];
   const counted = new Set<string>();
-  const today = dateInZone(data.timeZone);
   const weekStart = addDays(today, -((new Date(`${today}T12:00:00Z`).getUTCDay() + 6) % 7));
-  function add(date: string, minutes: number) {
+  function add(goalId: string, date: string, minutes: number, actionId?: string) {
     if (!date || date < weekStart) return;
-    const weekday = new Date(`${date}T12:00:00Z`).getUTCDay();
-    const week = addDays(date, -((weekday + 6) % 7));
-    loads.set(week, (loads.get(week) ?? 0) + minutes);
+    commitments.push({ goalId, actionId, date, minutes });
   }
   function addAction(action: Action, minutes: number) {
+    if (counted.has(action.id)) return;
     counted.add(action.id);
     const block = data.workBlocks.find(b => b.id === action.id);
-    add(block ? dateInZone(data.timeZone, new Date(block.start)) : action.date,
-      block ? (Date.parse(block.end) - Date.parse(block.start)) / 60000 : minutes);
+    add(action.goalId, block ? dateInZone(data.timeZone, new Date(block.start)) : action.date,
+      block ? (Date.parse(block.end) - Date.parse(block.start)) / 60000 : minutes, action.id);
   }
   for (const goal of data.goals.filter(g => g.status === "Active" || g.status === "Draft")) {
     const plan = goal.plans.at(-1)?.adaptive;
     for (const step of plan?.steps ?? []) for (const date of stepDates(plan!, step)) {
       const action = stepAction(data, goal.id, step, date);
       if (action) addAction(action, actionStep(data, action)?.durationMinutes ?? step.durationMinutes);
-      else add(date, step.durationMinutes);
+      else add(goal.id, date, step.durationMinutes);
     }
     for (const action of data.actions.filter(a => a.goalId === goal.id && !a.retiredAt && !counted.has(a.id))) {
       // Revisions preserve booked, started and historical work outside the new outline.
@@ -206,6 +204,15 @@ function weeklyCommitments(data: Data) {
       addAction(action, actionStep(data, action)?.durationMinutes ??
         goal.plans.find(p => p.version === action.planVersion)?.durationMinutes ?? data.programs.at(-1)!.sessionMinutes);
     }
+  }
+  return commitments;
+}
+
+function weeklyCommitments(data: Data) {
+  const loads = new Map<string, number>();
+  for (const { date, minutes } of scheduledCommitments(data)) {
+    const week = addDays(date, -((new Date(`${date}T12:00:00Z`).getUTCDay() + 6) % 7));
+    loads.set(week, (loads.get(week) ?? 0) + minutes);
   }
   return loads;
 }

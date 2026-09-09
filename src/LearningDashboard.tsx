@@ -22,17 +22,19 @@ export type LearningControl =
 export function LearningDashboard({
   data,
   goalId = "all",
+  recordId,
   onControl,
   busy = false,
 }: {
   data: Data;
   goalId?: string;
+  recordId?: string;
   onControl?: (record: LearningRecord, action: LearningControl) => void;
   busy?: boolean;
 }) {
   const today = dateInZone(data.timeZone, new Date());
   const records = (data.learning ?? []).filter(
-    (record) => goalId === "all" || record.goalIds.includes(goalId),
+    (record) => (!recordId || record.id === recordId) && (goalId === "all" || record.goalIds.includes(goalId)),
   );
   const current = records.filter(
     (record) =>
@@ -65,6 +67,7 @@ export function LearningDashboard({
         className="learning-record"
         key={record.id}
         id={`record-${record.id}`}
+        open={recordId ? true : undefined}
       >
         <summary>
           <span className="learning-record-main">

@@ -3,35 +3,30 @@ import AxeBuilder from "@axe-core/playwright";
 import { register, save, seedCoaching, snapshot } from "./fixtures";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
 import { addDays, dateInZone } from "../shared/journey";
-import { weekStart } from "../shared/goal-execution";
 import { type Outcome } from "../shared/workspace";
 
-test("weekly completion lines distinguish zero from unknown and retain the reports behind a week", async ({ page }) => {
+test("input lines distinguish zero from unknown and keep reports selectable", async ({ page }) => {
   await register(page);
   const today = dateInZone("UTC");
   const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
-  const monday = weekStart(today);
-  const records: { offset: number; outcome?: Outcome }[] = [
-    { offset: -21, outcome: "Done" }, { offset: -21, outcome: "Didn’t happen" }, { offset: -21 },
-    { offset: -14 }, { offset: -7, outcome: "Didn’t happen" }, { offset: 0, outcome: "Done" }, { offset: 7 },
+  const records: { offset: number; outcome?: Outcome; amount?: number }[] = [
+    { offset: -6, outcome: "Done", amount: 5 }, { offset: -4 },
+    { offset: -2, outcome: "Didn’t happen" }, { offset: 0, outcome: "Done", amount: 5 }, { offset: 2 },
   ];
-  data.actions = records.map((record, index) => ({ id: `report-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points", criterion: "Five points are written", timing: "After breakfast", date: addDays(monday, record.offset), planVersion: 1, outcome: record.outcome, history: [] }));
+  data.actions = records.map((record, index) => ({ id: `report-${index}`, goalId: "essay", stepId: "outline", title: "Draft five outline points", criterion: "Five points are written", timing: "After breakfast", date: addDays(today, record.offset), occurrence: `outline:${addDays(today, record.offset)}`, planVersion: 1, outcome: record.outcome, amount: record.amount, history: [] }));
   await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
-  await page.getByText("Explore action reports by week", { exact: true }).click();
-  const chart = page.locator(".weekly-actions");
-  await expect(chart.locator(".execution-metric")).toHaveText("Action completion (%)");
-  await expect(chart.locator(".execution-time-label")).toHaveText("Week starting");
-  await expect(chart.locator(".execution-bar")).toHaveCount(0);
+  const chart = page.locator(".goal-action-canvas .goal-input-chart");
+  await expect(chart.getByRole("img")).toHaveAccessibleName(/Outline points over time/);
   await expect(chart.locator("circle title")).toHaveText([
-    /50% · 1 of 2 reported actions completed/, /0% · 0 of 1 reported actions completed/, /100% · 1 of 1 reported actions completed/,
+    /5 points reported/, /0 points reported/, /5 points reported/,
   ]);
-  expect((await chart.locator(".execution-trend-line").getAttribute("d"))!.match(/M/g)).toHaveLength(2);
-  const missed = chart.getByRole("button", { name: /: 0% completion, 1 planned/ });
+  await expect(chart.locator(".input-unknown")).not.toHaveCount(0);
+  const missed = page.getByRole("group", { name: "Dated action reports" }).getByRole("button", { name: /Didn’t happen/ });
   await missed.focus();
   await page.keyboard.press("Enter");
-  await expect(chart.locator(".execution-week-summary")).toContainText("1 didn’t happen");
-  await expect(chart.locator(".execution-action")).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Didn’t happen · 0 points");
+  await expect(page.getByRole("button", { name: "Edit report", exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
@@ -64,8 +59,9 @@ test("goals use a full-width categorized table and show reporting coverage witho
   await page.setViewportSize({ width: 1600, height: 1000 });
   await page.goto("/app/goals");
   await expect(page.locator(".goal-table-row")).toHaveCount(1);
-  await expect(page.locator(".behavior-overview")).toContainText("0 reported");
-  await expect(page.locator(".behavior-overview h2")).toContainText("—");
+  await expect(page.getByRole("region", { name: "Weekly time budget" })).toBeVisible();
+  await expect(page.locator(".goal-activity")).toContainText("0 reported");
+  await expect(page.locator(".goal-activity")).toContainText("No check-ins yet");
   await expect(page.locator(".goal-table-row .activity-cells")).toBeVisible();
   await expect(page.locator(".activity-day")).toHaveCount(84);
   const width = await page

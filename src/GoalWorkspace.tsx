@@ -1,5 +1,4 @@
 import { dateInZone, reviewSchedule } from "../shared/journey";
-import { GoalOverview } from "./GoalOverview";
 import { GoalPlan } from "./GoalPlan";
 import { PlanExplanation } from "./PlanExplanation";
 import { useState, type FormEvent } from "react";
@@ -13,6 +12,7 @@ import {
   ChevronDown,
   Circle,
   History,
+  Flame,
   Settings2,
 } from "lucide-react";
 import { EmptyState, GoalIcon, Modal, Tag } from "./components";
@@ -26,15 +26,30 @@ import {
 } from "./store";
 import { ProgressRecords } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
+import { goalStreak } from "../shared/goal-view";
+import { goalProjection } from "../shared/goal-projection";
 
-function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
+function EditPlan({ goal, stepId, onClose }: { goal: Goal; stepId?: string; onClose: () => void }) {
   const { commit } = useStore();
   const [plan] = useState(() => currentPlan(goal));
-  const [action, setAction] = useState(plan.action);
-  const [criterion, setCriterion] = useState(plan.criterion);
-  const [timing, setTiming] = useState(plan.timing);
+  const step = plan.adaptive?.steps.find(step => step.id === stepId);
+  const [action, setAction] = useState(step?.title ?? plan.action);
+  const [criterion, setCriterion] = useState(step?.criterion ?? plan.criterion);
+  const [timing, setTiming] = useState(step?.cue ?? plan.timing);
   function save(e: FormEvent) {
     e.preventDefault();
+    const adaptive = step && plan.adaptive ? structuredClone(plan.adaptive) : undefined;
+    if (adaptive) {
+      const edited = adaptive.steps.find(item => item.id === stepId)!;
+      const meaningChanged = edited.title !== action.trim() || edited.criterion !== criterion.trim();
+      const changed = meaningChanged || edited.cue !== timing.trim();
+      Object.assign(edited, { title: action.trim(), criterion: criterion.trim(), cue: timing.trim() });
+      if (changed) { delete adaptive.reasoning; delete adaptive.experiment; }
+      if (meaningChanged) {
+        delete edited.measure;
+        if (adaptive.projection?.driverStepId === stepId) delete adaptive.projection;
+      }
+    }
     if (
       commit(
         (d) =>
@@ -42,8 +57,9 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
             action: action.trim(),
             criterion: criterion.trim(),
             timing: timing.trim(),
+            ...(adaptive ? { adaptive } : {}),
           }),
-        "Future plan updated. Past and already scheduled records are preserved.",
+        "Plan updated. Reported, started and booked work is preserved.",
       )
     )
       onClose();
@@ -51,8 +67,8 @@ function EditPlan({ goal, onClose }: { goal: Goal; onClose: () => void }) {
   return (
     <Modal title="Make the plan fit." onClose={onClose}>
       <p className="muted">
-        This creates a new plan version for future actions. Earlier and today’s
-        action records stay as they are.
+        This creates a new plan version. Reported, started and booked work stays
+        with its saved plan.
       </p>
       <form onSubmit={save}>
         <div className="form-field">
@@ -125,6 +141,7 @@ export function GoalWorkspace({
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
   const [editing, setEditing] = useState(false);
+  const [editingStep, setEditingStep] = useState<string>();
   const [statusChange, setStatusChange] = useState<GoalStatus | null>(null);
   if (!goal)
     return (
@@ -143,6 +160,8 @@ export function GoalWorkspace({
       />
     );
   const plan = currentPlan(goal);
+  const progress = goalProjection(data, goal, dateInZone(data.timeZone));
+  const streak = goalStreak(data, goal, dateInZone(data.timeZone));
   const actions = data.actions
     .filter((a) => a.goalId === goal.id)
     .sort(
@@ -181,7 +200,7 @@ export function GoalWorkspace({
       <div className="goal-page-heading journey-goal-heading">
         <GoalIcon kind={goal.kind} />
         <div>
-          <div className="goal-title-tags" hidden>
+          <div className="goal-title-tags">
             <span className="section-kicker">
               {goal.kind === "project"
                 ? "PROJECT GOAL"
@@ -191,8 +210,10 @@ export function GoalWorkspace({
             </span>
             <Tag tone="sage">{goal.status}</Tag>
           </div>
-          <h1>{goal.title}</h1>
+          <h1>{goal.title}{plan.adaptive?.steps.some(step => step.type === "behavior") && <span className="goal-streak" title={`${streak.count} days on plan. Planned rest counts after an on-plan day; unknown past reports interrupt the count.`}><Flame size={23} fill="currentColor" aria-hidden="true" /><span aria-label={`${streak.count} days on plan`}>{streak.count}</span></span>}</h1>
+          <span className="goal-target-date">{goal.targetDate ? `Target · ${formatDate(goal.targetDate, { month: "short", day: "numeric", year: "numeric" })}` : "Flexible timeline"}</span>
         </div>
+        <div className="goal-heading-result"><strong>{progress.current ?? "—"} <span>/ {progress.target || "—"} {goal.measure?.unit ?? goal.unit ?? "milestones"}</span></strong><small>{progress.observedAt ? `Reported outcome · ${formatDate(progress.observedAt)}` : "Saved starting point"}</small></div>
         <details className="goal-options">
           <summary aria-label="Goal options">
             <Settings2 size={18} />
@@ -220,18 +241,9 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
-      <nav className="goal-section-index" aria-label="Goal sections">
-        {[["goal-overview", "Overview"], ["goal-plan", "Plan & timeline"], ["goal-progress", "Progress"], ["plan-learning", "Learning"], ["goal-details", "History & settings"]].map(([id, label]) => <Link key={id} to={`#${id}`}>{label}</Link>)}
-      </nav>
-      <GoalPlan goal={goal}>
-      <GoalOverview
-        key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`}
-        goal={goal}
-        actionId={actionId ?? query.get("action") ?? undefined}
-      />
-      </GoalPlan>
-      <section id="goal-details" className="goal-section" aria-label="Goal history and settings" tabIndex={-1}>
-      <h2>History & settings</h2>
+      <GoalPlan key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`} goal={goal} actionId={actionId ?? query.get("action") ?? undefined} onEdit={stepId => { setEditingStep(stepId); setEditing(true); }} />
+      <details id="goal-details" className="goal-records" open={tab === "progress" || tab === "plan" || undefined}>
+      <summary>History & settings</summary>
       <details
         className="journey-disclosure"
         open={tab === "plan" || undefined}
@@ -242,7 +254,7 @@ export function GoalWorkspace({
           <button
             className="text-link"
             disabled={goal.status !== "Active" && goal.status !== "Draft"}
-            onClick={() => setEditing(true)}
+            onClick={() => { setEditingStep(undefined); setEditing(true); }}
           >
             Edit the next action
           </button>
@@ -447,8 +459,8 @@ export function GoalWorkspace({
           </div>
         </div>
       </details>
-      </section>
-      {editing && <EditPlan goal={goal} onClose={() => setEditing(false)} />}
+      </details>
+      {editing && <EditPlan goal={goal} stepId={editingStep} onClose={() => setEditing(false)} />}
       {statusChange && (
         <Modal
           title={

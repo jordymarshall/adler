@@ -191,7 +191,7 @@ export function learningStatus(record: LearningRecord, today: string) {
     return "Reviewed";
   if (reviewDate && reviewDate <= today) return "Ready to review";
   if (test.start && test.start > today) return "Starting soon";
-  return "Trying now";
+  return "Live experiment";
 }
 export const learningStanding: Record<LearningRecord["standing"], string> = {
   untested: "Waiting to learn",

@@ -15,6 +15,7 @@ import {
   applyLearningAction,
 } from "../server/learning.ts";
 import { currentLearningVersion } from "../shared/learning.ts";
+import { planExperiment } from "../shared/goal-view.ts";
 import type { CoachInsight } from "../src/program-types.ts";
 
 test("accepting an adjustment preserves its prospective prediction and a corrected report reopens its evidence", async (t) => {
@@ -92,6 +93,9 @@ test("accepting an adjustment preserves its prospective prediction and a correct
   assert.equal(accepted.data.learning[0].standing, "untested");
   assert.equal(accepted.data.learning[0].reviews.length, 0);
   assert.deepEqual(accepted.data.learning[0].versions, hypothesis.versions);
+  const acceptedGoal = accepted.data.goals[0];
+  assert.equal(planExperiment(accepted.data, acceptedGoal, acceptedGoal.plans.at(-1)!, "outline", service.listProposals(user.id))?.record.id, hypothesis.id);
+  assert.equal(planExperiment(accepted.data, acceptedGoal, acceptedGoal.plans[0], "outline", service.listProposals(user.id)), undefined, "The decision's pre-acceptance plan is not the plan that runs this test");
   await service.approve(user.id, proposed.proposal.id, "web");
   assert.equal(db.snapshot(user.id).data.learning!.length, 1);
   const corrected = db.snapshot(user.id);
@@ -792,4 +796,25 @@ test("a new suggestion after an unstarted decline becomes the visible pending ve
   assert.equal(currentLearningVersion(record).version, 2);
   assert.equal(record.activeVersion, undefined);
   assert.equal(record.versions.length, 2);
+});
+
+test("reporting through the app accepts unchanged scientific records regardless of JSON key order", async t => {
+  const directory = mkdtempSync(join(tmpdir(), "adler-report-order-"));
+  const db = new Database(directory);
+  t.after(() => { db.close(); rmSync(directory, { recursive: true, force: true }); });
+  const user = db.createUser("report-order", "a-long-test-password", "UTC");
+  const today = dateInZone("UTC");
+  const data = adaptiveWorkspace(adaptiveFixture(today, today));
+  const reasoning = data.goals[0].plans[0].adaptive!.reasoning!;
+  data.goals[0].plans[0].adaptive!.reasoning = Object.fromEntries(Object.entries(reasoning).reverse()) as typeof reasoning;
+  const revision = db.save(user.id, data, db.snapshot(user.id).revision, "web", "Existing reviewed plan");
+  data.actions[0].outcome = "Done";
+  data.actions[0].amount = 5;
+  const service = new Service(db);
+  const saved = await service.update(user.id, data, revision, "report-quantity");
+  assert.equal(saved.data.actions[0].amount, 5);
+  assert.deepEqual(saved.data.goals[0].plans[0].adaptive!.reasoning, reasoning);
+  const forged = structuredClone(saved.data);
+  forged.goals[0].plans[0].adaptive!.reasoning!.fit = "An unsupported new explanation";
+  await assert.rejects(service.update(user.id, forged, saved.revision, "forged-reason"), /shared coach/);
 });

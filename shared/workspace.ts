@@ -368,6 +368,9 @@ export function applyPlan(
   };
   if (plan.adaptive) {
     plan.adaptive = structuredClone(plan.adaptive);
+    if (changes.adaptive && !changes.basis && !changes.adaptive.reasoning &&
+      JSON.stringify(changes.adaptive.steps.map(step => [step.id, step.title, step.criterion, step.cue])) !==
+      JSON.stringify(previous.adaptive?.steps.map(step => [step.id, step.title, step.criterion, step.cue]))) delete plan.basis;
     if (!changes.adaptive) {
       const meaningChanged = changes.action !== previous.action || changes.criterion !== previous.criterion;
       const supportChanged = meaningChanged || changes.timing !== previous.timing;

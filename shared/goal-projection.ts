@@ -36,11 +36,12 @@ export function goalProjection(data: Data, goal: Goal, today: string) {
   const comparablePlans = goal.plans.flatMap(p => {
     const driver = p.adaptive?.steps.find(s => s.id === step.id);
     return p.adaptive && driver && comparable(driver)
-      ? [{ plan: p.adaptive, dates: new Set(stepDates(p.adaptive, driver)) }] : [];
+      ? [{ version: p.version, plan: p.adaptive, dates: new Set(stepDates(p.adaptive, driver)) }] : [];
   });
   const inputDay = (date: string) => {
     const entries = records.filter(a => a.date === date);
-    const schedule = comparablePlans.filter(p => date >= p.plan.window.start && date <= p.plan.window.end).at(-1);
+    const effectiveVersion = goal.plans.filter(p => p.date <= date).at(-1)?.version;
+    const schedule = comparablePlans.find(p => p.version === effectiveVersion && date >= p.plan.window.start && date <= p.plan.window.end);
     const amount = !entries.length || entries.some(a => quantity(a) === null) ? null : entries.reduce((sum, a) => sum + quantity(a)!, 0);
     return { date, amount, status: amount !== null ? "reported" : !entries.length && schedule && !schedule.dates.has(date) ? "not scheduled" : "unknown", sourceIds: entries.map(a => a.id) };
   };
