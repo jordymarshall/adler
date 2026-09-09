@@ -213,7 +213,7 @@ export function GoalWorkspace({
           <h1>{goal.title}{plan.adaptive?.steps.some(step => step.type === "behavior") && <span className="goal-streak" title={`${streak.count} days on plan. Planned rest counts after an on-plan day; unknown past reports interrupt the count.`}><Flame size={23} fill="currentColor" aria-hidden="true" /><span aria-label={`${streak.count} days on plan`}>{streak.count}</span></span>}</h1>
           <span className="goal-target-date">{goal.targetDate ? `Target · ${formatDate(goal.targetDate, { month: "short", day: "numeric", year: "numeric" })}` : "Flexible timeline"}</span>
         </div>
-        <div className="goal-heading-result"><strong>{progress.current ?? "—"} <span>/ {progress.target || "—"} {goal.measure?.unit ?? goal.unit ?? "milestones"}</span></strong><small>{progress.observedAt ? `Reported outcome · ${formatDate(progress.observedAt)}` : "Saved starting point"}</small></div>
+        <div className="goal-heading-result"><strong>{progress.current ?? "—"} <span>/ {progress.target || "—"} {goal.measure?.unit ?? goal.unit ?? "milestones"}</span></strong><small>{progress.observedAt ? `${goal.measure || goal.kind === "learning" ? "Reported outcome" : "Milestone status"} · ${formatDate(progress.observedAt)}` : "Saved starting point"}</small></div>
         <details className="goal-options">
           <summary aria-label="Goal options">
             <Settings2 size={18} />

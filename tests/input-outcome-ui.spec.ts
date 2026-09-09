@@ -35,7 +35,7 @@ async function example(page: Page) {
 test("goal attainment has a full-horizon fan and its measured input evidence, separate from adherence", async ({ page }) => {
   const data = await example(page);
   await page.goto("/app/goals/reading");
-  await page.getByRole("button", { name: /How this is estimated/ }).click();
+  await page.getByRole("button", { name: /How this is estimated|Why no estimate yet/ }).click();
   const chart = page.getByRole("region", { name: "Goal timeline for Read 30 books" });
   await expect(chart).toContainText("1 / 30 books");
   await expect(chart.getByRole("heading", { name: "Read 30 books" })).toBeVisible();
@@ -69,13 +69,13 @@ test("tracking follows the projection driver and remains visible without a numer
   adaptive.steps.unshift({ ...structuredClone(adaptive.steps[0]), id: "reading-note", title: "Note one idea", measure: { id: "ideas", label: "Ideas noted", unit: "ideas", target: 1 } });
   await seedCoaching(page, data);
   await page.goto("/app/goals/reading");
-  await page.getByRole("button", { name: /How this is estimated/ }).click();
+  await page.getByRole("button", { name: /How this is estimated|Why no estimate yet/ }).click();
   await expect(page.locator(".projection-tracking")).toContainText("Pages read (pages)");
   await expect(page.locator(".projection-tracking")).not.toContainText("Ideas noted");
   adaptive.projection!.inputMetric = "hours";
   await seedCoaching(page, data);
   await page.reload();
-  await page.getByRole("button", { name: /How this is estimated/ }).click();
+  await page.getByRole("button", { name: /How this is estimated|Why no estimate yet/ }).click();
   await expect(page.locator(".projection-tracking")).toContainText("Reported work time (hours)");
   adaptive.steps.shift();
   delete adaptive.projection;

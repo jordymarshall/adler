@@ -285,7 +285,7 @@ export function currentProgram(data: Data) {
 }
 export function startGoal(data: Data, goalId: string) {
   const goal = data.goals.find((g) => g.id === goalId);
-  if (!goal || goal.status !== "Draft") return;
+  if (!goal || goal.status !== "Draft" || !currentPlan(goal).action.trim()) return;
   if (planNeedsReview(data, goal)) throw new Error("This plan relies on corrected evidence. Review the update in Check-in before starting, or edit the plan to reflect your choice.");
   goal.status = "Active";
   goal.startDate = dateInZone(data.timeZone);

@@ -18,7 +18,7 @@ test("input lines distinguish zero from unknown and keep reports selectable", as
   await page.goto("/app/goals/essay");
   const chart = page.locator(".goal-action-canvas .goal-input-chart");
   await expect(chart.getByRole("img")).toHaveAccessibleName(/Outline points over time/);
-  await expect(chart.locator("circle title")).toHaveText([
+  await expect(chart.locator("circle:not(.input-planned-point) title")).toHaveText([
     /5 points reported/, /0 points reported/, /5 points reported/,
   ]);
   await expect(chart.locator(".input-unknown")).not.toHaveCount(0);

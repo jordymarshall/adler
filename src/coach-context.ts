@@ -29,6 +29,17 @@ export function coachingContext(
   const goal = data.goals.find((g) => g.id === goalId);
   const goals = data.goals.filter((g) => g.status === "Active");
   const actions = data.actions.slice(-60);
+  const messages = data.messages.filter(message => conversationId ? message.conversationId === conversationId : goalId === "general" || message.goalId === goalId);
+  const recentMessages = messages.slice(-12);
+  const earlierReports = messages.slice(0, -12).filter(message =>
+    message.role === "user" && message.channel !== "job" && (!message.origin || message.origin === "user"));
+  // Keep the latest contiguous set of personal reports within a separate budget.
+  // Never pin an opening request while omitting a later correction to it.
+  let historyBudget = 24000, first = earlierReports.length;
+  while (first > 0 && earlierReports.length - first < 60 && earlierReports[first - 1].text.length <= historyBudget) {
+    historyBudget -= earlierReports[--first].text.length;
+  }
+  const conversation = [...earlierReports.slice(first), ...recentMessages];
   const confirmedContext = data.memories.filter(memory => !(data.evidenceCorrections ?? []).some(correction => correction.active && correction.source.id === memory.id));
   const blocks = data.workBlocks.filter(
     (b) =>
@@ -144,14 +155,9 @@ export function coachingContext(
     previousDecisions: data.decisions
       .filter((d) => goalId === "general" || d.goalId === goalId)
       .slice(-5),
-    conversation: data.messages
-      .filter((m) =>
-        conversationId
-          ? m.conversationId === conversationId
-          : goalId === "general" || m.goalId === goalId,
-      )
-      .slice(-12)
+    conversation: conversation
       .map((m) => ({ id: m.id, goalId: m.goalId, role: m.role, origin: m.origin ?? (m.channel === "job" ? "connected" : m.role === "user" ? "user" : "system"), channel: m.channel, text: m.text, at: m.at })),
+    conversationHistory: { omittedUserMessages: first, instruction: "Saved goal definitions and later explicit corrections take precedence over historical requests. If older reports are omitted, do not reconstruct or replace missing goal intent; use the saved goal or ask a focused clarification when necessary." },
     checks,
   };
 }

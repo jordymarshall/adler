@@ -381,6 +381,8 @@ export function validateWorkspace(input: unknown, previous?: Data): Data {
     )
       throw new Error("Check the sprint dates and work hours.");
   for (const goal of data.goals) {
+    if (goal.status === "Active" && !goal.plans.at(-1)!.action.trim())
+      throw new Error("Choose a first action before starting this goal's plan.");
     for (const list of [goal.milestones, goal.results, goal.checkpoints ?? []])
       if (new Set(list.map((m) => m.id)).size !== list.length)
         throw new Error("Goal records need unique IDs.");
@@ -435,8 +437,12 @@ export function createGoal(
     throw new Error("Choose today or a future target date for a new goal.");
   if (input.baselineDate && input.baselineDate > today)
     throw new Error("The starting observation cannot be in the future.");
+  const goalOnly = !input.action.trim() && !input.adaptive;
+  if (goalOnly && (input.status !== "Draft" || input.criterion || input.timing || input.basis || input.durationMinutes || input.actionDate))
+    throw new Error("A goal without chosen work must stay a draft, without action details or coaching rationale.");
   const practice = !input.targetDate && input.adaptive?.steps.some(s => s.type === "behavior") && !input.milestones.length && !input.measure;
-  if (!practice && !input.measure && input.kind !== "learning" && !input.milestones.length)
+  const unmeasured = goalOnly && !input.measure && !input.milestones.length;
+  if (!goalOnly && !practice && !input.measure && input.kind !== "learning" && !input.milestones.length)
     throw new Error("Choose an outcome measure or a verifiable deliverable.");
   if (input.deadline === "none" && input.targetDate)
     throw new Error("Use an empty targetDate when the goal has no deadline.");
@@ -454,12 +460,12 @@ export function createGoal(
     startDate: today,
     ...(input.targetDate ? { targetDate: input.targetDate } : {}),
     deadline: input.deadline ?? (input.targetDate ? "preferred" : "none"),
-    target: practice ? undefined : input.measure
+    target: practice || unmeasured ? undefined : input.measure
       ? input.measure.target
       : input.kind === "learning"
         ? input.assessmentTarget
         : input.milestones.length,
-    unit: practice ? undefined : input.measure
+    unit: practice || unmeasured ? undefined : input.measure
       ? input.measure.unit
       : input.kind === "learning"
         ? "correct answers / 10"
@@ -483,7 +489,7 @@ export function createGoal(
     ],
     results: [],
   };
-  goal.checkpoints = input.targetDate ? [
+  goal.checkpoints = input.targetDate && goal.target !== undefined ? [
     {
       id: crypto.randomUUID(),
       date: input.targetDate,
@@ -491,7 +497,7 @@ export function createGoal(
       label: "Target result",
     },
   ] : [];
-  const baseline = practice ? null : input.measure
+  const baseline = practice || unmeasured ? null : input.measure
     ? input.measure.baseline
     : input.kind === "learning"
       ? input.baseline
@@ -528,14 +534,14 @@ export function createGoal(
     history: [],
   };
   if (input.adaptive) materializePlan(data, goal, today);
-  else data.actions.push(action);
+  else if (!goalOnly) data.actions.push(action);
   if (!data.programs.at(-1)!.focusGoalId)
     data.programs.push({
       ...data.programs.at(-1)!,
       version: data.programs.at(-1)!.version + 1,
       date: today,
       focusGoalId: goal.id,
-      sprintResult: input.action,
+      sprintResult: input.action || input.title,
       reason: "Set the first goal as the program focus.",
     });
   return goal;

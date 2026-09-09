@@ -45,6 +45,7 @@ export function GoalOverview({
     navigate(`/app/check-in?goal=${goal.id}${text ? `&prompt=${encodeURIComponent(text)}` : ""}`);
   }
   if (goal.status === "Draft" && planNeedsReview(data, goal)) return <section className="next-step-card panel"><span className="section-kicker">YOUR CONTEXT CHANGED</span><h2>Let’s update the first step.</h2><p>This suggestion relies on something you corrected. Adler can help adjust it before you begin.</p><Link className="button primary" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Please update this draft using my corrected context before I start.")}`}>Review in Check-in →</Link></section>;
+  if (!plan.action.trim()) return <section className="next-step-card panel"><span className="section-kicker">GOAL SAVED</span><h2>Choose your first action.</h2><p>Your outcome and target are saved. Work out the next useful step with your coach.</p><Link className="button primary" to={`/app/check-in?goal=${goal.id}&prompt=${encodeURIComponent("Help me choose the first useful work for this saved goal; keep its outcome and target.")}`}>Plan first action →</Link></section>;
   const pending = savedPending();
   if (pending?.goalId === goal.id)
     return (

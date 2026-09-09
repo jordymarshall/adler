@@ -94,9 +94,9 @@ Every write respects current revisions and stable request identity. Equivalent r
 
 ### 4.1 Work backward without inventing expertise
 
-Establish the user's outcome and chosen work. Identify a controllable behaviour or a needed clarification about that work. Select behavioural support for execution, learning or opportunity. Keep the uncertain connection to the ultimate result visible.
+Establish and save the user's outcome and horizon before requiring chosen work. A factual unplanned draft needs no invented action, milestone, measurement or scientific rationale; the shared semantic review still checks its fidelity. Continue developing the same goal. Identify a controllable behaviour or a needed clarification about that work. Select behavioural support for execution, learning or opportunity. Keep the uncertain connection to the ultimate result visible.
 
-If the user wants revenue but has not chosen an approach, ask what work they intend to pursue or help define a learning objective. The coach's behavioural research does not determine acquisition channels, rocket design, professional strategy or an optimal revenue-producing quota.
+If the user wants revenue but has not chosen an approach, retain the revenue goal and ask only what changes the next useful support. Do not gate saving it on ad platforms, budgets or a complete business strategy. The coach's behavioural research does not determine acquisition channels, rocket design, professional strategy or an optimal revenue-producing quota. Milestones group chosen actions around verifiable intermediate finishes; they do not replace the goal. Experiments respond to an observation and useful uncertainty, rather than appearing automatically with every new goal.
 
 Choose action size based on meaningful output, actual opportunity, necessary duration, dependencies, prior reports and available capacity across goals. A task must remain worth doing. A fallback that raises completion while reducing meaningful work is not automatically an improvement. Structural change, maintaining a practice and developing a skill can require different supports.
 

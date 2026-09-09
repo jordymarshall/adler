@@ -44,14 +44,23 @@ export function reportedInput(action: Action, metric: ReturnType<typeof inputMea
   return action.outcome === "Done" ? 1 : null;
 }
 
+// Milestone membership belongs to the plan that created the occurrence.
+export function planActionRecords(data: Data, goal: Goal, plan: Plan, stepId?: string, milestoneId?: string) {
+  const historical = plan.version !== goal.plans.at(-1)!.version;
+  return data.actions.filter(action => action.goalId === goal.id && action.stepId === stepId && action.planVersion <= plan.version &&
+    (stepId !== undefined || action.planVersion === plan.version) &&
+    (historical || !action.retiredAt || action.outcome) && (!milestoneId || goal.plans.find(version => version.version === action.planVersion)?.adaptive?.steps.find(step => step.id === action.stepId)?.milestoneId === milestoneId))
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
 // Quantities remain tied to the action's saved measurement, including after edits.
-export function actionSeries(data: Data, goal: Goal, plan: Plan, stepId: string | undefined, start: string, end: string, today: string) {
+export function actionSeries(data: Data, goal: Goal, plan: Plan, stepId: string | undefined, start: string, end: string, today: string, milestoneId?: string) {
   const measure = inputMeasure(plan, stepId);
   const step = plan.adaptive?.steps.find(step => step.id === stepId);
-  const historical = plan.version !== goal.plans.at(-1)!.version;
-  const records = data.actions.filter(action => action.goalId === goal.id && action.stepId === stepId && action.planVersion <= plan.version && (historical || !action.retiredAt || action.outcome));
+  const records = planActionRecords(data, goal, plan, stepId, milestoneId);
   const comparable = (version: Plan) => {
     const prior = version.adaptive?.steps.find(item => item.id === stepId);
+    if (milestoneId && prior?.milestoneId !== milestoneId) return false;
     if (measure.metric === "completion") return version.version === plan.version;
     if (measure.metric === "hours") return prior?.title === step?.title && prior?.criterion === step?.criterion;
     return step ? prior?.measure?.id === step.measure?.id && prior?.measure?.unit === step.measure?.unit

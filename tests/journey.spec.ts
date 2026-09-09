@@ -36,7 +36,7 @@ test("one first goal starts locally and hands off checking in to shared Coach", 
   await page.getByRole("button", { name: "Review my plan" }).click();
   await page.getByRole("button", { name: "Save plan", exact: true }).click();
   await expect(
-    page.locator(".next-step-card .button.primary:visible"),
+    page.locator(".selected-action .button.primary:visible"),
   ).toHaveCount(1);
   await expect(
     page.getByRole("navigation", { name: "Goal views" }),
@@ -45,17 +45,13 @@ test("one first goal starts locally and hands off checking in to shared Coach", 
     page.getByRole("heading", { name: "Milestones", exact: true }),
   ).not.toBeVisible();
   await page.getByRole("button", { name: "Start plan", exact: true }).click();
-  await expect(page.locator('[data-phase="schedule"]')).toBeVisible();
-  await page
-    .getByRole("button", { name: "I’ll do it now", exact: true })
-    .click();
-  await expect(page.locator('[data-phase="working"]')).toBeVisible();
-  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
+  await expect(page.getByRole("button", { name: "Done", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: /Discuss with Coach/ }).click();
   await expect(page).toHaveURL(/\/app\/check-in/);
   await expect(page.getByLabel("Message Adler")).toContainText("Sketch three thumbnails");
   const { data } = await snapshot(page);
   expect(data.actions).toHaveLength(1);
-  expect(data.actions[0].startedAt).toBeTruthy();
+  expect(data.actions[0].startedAt).toBeUndefined();
   expect(data.actions[0].outcome).toBeUndefined();
   expect(data.goals[0].results.at(-1)?.value).toBe(0);
 });
@@ -69,6 +65,7 @@ test("scheduling stays with the action and ends at a clear stopping point", asyn
   state.data.goals[0].plans[0].durationMinutes = 35;
   await save(page, state.data, state.revision);
   await page.goto("/app/goals/essays");
+  await page.getByRole("button", { name: "Add to calendar", exact: true }).click();
   await expect(page.locator(".inline-scheduler")).toBeVisible();
   await expect(
     page.getByRole("combobox", { name: "Book in" }),
@@ -82,9 +79,8 @@ test("scheduling stays with the action and ends at a clear stopping point", asyn
   await page.getByLabel("Start time", { exact: true }).fill("10:00");
   await page.getByRole("button", { name: "Use this time" }).click();
   await page.getByRole("button", { name: "Save time", exact: true }).click();
-  await expect(page.locator('[data-phase="waiting"]')).toContainText(
-    "You can leave things here",
-  );
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Scheduled");
   await synced(page);
   const { data } = await snapshot(page);
   expect(data.actions).toHaveLength(1);
@@ -132,9 +128,8 @@ test("evidence is disclosed on request and action observations stay separate fro
     "https://europepmc.org/article/MED/26479070",
   );
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Start action", exact: true }).click();
   await coachReply(page, [{ entity: "action", operation: "update", id: state.data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 4 }) }]);
-  await page.locator(".next-step-card").getByRole("link", { name: "Continue in Check-in" }).click();
+  await page.getByRole("link", { name: /Discuss with Coach/ }).click();
   await page.getByLabel("Message Adler").fill("Done today, four outline points.");
   await page.getByRole("button", { name: "Send message" }).click();
   await expect(page.locator(".coach-thread")).toContainText("Your update is saved.");
@@ -574,6 +569,7 @@ for (const finish of ["retry", "dismiss"] as const)
       });
     });
     await page.goto("/app/goals/essays");
+    await page.getByRole("button", { name: "Add to calendar", exact: true }).click();
     await page.getByText("Calendar options", { exact: true }).click();
     await page
       .getByRole("combobox", { name: "Book in", exact: true })
@@ -610,7 +606,8 @@ for (const finish of ["retry", "dismiss"] as const)
         })
         .click();
     }
-    await expect(page.locator('[data-phase="checkin"]')).toBeVisible();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Done", exact: true })).toBeVisible();
     const saved = (await snapshot(page)).data;
     expect(saved.workBlocks).toHaveLength(1);
     expect(saved.actions).toHaveLength(1);
@@ -660,7 +657,7 @@ test("calendar day selection books that day and a block opens its own action", a
   await page.locator(".calendar-entry.entry-work button").click();
   await page.getByRole("dialog").getByRole("link", { name: /↗/ }).click();
   await expect(page).toHaveURL(new RegExp(`action=${original.id}`));
-  await expect(page.locator('[data-phase="waiting"]')).toContainText(
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText(
     original.title,
   );
 });
@@ -698,11 +695,7 @@ test("a change discussed in shared Coach updates the next step", async ({
     });
   });
   await page.goto("/app/goals/essays");
-  await page.getByText("Something doesn’t fit?", { exact: true }).click();
-  await page
-    .locator(".step-options")
-    .getByRole("button", { name: "Ask Adler", exact: true })
-    .click();
+  await page.getByRole("link", { name: /Discuss with Coach/ }).click();
   await page
     .locator(".focused-coach")
     .getByLabel("Message Adler")
@@ -710,11 +703,11 @@ test("a change discussed in shared Coach updates the next step", async ({
   await page.getByRole("button", { name: "Send message", exact: true }).click();
   await expect.poll(async () => (await snapshot(page)).data.actions[0].title).toBe("Draft three main points");
   await page.goto("/app/goals/essays");
-  await expect(page.locator('[data-phase="ready"]')).toContainText(
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText(
     "Draft three main points",
   );
   await expect(
-    page.getByRole("button", { name: "Start action", exact: true }),
+    page.getByRole("button", { name: "Done", exact: true }),
   ).toBeVisible();
 });
 

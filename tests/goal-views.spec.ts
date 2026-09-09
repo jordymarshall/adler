@@ -7,6 +7,10 @@ import { dateInZone } from "../shared/journey";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture";
 import { basis } from "./planning-fixture";
 import type { Data } from "../shared/workspace";
+import { initialData } from "../shared/workspace";
+import { createGoal } from "../shared/validation";
+import { materializePlan } from "../shared/adaptive-plan";
+import { addDays } from "../shared/journey";
 
 async function example(page: Page) {
   await register(page);
@@ -92,8 +96,8 @@ test("reasoning and projections open from the same goal, while historical select
   await expect(page.getByRole("dialog").locator(".learning-record > summary")).toContainText("Paused");
   await page.keyboard.press("Escape");
   await page.locator(".goal-plan-journey > li").first().getByRole("button").click();
-  await expect(page.locator(".action-canvas-heading")).toContainText("EARLIER APPROACH");
-  await expect(page.getByRole("button", { name: "Edit plan", exact: true })).toHaveCount(0);
+  await expect(page.locator(".action-canvas-heading")).toContainText("EARLIER PLAN");
+  await expect(page.getByRole("button", { name: "Edit action", exact: true })).toHaveCount(0);
 });
 
 test("one-day goals do not invent recurring graphs, experiments or milestone forecasts", async ({ page }) => {
@@ -108,6 +112,7 @@ test("one-day goals do not invent recurring graphs, experiments or milestone for
   await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.locator(".goal-action-canvas .goal-input-chart")).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Actions on the timeline" })).toBeVisible();
   await expect(page.locator(".outcome-projected")).toHaveCount(0);
   await expect(page.locator(".experiment-strip")).toHaveCount(0);
   await page.getByRole("button", { name: "Done", exact: true }).click();
@@ -118,6 +123,133 @@ test("one-day goals do not invent recurring graphs, experiments or milestone for
   expect(state.goals[0].milestones[0].done).toBe(false);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+});
+
+test("a fresh draft exposes every milestone and its dated actions without a forecast or fabricated history", async ({ page }) => {
+  await register(page);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const today = dateInZone("UTC"), plan = adaptiveFixture(today, addDays(today, 6));
+  delete plan.experiment;
+  delete plan.reasoning;
+  plan.steps[0].type = "task";
+  plan.steps[0].milestoneId = "draft";
+  delete plan.steps[0].recurrence;
+  delete plan.steps[0].measure;
+  plan.steps.push({ id: "proofread", type: "task", title: "Proofread my draft", criterion: "My draft is checked", cue: "At my desk", reason: "My chosen work", durationMinutes: 15, scheduledDate: addDays(today, 2), milestoneId: "publish", dependsOn: [] });
+  const data = adaptiveWorkspace();
+  const goal = data.goals[0];
+  goal.status = "Draft";
+  goal.target = 3;
+  goal.milestones = [{ id: "draft", title: "Draft ready", criterion: "A full draft exists", done: false, dueDate: addDays(today, 1) }, { id: "publish", title: "Essay published", criterion: "A public URL", done: false }, { id: "share", title: "Essay shared", criterion: "Sent to the people I chose", done: false }];
+  goal.plans[0].adaptive = plan;
+  data.actions = [];
+  materializePlan(data, goal, today);
+  await seedCoaching(page, data);
+  await page.goto("/app/goals/essay");
+  const milestones = page.getByRole("navigation", { name: "Milestones" });
+  await expect(milestones.getByRole("button", { name: /Milestone 1.*Draft ready/ })).toBeVisible();
+  await expect(milestones.getByRole("button", { name: /Milestone 2.*Essay published/ })).toBeVisible();
+  await expect(milestones.getByRole("button", { name: /Milestone 3.*Essay shared/ })).toBeVisible();
+  const label = await milestones.getByText("Plan milestones", { exact: true }).boundingBox();
+  const firstMilestone = await milestones.getByRole("button", { name: /Milestone 1.*Draft ready/ }).boundingBox();
+  expect(label!.y + label!.height).toBeLessThan(firstMilestone!.y);
+  const timeline = page.getByRole("region", { name: "Actions on the timeline" });
+  await expect(timeline).toContainText("Draft five outline points");
+  await expect(page.getByRole("button", { name: /Why no estimate yet/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /How this is estimated/ })).toHaveCount(0);
+  await expect(page.locator(".goal-workspace-view")).not.toContainText("Current approach");
+  await expect(page.locator(".outcome-projected")).toHaveCount(0);
+  expect((await timeline.boundingBox())!.y).toBeLessThan(850);
+  await page.screenshot({ path: ".context/goal-structure-draft.png", fullPage: true });
+  await milestones.getByRole("button", { name: /Milestone 2.*Essay published/ }).click();
+  await expect(timeline).toContainText("Proofread my draft");
+  await expect(timeline).not.toContainText("Draft five outline points");
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Proofread my draft");
+  await page.getByRole("button", { name: "Start plan", exact: true }).click();
+  await synced(page);
+  await expect(page.getByRole("button", { name: "Start plan", exact: true })).toHaveCount(0);
+  expect((await snapshot(page)).data.goals[0].milestones.every(milestone => !milestone.done)).toBe(true);
+  await milestones.getByRole("button", { name: /Milestone 3.*Essay shared/ }).click();
+  await expect(page.locator(".goal-action-canvas")).toContainText("No actions are linked to this milestone yet");
+  await expect(page.getByRole("region", { name: "Selected action" })).toHaveCount(0);
+  await milestones.getByRole("button", { name: "All actions", exact: true }).click();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+  await page.screenshot({ path: ".context/goal-structure-tasks-mobile.png", fullPage: true });
+});
+
+test("an unplanned goal keeps its outcome and deadline visible without a fake action or Start plan control", async ({ page }) => {
+  await register(page);
+  const data = initialData(), today = dateInZone(data.timeZone);
+  createGoal(data, { title: "Make $100k in my side business", kind: "project", why: "", success: "Earn $100k within one year", status: "Draft", area: "Career", tags: [], targetDate: addDays(today, 365), measure: { label: "Revenue", unit: "dollars", target: 100000, baseline: null }, milestones: [], action: "", criterion: "", timing: "", assessmentTarget: 8, baseline: null }, today, "revenue");
+  await seedCoaching(page, data);
+  await page.goto("/app/goals/revenue");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Make $100k");
+  await expect(page.locator(".goal-target-date")).toContainText("Target");
+  await expect(page.getByRole("link", { name: /Plan first action/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Start plan", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Previous two weeks" })).toHaveCount(0);
+  await expect(page.locator(".experiment-strip")).toHaveCount(0);
+  await page.getByRole("link", { name: /Plan first action/ }).click();
+  await expect(page.getByLabel("Message Adler")).toContainText("Keep my outcome and deadline");
+});
+
+test("milestone selection and old action links preserve attribution and retired one-time work", async ({ page }) => {
+  await register(page);
+  const today = dateInZone("UTC"), start = addDays(today, -2), plan = adaptiveFixture(start, today);
+  delete plan.experiment;
+  delete plan.reasoning;
+  plan.steps[0].type = "task";
+  plan.steps[0].milestoneId = "draft";
+  delete plan.steps[0].recurrence;
+  delete plan.steps[0].measure;
+  plan.steps.push({ id: "ask", type: "task", title: "Ask for outline feedback", criterion: "Send my outline", cue: "At my desk", reason: "My chosen work", durationMinutes: 10, scheduledDate: addDays(today, -1), milestoneId: "draft", dependsOn: [] });
+  const data = adaptiveWorkspace(plan), goal = data.goals[0];
+  goal.target = 2;
+  goal.startDate = start;
+  goal.milestones = [{ id: "draft", title: "Draft ready", criterion: "A full draft exists", done: true }, { id: "publish", title: "Essay published", criterion: "A public URL", done: false }];
+  goal.plans[0].date = start;
+  const originalAction = data.actions[0];
+  originalAction.outcome = "Done";
+  data.actions.find(action => action.stepId === "ask")!.retiredAt = today;
+  const next = structuredClone(goal.plans[0]);
+  next.version = 2;
+  next.date = today;
+  next.adaptive!.window.start = today;
+  next.adaptive!.steps = [next.adaptive!.steps[0]];
+  next.adaptive!.steps[0].milestoneId = "publish";
+  next.adaptive!.steps[0].scheduledDate = today;
+  goal.plans.push(next);
+  materializePlan(data, goal, today);
+  await seedCoaching(page, data);
+  await page.goto("/app/goals/essay");
+  const timeline = page.getByRole("region", { name: "Actions on the timeline" });
+  await expect(timeline.getByRole("button", { name: /, Done$/ })).toHaveCount(0);
+  await page.getByRole("navigation", { name: "Milestones" }).getByRole("button", { name: /Milestone 1.*Draft ready/ }).click();
+  await expect(timeline.getByRole("button", { name: /, Done$/ })).toHaveCount(1);
+  await expect(timeline.getByRole("button", { name: /Ask for outline feedback,.*, retired/ })).toBeVisible();
+  await timeline.getByRole("button", { name: /Ask for outline feedback,.*, retired/ }).click();
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Retired");
+  await expect(page.getByRole("button", { name: "Done", exact: true })).toHaveCount(0);
+  await page.goto(`/app/goals/essay?action=${originalAction.id}`);
+  await expect(page.locator(".action-canvas-heading")).toContainText("EARLIER PLAN");
+  await expect(page.getByRole("navigation", { name: "Milestones" }).getByRole("button", { name: /Milestone 1.*Draft ready/ })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Done");
+});
+
+test("a recovered booking selects its actual recurring occurrence instead of today's action", async ({ page }) => {
+  await register(page);
+  const today = dateInZone("UTC"), data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
+  const pending = data.actions.at(-1)!;
+  await seedCoaching(page, data);
+  await page.goto("/app/goals");
+  await page.evaluate(booking => sessionStorage.setItem("adler-pending-booking", JSON.stringify(booking)), { id: pending.id, goalId: pending.goalId, provider: "google", calendarId: "primary", conflictIds: ["primary"], title: pending.title, start: `${pending.date}T10:00:00Z`, end: `${pending.date}T10:25:00Z`, checkIn: false });
+  await page.goto("/app/goals/essay");
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Retry confirmation" })).toBeVisible();
+  await page.getByRole("dialog").getByText("Booking details", { exact: true }).click();
+  await page.getByRole("button", { name: "I checked my calendar · close this booking", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Selected action" }).getByRole("link", { name: /Discuss with Coach/ })).toHaveAttribute("href", new RegExp(`action=${pending.id}`));
 });
 
 test("calendar and manual edits apply to the selected action and retain the original reasoning in history", async ({ page }) => {
@@ -131,12 +263,12 @@ test("calendar and manual edits apply to the selected action and retain the orig
   await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.getByRole("button", { name: "Add to calendar", exact: true })).toHaveCount(0);
-  await page.getByLabel("Action in this plan").selectOption("peer-review");
+  await page.getByRole("button", { name: "One-time action Ask for feedback on the outline" }).click();
   await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Ask for feedback on the outline");
   await page.getByRole("button", { name: "Add to calendar", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("Ask for feedback on the outline");
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Edit plan", exact: true }).click();
+  await page.getByRole("button", { name: "Edit action", exact: true }).click();
   await expect(page.getByLabel("Next action", { exact: true })).toHaveValue("Ask for feedback on the outline");
   await page.getByLabel("Timing or cue").fill("At a quiet desk");
   await page.getByRole("button", { name: "Save plan", exact: true }).click();

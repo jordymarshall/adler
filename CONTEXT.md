@@ -8,6 +8,8 @@ Adler helps people pursue their own goals through feasible actions, research-inf
 
 **Plan**: The organized work toward a goal, expressed through milestones and contributing actions. An ongoing action can continue across milestones. The plan evolves as the coach and person learn what fits and what produces useful results.
 
+An **unplanned draft** saves the user's goal and horizon while work is still undecided. Its initial plan version can contain no action; this does not mean a plan is ready or started. Unknown work, milestones and measurements are not filled with placeholders.
+
 **Milestone**: An intermediate stage in a goal's plan that groups contributing actions and has its own success criterion. That criterion can be the work itself or a result supported by the work.
 
 **Action**: A piece of work the person can perform within a goal's plan. An ongoing action retains its identity and learning history across milestones, with its dated work linked to the milestone it contributes to. Its quantity and reported completion remain distinct from the outcome it is intended to support.

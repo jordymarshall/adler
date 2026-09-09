@@ -203,3 +203,56 @@
 .action-cell.retired { color: var(--muted); background: var(--bg); border-style: dashed; }
 
 .capacity-scale { display: flex; justify-content: space-between; gap: 12px; font-size: 10px; color: var(--muted); margin: 8px 0 14px; }
+
+.goal-page-heading.journey-goal-heading { margin-block: 10px 20px; }
+.goal-page-heading.journey-goal-heading > div:nth-child(2) { flex: 2; }
+.goal-milestone-nav { display: block; padding: 0 24px 18px; min-height: 0; }
+.milestone-nav-label { display: flex; justify-content: space-between; gap: 16px; font-size: 11px; margin-bottom: 14px; }
+.milestone-nav-label > span { font-weight: 650; }
+.goal-milestone-nav ol { display: flex; list-style: none; padding: 0; margin: 0; gap: 0; overflow-x: auto; }
+.goal-milestone-nav li { flex: 1 0 150px; max-width: 240px; position: relative; padding-top: 7px; }
+.goal-milestone-nav li::before { content: ""; position: absolute; left: 24px; right: 0; top: 20px; border-top: 1px solid var(--line); }
+.goal-milestone-nav li:last-child::before { display: none; }
+.goal-milestone-nav li button { border: 0; background: transparent; text-align: left; color: var(--ink); display: grid; gap: 6px; padding: 0 14px 10px 0; width: 100%; }
+.milestone-node { display: grid; place-items: center; width: 27px; height: 27px; border: 1px solid #8b9587; border-radius: 50%; background: var(--paper); z-index: 1; font-size: 11px; }
+.goal-milestone-nav .selected .milestone-node { background: var(--green); color: var(--paper); box-shadow: 0 0 0 4px var(--sage); }
+.goal-milestone-nav .complete .milestone-node { background: var(--sage); }
+.goal-milestone-nav li small, .goal-milestone-nav li button > span:last-child { font-size: 10px; color: var(--muted); }
+.goal-milestone-nav li strong { font-size: 13px; line-height: 1.4; }
+.milestone-finish { display: flex; gap: 12px; align-items: baseline; padding: 12px 24px; background: var(--bg); font-size: 12px; border-top: 1px solid var(--line); }
+.milestone-finish small { font-size: 10px; flex: none; }
+.unplanned-goal { padding: 20px 24px; border-top: 1px solid var(--line); }
+.unplanned-goal p { font-size: 13px; line-height: 1.5; }
+.unplanned-goal .button { font-size: 12px; }
+.action-finish { font-size: 11px; margin: 0 0 14px; }
+.action-finish p { line-height: 1.5; }
+.plan-timeline-scroll { overflow-x: auto; }
+.plan-action-timeline { padding: 20px 24px 8px; min-width: 560px; }
+.plan-timeline-mark.retired { color: var(--muted); background: var(--bg); border-style: dashed; }
+.plan-timeline-axis, .plan-timeline-row { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 22px; }
+.plan-timeline-axis { font-size: 10px; color: var(--muted); margin-bottom: 6px; padding-right: 14px; }
+.plan-timeline-axis > div { position: relative; height: 20px; }
+.plan-timeline-axis time { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.plan-timeline-axis time:first-child { transform: none; }
+.plan-timeline-axis time:last-child { transform: translateX(-100%); }
+.plan-timeline-row { border-top: 1px solid var(--line); min-height: 70px; padding: 8px 14px 8px 0; }
+.plan-timeline-row.selected { background: var(--bg); }
+.plan-timeline-action { background: none; border: 0; padding: 8px; text-align: left; display: grid; gap: 5px; color: var(--ink); }
+.plan-timeline-action small { font-size: 10px; color: var(--muted); }
+.plan-timeline-action strong { font-size: 13px; line-height: 1.35; }
+.plan-timeline-track { position: relative; align-self: stretch; margin-inline: 10px; }
+.plan-timeline-track::before { content: ""; position: absolute; top: 50%; inset-inline: 0; border-top: 1px solid var(--line); }
+.plan-timeline-mark { position: absolute; top: 50%; transform: translate(-50%, -50%); height: 30px; min-width: 30px; border: 1px solid #9ba790; border-radius: 6px; color: var(--ink); background: var(--paper); z-index: 1; }
+.plan-timeline-mark.done { background: var(--green); color: var(--paper); }
+.plan-timeline-mark.partial { background: var(--sage); }
+.plan-timeline-today { position: absolute; top: -10px; bottom: -10px; border-left: 1px dashed #778eac; }
+.plan-timeline-key { display: flex; gap: 14px; flex-wrap: wrap; font-size: 10px; color: var(--muted); padding: 14px 0; }
+.timeline-outside { position: absolute; top: 50%; transform: translateY(-50%); padding: 6px; background: var(--paper); border: 0; font-size: 11px; color: var(--ink); }
+.input-planned-point { fill: var(--paper); stroke: #8f9b8b; stroke-width: 1.5; }
+@media (max-width: 550px) {
+  .goal-milestone-nav { padding: 0 16px 14px; }
+  .goal-milestone-nav li { flex-basis: 145px; }
+  .milestone-finish { padding: 12px 16px; flex-wrap: wrap; gap: 5px; }
+  .unplanned-goal { padding: 18px 16px; }
+  .plan-action-timeline { padding-inline: 12px; }
+}

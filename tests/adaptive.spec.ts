@@ -13,10 +13,10 @@ test("one goal screen connects the approach, behavior, check-in, timeline, and c
   await seedCoaching(page, data);
   await page.goto("/app/goals/essay");
   await expect(page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Check-in", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "How the plan is evolving", exact: true })).toBeVisible();
-  await expect(page.locator(".action-canvas-heading")).toContainText("Outline experiment");
+  await expect(page.getByRole("heading", { name: "Learning history", exact: true })).toBeVisible();
+  await expect(page.locator(".action-canvas-heading")).toContainText("Current cycle");
   await expect(page.getByRole("group", { name: "Dated action reports" }).getByRole("button")).toHaveCount(3);
-  await expect(page.getByRole("region", { name: "Milestone and goal outlook" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Milestones" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Inspect reasoning/ })).toBeVisible();
   await coachReply(page, [{ entity: "action", operation: "update", id: data.actions[0].id, parentId: null, values: JSON.stringify({ outcome: "Done", amount: 5 }) }]);
   await page.getByRole("link", { name: /Discuss with Coach/ }).click();
@@ -54,7 +54,7 @@ test("a legacy goal previews and accepts an upgrade on its existing screen", asy
   await expect(page.locator(".plan-adaptation")).toContainText("What we’re testing");
   expect((await snapshot(page)).data.goals[0].plans).toHaveLength(1);
   await page.getByRole("button", { name: "Accept updated plan", exact: true }).click();
-  await expect(page.locator(".action-canvas-heading")).toContainText("Outline experiment");
+  await expect(page.locator(".action-canvas-heading")).toContainText("Current cycle");
   const updated = await snapshot(page);
   expect(updated.data.goals[0].id).toBe("essays");
   expect(updated.data.goals[0].plans).toHaveLength(2);

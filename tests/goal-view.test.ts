@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { actionSeries, goalStreak, planExperiment } from "../shared/goal-view.ts";
+import { actionSeries, goalStreak, planExperiment, planActionRecords } from "../shared/goal-view.ts";
 import { scheduledCommitments } from "../shared/adaptive-plan.ts";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture.ts";
 import { applyPlan, recordAction } from "../shared/workspace.ts";
@@ -124,6 +124,38 @@ test("retired work is inspectable as retired in its earlier plan, not a missing 
   assert.equal(prior.points[4].scheduled, false);
   assert.equal(prior.points[4].planned, null);
   assert.equal(prior.unknown, 2);
+});
+
+test("a continuing action keeps its earlier reports with the milestone they contributed to", () => {
+  const data = adaptiveWorkspace(), goal = data.goals[0], original = goal.plans[0];
+  original.adaptive!.steps[0].milestoneId = "draft";
+  recordAction(data, data.actions[0].id, "Done", "", 5);
+  const next = structuredClone(original);
+  next.version = 2;
+  next.date = "2026-09-09";
+  next.adaptive!.steps[0].milestoneId = "publish";
+  goal.plans.push(next);
+  data.actions[1].planVersion = 2;
+  recordAction(data, data.actions[1].id, "Done", "", 3);
+  assert.equal(planActionRecords(data, goal, next, "outline", "publish").length, 1);
+  const current = actionSeries(data, goal, next, "outline", "2026-09-07", "2026-09-11", "2026-09-12", "publish");
+  assert.equal(current.reported, 3);
+  assert.equal(current.points[0].scheduled, false);
+  assert.equal(current.points[0].off, false, "Work belonging to another milestone is not a day off in this milestone");
+  assert.equal(actionSeries(data, goal, original, "outline", "2026-09-07", "2026-09-11", "2026-09-12", "draft").reported, 5);
+});
+
+test("legacy actions without stable step IDs stay with their exact saved plan", () => {
+  const data = adaptiveWorkspace(), goal = data.goals[0], original = goal.plans[0];
+  delete original.adaptive;
+  original.action = "Write outline";
+  delete data.actions[0].stepId;
+  data.actions[0].title = original.action;
+  const next = { ...original, version: 2, action: "Edit draft" };
+  goal.plans.push(next);
+  data.actions.push({ ...data.actions[0], id: "edit-draft", planVersion: 2, title: next.action });
+  assert.deepEqual(planActionRecords(data, goal, next).map(action => action.title), ["Edit draft"]);
+  assert.deepEqual(planActionRecords(data, goal, original).map(action => action.title), ["Write outline"]);
 });
 
 test("a declined intermediate learning revision does not become an earlier plan's experiment", () => {

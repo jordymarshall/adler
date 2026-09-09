@@ -79,11 +79,11 @@ test("manual goal setup saves a draft and establishes a zero baseline without sa
   expect(data.goals[0].results[0].value).toBe(0);
   expect(data.actions[0].date).toBe("");
   await page.goto(`/app/goals/${data.goals[0].id}/progress`);
-  await expect(page.getByRole("region", { name: "Milestone and goal outlook" })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Milestones" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Goal and current cycle" })).not.toContainText("Choose the first cycle");
   await expect(page.locator(".goal-action-canvas")).not.toContainText("Choose what to track");
   await expect(page.getByRole("region", { name: "Goal and current cycle" })).toContainText("Sketch three thumbnails");
-  await page.getByRole("button", { name: /How this is estimated/ }).click();
+  await page.getByRole("button", { name: /Why no estimate yet/ }).click();
   await expect(page.locator(".projection-tracking")).toContainText("Verified milestones");
   await expect(page.getByRole("navigation", { name: "Goal sections" })).toHaveCount(0);
   await page.getByRole("link", { name: "Edit tracking" }).click();
@@ -148,7 +148,7 @@ test("a learning goal records results in one chart with its own target", async (
   );
   await save(page, state.data, state.revision);
   await page.goto("/app/goals/algebra/progress");
-  await expect(page.getByRole("group", { name: "Dated action reports" })).toHaveCount(1);
+  await expect(page.getByRole("region", { name: "Actions on the timeline" })).toBeVisible();
   await expect(page.locator(".goal-heading-result")).toContainText("3 / 6");
   await expect(page.getByTestId("forecast-line")).toHaveCount(0);
   await expect(page.locator(".app-main")).not.toContainText("8/10");
