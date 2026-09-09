@@ -1,6 +1,6 @@
 # Next iteration of All Goals A and Goal C
 
-Status: accepted by the user on 8 September 2026, followed by a request for a further product and behavioural-science review before implementation. This records the next design iteration; it does not change the prototypes or production app. The borderless flame beside the title is already implemented in the prototypes. Additional recommendations are recorded separately in `docs/product-coaching-second-pass.md` and remain proposed.
+Status: accepted by the user on 8 September 2026. The subsequent product and behavioural-science review in `docs/product-coaching-second-pass.md` was also accepted. This document preserves the design brief; `INTEGRATED-PROTOTYPE.md` and `OVERVIEW-ACTIVITY.md` record the resulting prototypes. Production and remaining structural work are reconciled in `docs/product-structure-status.md`. The compact activity grid was subsequently accepted only in All Goals; its goal-detail placement was rejected.
 
 ## Direction
 

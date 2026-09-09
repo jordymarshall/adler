@@ -21,4 +21,4 @@ No new coach policy, inference or experiment was created. Missing reports and go
 
 Verified the restored goal source against the prior archive. Browser checks cover the three overview rows, 84 cells each, goal opening with zero added calendars and both original graphs, report-driven summary updates and corrections. Desktop/tablet/mobile layouts are inspected, including long outlook labels. Captures: `activity-overview-corrected-{1440|390}.png`.
 
-The placement restriction and reference treatment are explicit user direction. This corrected rendering is ready to inspect; the former Goal C calendar is rejected, and its further proposals are not an approved scope expansion. Production work remains separate.
+The placement restriction and reference treatment are explicit user direction. The user subsequently accepted this corrected rendering (“looks good”) and returned to the original structure grilling. The former Goal C calendar is rejected, and its further proposals are not an approved scope expansion. Production work remains separate.
