@@ -2,7 +2,7 @@ import { todayStep } from "../shared/next-step";
 import { Onboarding } from "./Onboarding";
 import { AppIntegrations, Integrations } from "./Integrations";
 import { Insights } from "./Insights";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Link,
   Navigate,
@@ -19,6 +19,8 @@ import {
   CircleHelp,
   MessageCircle,
   Lightbulb,
+  PanelLeftClose,
+  PanelLeftOpen,
   Settings,
   Sun,
   Target,
@@ -54,6 +56,20 @@ function ScrollReset() {
 }
 function AppShell() {
   const location = useLocation();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem("adler-sidebar-collapsed") === "true";
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("adler-sidebar-collapsed", String(sidebarCollapsed));
+    } catch {
+      // Keep the toggle usable when browser storage is unavailable.
+    }
+  }, [sidebarCollapsed]);
   const { data, user, loading, saving, saveError } = useStore();
   const viewedGoal = location.pathname.match(/\/goals\/([^/]+)/)?.[1] ?? (location.pathname === "/app/today" ? new URLSearchParams(location.search).get("goal") ?? todayStep(data).step?.goal.id : undefined);
   const focusGoal = data.goals.find(g => g.id === viewedGoal);
@@ -84,11 +100,11 @@ function AppShell() {
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
   if (!user) return <SignIn />;
   return (
-    <div className="app-shell">
+    <div className={`app-shell${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
       <a className="skip-link" href="#app-main">
         Skip to content
       </a>
-      <aside className="app-sidebar">
+      <aside id="app-sidebar" className="app-sidebar">
         <Logo />
         <span className="workspace-label">YOUR WORKSPACE</span>
         <nav aria-label="App navigation">
@@ -126,6 +142,17 @@ function AppShell() {
       <div className="app-body">
         <header className="app-topbar">
           <div className="breadcrumb">
+            <button
+              type="button"
+              className="icon-button sidebar-toggle"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!sidebarCollapsed}
+              aria-controls="app-sidebar"
+              onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+            >
+              {sidebarCollapsed ? <PanelLeftOpen size={20} aria-hidden="true" /> : <PanelLeftClose size={20} aria-hidden="true" />}
+            </button>
             <b>{label}</b>
           </div>
           <span className="sync-state" role="status">

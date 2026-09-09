@@ -1,6 +1,37 @@
 /* One goal stays in view while the plan, evidence and next decision evolve. */
-.v2-landing .journey-introduction { height: auto; min-height: 0; padding: clamp(145px, 17vh, 200px) 24px 65px; }
+.v2-landing .journey-introduction { height: auto; min-height: 0; padding: 100px 0 0; }
 .v2-landing .journey-introduction .hero-intro-v2 { position: relative; transform: none; opacity: 1; }
+.v2-landing .hero-cover { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 28px clamp(25px, 4vw, 65px); min-height: calc(100svh - 100px); padding: 30px max(40px, calc((100vw - 1280px) / 2)) 24px; background: #ddf578; color: #203e32; border-top: 1px solid #b2c866; }
+.v2-landing .hero-eyebrow { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; font-size: 11px; letter-spacing: .08em; }
+.v2-landing .hero-eyebrow > svg { margin-left: auto; }
+.v2-landing .landing-chapter-number { display: inline-grid; place-items: center; width: 30px; height: 30px; border: 1px solid currentColor; border-radius: 50%; font-size: 10px; letter-spacing: 0; }
+.v2-landing .hero-cover .hero-intro-v2 { text-align: left; padding-block: 18px 30px; }
+.v2-landing .hero-cover .hero-intro-v2 h1 { margin: 0; font-size: clamp(52px, 6.1vw, 92px); line-height: .99; letter-spacing: -.06em; text-wrap: balance; color: #203e32; }
+.v2-landing .hero-cover .hero-intro-v2 h1 em { color: inherit; }
+.v2-landing .hero-cover .hero-intro-v2 > p { margin: 24px 0 0; max-width: 530px; color: #45523c; font-size: 16px; text-wrap: pretty; }
+.v2-landing .hero-cover .hero-downloads { justify-content: flex-start; gap: 10px; margin-top: 28px; }
+.v2-landing .hero-cover .hero-downloads > .btn { margin: 0 6px 0 0; min-height: 48px; padding: 13px 20px; border-radius: 28px; background: #294b3a; color: #f8faef; }
+.v2-landing .hero-cover .hero-downloads > .btn:hover { background: #203d2a; }
+.v2-landing .hero-cover .store-download { height: 40px; }
+.v2-landing .hero-cover .apple-download img { width: 120px; height: 40px; }
+.v2-landing .hero-cover .google-download { width: 135px; }
+.v2-landing .hero-cover .google-download img { width: 155px; margin-left: -10px; }
+.v2-landing .hero-cover .hero-intro-v2 > .hero-availability { font-size: 11px; margin-top: 13px; }
+.v2-landing .hero-bloom { align-self: center; min-width: 0; }
+.v2-landing .hero-bloom img { display: block; width: 100%; height: auto; }
+.v2-landing .hero-cover-footer { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; gap: 20px; border-top: 1px solid #203e3255; padding-top: 22px; font-size: 12px; }
+.v2-landing .hero-cover-footer a { display: inline-flex; align-items: center; gap: 14px; }
+.v2-landing .hero-cover-footer a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.v2-landing .hero-preview { background: #203e32; color: #f8f8ef; padding-block: 60px 40px; }
+.v2-landing .hero-preview-heading { max-width: 1280px; margin: 0 auto; padding-inline: 40px; scroll-margin-top: 30px; }
+.v2-landing .hero-preview-heading h2 { font-size: clamp(42px, 6.5vw, 88px); line-height: .99; letter-spacing: -.05em; margin-top: 30px; color: inherit; }
+.v2-landing .hero-preview-heading em { color: #ddf578; }
+.v2-landing .hero-preview .hero-overview-caption { border-top: 1px solid #f8f8ef40; padding: 24px 24px 0; }
+.v2-landing .hero-preview .hero-overview-caption small { color: #c9d6c0; }
+.v2-landing .hero-preview .hero-overview-caption a { color: #ddf578; }
+.v2-landing .hero-preview .hero-phone-curves path { stroke: #ddf578; }
+.v2-landing .hero-preview .hero-phone-curves path + path { stroke: #c9d6c0; }
+.v2-landing .hero-preview .hero-phone-curves circle { fill: #ddf578; }
 .v2-landing .goal-journey { max-width: 1400px; padding-block: 50px 40px; }
 .v2-landing .journey-opening { text-align: center; margin: 0 auto 65px; }
 .v2-landing .journey-opening h2 { font-size: clamp(30px, 3.7vw, 49px); line-height: 1.15; letter-spacing: -.035em; margin: 20px 0; }
@@ -48,12 +79,17 @@
 .v2-landing .journey-finish blockquote { font-size: 28px; line-height: 1.3; margin: 12px 0; letter-spacing: -.025em; }
 .v2-landing .journey-finish p { font-size: 15px; }
 .v2-landing .journey-finish small { display: block; margin-top: 12px; }
-.v2-landing .journey-method { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; padding-block: 80px; margin-top: 60px; border-block: 1px solid #d6e0c9; }
-.v2-landing .journey-method h2 { font-size: 30px; line-height: 1.25; letter-spacing: -.03em; margin-top: 18px; }
-.v2-landing .journey-method p { font-size: 15px; }
+.v2-landing .journey-method.section-wrap { display: grid; grid-template-columns: 1.1fr 1fr; align-items: center; gap: 65px; width: 100%; max-width: none; padding: 75px max(40px, calc((100vw - 1220px) / 2)); margin-top: 60px; background: #f0dfd0; border: 0; }
+.v2-landing .journey-method h2 { font-size: clamp(36px, 3.5vw, 49px); line-height: 1.06; letter-spacing: -.045em; margin-top: 18px; }
+.v2-landing .journey-method p { font-size: 15px; margin-top: 22px; }
 .v2-landing .journey-method a { margin-top: 20px; }
-.v2-landing .journey-method small { display: block; font-size: 12px; color: #65705c; line-height: 1.6; margin-top: 20px; }
+.v2-landing .journey-method small { display: block; font-size: 12px; color: #45523c; line-height: 1.6; margin-top: 20px; }
+.v2-landing .journey-method .section-kicker { color: #45523c; }
+.v2-landing .journey-method-art { display: block; width: 100%; height: auto; }
 @media (max-width: 900px) {
+  .v2-landing .hero-cover { gap: 25px; padding-inline: 28px; }
+  .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: clamp(44px, 6.3vw, 60px); }
+  .v2-landing .hero-cover .hero-downloads > .btn { margin-right: 25%; }
   .v2-landing .journey-layout { grid-template-columns: 1fr; gap: 30px; }
   .v2-landing .journey-index { position: static; padding-block: 0 20px; border-bottom: 1px solid #d5dfc9; }
   .v2-landing .journey-goal-anchor { margin-bottom: 15px; }
@@ -62,17 +98,30 @@
   .v2-landing .journey-index a { min-height: 44px; gap: 8px; font-size: 12px; }
   .v2-landing .journey-index-number { width: 27px; height: 27px; font-size: 10px; }
   .v2-landing .journey-opening { margin-bottom: 35px; }
-  .v2-landing .journey-method { gap: 35px; }
+  .v2-landing .journey-method.section-wrap { gap: 35px; }
 }
 @media (max-width: 600px) {
-  .v2-landing .journey-introduction { padding: 135px 24px 50px; }
+  .v2-landing .journey-introduction { padding: 90px 0 0; }
+  .v2-landing .hero-cover { grid-template-columns: 1fr; gap: 20px; padding: 23px 24px; }
+  .v2-landing .hero-eyebrow { font-size: 10px; gap: 8px; }
+  .v2-landing .hero-cover .hero-intro-v2 { padding: 6px 0 0; }
+  .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: clamp(40px, 10.7vw, 60px); }
+  .v2-landing .hero-cover .hero-intro-v2 > p { font-size: 15px; margin-top: 20px; }
+  .v2-landing .hero-cover .hero-downloads > .btn { margin-right: 30%; }
+  .v2-landing .hero-cover .hero-intro-v2 > .hero-availability { margin-top: 10px; font-size: 11px; }
+  .v2-landing .hero-bloom { width: 210px; justify-self: center; }
+  .v2-landing .hero-bloom img { width: 100%; margin: 0; }
+  .v2-landing .hero-cover-footer { font-size: 11px; padding-top: 18px; }
+  .v2-landing .hero-preview { padding-top: 40px; }
+  .v2-landing .hero-preview-heading { padding-inline: 24px; }
   .v2-landing .goal-journey { padding-top: 30px; }
   .v2-landing .journey-opening { text-align: left; }
   .v2-landing .journey-step + .journey-step { padding-top: 45px; }
   .v2-landing .journey-step-heading p { font-size: 15px; }
   .v2-landing .journey-app-detail > summary { font-size: 13px; line-height: 1.5; }
   .v2-landing .journey-progress > div, .v2-landing .journey-progress figcaption { padding-inline: 18px; }
-  .v2-landing .journey-method { grid-template-columns: 1fr; gap: 25px; padding-block: 50px; }
+  .v2-landing .journey-method.section-wrap { grid-template-columns: 1fr; gap: 25px; padding: 45px 24px; }
+  .v2-landing .journey-method-art { max-width: 400px; justify-self: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   .v2-landing .journey-index-number, .v2-landing .journey-app-detail > summary > span { transition: none; }
@@ -133,7 +182,7 @@
 }
 
 /* The three real screens gather into one system as the connecting paths fold. */
-.v2-landing .hero-phone-stage { --phone-gather: 0; position: relative; margin-top: 55px; }
+.v2-landing .hero-phone-stage { --phone-gather: 0; position: relative; margin: 55px 24px 0; }
 .v2-landing .hero-mobile-screens { position: relative; margin-top: 0; isolation: isolate; }
 .v2-landing .hero-phone-curves { position: absolute; z-index: -1; inset: -8% -15%; width: 130%; height: 115%; pointer-events: none; overflow: visible; transform: scale(calc(1 - var(--phone-gather) * .45), calc(1 - var(--phone-gather) * .75)); }
 .v2-landing .hero-phone-curves path { stroke: #a5b68b; stroke-width: 1.5; vector-effect: non-scaling-stroke; }

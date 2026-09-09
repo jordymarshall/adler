@@ -1835,6 +1835,16 @@ details > summary:focus-visible {
   display: flex;
   flex-direction: column;
 }
+.sidebar-collapsed > .app-sidebar {
+  display: none;
+}
+.sidebar-collapsed > .app-body {
+  margin-left: 0;
+}
+.sidebar-toggle {
+  border-color: transparent;
+  border-radius: 6px;
+}
 .app-topbar {
   height: 74px;
   display: flex;
@@ -4822,7 +4832,8 @@ details > summary:focus-visible {
   .signin-card h1 {
     font-size: 56px;
   }
-  .app-sidebar {
+  .app-sidebar,
+  .sidebar-toggle {
     display: none;
   }
   .app-body {

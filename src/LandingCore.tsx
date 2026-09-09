@@ -50,18 +50,18 @@ export function Landing() {
         <LandingImmersiveGraph />
         <LandingJourney />
         <section className="journey-method section-wrap" id="approach">
-          <div>
+          <div className="journey-method-copy">
             <span className="section-kicker">THE THINKING BEHIND YOUR PLAN</span>
             <h2>Research informs the suggestion.<br /><em>Your experience informs what happens next.</em></h2>
-          </div>
-          <div>
             <p>Adler connects your reports to specific behavioural research, saves what we’re testing, and revisits it as you learn. You can inspect the reasoning and correct what it remembers.</p>
             <Link className="text-link" to="/method">Explore the coaching method <ArrowUpRight size={15} /></Link>
             <small>Research-informed coaching. Adler’s effectiveness has not yet been evaluated.</small>
           </div>
+          <img className="journey-method-art" src="/media/landing/learning-rhythm.webp" width="1254" height="1254" alt="" loading="lazy" decoding="async" />
         </section>
         <section className="v2-faq section-wrap">
-          <h2>A little more clarity.</h2>
+          <div className="faq-heading"><span className="section-kicker">GOOD QUESTIONS</span><h2>A little more clarity.</h2><p>A few things you might be wondering before you begin.</p></div>
+          <div className="faq-questions">
           {[
             [
               "What can I work toward?",
@@ -96,6 +96,7 @@ export function Landing() {
               <p>{a}</p>
             </details>
           ))}
+          </div>
         </section>
         <MountainFinale />
       </main>
