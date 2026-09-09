@@ -10,9 +10,9 @@ Adler helps people pursue their own goals through feasible actions, research-inf
 
 An **unplanned draft** saves the user's goal and horizon while work is still undecided. Its initial plan version can contain no action; this does not mean a plan is ready or started. Unknown work, milestones and measurements are not filled with placeholders.
 
-**Milestone**: An intermediate stage in a goal's plan that groups contributing actions and has its own success criterion. That criterion can be the work itself or a result supported by the work.
+**Milestone**: A subgoal: an intermediate result to reach, such as a first book finished or a first paying client. Its result is verified separately from the actions contributing to it.
 
-**Action**: A piece of work the person can perform within a goal's plan. An ongoing action retains its identity and learning history across milestones, with its dated work linked to the milestone it contributes to. Its quantity and reported completion remain distinct from the outcome it is intended to support.
+**Action**: Concrete work the person controls and can execute and report, such as reading 20 pages, writing for 30 minutes or sending one application. It specifies the input, not a promised result; the same ongoing action can contribute to successive milestones.
 
 **Controllable input**: Work or a behaviour the person can choose to perform, including its meaningful quantity or quality. It is not another person's response or an assumed return from the work.
 

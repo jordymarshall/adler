@@ -14,6 +14,7 @@ import { ProposalChanges } from "./ProposalChanges";
 import { GoalProjection, projectionDate } from "./GoalProjection";
 import { GoalInputChart } from "./GoalInputChart";
 import { GoalActionTimeline } from "./GoalActionTimeline";
+import type { PlanEditScope } from "./PlanEditor";
 import { GoalActionReport } from "./GoalActionReport";
 import { PlanExplanation } from "./PlanExplanation";
 import { BehavioralRationale } from "./BehavioralRationale";
@@ -23,7 +24,7 @@ import "./goal-structure.css";
 import "./coaching-learning.css";
 import "./goal-views.css";
 
-export function GoalPlan({ goal, actionId, onEdit }: { goal: Goal; actionId?: string; onEdit: (stepId?: string) => void }) {
+export function GoalPlan({ goal, actionId, onEdit, editRevision = 0 }: { goal: Goal; actionId?: string; onEdit: (scope: PlanEditScope) => void; editRevision?: number }) {
   const { data, commit, flush, refresh } = useStore();
   const current = currentPlan(goal);
   const pendingBooking = savedPending();
@@ -71,6 +72,12 @@ export function GoalPlan({ goal, actionId, onEdit }: { goal: Goal; actionId?: st
   const coach = `/app/check-in?${new URLSearchParams({ goal: goal.id, ...(action ? { action: action.id } : {}) })}`;
   const pending = proposals.filter(proposal => proposal.status === "pending" && proposal.expires > Date.now() &&
     (proposal.goalId === goal.id || proposal.changes.some(change => change.parentId === goal.id || (change.entity === "goal" && change.id === goal.id))));
+  useEffect(() => {
+    if (!editRevision) return;
+    setVersion(null); setSelection(undefined);
+    if (!goal.milestones.some(milestone => milestone.id === milestoneId)) setMilestoneId(undefined);
+    setStart(current.adaptive?.window.start ?? today);
+  }, [editRevision]);
   useEffect(() => {
     let live = true;
     api<Proposal[]>("proposals").then(result => { if (live) setProposals(result); }).catch(e => { if (live) setError(e.message); });
@@ -139,7 +146,7 @@ export function GoalPlan({ goal, actionId, onEdit }: { goal: Goal; actionId?: st
         <div><small>{historical ? "EARLIER PLAN" : "YOUR PLAN"}</small><h2>{plan.adaptive ? "Milestones & actions" : plan.action ? "Your first action" : "Choose your first action"}</h2>
           {plan.adaptive && <span className="cycle-dates">{historical ? "Earlier cycle" : "Current cycle"} · {formatDate(plan.adaptive.window.start)}–{formatDate(plan.adaptive.window.end)}</span>}
         </div>
-        {(plan.basis || plan.adaptive?.reasoning) && <button className="button secondary" onClick={() => setReasoning(true)}>Inspect reasoning ↗</button>}
+        <div className="plan-heading-controls">{!historical && <button className="button secondary" onClick={() => onEdit({ kind: "plan" })}>Edit plan</button>}{(plan.basis || plan.adaptive?.reasoning) && <button className="text-link" onClick={() => setReasoning(true)}>Inspect reasoning ↗</button>}</div>
       </header>
       {goal.milestones.length > 0 && <nav className="goal-milestone-nav" aria-label="Milestones">
         <div className="milestone-nav-label"><span>Plan milestones</span><button className="text-link" aria-pressed={!milestoneId} onClick={() => chooseMilestone()}>All actions</button></div>
@@ -147,17 +154,17 @@ export function GoalPlan({ goal, actionId, onEdit }: { goal: Goal; actionId?: st
           <button aria-pressed={milestoneId === item.id} onClick={() => chooseMilestone(item.id)}><span className="milestone-node">{item.done ? "✓" : index + 1}</span><small>Milestone {index + 1}{item.done ? " · Complete" : milestoneId === item.id ? " · Selected" : ""}</small><strong>{item.title}</strong><span>{item.dueDate ? `Target ${formatDate(item.dueDate)}` : "Date not set"}</span></button>
         </li>)}</ol>
       </nav>}
-      {milestone && <div className="milestone-finish"><small>Milestone complete when</small><span>{milestone.criterion}</span></div>}
+      {milestone && <div className="milestone-finish"><small>Milestone · Result to reach</small><span>{milestone.criterion}</span>{!historical && <button className="text-link" onClick={() => onEdit({ kind: "milestone", id: milestone.id })}>Edit milestone</button>}</div>}
       {pending.length > 0 && <div className="goal-pending-change"><span>{pending[0].summary}</span><button className="text-link" onClick={() => setShowProposal(true)}>Review suggested change ↗</button></div>}
       {!plan.action ? <div className="unplanned-goal"><strong>Goal saved</strong><p>Your outcome and target are saved. Choose the first useful work with your coach.</p><Link className="button primary" to={`${coach}&prompt=${encodeURIComponent("Help me choose the first useful work for this saved goal. Keep my outcome and deadline; ask only what changes the next useful action.")}`}>Plan first action ↗</Link></div> : <>
         {hasWork ? <section className="selected-action" aria-label="Selected action">
-          <div><small>{action?.date === today ? "Today" : action?.date ? formatDate(action.date) : "Not scheduled"} · Action</small><strong>{action?.title ?? step?.title ?? plan.action}</strong></div>
+          <div><small>Action · Input to do · {action?.date === today ? "Today" : action?.date ? formatDate(action.date) : "Not scheduled"}</small><strong>{action?.title ?? step?.title ?? plan.action}</strong></div>
           <p>{action?.retiredAt && !action.outcome ? "Retired" : action?.outcome ?? (goal.status === "Draft" ? "Proposed" : block ? "Scheduled" : action?.date && action.date > today ? "Planned" : "No report yet")}{amount !== null ? ` · ${amount.toLocaleString()} ${inputMeasure(actionPlan, action?.stepId).unit}` : ""}{block ? ` · ${new Date(block.start).toLocaleString(undefined, { timeZone: data.timeZone, month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}` : action?.timing ? ` · ${action.timing}` : ""}</p>
           <details className="action-finish"><summary>What counts as done</summary><p>{action?.criterion ?? step?.criterion ?? plan.criterion}</p></details>
           <div className="action-control-row">
             {reportable && <><button className="button primary" onClick={() => setReporting(action.outcome ?? "Done")}><Check size={15} />{action.outcome ? "Edit report" : measured ? "Report amount" : "Done"}</button>{!action.outcome && <button className="button secondary" onClick={() => setReporting("Didn’t happen")}>× Didn’t happen</button>}</>}
             {!historical && goal.status === "Draft" && (planNeedsReview(data, goal) ? <Link className="button primary" to={`${coach}&prompt=${encodeURIComponent("Update this draft using my corrected context before I start.")}`}>Review corrected plan ↗</Link> : <button className="button primary" onClick={() => commit(d => startGoal(d, goal.id), "Plan started.")}><Play size={15} />Start plan</button>)}
-            {!historical && ["Draft", "Active"].includes(goal.status) && <button className="button secondary" onClick={() => onEdit(step?.id)}>Edit action</button>}
+            {!historical && ["Draft", "Active"].includes(goal.status) && <button className="button secondary" onClick={() => onEdit({ kind: "action", id: step?.id })}>Edit action</button>}
             {!historical && goal.status === "Active" && action && !action.outcome && !action.retiredAt && !action.startedAt && !data.workBlocks.some(block => block.id === action.id) && actionReady(data, action) && <button className="button secondary" onClick={() => setSchedule(true)}>Add to calendar</button>}
             <Link className="text-link" to={`${coach}&prompt=${encodeURIComponent(`I want to discuss ${action?.title ?? step?.title ?? plan.action}.`)}`}>Discuss with Coach ↗</Link>
           </div>
@@ -186,7 +193,7 @@ export function GoalPlan({ goal, actionId, onEdit }: { goal: Goal; actionId?: st
     </section>
     {error && <p className="goal-view-error" role="alert">{error}</p>}
     {reporting && action && <GoalActionReport key={action.id} action={action} outcome={reporting} onClose={() => setReporting(null)} />}
-    {schedule && action && <Modal title="Schedule action" onClose={() => setSchedule(false)}><p><strong>{action.title}</strong></p><Calendar embedded goalId={goal.id} actionId={action.id} onDone={() => setSchedule(false)} /></Modal>}
+    {schedule && action && <Modal title="Schedule action" wide onClose={() => setSchedule(false)}><p><strong>{action.title}</strong></p><Calendar embedded goalId={goal.id} actionId={action.id} onDone={() => setSchedule(false)} /></Modal>}
     {reasoning && <Modal title={historical ? "Reasoning for this earlier plan" : "Why this plan?"} onClose={() => setReasoning(false)}>{plan.basis ? <PlanExplanation basis={plan.basis} reasoning={plan.adaptive?.reasoning} /> : plan.adaptive?.reasoning ? <BehavioralRationale reasoning={plan.adaptive.reasoning} sources={data.decisions.find(decision => decision.goalId === goal.id && decision.planVersion === plan.version)?.researchSources} /> : <p>This plan records your chosen work. No behavioural interpretation is saved for this version.</p>}{plan.adaptive && <><h3>Planning window</h3><p>{plan.adaptive.window.rationale}</p><h3>Next review</h3><p>{plan.adaptive.assessment.question}</p></>}{related && <button className="text-link" onClick={() => { setReasoning(false); setLearningId(related.id); }}>Inspect the saved experiment ↗</button>}</Modal>}
     {selectedLearning && <Modal title="Experiment & evidence" onClose={() => setLearningId(null)}>{error && <p role="alert">{error}</p>}<LearningDashboard data={data} goalId={goal.id} recordId={selectedLearning.id} onControl={(record, action) => void control(record, action)} busy={busy} /></Modal>}
     {showProposal && <Modal title="Suggested plan change" onClose={() => setShowProposal(false)}>{error && <p role="alert">{error}</p>}{pending.map(proposal => <article className="plan-adaptation" key={proposal.id}><h3>{proposal.summary}</h3><ProposalChanges changes={proposal.changes} data={data} beforeRecords={proposal.before} /><div className="plan-actions"><button className="button primary" disabled={busy} onClick={() => void decide(proposal, "approve")}>Accept updated plan <Check size={15} /></button><Link className="button secondary" to={`${coach}&prompt=${encodeURIComponent(`Discuss the suggested change: ${proposal.summary}`)}`}>Discuss changes</Link><button className="text-link" disabled={busy} onClick={() => void decide(proposal, "dismiss")}>Keep current plan</button></div></article>)}</Modal>}

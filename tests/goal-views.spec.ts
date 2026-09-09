@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register, seedCoaching, snapshot, synced } from "./fixtures";
+import { register, seedCoaching, snapshot, synced, reviewedProposal } from "./fixtures";
 import { landingWorkspace, captureDate } from "../scripts/landing-workspace";
 import { evidenceRevision } from "../server/learning";
 import { dateInZone } from "../shared/journey";
@@ -252,7 +252,7 @@ test("a recovered booking selects its actual recurring occurrence instead of tod
   await expect(page.getByRole("region", { name: "Selected action" }).getByRole("link", { name: /Discuss with Coach/ })).toHaveAttribute("href", new RegExp(`action=${pending.id}`));
 });
 
-test("calendar and manual edits apply to the selected action and retain the original reasoning in history", async ({ page }) => {
+test("calendar and harness edits target the selected action and retain the original reasoning in history", async ({ page }) => {
   await register(page);
   const today = dateInZone("UTC"), plan = adaptiveFixture(today, today);
   plan.steps.push({ id: "peer-review", type: "task", title: "Ask for feedback on the outline", criterion: "Send my chosen question", cue: "After the draft", reason: "The next step I chose", durationMinutes: 10, scheduledDate: today, dependsOn: [] });
@@ -261,7 +261,7 @@ test("calendar and manual edits apply to the selected action and retain the orig
   const first = data.actions.find(action => action.stepId === "outline")!;
   data.workBlocks.push({ id: first.id, goalId: goal.id, action: first.title, start: `${today}T10:00:00Z`, end: `${today}T10:25:00Z`, provider: "local", status: "Scheduled" });
   await seedCoaching(page, data);
-  await page.goto("/app/goals/essay");
+  await page.goto(`/app/goals/essay?action=${first.id}`);
   await expect(page.getByRole("button", { name: "Add to calendar", exact: true })).toHaveCount(0);
   await page.getByRole("button", { name: "One-time action Ask for feedback on the outline" }).click();
   await expect(page.getByRole("region", { name: "Selected action" })).toContainText("Ask for feedback on the outline");
@@ -269,9 +269,21 @@ test("calendar and manual edits apply to the selected action and retain the orig
   await expect(page.getByRole("dialog")).toContainText("Ask for feedback on the outline");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Edit action", exact: true }).click();
-  await expect(page.getByLabel("Next action", { exact: true })).toHaveValue("Ask for feedback on the outline");
+  await expect(page.getByLabel("Action to do", { exact: true })).toHaveValue("Ask for feedback on the outline");
+  const adjusted = structuredClone(plan);
+  adjusted.steps[1].cue = "At a quiet desk";
+  delete adjusted.reasoning;
+  const proposal = await reviewedProposal(page, [{ entity: "plan", operation: "update", id: null, parentId: goal.id, values: JSON.stringify({ action: goal.plans[0].action, criterion: goal.plans[0].criterion, timing: goal.plans[0].timing, adaptive: adjusted }) }], "Use the requested quiet desk cue");
+  await page.route("**/api/coach", route => route.fulfill({ json: { conversationId: "action-edit", proposal, data } }));
+  const sent = page.waitForRequest(request => request.url().endsWith("/api/coach"));
   await page.getByLabel("Timing or cue").fill("At a quiet desk");
-  await page.getByRole("button", { name: "Save plan", exact: true }).click();
+  await page.getByRole("button", { name: "Update with Adler", exact: true }).click();
+  expect((await sent).postDataJSON().message).toContain("action ID peer-review");
+  await expect(page.getByRole("link", { name: "Continue with Coach ↗" })).toBeVisible();
+  await page.getByRole("button", { name: "Accept adjustment", exact: true }).click();
+  await expect(page.getByText("Plan updated", { exact: true })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Done", exact: true }).click();
+  await expect(page.locator(".action-canvas-heading")).toContainText("YOUR PLAN");
   await synced(page);
   await page.reload();
   const saved = (await snapshot(page)).data.goals[0];

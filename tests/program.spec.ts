@@ -124,7 +124,7 @@ test("local scheduling creates a synced work block without an external booking c
   await expect(page.locator(".scheduler-form")).toContainText(
     "External calendars haven’t been checked",
   );
-  await page.getByRole("button", { name: "Week", exact: true }).click();
+  await expect(page.locator(".week-desktop")).toBeVisible();
   await page.getByRole("button", { name: "Next week", exact: true }).click();
   await page.getByRole("button", { name: "Save time", exact: true }).click();
   await synced(page);
@@ -308,14 +308,13 @@ test("a coordinated adjustment saves goal, approach, timing, and memory before o
   expect(approved.goals[0].results).toEqual(initial.data.goals[0].results);
   expect(approved.workBlocks).toHaveLength(0);
   await page.reload();
-  await page.getByRole("link", { name: "Continue", exact: false }).click();
-  await expect(page.locator(".next-step-card")).toContainText(
+  await expect(page.getByRole("link", { name: "Continue →", exact: true })).toHaveCount(0);
+  await page.getByRole("navigation", { name: "App navigation" }).getByRole("link", { name: "Goals", exact: true }).click();
+  await page.getByRole("link", { name: "Publish two essays", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Selected action" })).toContainText(
     "Write the whole outline before editing",
   );
-  await page.getByText("Something doesn’t fit?", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Choose a time", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Add to calendar", exact: true }).click();
   await expect(page.locator(".inline-scheduler")).toBeVisible();
   expect((await snapshot(page)).data.workBlocks).toHaveLength(0);
 });

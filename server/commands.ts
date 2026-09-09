@@ -72,11 +72,11 @@ export const commandCatalog = {
     "; To save only the requested goal before planning, use status=Draft, empty action, criterion and timing, omit adaptive/basis/actionDate/durationMinutes; this creates no action. update: title,why,success,area,tags,priority,targetDate,status,target (measured goals only),measure (label,unit,target,baseline; changing measurement archives prior results); delete removes the goal and its actions/results. id identifies goal.",
   plan: "update only: parentId=goal ID; values={action,criterion,timing,durationMinutes?,basis?,adaptive?}; basis and adaptive use the same schemas as goal creation. New approaches must include adaptive: a concrete window, linked tasks/behaviors, behavioral completion criteria, and assessment timing. Creates a new plan version and preserves recorded and booked work. Retain step and measure IDs when their meaning is unchanged.",
   milestone:
-    "parentId=goal ID. create/update: {title,criterion,done,dueDate?}. id for existing milestone. Toggling done records the verified outcome. delete removes milestone and revises future target.",
+    "parentId=goal ID. create/update: {title,criterion,done,dueDate?}; dueDate=null clears a target date. A milestone is an intermediate result/subgoal, not an action quota. id for existing milestone. Toggling done records the separately verified outcome. delete removes milestone and revises future target.",
   checkpoint:
     "parentId=goal ID. create/update: {date,value,label}. id identifies checkpoint. Values are cumulative expected results.",
   action:
-    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?,amount?,actualMinutes?}. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
+    "parentId=goal ID for create. values={title,criterion,timing,date,outcome?,note?,amount?,actualMinutes?}. Actions are executable user inputs (pages, minutes or concrete work), not promised outcomes. Use an empty date for unscheduled. outcome is Done, Partly, or Didn’t happen. update/delete use id.",
   result:
     "parentId=goal ID with measure or learning assessment. create/update: {value,date,source}; use the goal’s measurement and only user-reported values. Legacy assessments use 0–10. For milestone-count goals, change milestone.done instead. delete uses id.",
   memory:
@@ -240,6 +240,7 @@ export function applyChanges(
             ? "checkpoints"
             : "results";
       const list = (goal[key] ??= []) as { id: string }[];
+      const completedBefore = goal.milestones.filter(milestone => milestone.done).length;
       const existing = list.find((x) => x.id === id);
       if (change.operation !== "create" && !existing)
         throw new Error("Record not found.");
@@ -270,6 +271,7 @@ export function applyChanges(
           ...(change.entity === "milestone" ? { done: false } : {}),
           ...existing,
           ...values,
+          ...(change.entity === "milestone" && values.dueDate === null ? { dueDate: undefined } : {}),
           id,
         });
         if (existing) Object.assign(existing, record);
@@ -280,13 +282,16 @@ export function applyChanges(
         !goal.measure &&
         goal.kind !== "learning"
       ) {
-        goal.results.push({
-          id: crypto.randomUUID(),
-          date: today,
-          value: goal.milestones.filter((m) => m.done).length,
-          source: `${change.operation} milestone: ${String(values.title ?? id)}`,
-        });
-        goal.outcomeUpdatedAt = today;
+        const completed = goal.milestones.filter(milestone => milestone.done).length;
+        if (completed !== completedBefore) {
+          goal.results.push({
+            id: crypto.randomUUID(),
+            date: today,
+            value: completed,
+            source: `${change.operation} milestone: ${String(values.title ?? id)}`,
+          });
+          goal.outcomeUpdatedAt = today;
+        }
         goal.target = goal.milestones.length;
         const final = goal.checkpoints?.find((p) => p.date === goal.targetDate);
         if (final) final.value = goal.target;

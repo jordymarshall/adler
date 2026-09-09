@@ -1,6 +1,6 @@
 # Production goal views
 
-8 September 2026 · Implements the screenshot-selected All Goals / goal compositions in the existing app. This is a delivery record, not evidence of coaching effectiveness or a hosted deployment.
+8 September 2026 · Implements the screenshot-selected All Goals / goal compositions in the existing app. This is a delivery record, not evidence of coaching effectiveness or a hosted deployment. The [9 September follow-up](plan-inputs-and-edits.md) replaces manual plan editing with the shared harness and adds tentative week-calendar placement; the verification counts below describe this earlier slice.
 
 ## Delivered scope
 
@@ -24,7 +24,7 @@ The streak is a display heuristic: an on-plan day meets the saved actions/target
 
 Applied experiments are associated with the plan produced by their accepted proposal, using saved before-state, goal/action scope and the saved rationale. A proposal decision's pre-acceptance plan version is not the resulting plan. Declined intermediate revisions are not inferred to be accepted merely because a later revision became active. Older standalone records with insufficient adoption provenance remain inspectable in Insights without inventing a plan association.
 
-Cue-only manual edits clear obsolete scientific rationale from the new version and preserve it in history. The server compares scientific records structurally, allowing ordinary reports whose unchanged JSON fields arrive in a different order while still rejecting unreviewed changed interpretations.
+Cue-only manual edits in this slice cleared obsolete scientific rationale from the new version and preserved it in history. The subsequent contextual editor uses shared scientific review to reconcile the new rationale, while keeping earlier versions. The server compares scientific records structurally, allowing ordinary reports whose unchanged JSON fields arrive in a different order while still rejecting unreviewed changed interpretations.
 
 Milestones currently store criteria and optional dates, not a general numerical input/outcome relationship. The bottom section therefore distinguishes the actual milestone target from the **goal** outlook. It does not derive milestone forecasts by parsing numbers from prose. Existing single-driver projection and sparse-association limitations remain; the scenario range is not a calibrated success probability.
 

@@ -26,8 +26,8 @@ export const adaptivePlanSchema = z.object({
   steps: z.array(z.object({
     id: identifier,
     type: z.enum(["task", "behavior"]),
-    title: z.string().trim().min(1).max(300),
-    criterion: description,
+    title: z.string().trim().min(1).max(300).describe("Concrete user-controlled input, such as read 20 pages or write for 30 minutes; not a milestone outcome."),
+    criterion: description.describe("Observable execution of this input. It must not require achieving the milestone or another person's response."),
     reason: description,
     durationMinutes: z.number().int().min(1).max(1440),
     cue: z.string().trim().min(1).max(300),

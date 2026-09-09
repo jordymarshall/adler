@@ -4,6 +4,24 @@
 .calendar-view-switch button { border: 0; border-radius: 5px; background: transparent; color: var(--muted); padding: 6px 12px; font-size: 12px; }
 .calendar-view-switch button[aria-pressed="true"] { background: var(--sage); color: var(--ink); }
 .full-calendar .entry-work { color: var(--ink); border-color: var(--goal-color); background: color-mix(in srgb, var(--goal-color) 12%, var(--paper)); }
+.full-calendar .entry-tentative { border: 1px dashed var(--goal-color); color: var(--ink); background: color-mix(in srgb, var(--goal-color) 6%, var(--paper)); }
+.full-calendar .entry-preview { border: 2px solid var(--goal-color); color: var(--ink); background: color-mix(in srgb, var(--goal-color) 20%, var(--paper)); box-shadow: 0 2px 8px #0002; transition: top .2s, left .2s; }
+.calendar-place-day { position: sticky; top: 0; z-index: 2; margin: 3px; padding: 4px; opacity: 0; border: 1px solid var(--line); background: var(--paper); border-radius: 4px; font-size: 10px; }
+.calendar-place-day:focus-visible { opacity: 1; }
+.modal:has(.inline-scheduler .week-calendar) { max-width: 1100px; }
+.inline-scheduler .week-scroll { height: clamp(180px, 28svh, 280px); }
+.inline-scheduler .section-kicker { display: none; }
+.inline-scheduler .week-toolbar h2 { font-size: 22px; }
+.inline-scheduler .calendar-legend, .inline-scheduler .week-calendar > .field-hint { margin-block: 8px; }
+.inline-scheduler .week-day-headings > div { padding: 6px 0; gap: 2px; }
+.inline-scheduler .week-day-headings .icon-button { width: 24px; height: 24px; }
+.calendar-place-day:disabled { visibility: hidden; }
+.inline-scheduler .week-calendar { border: 0; padding: 0; box-shadow: none; }
+.calendar-placement-hint { margin-block: 14px; }
+.plan-edit-loading { display: flex; align-items: center; gap: 10px; }
+.plan-edit-loading svg { animation: plan-edit-spin 1s linear infinite; }
+@keyframes plan-edit-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .plan-edit-loading svg { animation: none; } .full-calendar .entry-preview { transition: none; } }
 .month-calendar-scroll { overflow-x: auto; margin-top: 22px; }
 .month-calendar { min-width: 770px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
 .month-weekdays, .month-week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }

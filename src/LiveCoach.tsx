@@ -39,20 +39,6 @@ export function LiveCoach() {
     [error, setError] = useState(""),
     [service, setService] = useState<ServiceStatus | null>(null),
     [proposals, setProposals] = useState<Proposal[]>([]);
-  const latestApplied = proposals.find(
-    (p) =>
-      p.status === "applied" &&
-      (p.conversationId
-        ? p.conversationId === conversation?.id
-        : p.goalId === selected),
-  );
-  const continuedGoal =
-    data.goals.find((g) =>
-      latestApplied?.changes.some(
-        (c) => c.entity === "goal" && c.operation === "create" && c.id === g.id,
-      ),
-    ) ?? goal;
-  const hasPending = proposals.some((p) => p.status === "pending");
   const bottom = useRef<HTMLDivElement>(null),
     composer = useRef<HTMLTextAreaElement>(null),
     request = useRef<{ text: string; goal: string; id: string } | null>(null);
@@ -378,16 +364,6 @@ export function LiveCoach() {
                 {decision?.recommendations?.map((recommendation, index) => <div key={index}>{index > 0 && <h3>{recommendation.action}</h3>}<RecommendationReasons recommendation={recommendation} sources={decision.researchSources} claims={decision.researchClaims} /></div>)}
               </article>
             ); })}
-          {latestApplied && !hasPending && (
-            <Link
-              className="button primary coach-continue"
-              to={
-                continuedGoal ? `/app/goals/${continuedGoal.id}` : `/app/today`
-              }
-            >
-              Continue →
-            </Link>
-          )}
           {sending && (
             <div className="coach-working">
               <AdlerAvatar small />

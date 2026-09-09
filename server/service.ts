@@ -31,6 +31,8 @@ import {
   type Reaction,
 } from "../shared/workspace.ts";
 import { validateWorkspace, insightSchema } from "../shared/validation.ts";
+const requiresConfirmation = (changes: Change[]) => changes.some(change => change.operation === "delete" ||
+  change.entity === "workBlock" && JSON.parse(change.values).provider && JSON.parse(change.values).provider !== "local");
 export type Channel =
   "web" | "sms" | "imessage" | "rcs" | "whatsapp" | "mcp" | "job";
 export const dayInZone = (data: Data, date = new Date()) =>
@@ -844,7 +846,7 @@ export class Service {
             const review = await this.runner(config, researchReviewInstructions + groundingReviewInstructions, {
               task: "review-plan", message, conversation: context.conversation, conversationHistory: context.conversationHistory,
               goals: context.activeGoals, confirmedContext: context.confirmedContext, allGoalContexts: context.allGoalContexts, program: context.program, reply: result.reply,
-              learningActions: result.learningActions, requestedExecution: result.execution, recommendations, currentLearning: context.currentLearning, proposedLearning: reviewedData.learning, researchClaims: turn.researchClaims, reportedSourceIds: [...reportedSourceIds], inputOrigin: turn.inputOrigin,
+              learningActions: result.learningActions, requestedExecution: result.execution, requiresConfirmation: requiresConfirmation(result.changes), recommendations, currentLearning: context.currentLearning, proposedLearning: reviewedData.learning, researchClaims: turn.researchClaims, reportedSourceIds: [...reportedSourceIds], inputOrigin: turn.inputOrigin,
               changes: result.changes, insights: result.insights, evidenceCorrections: result.evidenceCorrections, coachingFramework: COACHING_FRAMEWORK, behavioralResearch, methodologyReadings, evidenceCatalog: METHODS.filter(method => context.program.enabledMethods.includes(method.id)), researchSources: literature, researchSearches, effectiveGoals: reviewedData.goals.map(coachingGoal),
               executionChecks: reviewedData.goals.map(g => ({ goalId: g.id, ...executionSummary(reviewedData, g) })),
             }, researchReviewSchema, 2200);
@@ -906,14 +908,7 @@ export class Service {
       const applyNow =
         ((channel !== "job" && result.execution === "apply") || routine) &&
         result.changes.length > 0 &&
-        !result.changes.some(
-          (c) =>
-            c.operation === "delete" ||
-            (c.entity === "plan" && JSON.parse(c.values).adaptive) ||
-            (c.entity === "workBlock" &&
-              JSON.parse(c.values).provider &&
-              JSON.parse(c.values).provider !== "local"),
-        );
+        !requiresConfirmation(result.changes);
       // Web/SMS/MCP writes for this account share this lock. The read snapshot stays current through the model call.
       let proposal: Proposal | undefined;
       const data = applyNow

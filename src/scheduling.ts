@@ -1,5 +1,5 @@
-import { addDays, dateInZone, zonedTime } from "../shared/journey";
-import type { BusyInterval, ProgramVersion } from "./program-types";
+import { addDays, dateInZone, zonedTime } from "../shared/journey.ts";
+import type { BusyInterval, ProgramVersion } from "./program-types.ts";
 export const overlaps = (a: BusyInterval, b: BusyInterval) =>
   Date.parse(a.start) < Date.parse(b.end) &&
   Date.parse(b.start) < Date.parse(a.end);

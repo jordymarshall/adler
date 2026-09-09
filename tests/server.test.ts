@@ -845,7 +845,7 @@ test("web, iMessage, SMS, and MCP coaching share the model, program, memory, and
     assert.deepEqual(call.config, calls[0].config);
     assert.equal(call.instructions, calls[0].instructions);
     const frameworkContext = call.context as typeof call.context & { coachingFramework: { version: string }; behavioralResearch: { synthesis: string }; researchLibrary: { id: string }[] };
-    assert.equal(frameworkContext.coachingFramework.version, "besci-coaching-v2");
+    assert.equal(frameworkContext.coachingFramework.version, "besci-coaching-v2.1");
     assert.match(frameworkContext.behavioralResearch.synthesis, /P24. Structural constraints/);
     assert.match(frameworkContext.behavioralResearch.synthesis, /P29. Health rules do not export/);
     assert.ok(frameworkContext.researchLibrary.some(document => document.id === "deep/idiographic-inference.md"));

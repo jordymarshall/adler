@@ -24,6 +24,7 @@ import { addDays, dateInZone } from "../shared/journey";
 import { projectionDate } from "./GoalProjection";
 import { goalColor } from "./goal-colors";
 import type { GoalArea } from "./program-types";
+import { PlanEditor } from "./PlanEditor";
 
 export function OrganizedGoals() {
   const { data } = useStore();
@@ -32,6 +33,7 @@ export function OrganizedGoals() {
   const [status, setStatus] = useState("All");
   const [area, setArea] = useState("All areas");
   const [tag, setTag] = useState("All tags");
+  const [editingGoal, setEditingGoal] = useState<string>();
   const tags = [...new Set(data.goals.flatMap((g) => g.tags ?? []))].sort();
   const goals = data.goals.filter(
     (g) =>
@@ -136,13 +138,14 @@ export function OrganizedGoals() {
                 <th scope="row"><Link to={href}><i style={{ background: goalColor(goal.id) }} /><span>{goal.title} <ArrowUpRight size={14} /></span></Link><small>{goal.status}</small><strong className="goal-row-result">{progress.current === null ? "No outcome reported" : `${progress.current} / ${progress.target} ${goal.measure?.unit ?? goal.unit ?? "milestones"}`}</strong>{progress.observedAt && <small>Reported {formatDate(progress.observedAt)}</small>}</th>
                 <td><GoalActivity data={data} goal={goal} /></td>
                 <td><Link className="goal-row-graph" to={href} aria-label={`Open the plan for ${goal.title}`}>{step?.type === "behavior" ? <GoalInputChart series={series} compact /> : <div className="goal-row-work"><small>Action</small><strong>{step?.title ?? plan.action}</strong><span>{data.actions.filter(action => action.goalId === goal.id && action.outcome === "Done").length} completed · open plan ↗</span></div>}</Link></td>
-                <td><small>{milestone ? "Next milestone" : "Goal"}</small><Link to={href}><strong>{milestone?.title ?? goal.success}</strong></Link>{milestone?.dueDate && <small>Milestone target · {formatDate(milestone.dueDate)}</small>}<Link className="goal-row-outlook" to={href}>{progress.projection ? `Goal estimate · ${projectionDate(progress.projection.expectedDate)}` : "Goal finish not yet estimated"} ↗</Link>{progress.projection && <small>Conditional on input pace</small>}</td>
+                <td><small>{milestone ? "Next milestone" : "Goal"}</small><Link to={href}><strong>{milestone?.title ?? goal.success}</strong></Link>{milestone?.dueDate && <small>Milestone target · {formatDate(milestone.dueDate)}</small>}<Link className="goal-row-outlook" to={href}>{progress.projection ? `Goal estimate · ${projectionDate(progress.projection.expectedDate)}` : "Goal finish not yet estimated"} ↗</Link>{progress.projection && <small>Conditional on input pace</small>}<button className="text-link" aria-label={`Edit plan for ${goal.title}`} onClick={() => setEditingGoal(goal.id)}>Edit plan</button></td>
               </tr>;
             })}
           </tbody>)}
         </table>}
 
       </div>
+      {editingGoal && data.goals.some(goal => goal.id === editingGoal) && <PlanEditor goal={data.goals.find(goal => goal.id === editingGoal)!} scope={{ kind: "plan" }} onClose={() => setEditingGoal(undefined)} />}
       {!goals.length && (
         <div className="empty-state">
           <Target size={30} />

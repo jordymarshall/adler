@@ -1,6 +1,7 @@
 import { actionReady, actionStep } from "../shared/adaptive-plan";
+import { tentativeSchedule, type TentativeBlock } from "../shared/tentative-schedule";
 import { WeekCalendar, weekOf, monthRange } from "./WeekCalendar";
-import { addDays, dateInZone, reviewBlock, zonedTime } from "../shared/journey";
+import { addDays, dateInZone, reviewBlock, timeInZone, zonedTime } from "../shared/journey";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { CalendarDays, Check, RefreshCw } from "lucide-react";
@@ -60,12 +61,11 @@ export function Calendar({
 }) {
   const { data, commit, flush, refresh: refreshWorkspace } = useStore();
   const baseProgram = currentProgram(data);
-  const [calendarView, setCalendarView] = useState<"month" | "week">("month");
+  const [calendarView, setCalendarView] = useState<"month" | "week">("week");
   const [month, setMonth] = useState(() => dateInZone(data.timeZone));
   const [week, setWeek] = useState(() =>
     weekOf(
-      data.actions.find((a) => a.id === actionId)?.date ||
-        dateInZone(data.timeZone),
+      [data.actions.find((a) => a.id === actionId)?.date ?? "", dateInZone(data.timeZone)].sort().at(-1)!,
     ),
   );
   const [customDate, setCustomDate] = useState(
@@ -73,7 +73,6 @@ export function Calendar({
       dateInZone(data.timeZone),
   );
   const [requestedDate, setRequestedDate] = useState("");
-  const planner = useRef<HTMLElement>(null);
   const options = useRef<HTMLDetailsElement>(null);
   const [customTime, setCustomTime] = useState("09:00");
   const [params] = useSearchParams();
@@ -103,6 +102,7 @@ export function Calendar({
   const [conflicts, setConflicts] = useState<string[]>([]);
   const [busy, setBusy] = useState<BusyInterval[]>([]);
   const [checkedAt, setCheckedAt] = useState("");
+  const [checkedRange, setCheckedRange] = useState<{ start: string; end: string }>();
   const [slot, setSlot] = useState<BusyInterval | null>(null);
   const [checkIn, setCheckIn] = useState(true);
   const [working, setWorking] = useState(false);
@@ -143,29 +143,31 @@ export function Calendar({
     })),
     ...(review ? [review] : []),
   ];
+  const range = !embedded && !choosing && calendarView === "month" ? monthRange(month) : { start: week, end: addDays(week, 7) };
+  const checked = Boolean(checkedAt && checkedRange && checkedRange.start <= range.start && checkedRange.end >= range.end && Date.now() - Date.parse(checkedAt) <= 300000);
+  const allocation = tentativeSchedule(data, range.start, range.end, new Date(), checked ? busy : undefined);
   const slots =
-    provider === "local" || checkedAt
+    provider === "local" || checked
       ? findSlots(
           program,
-          [...busy, ...localBusy],
+          [...allocation.busy, ...localBusy, ...allocation.blocks.filter(block => block.id !== action?.id)],
           new Date(),
           provider !== "local" && checkIn,
           timezone,
-          embedded && provider === "local"
-            ? action?.date && action.date > dateInZone(timezone)
-              ? action.date
-              : dateInZone(timezone)
-            : week,
+          requestedDate || (action?.date && action.date >= week && action.date < range.end && action.date > dateInZone(timezone) ? action.date : week),
         ).filter(
           (candidate) =>
-            !requestedDate ||
-            dateInZone(timezone, new Date(candidate.start)) === requestedDate,
+            dateInZone(timezone, new Date(candidate.start)) < range.end && (!requestedDate ||
+            dateInZone(timezone, new Date(candidate.start)) === requestedDate),
         )
       : [];
-  useEffect(() => {
-    if (choosing && !embedded)
-      planner.current?.scrollIntoView({ block: "start", behavior: "smooth" });
-  }, [choosing, requestedDate]);
+  const suggested = allocation.blocks.find(block => block.id === action?.id && (!requestedDate || dateInZone(timezone, new Date(block.start)) === requestedDate));
+  const fallback = !allocation.unplaced.some(item => item.actionId === action?.id) ? slots[0] : undefined;
+  const candidate = slot ?? (provider === "local" ? suggested : undefined) ?? fallback;
+  const candidateFits = !candidate || !goal || tentativeSchedule(data, range.start, range.end, new Date(), checked ? busy : undefined, { ...candidate, id: action?.id ?? "placement-preview", goalId: goal.id, title: actionTitle }).overBudget.length === 0;
+  const selectedSlot = candidateFits ? candidate : undefined;
+  const preview: TentativeBlock | undefined = !pending && choosing && goal && selectedSlot ? { ...selectedSlot, id: action?.id ?? "placement-preview", goalId: goal.id, title: actionTitle } : undefined;
+  const arranged = preview ? tentativeSchedule(data, range.start, range.end, new Date(), checked ? busy : undefined, preview) : allocation;
   async function refresh() {
     const status = await api<ServiceStatus>("status");
     setService(status);
@@ -210,7 +212,6 @@ export function Calendar({
     setSlot(null);
     setCheckedAt("");
     try {
-      const range = !embedded && calendarView === "month" ? monthRange(month) : { start: week, end: addDays(week, 7) };
       const start = zonedTime(range.start, "00:00", timezone)!;
       const end = zonedTime(range.end, "00:00", timezone)!;
       const result = await api<{ busy: BusyInterval[]; checkedAt: string }>(
@@ -226,6 +227,7 @@ export function Calendar({
       );
       setBusy(result.busy);
       setCheckedAt(result.checkedAt);
+      setCheckedRange(range);
       commit((d) => {
         d.calendarSnapshot = {
           busy: result.busy.map((b) => ({ start: b.start, end: b.end })),
@@ -343,7 +345,22 @@ export function Calendar({
       setWorking(false);
     }
   }
-  const selectedSlot = slot ?? slots[0];
+  function place(date: string, time: string) {
+    const start = zonedTime(date, time, timezone);
+    if (!start || start.getTime() <= Date.now()) { setError("Choose a valid future time in your timezone."); return false; }
+    const candidate = { start: start.toISOString(), end: new Date(start.getTime() + program.sessionMinutes * 60000).toISOString() };
+    const occupied = { ...candidate, end: new Date(Date.parse(candidate.end) + (provider !== "local" && checkIn ? 5 * 60000 : 0)).toISOString() };
+    const customReview = reviewBlock(data, date);
+    const placementRange = { start: weekOf(date), end: addDays(weekOf(date), 7) };
+    const placementBusy = checked && checkedRange!.start <= placementRange.start && checkedRange!.end >= placementRange.end ? busy : undefined;
+    const placed = tentativeSchedule(data, placementRange.start, placementRange.end, new Date(), placementBusy, { ...candidate, id: action?.id ?? "placement-preview", goalId: goal?.id ?? "", title: actionTitle });
+    if ([...placed.busy, ...localBusy, ...(customReview ? [customReview] : [])].some(interval => overlaps(interval, occupied))) {
+      setError("That time conflicts with a commitment. Choose another time."); return false;
+    }
+    if (placed.overBudget.length) { setError("That week is over your available time budget. Choose another week or adjust your available hours."); return false; }
+    setError(""); setCustomDate(date); setCustomTime(time); setRequestedDate(date); setWeek(weekOf(date)); setSlot(candidate);
+    return true;
+  }
   function confirm() {
     if (!selectedSlot || !goal) return;
     const input = {
@@ -377,21 +394,21 @@ export function Calendar({
       }
     >
       {!embedded && (
-        <>
           <div className="page-heading">
             <h1>Your calendar</h1>
             {!choosing && !pending && (
               <button
                 className="button primary"
-                onClick={() => setChoosing(true)}
+                onClick={() => { setCalendarView("week"); setChoosing(true); }}
               >
                 Add time <CalendarDays size={16} />
               </button>
             )}
           </div>
+      )}
           <WeekCalendar
             month={month}
-            view={calendarView}
+            view={embedded || choosing ? "week" : calendarView}
             onMonth={date => { setMonth(date); setWeek(weekOf(date)); setBusy([]); setCheckedAt(""); setRequestedDate(""); setSlot(null); }}
             onView={view => { setCalendarView(view); setBusy([]); setCheckedAt(""); setSlot(null); }}
             working={working}
@@ -403,8 +420,17 @@ export function Calendar({
               setBusy([]);
               setCheckedAt("");
             }}
-            busy={busy}
-            checked={Boolean(checkedAt)}
+            busy={arranged.busy}
+            checked={arranged.externalAvailability === "checked"}
+            tentative={arranged.blocks}
+            preview={preview}
+            onPlace={choosing && !pending ? place : undefined}
+            onSelectTentative={id => {
+              const block = arranged.blocks.find(block => block.id === id)!;
+              const date = dateInZone(timezone, new Date(block.start));
+              if (data.goals.find(goal => goal.id === block.goalId)?.status === "Draft" || embedded && block.goalId !== goalId) { navigate(`/app/goals/${block.goalId}?action=${id}`); return; }
+              setSelected(block.goalId); setChosenAction(id); setSlot(block); setWeek(weekOf(date)); setCustomDate(date); setCustomTime(timeInZone(timezone, new Date(block.start))); setCalendarView("week"); setRequestedDate(date); setChoosing(true); setError("");
+            }}
             onRecord={action => navigate(`/app/check-in?goal=${action.goalId}&prompt=${encodeURIComponent(`I want to check in on ${action.title} (${action.date || "unscheduled"}).`)}`)}
             onCalendars={() => {
               if (options.current) {
@@ -420,11 +446,12 @@ export function Calendar({
               setCustomDate(date);
               setRequestedDate(date);
               setSlot(null);
+              setCalendarView("week");
               setChoosing(true);
             }}
           />
-        </>
-      )}
+      <p className="field-hint calendar-placement-hint">{preview ? "Choose a time in the week, or use Choose another time below. Other tentative blocks adjust around it." : "Dashed blocks make room for your planned actions. Select one to adjust or confirm its time."} Tentative blocks are only in Adler.</p>
+      {arranged.unplaced.length > 0 && <details className="quiet-disclosure"><summary>{arranged.unplaced.length} action{arranged.unplaced.length === 1 ? " needs" : "s need"} room or a prerequisite</summary>{arranged.unplaced.map(item => <p key={item.actionId}><Link to={`/app/goals/${item.goalId}?action=${item.actionId}`}>{data.actions.find(action => action.id === item.actionId)?.title}</Link> · {item.reason}</p>)}<Link to="/app/check-in?prompt=Help%20me%20adjust%20my%20plan%20to%20fit%20my%20available%20time" className="text-link">Adjust with Coach ↗</Link></details>}
       {error && (
         <p role="alert" className="inline-error">
           {error}
@@ -466,7 +493,6 @@ export function Calendar({
       {!pending && (choosing || embedded) && (
         <section
           className={embedded ? "scheduler-form" : "panel scheduler-form"}
-          ref={planner}
           id="calendar-planner"
           aria-label="Choose a time"
         >
@@ -546,7 +572,7 @@ export function Calendar({
                     : "Check your calendar to find a time."}
                 </p>
               )}
-              {provider !== "local" && !checkedAt && (
+              {provider !== "local" && !checked && (
                 <button
                   className="button primary"
                   disabled={working || !destination}
@@ -571,8 +597,8 @@ export function Calendar({
               )}
               <p className="field-hint">
                 {provider === "local"
-                  ? "Saves in Adler. External calendars haven’t been checked."
-                  : checkedAt
+                  ? arranged.externalAvailability === "checked" ? "Saves in Adler. Uses recently checked calendar availability." : "Saves in Adler. External calendars haven’t been checked."
+                  : checked
                     ? "Availability is checked again when you book."
                     : "Your selected calendars will be checked before booking."}
               </p>
@@ -585,40 +611,7 @@ export function Calendar({
                   className="custom-calendar-time"
                   onSubmit={(event) => {
                     event.preventDefault();
-                    const start = zonedTime(customDate, customTime, timezone);
-                    if (!start || start.getTime() <= Date.now()) {
-                      setError("Choose a valid future time in your timezone.");
-                      return;
-                    }
-                    const candidate = {
-                      start: start.toISOString(),
-                      end: new Date(
-                        start.getTime() + program.sessionMinutes * 60000,
-                      ).toISOString(),
-                    };
-                    const occupied = {
-                      ...candidate,
-                      end: new Date(
-                        Date.parse(candidate.end) +
-                          (provider !== "local" && checkIn ? 5 * 60000 : 0),
-                      ).toISOString(),
-                    };
-                    const customReview = reviewBlock(data, customDate);
-                    if (
-                      [
-                        ...busy,
-                        ...localBusy,
-                        ...(customReview ? [customReview] : []),
-                      ].some((interval) => overlaps(interval, occupied))
-                    ) {
-                      setError(
-                        "That time conflicts with a commitment. Choose another time.",
-                      );
-                      return;
-                    }
-                    setError("");
-                    setRequestedDate(customDate);
-                    setSlot(candidate);
+                    if (!place(customDate, customTime)) return;
                     event.currentTarget
                       .closest("details")
                       ?.removeAttribute("open");
@@ -740,7 +733,7 @@ export function Calendar({
               />
               Add a 5-minute check-in event
             </label>
-            {checkedAt && (
+            {checked && (
               <button
                 className="button secondary"
                 disabled={working}

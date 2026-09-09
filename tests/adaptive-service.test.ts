@@ -76,7 +76,7 @@ test("an existing goal's upgrade remains a proposal until accepted and preserves
   db.save(user.id, saved.data, saved.revision, "web", "Existing goal");
   const previousAction = db.snapshot(user.id).data.actions[0].id;
   const service = new Service(db, researched(async (_config, _instructions, _context, schema) => schema.parse({
-    reply: "Review this updated plan.", summary: "Connect your existing goal to an adaptive plan", execution: "apply", methods: [],
+    reply: "Review this updated plan.", summary: "Connect your existing goal to an adaptive plan", execution: "propose", methods: [],
     changes: [{ entity: "plan", operation: "update", id: null, parentId: "essay", reason: "Make the existing approach executable.",
       values: JSON.stringify({ action: input.action, criterion: input.criterion, timing: input.timing, basis: input.basis, adaptive }) }],
   })), literature);
@@ -438,4 +438,41 @@ test("the shared coach reads the research and repairs a recommendation whose val
   assert.ok(result.data.decisions.at(-1)!.researchSources!.some(source => source.id === "adler:P24"));
   assert.deepEqual(result.data.decisions.at(-1)!.methodologyReadings, ["deep/structural-limits.md"]);
   assert.equal(result.data.goals[0].plans.length, 1, "Reading and reflection must not change chosen work");
+});
+
+for (const channel of ["web", "mcp", "sms"] as const) test(`an exact action-input edit is reviewed and applied through the shared ${channel} harness`, async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  const milestone = state.data.goals[0].milestones[0];
+  state.data.goals[0].plans[0].adaptive!.steps[0].milestoneId = milestone.id;
+  db.save(user.id, state.data, state.revision, "web", "Existing chosen work");
+  const revised = structuredClone(adaptive);
+  revised.steps[0].title = "Draft three outline points";
+  revised.steps[0].criterion = "Three points are written";
+  revised.steps[0].measure!.target = 3;
+  revised.steps[0].milestoneId = milestone.id;
+  const runner = researched(async (_config, _instructions, _context, schema) => schema.parse({
+    reply: "Your requested three-point action is saved. The essay milestone is unchanged.", summary: "Use the user's requested input quantity", execution: "apply", methods: [],
+    changes: [{ entity: "plan", operation: "update", id: null, parentId: "essay", reason: "You asked to change five outline points to three.", values: JSON.stringify({ action: revised.steps[0].title, criterion: revised.steps[0].criterion, timing: revised.steps[0].cue, adaptive: revised }) }],
+  }));
+  let reviewed = false;
+  const service = new Service(db, async (config, instructions, context: any, schema, tokens) => {
+    if (context.task === "review-plan") {
+      reviewed = true;
+      assert.equal(context.requiresConfirmation, false);
+      assert.equal(context.requestedExecution, "apply");
+      assert.equal(context.effectiveGoals[0].plans.at(-1).adaptive.steps[0].measure.target, 3);
+      assert.match(instructions, /executable input/);
+    }
+    return runner(config, instructions, context, schema, tokens);
+  }, literature);
+  const result = await service.chat(user.id, "Edit my outline action to draft three points instead of five. Keep everything else as it is.", "essay", channel, `exact-input-${channel}`);
+  assert.ok(reviewed);
+  assert.equal(result.proposal.status, "applied");
+  assert.equal(result.data.goals[0].plans.length, 2);
+  assert.equal(result.data.goals[0].plans[0].adaptive.steps[0].measure.target, 5);
+  assert.equal(result.data.goals[0].plans[1].adaptive.steps[0].measure.target, 3);
+  assert.deepEqual(result.data.goals[0].milestones, state.data.goals[0].milestones);
+  assert.deepEqual(result.data.goals[0].results, state.data.goals[0].results);
 });

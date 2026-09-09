@@ -7,6 +7,8 @@ import { METHODS } from "./methods.ts";
 import { planProgress } from "../shared/adaptive-plan.ts";
 import { executionSummary, cycleEvidence } from "../shared/goal-execution.ts";
 import { goalProjection } from "../shared/goal-projection.ts";
+import { calendarWeek, tentativeSchedule } from "../shared/tentative-schedule.ts";
+import { addDays } from "../shared/journey.ts";
 
 export function coachingGoal(goal: Data["goals"][number]) {
   const { forecasts: _forecasts, ...rest } = goal;
@@ -133,6 +135,7 @@ export function coachingContext(
     learningEvidence: goal ? cycleEvidence(data, goal, today) : null,
     goalProjection: goal ? goalProjection(data, goal, today) : null,
     timeZone: data.timeZone,
+    tentativeSchedule: tentativeSchedule(data, calendarWeek(today), addDays(calendarWeek(today), 7)),
     message,
     selectedGoalId: goalId,
     goal: goal ?? null,

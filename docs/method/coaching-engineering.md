@@ -90,6 +90,8 @@ The internal tool catalog is shared: read current state/research, inspect eviden
 
 Every write respects current revisions and stable request identity. Equivalent requests across channels must produce compatible domain outcomes and permissions; exact generated wording need not be identical. A repeated confirmation cannot duplicate a trial or booking. Contextual UI controls carry the same goal, test and decision references as conversational requests.
 
+9 September implementation: contextual plan/milestone/action editing calls the shared service, with progress, failure recovery, actual proposal status and an in-place acceptance flow for recommendations. Requested edits are reviewed without a blanket second confirmation for adaptive plans. The shared derived tentative calendar exposes feasible blocks and unplaced work to the harness and week UI; it is not a second planning agent or a general schedule optimizer. The coach still chooses the inputs, date constraints and useful learning design. See [verification](../evaluation/plan-inputs-and-edits.md) for the delivered bounds.
+
 ## 4. Choose action size, cycles and learning for the actual goal
 
 ### 4.1 Work backward without inventing expertise

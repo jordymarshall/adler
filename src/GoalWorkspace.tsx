@@ -1,7 +1,8 @@
 import { dateInZone, reviewSchedule } from "../shared/journey";
 import { GoalPlan } from "./GoalPlan";
+import { PlanEditor, type PlanEditScope } from "./PlanEditor";
 import { PlanExplanation } from "./PlanExplanation";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { Link, Navigate, useParams, useSearchParams } from "react-router-dom";
 import {
   ArrowLeft,
@@ -17,112 +18,15 @@ import {
 } from "lucide-react";
 import { EmptyState, GoalIcon, Modal, Tag } from "./components";
 import {
-  applyPlan,
   currentPlan,
   formatDate,
   useStore,
-  type Goal,
   type GoalStatus,
 } from "./store";
 import { ProgressRecords } from "./ProgressChart";
 import { GoalOrganization } from "./GoalOrganization";
 import { goalStreak } from "../shared/goal-view";
 import { goalProjection } from "../shared/goal-projection";
-
-function EditPlan({ goal, stepId, onClose }: { goal: Goal; stepId?: string; onClose: () => void }) {
-  const { commit } = useStore();
-  const [plan] = useState(() => currentPlan(goal));
-  const step = plan.adaptive?.steps.find(step => step.id === stepId);
-  const [action, setAction] = useState(step?.title ?? plan.action);
-  const [criterion, setCriterion] = useState(step?.criterion ?? plan.criterion);
-  const [timing, setTiming] = useState(step?.cue ?? plan.timing);
-  function save(e: FormEvent) {
-    e.preventDefault();
-    const adaptive = step && plan.adaptive ? structuredClone(plan.adaptive) : undefined;
-    if (adaptive) {
-      const edited = adaptive.steps.find(item => item.id === stepId)!;
-      const meaningChanged = edited.title !== action.trim() || edited.criterion !== criterion.trim();
-      const changed = meaningChanged || edited.cue !== timing.trim();
-      Object.assign(edited, { title: action.trim(), criterion: criterion.trim(), cue: timing.trim() });
-      if (changed) { delete adaptive.reasoning; delete adaptive.experiment; }
-      if (meaningChanged) {
-        delete edited.measure;
-        if (adaptive.projection?.driverStepId === stepId) delete adaptive.projection;
-      }
-    }
-    if (
-      commit(
-        (d) =>
-          applyPlan(d, goal.id, plan.version, {
-            action: action.trim(),
-            criterion: criterion.trim(),
-            timing: timing.trim(),
-            ...(adaptive ? { adaptive } : {}),
-          }),
-        "Plan updated. Reported, started and booked work is preserved.",
-      )
-    )
-      onClose();
-  }
-  return (
-    <Modal title="Make the plan fit." onClose={onClose}>
-      <p className="muted">
-        This creates a new plan version. Reported, started and booked work stays
-        with its saved plan.
-      </p>
-      <form onSubmit={save}>
-        <div className="form-field">
-          <label htmlFor="plan-action">Next action</label>
-          <textarea
-            id="plan-action"
-            value={action}
-            required
-            maxLength={300}
-            rows={2}
-            onChange={(e) => setAction(e.target.value)}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor="plan-criterion">Finished when</label>
-          <textarea
-            id="plan-criterion"
-            value={criterion}
-            required
-            maxLength={500}
-            rows={2}
-            onChange={(e) => setCriterion(e.target.value)}
-          />
-        </div>
-        <div className="form-field">
-          <label htmlFor="plan-timing">Timing or cue</label>
-          <input
-            id="plan-timing"
-            value={timing}
-            required
-            maxLength={150}
-            onChange={(e) => setTiming(e.target.value)}
-          />
-          <p className="field-hint">
-            Choose a cue, or use “Unscheduled”. Choose a calendar time after
-            saving.
-          </p>
-        </div>
-        <div className="modal-actions">
-          <button className="button secondary" type="button" onClick={onClose}>
-            Cancel
-          </button>
-          <button
-            className="button primary"
-            type="submit"
-            disabled={!action.trim() || !criterion.trim() || !timing.trim()}
-          >
-            Save plan <Check size={16} />
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-}
 
 export function GoalWorkspace({
   focusedGoalId,
@@ -141,7 +45,8 @@ export function GoalWorkspace({
   const { data, commit } = useStore();
   const goal = data.goals.find((g) => g.id === goalId);
   const [editing, setEditing] = useState(false);
-  const [editingStep, setEditingStep] = useState<string>();
+  const [editingScope, setEditingScope] = useState<PlanEditScope>({ kind: "plan" });
+  const [editRevision, setEditRevision] = useState(0);
   const [statusChange, setStatusChange] = useState<GoalStatus | null>(null);
   if (!goal)
     return (
@@ -241,7 +146,7 @@ export function GoalWorkspace({
           </div>
         </details>
       </div>
-      <GoalPlan key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`} goal={goal} actionId={actionId ?? query.get("action") ?? undefined} onEdit={stepId => { setEditingStep(stepId); setEditing(true); }} />
+      <GoalPlan key={`${goal.id}:${actionId ?? query.get("action") ?? ""}`} goal={goal} actionId={actionId ?? query.get("action") ?? undefined} editRevision={editRevision} onEdit={scope => { setEditingScope(scope); setEditing(true); }} />
       <details id="goal-details" className="goal-records" open={tab === "progress" || tab === "plan" || undefined}>
       <summary>History & settings</summary>
       <details
@@ -254,9 +159,9 @@ export function GoalWorkspace({
           <button
             className="text-link"
             disabled={goal.status !== "Active" && goal.status !== "Draft"}
-            onClick={() => { setEditingStep(undefined); setEditing(true); }}
+            onClick={() => { setEditingScope({ kind: "plan" }); setEditing(true); }}
           >
-            Edit the next action
+            Edit this plan
           </button>
           {plan.basis && <PlanExplanation basis={plan.basis} reasoning={plan.adaptive?.reasoning} />}
           <details className="quiet-disclosure plan-history">
@@ -460,7 +365,7 @@ export function GoalWorkspace({
         </div>
       </details>
       </details>
-      {editing && <EditPlan goal={goal} stepId={editingStep} onClose={() => setEditing(false)} />}
+      {editing && <PlanEditor goal={goal} scope={editingScope} onClose={() => setEditing(false)} onApplied={() => setEditRevision(revision => revision + 1)} />}
       {statusChange && (
         <Modal
           title={

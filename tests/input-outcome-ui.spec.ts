@@ -102,6 +102,7 @@ test("tracking follows the projection driver and remains visible without a numer
 test("a full month distinguishes goals and opens complete Adler event details on desktop and mobile", async ({ page }) => {
   await example(page);
   await page.goto("/app/calendar");
+  await page.getByRole("button", { name: "Month", exact: true }).click();
   await expect(page.getByRole("grid")).toBeVisible();
   await expect(page.getByRole("gridcell")).toHaveCount(42);
   const colors = await page.locator(".calendar-legend span i").evaluateAll(els => els.slice(0, 3).map(el => getComputedStyle(el).backgroundColor));

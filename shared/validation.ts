@@ -22,8 +22,8 @@ const text = z.string().max(5000);
 export const milestoneSchema = z
   .object({
     id,
-    title: text,
-    criterion: text,
+    title: text.describe("An intermediate result or subgoal, distinct from the actions used to reach it."),
+    criterion: text.describe("Evidence that this intermediate result has been reached; action adherence alone does not verify it."),
     done: z.boolean(),
     dueDate: date.optional(),
     completedAt: date.optional(),
