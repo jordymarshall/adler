@@ -2,7 +2,15 @@
 
 7 September 2026. Implements the user's latest direction: explain the journey from setting a goal to reaching it, and make Adler's ongoing, hypothesis-driven coaching the reason to use it. This supersedes the separate introductory example followed by five feature chapters.
 
-## Decisions
+## 9 September: one phone scene at a time
+
+The latest user direction replaces both the three-phone overview and the numbered walkthrough with one pinned phone story immediately after the opening. Scrolling advances through goals → the earlier lunch plan → the later check-in → saved learning → calendar → progress. The follow-up correction uses Moretapay’s centred phone treatment as a visual reference: the phone stays fixed while its contents gently blend and move by at most eight pixels. Each scene has a short, literal heading, one brief sentence and a quiet background tint. The phone shows concise summaries of the existing reading fixture rather than shrinking a full page; opening it reveals the actual mobile app capture.
+
+Previous/next buttons, direct scene selection and left/right/Home/End keys provide alternatives to scrolling; the story can be skipped. Scene changes have no timer, reduced motion removes transitions, and enlargement retains the mobile screen, saved reasoning and projection assumptions. The connected-phone example remains available in a disclosure, followed by the existing immersive graph.
+
+The previews name the saved goal, first action, later report, revised test, planned block and reported book count. The revised plan remains a test, and the result view contains no invented projection. Full saved reasoning and projection assumptions remain available in the actual captures. This changes the demonstration, not the coaching method: fictional reports, tentative findings, agreed work, actual results and conditional projections retain their meaning. The older three-phone gathering and numbered journey requirements below are superseded by this direction.
+
+## Original decisions
 
 - Keep the selected headline, subheadline, typography, textured paper and mountain/Adler-mark ending. Show three actual mobile web-app screens with connecting curves that gather as you scroll, then preserve the immersive graph (the user explicitly reaffirmed it). Replace the separate tip example and feature chapters with one readable journey.
 - Add App Store and Google Play buttons as clearly identified coming-soon placeholders, alongside the working web-app entry. Screen enlargement works with keyboard and touch.

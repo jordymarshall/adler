@@ -48,17 +48,17 @@ test("the integration catalog distinguishes plans from working setup paths", asy
 
 test("the example text check-in discusses a next step without rewriting recorded work", async ({ page }) => {
   await page.goto("/");
-  const recordedCapture = page.locator('[data-screen="progress"] .app-capture-window .capture-still img');
-  const recorded = (await recordedCapture.getAttribute("src"))!;
+  const recordedCapture = page.locator('.story-phone-frame[data-preview="progress"]');
+  const recorded = (await recordedCapture.textContent())!;
   await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
-  const step = page.locator("#step-4");
+  const step = page.locator(".journey-connections");
   await step.getByRole("button", { name: "Try the example text check-in" }).click();
   await expect(step.getByRole("log")).toContainText("Keep home-day reading");
   await expect(step.getByRole("log")).toContainText("review whether the window helped after your next few reports");
-  await expect(recordedCapture).toHaveAttribute("src", recorded);
+  await expect(recordedCapture).toHaveText(recorded);
   await step.getByRole("button", { name: "Reset example text check-in" }).click();
   await expect(step.getByRole("log")).not.toContainText("Yes, book 12:30.");
-  await expect(recordedCapture).toHaveAttribute("src", recorded);
+  await expect(recordedCapture).toHaveText(recorded);
 });
 
 test("signed-in integrations start with the catalog and retain setup links", async ({
@@ -86,14 +86,11 @@ test("landing media respects reduced motion and the new surfaces work on mobile"
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
-  await expect(page.locator(".journey-hero")).toHaveCSS("position", "relative");
-  await expect(page.locator(".journey-step").first()).toHaveCSS(
-    "animation-name",
-    "none",
-  );
-  for (const selector of ["#step-1", "#step-2", "#step-3", "#step-4", "#step-5"]) {
-    await page.locator(selector).scrollIntoViewIfNeeded();
-    const result = await new AxeBuilder({ page }).include(selector).analyze();
+  await expect(page.locator(".phone-story")).toHaveCSS("transition-duration", "0s");
+  for (const control of await page.locator(".phone-story-dots button").all()) {
+    await control.click();
+    await expect(control).toHaveAttribute("aria-current", "step");
+    const result = await new AxeBuilder({ page }).include(".phone-story").analyze();
     expect(result.violations).toEqual([]);
   }
   await page.goto("/integrations");

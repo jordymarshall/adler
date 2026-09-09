@@ -295,75 +295,116 @@ test("the simplified journey works on a phone with accessible disclosure control
 test("the landing uses Adler Warm throughout its connected goal journey", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator(".journey-introduction h1")).toHaveText("Reach your goals with a system that understands you.");
-  const typography = await page.locator(".journey-introduction h1, .journey-step-heading h2, .mountain-finale h2").evaluateAll(elements =>
+  const typography = await page.locator(".journey-introduction h1, .phone-story h2, .mountain-finale h2").evaluateAll(elements =>
     elements.map(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight })),
   );
   expect(typography.every(font => font.family.includes("Adler Warm") && font.weight === "550")).toBeTruthy();
   await expect(page.locator(".hero-intro-v2 > p").first()).toHaveCSS("font-weight", "500");
-  await expect(page.locator(".journey-step")).toHaveCount(5);
-  await expect(page.getByRole("navigation", { name: "Your goal journey" }).getByRole("link")).toHaveCount(5);
-  await expect(page.locator("#step-4")).toContainText("Apple Health");
-  await expect(page.locator("#step-4 .connections-upcoming")).toContainText("Shared goals & stakes");
-  await expect(page.locator("#step-4 .connections-upcoming")).toContainText("Coming soon");
+  await expect(page.locator(".story-phone")).toHaveCount(1);
+  await expect(page.locator(".phone-story-dots button")).toHaveCount(6);
+  await expect(page.locator(".journey-connections")).toContainText("Apple Health");
+  await expect(page.locator(".journey-connections .connections-upcoming")).toContainText("Shared goals & stakes");
+  await expect(page.locator(".journey-connections .connections-upcoming")).toContainText("Coming soon");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });
 
-test("landing app captures load the desktop and native mobile screens", async ({ page }) => {
+test("landing keeps one concise phone preview centered at desktop and phone sizes", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
+  const scenes = [
+    ["Set a goal.", "Read 30 books"],
+    ["Get a plan.", "Read 20 pages"],
+    ["Report what happened.", "Office days are full of meetings"],
+    ["Your plan adapts.", "Next test · Review Oct 22"],
+    ["Make time for it.", "12:30–12:50 · Planned"],
+    ["See your progress.", "First book finished"],
+  ];
   for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 1050 });
+    await page.setViewportSize({ width, height: 844 });
     await page.goto("/");
-    for (const screen of ["goals", "plan", "checkin", "calendar", "progress", "insights"]) {
-      const details = page.locator(`[data-screen="${screen}"]`);
-      if (screen === "calendar") await details.locator("summary").first().click();
-      const capture = details.locator(".app-capture-window .capture-still img");
-      await capture.scrollIntoViewIfNeeded();
-      await expect.poll(() => capture.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-      const image = await capture.evaluate((el: HTMLImageElement) => ({ src: el.currentSrc, pixels: el.naturalWidth, width: el.getBoundingClientRect().width }));
-      expect(image.src).toContain(`/media/app/${screen}-${width === 390 ? "mobile" : "desktop"}.webp`);
-      expect(image.pixels).toBe(width === 390 ? 780 : ["goals", "calendar"].includes(screen) ? 2000 : 1680);
-      expect(image.width).toBeGreaterThan(width === 390 ? 300 : 600);
+    const controls = page.locator(".phone-story-dots button");
+    const phone = page.locator(".story-phone");
+    let firstBounds: { y: number; height: number } | undefined;
+    for (const [index, [heading, content]] of scenes.entries()) {
+      await controls.nth(index).click();
+      await expect(controls.nth(index)).toHaveAttribute("aria-current", "step");
+      await expect(page.locator(".phone-story-copy h2")).toHaveText(heading);
+      const preview = page.locator('.story-phone-frame[aria-hidden="false"]');
+      await expect(preview).toHaveCount(1);
+      await expect(preview).toContainText(content);
+      expect((await preview.innerText()).split(/\s+/).length).toBeLessThan(45);
+      expect((await page.locator(".phone-story-copy").innerText()).split(/\s+/).length).toBeLessThan(18);
+      const bounds = (await phone.boundingBox())!;
+      firstBounds ??= bounds;
+      expect(Math.abs(bounds.x + bounds.width / 2 - width / 2)).toBeLessThan(1);
+      expect(Math.abs(bounds.y - firstBounds.y)).toBeLessThan(1);
+      expect(Math.abs(bounds.height - firstBounds.height)).toBeLessThan(1);
+      expect(bounds.width).toBeGreaterThan(220);
+      expect(bounds.y).toBeGreaterThan(100);
+      expect(bounds.y + bounds.height).toBeLessThan(780);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
 });
 
-test("landing capture interactions pause and respect reduced motion", async ({ page }) => {
+test("scroll blends the phone contents without moving the phone, and reduced motion removes the blend", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
-  const preview = page.locator('[data-screen="insights"] .app-capture-preview');
-  await preview.getByRole("button", { name: "Pause Insights animation" }).scrollIntoViewIfNeeded();
-  await expect(page.locator("#step-4")).toHaveClass(/is-current/);
-  const cursor = preview.locator(".capture-cursor");
-  await expect(cursor).toHaveCSS("animation-play-state", "running");
-  await expect(page.locator("#step-1 .capture-cursor")).toHaveCSS("animation-play-state", "paused");
-  await preview.getByRole("button", { name: "Pause Insights animation" }).click();
-  await expect(cursor).toHaveCSS("animation-play-state", "paused");
-  await preview.getByRole("button", { name: "Play Insights animation" }).click();
-  await expect(cursor).toHaveCSS("animation-play-state", "running");
-  await preview.locator(".capture-detail img").evaluate((el: HTMLImageElement) => el.decode());
-  await preview.locator(".capture-animation").evaluateAll(elements => elements.forEach(el => el.getAnimations().forEach(animation => { animation.currentTime = 9000; })));
-  await expect(preview.locator(".capture-detail")).toHaveCSS("opacity", "1");
+  await page.getByRole("button", { name: "Show your goal", exact: true }).click();
+  const phone = page.locator(".story-phone");
+  const before = (await phone.boundingBox())!;
+  await page.locator(".phone-journey").evaluate(el => window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + innerHeight * .85, behavior: "instant" }));
+  const first = page.locator('[data-preview="goals"]');
+  const next = page.locator('[data-preview="plan"]');
+  await expect.poll(async () => Number(await next.evaluate(el => getComputedStyle(el).opacity))).toBeGreaterThan(.2);
+  expect(Number(await first.evaluate(el => getComputedStyle(el).opacity))).toBeGreaterThan(.2);
+  expect(Number(await next.evaluate(el => getComputedStyle(el).opacity))).toBeLessThan(.8);
+  expect((await phone.boundingBox())!.x).toBe(before.x);
+  expect((await phone.boundingBox())!.y).toBe(before.y);
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(cursor).toHaveCSS("display", "none");
-  await expect(preview.locator(".capture-detail")).toHaveCSS("display", "none");
-  await expect(preview.locator(".capture-still")).toBeVisible();
+  await expect(first).toHaveCSS("opacity", "1");
+  await expect(next).toHaveCSS("opacity", "0");
+  await expect(first).toHaveCSS("transform", "none");
+  await expect(page.locator(".phone-story")).toHaveCSS("transition-duration", "0s");
 });
 
-test("landing app screenshots enlarge with the keyboard and restore focus", async ({ page }) => {
+test("scrolling advances one pinned phone scene and its background at a time, in both directions", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto("/");
+  await page.getByRole("link", { name: "A look inside Adler" }).click();
+  const story = page.locator(".phone-story");
+  const colors = new Set<string>();
+  for (const screen of ["goals", "plan", "checkin", "insights", "calendar", "progress"]) {
+    await expect(story).toHaveAttribute("data-screen", screen);
+    await expect(page.locator('.story-phone-frame[aria-hidden="false"]')).toHaveCount(1);
+    await expect.poll(async () => Math.abs((await story.boundingBox())!.y)).toBeLessThan(2);
+    expect((await story.boundingBox())!.height).toBe(1000);
+    colors.add(await story.evaluate(el => getComputedStyle(el).getPropertyValue("--story-bg")));
+    if (screen !== "progress") await page.mouse.wheel(0, 1001);
+  }
+  expect(colors.size).toBe(6);
+  await page.mouse.wheel(0, -1001);
+  await expect(story).toHaveAttribute("data-screen", "calendar");
+  await page.getByRole("button", { name: "Show your progress", exact: true }).click();
+  await page.getByRole("button", { name: "Continue past the story" }).click();
+  await expect(page.locator(".journey-connections")).toBeInViewport();
+});
+
+test("landing phone screenshots enlarge with the keyboard and restore focus", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-      const opener = page.getByRole("button", { name: "Enlarge Goal progress screenshot" });
+    await page.getByRole("button", { name: "Show your progress", exact: true }).click();
+    const opener = page.getByRole("button", { name: "Open full Goal progress screen" });
     await opener.focus();
     await page.keyboard.press("Enter");
     const dialog = page.getByRole("dialog", { name: "Goal progress" });
     await expect(dialog).toBeVisible();
     await expect.poll(() => dialog.locator("img").evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    expect((await dialog.boundingBox())!.width).toBeGreaterThan(width === 390 ? 340 : 1200);
+    await expect(dialog.locator("img")).toHaveAttribute("src", /hero-progress-mobile.webp/);
+    expect((await dialog.boundingBox())!.width).toBeGreaterThan(340);
     expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
     await page.keyboard.press("Escape");
     await expect(dialog).toHaveCount(0);
@@ -371,31 +412,27 @@ test("landing app screenshots enlarge with the keyboard and restore focus", asyn
   }
 });
 
-test("progress and insights frames remain readable on demand with reduced motion", async ({ page }) => {
+test("progress assumptions and saved learning stay available without motion", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1050 });
     await page.goto("/");
-      const progress = page.locator('[data-screen="progress"] .app-capture-preview');
-    await progress.getByRole("button", { name: "2 Inputs & assumptions" }).click();
-    await expect(progress.locator(".capture-detail")).toBeVisible();
-    await expect(progress.locator(".capture-detail")).toHaveCSS("opacity", "1");
-    await progress.getByRole("button", { name: "Enlarge Goal progress screenshot" }).click();
-    await expect(page.getByRole("dialog").locator("img")).toHaveAttribute("src", /progress-desktop-detail.webp/);
+    await page.getByRole("button", { name: "Show your progress", exact: true }).click();
+    await expect(page.locator(".phone-story")).toHaveCSS("transition-duration", "0s");
+    await page.getByRole("button", { name: "Open full Goal progress screen" }).click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("button", { name: "Inputs & assumptions" }).click();
+    await expect(dialog.locator("img")).toHaveAttribute("src", /progress-mobile-detail.webp/);
+    await dialog.getByRole("button", { name: "Goal projection", exact: true }).click();
+    await expect(dialog.locator("img")).toHaveAttribute("src", /hero-progress-mobile.webp/);
     await page.keyboard.press("Escape");
-    await progress.getByRole("button", { name: "1 Goal projection" }).click();
-    await expect(progress.locator(".capture-detail")).toBeHidden();
-      const insights = page.locator('[data-screen="insights"] .app-capture-preview');
-    for (const [label, selector] of [["2 The learning journey", ".capture-detail"], ["3 Why this test?", ".capture-followup"]]) {
-      const control = insights.getByRole("button", { name: label });
-      await control.focus();
-      await page.keyboard.press("Enter");
-      await expect(control).toHaveAttribute("aria-pressed", "true");
-      await expect(insights.locator(selector)).toHaveCSS("opacity", "1");
-      await expect(insights.locator(selector)).toBeVisible();
-      await expect.poll(() => insights.locator(`${selector} img`).evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    }
-    await expect(insights.locator(".capture-cursor")).toBeHidden();
+    await page.getByRole("button", { name: "Show your learning", exact: true }).click();
+    await expect(page.locator('.story-phone-frame[aria-hidden="false"]')).toContainText("Next test · Review Oct 22");
+    await page.getByRole("button", { name: "Open full Insights screen" }).click();
+    await dialog.getByRole("button", { name: "Why this test?" }).click();
+    await expect(dialog.locator("img")).toHaveAttribute("src", /insights-mobile-reasoning.webp/);
+    await expect.poll(() => dialog.locator("img").evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
+    await page.keyboard.press("Escape");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   }
 });
@@ -734,48 +771,52 @@ test("latest action observations use the last check-in when records share a date
   );
 });
 
-test("the journey index follows the reader and lets them choose a step", async ({ page }) => {
+test("the phone story supports direct selection and keyboard navigation", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
-  const index = page.getByRole("navigation", { name: "Your goal journey" });
-  for (let i = 0; i < 5; i++) {
-    await index.getByRole("link").nth(i).click();
-    await expect(index.getByRole("link").nth(i)).toHaveAttribute("aria-current", "step");
-    await expect(page.locator(`#step-${i + 1} h2`).first()).toBeInViewport();
+  const dots = page.locator(".phone-story-dots button");
+  for (let i = 0; i < 6; i++) {
+    await dots.nth(i).click();
+    await expect(dots.nth(i)).toHaveAttribute("aria-current", "step");
+    await expect(page.locator(".phone-story h2")).toBeInViewport();
   }
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(index).toHaveCSS("position", "static");
+  await page.locator(".phone-story").focus();
+  await page.keyboard.press("Home");
+  await expect(dots.nth(0)).toHaveAttribute("aria-current", "step");
+  await page.keyboard.press("ArrowRight");
+  await expect(dots.nth(1)).toHaveAttribute("aria-current", "step");
+  await page.keyboard.press("ArrowLeft");
+  await expect(dots.nth(0)).toHaveAttribute("aria-current", "step");
+  await page.keyboard.press("End");
+  await expect(dots.nth(5)).toHaveAttribute("aria-current", "step");
 });
 
-test("the first screen leads straight into the story without a mandatory animation", async ({ page }) => {
+test("the opening leads into the phone story and lets the reader skip ahead", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.goto("/");
-  await page.getByRole("link", { name: "Follow one goal" }).click();
-  await expect(page.locator(".journey-opening h2")).toBeInViewport();
-  await expect(page.locator(".journey-goal-anchor")).toContainText("Read 30 books");
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".journey-hero")).not.toHaveCSS("position", "sticky");
-  await expect(page.locator(".hero-float")).toHaveCount(0);
+  await page.getByRole("link", { name: "A look inside Adler" }).click();
+  await expect(page.locator(".phone-story h2")).toBeInViewport();
+  await expect(page.locator(".phone-story-copy")).toContainText("Read 30 books");
+  await expect(page.locator(".journey-index, .journey-step, .hero-mobile-screens")).toHaveCount(0);
+  await page.getByRole("link", { name: "Skip the story" }).click();
+  await expect(page.locator("#approach h2")).toBeInViewport();
 });
 
-test("three real mobile screens and coming-soon store buttons lead into the immersive graph", async ({ page }) => {
+test("the phone story and coming-soon store buttons lead into the immersive graph", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   const hero = page.getByRole("region", { name: "A system that understands you" });
-  await expect(hero.locator(".hero-mobile-phone")).toHaveCount(3);
-  for (const img of await hero.locator(".hero-mobile-phone img").all()) {
-    await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth === 780)).toBe(true);
-  }
+  await expect(page.locator(".story-phone")).toHaveCount(1);
   await hero.getByRole("button", { name: "Download on the App Store" }).click();
   await expect(hero.getByRole("status")).toContainText("App Store version is coming soon");
   await hero.getByRole("button", { name: "Get it on Google Play" }).click();
   await expect(hero.getByRole("status")).toContainText("Google Play version is coming soon");
   await expect(hero.getByRole("link", { name: "Get started on web" })).toHaveAttribute("href", "/app/goals/new");
-  const opener = hero.getByRole("button", { name: "Enlarge Check in with Adler" });
+  await page.getByRole("button", { name: "Show your check-in", exact: true }).click();
+  const opener = page.getByRole("button", { name: "Open full Check-in screen" });
   await opener.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Check in with Adler" })).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "Check-in" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(opener).toBeFocused();
   const graph = page.getByRole("region", { name: "From scattered goals to a plan that learns" });

@@ -166,9 +166,9 @@ test("the landing keeps one coherent goal and connected coaching on desktop and 
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
   await expect(page.locator(".hero-intro-v2 > p").first()).toContainText("behavioural science and your check-ins");
-  await expect(page.locator(".journey-step")).toHaveCount(5);
+  await expect(page.locator(".story-phone")).toHaveCount(1);
   await expect(page.locator(".hero-objects, .first-coaching-loop, .focus-chapter")).toHaveCount(0);
-  await expect(page.getByRole("group", { name: "Three views of the Adler app" }).locator(".hero-mobile-phone")).toHaveCount(3);
+  await expect(page.locator(".phone-story-dots button")).toHaveCount(6);
   await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
   const connections = page.locator(".connections-showcase");
   await expect(connections.locator(".connection-phone")).toHaveCount(3);

@@ -47,8 +47,8 @@ export function Landing() {
       </header>
       <main id="main-content">
         <LandingHero />
-        <LandingImmersiveGraph />
         <LandingJourney />
+        <LandingImmersiveGraph />
         <section className="journey-method section-wrap" id="approach">
           <div className="journey-method-copy">
             <span className="section-kicker">THE THINKING BEHIND YOUR PLAN</span>

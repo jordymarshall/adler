@@ -9,9 +9,9 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
 }) => {
   await page.goto("/");
   await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
-  await expect(page.locator(".app-capture-window .capture-still img")).toHaveCount(6);
-  await expect(page.locator("#step-4 figcaption").first()).toContainText("Actual app · Example workspace");
-  await expect(page.locator("#step-4")).toContainText("Coming soon");
+  await expect(page.locator(".story-phone-frame")).toHaveCount(6);
+  await expect(page.locator(".phone-story-caption")).toContainText("Reading example");
+  await expect(page.locator(".journey-connections")).toContainText("Coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
     .first()

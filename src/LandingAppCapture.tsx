@@ -1,69 +1,96 @@
-import { useState, type CSSProperties } from "react";
-import { Maximize2, MousePointer2, Pause, Play } from "lucide-react";
+import { useState } from "react";
+import { BookOpen, CalendarDays, Check, Clock3, Maximize2 } from "lucide-react";
+import { Mark } from "./LandingArt";
 import { Modal } from "./components";
-import points from "./landing-capture-points.json";
 
 const screens = {
-  plan: { title: "Your plan", alt: "The actual Adler goal page: current actions, a chosen planning period, milestones and a review point on the timeline." },
-  checkin: { title: "Check-in", alt: "An actual Adler conversation about the user’s available reading time, with links to the saved learning and goal." },
-  goals: { title: "Your goals", alt: "Adler’s categorized goals table with activity heatmaps, goal attainment, and projected finish dates." },
-  calendar: { title: "Your calendar", alt: "Adler’s full month calendar with goal colours and highlighted plan sessions. Selecting a session shows its full details." },
-  progress: { title: "Goal progress", alt: "The Read 30 books goal detail: reported books, projected finish, and a conditional scenario band with error bars extending to the goal horizon. The projection uses pages read per day and an assumed book length." },
-  insights: { title: "Insights", alt: "Two questions Adler is learning about, with current test status and review timing. Open the reading example to see how reported evening work constraints inform a lunch-window hypothesis, its specific research, and the next review." },
+  goals: { title: "Your goals", image: "goals-mobile", alt: "Adler’s actual mobile goals view, with goals and their reported activity and outcomes." },
+  plan: { title: "Your plan", image: "plan-mobile", alt: "The earlier reading plan: try 20 pages after lunch, then review whether the window was available." },
+  checkin: { title: "Check-in", image: "hero-check-in-mobile", alt: "The later reading check-in: lunch works at home, while meetings still fill office days. Adler keeps the home-day plan and revisits office-day capacity." },
+  insights: { title: "Insights", image: "insights-mobile-detail", alt: "The saved learning journey: the original lunch test, two reported attempts, and a revised test for home days. The evidence does not prove timing caused the difference." },
+  calendar: { title: "Your calendar", image: "calendar-mobile", alt: "Adler’s actual mobile calendar, showing planned reading alongside work toward other goals." },
+  progress: { title: "Goal progress", image: "hero-progress-mobile", alt: "Read 30 books: one reported book finished, with a conditional projection and scenario range based on pages read and assumed book lengths." },
 };
 
-export function LandingAppCapture({ screen }: { screen: keyof typeof screens }) {
-  const [expanded, setExpanded] = useState(false);
-  const [paused, setPaused] = useState(false);
-  const [frame, setFrame] = useState<number | null>(null);
-  const steps = screen === "progress" ? ["Goal projection", "Inputs & assumptions"] : screen === "insights" ? ["Learning now", "The learning journey", "Why this test?"] : null;
-  const { title, alt } = screens[screen];
-  const point = points[screen];
-  function capture(enlarged = false, detail = false, followup = false) {
-    const suffix = enlarged && screen === "insights" ? "-reasoning" : followup ? "-followup" : detail || (enlarged && frame === 1) ? "-detail" : "";
-    const hidden = !enlarged && (frame === null ? detail || followup : frame !== (followup ? 2 : detail ? 1 : 0));
-    const description = screen === "progress" && (detail || (enlarged && frame === 1))
-      ? "The inputs behind Read 30 books: measured pages per day, book-length assumptions, unknown quantities and linked reports."
-      : screen === "insights" && followup ? "The current hypothesis and its specific behavioural-science interpretation, with research and source links."
-      : screen === "insights" && detail ? "The saved starting point, first test, reported feedback and revised current test appear in date order."
-      : alt;
-    return (
-      <picture className={enlarged ? "capture-expanded" : followup ? "capture-followup capture-animation" : detail ? "capture-detail capture-animation" : "capture-still"} aria-hidden={hidden || undefined}>
-        <source media="(max-width: 650px)" srcSet={`/media/app/${screen}-mobile${suffix}.webp`} width="780" height="2100" />
-        <img src={`/media/app/${screen}-desktop${suffix}.webp`} alt={hidden ? "" : enlarged && screen === "insights" ? "The complete reasoning behind a working insight, from reported evidence through the next experiment." : description} width={["progress", "insights", "plan", "checkin"].includes(screen) ? 1680 : 2000} height="1800" loading={enlarged ? "eager" : "lazy"} decoding="async" />
-      </picture>
-    );
-  }
-  return (
-    <figure className="app-capture-preview" data-paused={paused || expanded} data-frame={frame ?? "auto"} data-guided={!!steps} style={{ "--cursor-desktop-x": `${point.desktop.x}%`, "--cursor-desktop-y": `${point.desktop.y}%`, "--cursor-mobile-x": `${point.mobile.x}%`, "--cursor-mobile-y": `${point.mobile.y}%` } as CSSProperties}>
-      <button className="app-capture-window" onClick={() => setExpanded(true)} aria-label={`Enlarge ${title} screenshot`}>
-        <span className="app-capture-bar">
-          <span>Adler <span aria-hidden="true">/</span> {title}</span>
-          <Maximize2 size={14} />
-        </span>
-        <span className="app-capture-frames">
-          {capture()}
-          {capture(false, true)}
-          {screen === "insights" && capture(false, false, true)}
-          <MousePointer2 className="capture-cursor capture-animation" size={24} aria-hidden="true" />
-          <span className="capture-click capture-animation" aria-hidden="true" />
-        </span>
-      </button>
-      <figcaption>
-        <span>Actual app · Example workspace</span>
-        <button className="capture-playback" onClick={() => { setPaused(!paused); if (paused) setFrame(null); }} aria-label={`${paused ? "Play" : "Pause"} ${title} animation`}>
-          {paused ? <Play size={12} /> : <Pause size={12} />} {paused ? "Play" : "Pause"}
-        </button>
-        <span>Click to expand ↗</span>
-      </figcaption>
-      {steps && <div className="capture-steps" role="group" aria-label={`${title} walkthrough frames`}>
-        {steps.map((step, index) => <button key={step} aria-pressed={frame === index} onClick={() => { setFrame(index); setPaused(true); }}><span>{index + 1}</span>{step}</button>)}
+export type LandingScreen = keyof typeof screens;
+
+// Concise views of the saved reading example in scripts/landing-workspace.ts.
+// Full captures retain the original evidence, history and projection assumptions.
+function PhoneScreen({ screen }: { screen: LandingScreen }) {
+  return <>
+    <span className="story-preview-bar"><Mark /> adler</span>
+    <span className="story-preview-content">
+      {screen === "goals" && <>
+        <BookOpen className="story-preview-icon" />
+        <span className="story-preview-kicker">Your goal</span>
+        <strong className="story-preview-title">Read 30 books</strong>
+        <span className="story-preview-row"><CalendarDays /> By Jan 1, 2028</span>
+        <span className="story-preview-status"><Check /> Goal saved</span>
+      </>}
+      {screen === "plan" && <>
+        <span className="story-preview-kicker">Read 30 books · First plan</span>
+        <strong className="story-preview-title">Read 20 pages</strong>
+        <span className="story-preview-row"><Clock3 /> After lunch</span>
+        <span className="story-preview-note">Try this window.<br />Review on Oct 16.</span>
+      </>}
+      {screen === "checkin" && <>
+        <span className="story-preview-kicker">Check-in</span>
+        <span className="story-preview-message"><small>You</small>Lunch works at home. Office days are full of meetings.</span>
+        <span className="story-preview-reply"><Mark /><span>Keep reading at home. Let’s check time on office days.</span></span>
+      </>}
+      {screen === "insights" && <>
+        <span className="story-preview-kicker">Read 30 books · Updated plan</span>
+        <strong className="story-preview-title">Read 20 pages</strong>
+        <span className="story-preview-row"><CalendarDays /> Tuesday & Thursday</span>
+        <span className="story-preview-row"><Clock3 /> After lunch at home</span>
+        <span className="story-preview-note">Check time on office days.</span>
+        <span className="story-preview-status">Next test · Review Oct 22</span>
+      </>}
+      {screen === "calendar" && <>
+        <span className="story-preview-kicker">Tuesday, Oct 20</span>
+        <strong className="story-preview-title">Your afternoon</strong>
+        <span className="story-preview-calendar"><span>12:00</span><span className="story-calendar-space" /><span>12:30</span><span className="story-calendar-block"><BookOpen /><strong>Read 20 pages</strong><small>12:30–12:50 · Planned</small></span><span>13:00</span><span className="story-calendar-space" /></span>
+      </>}
+      {screen === "progress" && <>
+        <span className="story-preview-kicker">Read 30 books</span>
+        <strong className="story-preview-total">1 <span>/ 30</span></strong>
+        <span className="story-preview-result">books finished</span>
+        <span className="story-preview-books" aria-hidden="true">{Array.from({ length: 30 }, (_, i) => <span key={i} className={i === 0 ? "is-finished" : ""} />)}</span>
+        <span className="story-preview-status"><Check /> First book finished</span>
+        <span className="story-preview-note">Reported Oct 10</span>
+      </>}
+    </span>
+    <span className="story-preview-foot">Reading example</span>
+  </>;
+}
+
+export function LandingAppCapture({ screen }: { screen: LandingScreen }) {
+  const [expanded, setExpanded] = useState<LandingScreen | null>(null);
+  const [detail, setDetail] = useState(0);
+  const current = screens[expanded ?? screen];
+  const frames = expanded === "insights" ? [
+    { label: "The learning journey", image: current.image, alt: current.alt },
+    { label: "Why this test?", image: "insights-mobile-reasoning", alt: "The saved reasoning behind the reading test, with reported evidence, specific behavioural research, limits and the next review." },
+  ] : expanded === "progress" ? [
+    { label: "Goal projection", image: current.image, alt: current.alt },
+    { label: "Inputs & assumptions", image: "progress-mobile-detail", alt: "The projection’s measured pages, assumed book lengths, unknown quantities and linked reports." },
+  ] : [{ label: current.title, image: current.image, alt: current.alt }];
+  const frame = frames[detail] ?? frames[0];
+
+  return <figure className="story-app-capture">
+    <button className="story-phone" onClick={() => { setDetail(0); setExpanded(screen); }} aria-label={`Open full ${screens[screen].title} screen`}>
+      <span className="story-phone-camera" aria-hidden="true" />
+      <span className="story-phone-display">
+        {(Object.keys(screens) as LandingScreen[]).map(name => <span className="story-phone-frame" key={name} data-preview={name} data-active={name === screen} aria-hidden={name !== screen}><PhoneScreen screen={name} /></span>)}
+      </span>
+      <span className="story-phone-home" aria-hidden="true" />
+    </button>
+    <figcaption><Maximize2 size={12} /> Open full app screen</figcaption>
+    {expanded && <Modal title={current.title} onClose={() => setExpanded(null)}>
+      {frames.length > 1 && <div className="story-capture-details" role="group" aria-label={`${current.title} detail views`}>
+        {frames.map((item, index) => <button key={item.label} aria-pressed={detail === index} onClick={() => setDetail(index)}>{item.label}</button>)}
       </div>}
-      {expanded && (
-        <Modal title={title} onClose={() => setExpanded(false)} wide>
-          {capture(true)}
-        </Modal>
-      )}
-    </figure>
-  );
+      <img className="story-capture-expanded" src={`/media/app/${frame.image}.webp`} width="780" height="2100" alt={frame.alt} />
+    </Modal>}
+  </figure>;
 }

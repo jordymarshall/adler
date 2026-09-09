@@ -6,7 +6,6 @@ export function LandingBackdrop() {
     const node = backdrop.current!;
     const page = node.parentElement!;
     const immersive = page.querySelector<HTMLElement>(".graph-journey")!;
-    const chart = page.querySelector<HTMLElement>(".journey-progress")!;
     const finale = page.querySelector<HTMLElement>(".mountain-finale")!;
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const clamp = (value: number) => Math.min(1, Math.max(0, value));
@@ -27,16 +26,12 @@ export function LandingBackdrop() {
       const progress = clamp(
         -bounds.top / Math.max(1, bounds.height - innerHeight),
       );
-      const chartBounds = chart.getBoundingClientRect();
-      // Keep the paper quiet around the actual progress chart.
-      const graph = ease((innerHeight - chartBounds.top) / (innerHeight * .5)) *
-        ease(chartBounds.bottom / (innerHeight * .5));
       const ending = ease(
         (innerHeight - finale.getBoundingClientRect().top) / innerHeight,
       );
       const immersiveBounds = immersive.getBoundingClientRect();
       const closeGraph = ease((innerHeight - immersiveBounds.top) / (innerHeight * .5)) * ease(immersiveBounds.bottom / (innerHeight * .5));
-      const quiet = Math.max(graph, closeGraph, ending);
+      const quiet = Math.max(closeGraph, ending);
       node.style.setProperty("--backdrop-progress", String(progress));
       node.style.setProperty("--backdrop-pigment", String(.42 - quiet * .39));
       node.style.setProperty("--backdrop-grain", String(.065 - quiet * .035));

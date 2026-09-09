@@ -1767,43 +1767,6 @@
   color: #626957;
   padding-bottom: 12px;
 }
-/* Captures of the real app, with native mobile screens and a larger view. */
-.v2-landing .app-capture-preview { margin: 0 0 0 auto; min-width: 0; width: 100%; max-width: 700px; --cursor-x: var(--cursor-desktop-x); --cursor-y: var(--cursor-desktop-y); }
-.v2-landing .app-capture-window { display: block; width: 100%; padding: 0; overflow: hidden; text-align: left; border: 1px solid #dce1d3; border-radius: 13px; background: #faf9f6; box-shadow: 0 24px 65px #293a2d12, 0 2px 8px #293a2d06; cursor: zoom-in; }
-.v2-landing .app-capture-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #e2e5d9; background: #f0f2e9; font-size: 11px; color: #536148; }
-.v2-landing .app-capture-bar > span { display: flex; gap: 12px; }
-.v2-landing .app-capture-preview picture, .v2-landing .app-capture-preview img { display: block; width: 100%; height: auto; }
-.v2-landing .app-capture-preview figcaption { display: flex; justify-content: space-between; gap: 12px; margin-top: 13px; font-size: 10px; color: #626957; }
-.v2-landing .app-capture-frames { position: relative; display: block; overflow: hidden; }
-.v2-landing .app-capture-preview .capture-detail { position: absolute; inset: 0; opacity: 0; animation: capture-detail 9s infinite; }
-.v2-landing .app-capture-preview .capture-followup { display: block; position: absolute; inset: 0; opacity: 0; animation: capture-followup 9s infinite; }
-.v2-landing .capture-cursor { position: absolute; left: 78%; top: 78%; color: #fffefa; fill: #293a2d; filter: drop-shadow(0 1px 2px #293a2d40); opacity: 0; animation: capture-cursor 9s infinite; pointer-events: none; }
-.v2-landing .capture-click { position: absolute; left: var(--cursor-x); top: var(--cursor-y); width: 28px; height: 28px; margin: -14px; border: 1px solid #677e48; border-radius: 50%; opacity: 0; animation: capture-click 9s infinite; pointer-events: none; }
-.v2-landing .app-capture-preview .capture-animation { animation-play-state: paused; }
-.v2-landing .capture-playback { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 6px; margin: -4px 0 -4px auto; border: 0; background: transparent; color: inherit; font-size: inherit; }
-.v2-landing .app-capture-preview[data-guided="true"] .capture-animation { animation-duration: 18s; }
-.v2-landing .capture-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; }
-.v2-landing .capture-steps button { display: flex; align-items: center; gap: 6px; border: 1px solid #dce1d3; border-radius: 5px; padding: 9px 10px; background: #faf9f6; color: #43503b; font-size: 12px; }
-.v2-landing .capture-steps button > span { font-size: 10px; color: #626957; }
-.v2-landing .capture-steps button[aria-pressed="true"] { background: #e9eeda; border-color: #677e48; }
-.v2-landing .app-capture-preview:not([data-frame="auto"]) .capture-animation { animation: none; display: none; }
-.v2-landing .app-capture-preview[data-frame="1"] .capture-detail,
-.v2-landing .app-capture-preview[data-frame="2"] .capture-followup { display: block; opacity: 1; }
-@keyframes capture-detail { 0%, 29%, 91%, 100% { opacity: 0; } 32%, 83% { opacity: 1; } }
-@keyframes capture-cursor { 0%, 8%, 100% { opacity: 0; left: 78%; top: 78%; } 15% { opacity: 1; left: 78%; top: 78%; } 28%, 72% { opacity: 1; left: var(--cursor-x); top: var(--cursor-y); } 88%, 95% { opacity: 0; left: 78%; top: 78%; } }
-@keyframes capture-click { 0%, 28%, 37%, 100% { opacity: 0; transform: scale(.6); } 30% { opacity: .6; transform: scale(.6); } 36% { opacity: 0; transform: scale(1.4); } }
-@keyframes capture-followup { 0%, 56%, 91%, 100% { opacity: 0; } 60%, 83% { opacity: 1; } }
-@media (prefers-reduced-motion: reduce) {
-  .v2-landing .app-capture-preview .capture-animation, .v2-landing .capture-playback { display: none; animation: none; }
-}
-.v2-landing .app-capture-preview .modal { width: 1440px; max-width: calc(100vw - 48px); padding: 22px; }
-.v2-landing .app-capture-preview .modal-header { margin-bottom: 18px; }
-.v2-landing .app-capture-preview .modal-header h2 { font-size: 24px; }
-@media (max-width: 650px) {
-  .v2-landing .app-capture-preview { max-width: 320px; margin-inline: auto; --cursor-x: var(--cursor-mobile-x); --cursor-y: var(--cursor-mobile-y); }
-  .v2-landing .app-capture-preview .modal { max-width: calc(100vw - 20px); padding: 12px; }
-}
-
 /* Landing typography and the connected-phone demonstration. */
 .v2-landing .hero-intro-v2 h1 { max-width: 920px; margin-inline: auto; font-size: clamp(44px, 5.6vw, 78px); text-wrap: balance; line-height: 1.07; }
 .v2-landing .hero-intro-v2 > p { max-width: 630px; margin-inline: auto; text-wrap: balance; }

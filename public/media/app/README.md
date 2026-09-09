@@ -1,10 +1,8 @@
 # App screenshots for the landing page
 
-Sections 01–04 show captures of Adler's real Goals, Calendar, goal workspace, and Insights routes. They share a fictional portfolio, reading, and career workspace. These are screenshots, not interactive embeds or customer results.
+The centred landing phone uses concise HTML summaries of the fictional reading workspace in `scripts/landing-workspace.ts`. Opening the phone shows the corresponding actual mobile app capture; learning and progress retain additional reasoning and assumptions views. The summaries are illustrative previews, not a new app workflow or customer result.
 
-Each view has a desktop capture (1000 × 900 CSS pixels for Goals/Calendar; a closer 840 × 900 view for Progress/Insights) and a mobile capture (390 × 1050), rendered at 2× resolution and saved as WebP. Goals show the categorized table and open the attainment projection; Calendar shows a full month. Progress shows the same goal-detail projection opened from Goals: reported attainment, projected finish, forward scenario band and error bars. Its second frame opens the measured inputs and conversion assumptions behind that projection. Insights begins with multiple observations and their planning implications, then opens one complete reasoning chain. Desktop and mobile add a third frame to show the later reasoning stages; enlarging Insights opens a full-height capture of the chain.
-
-Only the surrounding sidebar, top bar, and mobile navigation are hidden for the captures; the content uses the actual app components and styling. Click positions are generated in `src/landing-capture-points.json`. Animation pauses outside the current section, has a pause control, and becomes a still image for reduced motion. Progress and Insights use a slower 18-second cycle and named frame buttons that stop animation for reading; manual selection remains available with reduced motion. Mobile uses its own captures and cursor positions. Any view can be enlarged.
+The retained assets include desktop captures (1000 × 900 CSS pixels for Goals/Calendar; 840 × 900 for other views), mobile captures (390 × 1050), and closer hero captures (390 × 780), at 2× resolution. The main capture script hides surrounding navigation and renders actual app components. Desktop files and cursor positions remain capture-source assets; the active phone story does not load them or automatically animate screenshots.
 
 To refresh after app UI changes, start the app locally and run:
 
