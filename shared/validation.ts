@@ -267,6 +267,8 @@ const time = z.string().regex(/^(?:[01]\d|2[0-3]):[0-5]\d$/);
 export const automationSchema = z
   .object({
     enabled: z.boolean(),
+    checkInMode: z.enum(["after-session", "end-of-day"]).default("after-session"),
+    checkInTime: time.default("19:00"),
     reviewTime: time,
     quietStart: time,
     quietEnd: time,

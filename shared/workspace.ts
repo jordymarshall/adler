@@ -159,6 +159,8 @@ export interface Data {
   timeZone: string;
   automation: {
     enabled: boolean;
+    checkInMode: "after-session" | "end-of-day";
+    checkInTime: string;
     reviewTime: string;
     quietStart: string;
     quietEnd: string;
@@ -242,6 +244,8 @@ export function initialData(): Data {
     ],
     automation: {
       enabled: false,
+      checkInMode: "after-session",
+      checkInTime: "19:00",
       reviewTime: "17:00",
       quietStart: "21:00",
       quietEnd: "08:00",
@@ -274,10 +278,14 @@ export function enrichData(data: Data): Data {
   data.timeZone ??= "UTC";
   data.automation ??= {
     enabled: false,
+    checkInMode: "after-session",
+    checkInTime: "19:00",
     reviewTime: "17:00",
     quietStart: "21:00",
     quietEnd: "08:00",
   };
+  data.automation.checkInMode ??= "after-session";
+  data.automation.checkInTime ??= "19:00";
   return data;
 }
 export function currentProgram(data: Data) {

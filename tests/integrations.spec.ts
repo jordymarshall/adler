@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
-import { register } from "./fixtures";
+import { register, snapshot, synced } from "./fixtures";
 
 test("the integration catalog distinguishes plans from working setup paths", async ({
   page,
@@ -46,21 +46,6 @@ test("the integration catalog distinguishes plans from working setup paths", asy
   ).toBe(true);
 });
 
-test("the example text check-in discusses a next step without rewriting recorded work", async ({ page }) => {
-  await page.goto("/");
-  const recordedCapture = page.locator('.story-phone-frame[data-preview="progress"]');
-  const recorded = (await recordedCapture.textContent())!;
-  await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
-  const step = page.locator(".journey-connections");
-  await step.getByRole("button", { name: "Try the example text check-in" }).click();
-  await expect(step.getByRole("log")).toContainText("Keep home-day reading");
-  await expect(step.getByRole("log")).toContainText("review whether the window helped after your next few reports");
-  await expect(recordedCapture).toHaveText(recorded);
-  await step.getByRole("button", { name: "Reset example text check-in" }).click();
-  await expect(step.getByRole("log")).not.toContainText("Yes, book 12:30.");
-  await expect(recordedCapture).toHaveText(recorded);
-});
-
 test("signed-in integrations start with the catalog and retain setup links", async ({
   page,
 }) => {
@@ -78,6 +63,23 @@ test("signed-in integrations start with the catalog and retain setup links", asy
   await expect(calendar).toContainText("Not connected");
   await calendar.getByRole("link", { name: "Set up" }).click();
   await expect(page).toHaveURL(/\/app\/calendar$/);
+});
+
+test("a user's check-in timing persists in their connected workspace", async ({ page }) => {
+  await register(page);
+  await page.goto("/app/connections");
+  await expect(page.getByRole("combobox", { name: "When to check in", exact: true })).toHaveValue("after-session");
+  await expect(page.getByLabel("Daily check-in time", { exact: true })).toHaveCount(0);
+  await page.getByRole("combobox", { name: "When to check in", exact: true }).selectOption("end-of-day");
+  await page.getByLabel("Daily check-in time", { exact: true }).fill("20:30");
+  await synced(page);
+  await page.reload();
+  await expect(page.getByRole("combobox", { name: "When to check in", exact: true })).toHaveValue("end-of-day");
+  await expect(page.getByLabel("Daily check-in time", { exact: true })).toHaveValue("20:30");
+  expect((await snapshot(page)).data.automation.enabled).toBe(false);
+  await page.getByRole("combobox", { name: "When to check in", exact: true }).selectOption("after-session");
+  await synced(page);
+  expect((await snapshot(page)).data.automation.checkInMode).toBe("after-session");
 });
 
 test("landing media respects reduced motion and the new surfaces work on mobile", async ({

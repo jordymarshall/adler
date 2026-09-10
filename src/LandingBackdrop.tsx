@@ -5,7 +5,7 @@ export function LandingBackdrop() {
   useEffect(() => {
     const node = backdrop.current!;
     const page = node.parentElement!;
-    const immersive = page.querySelector<HTMLElement>(".graph-journey")!;
+    const immersive = page.querySelector<HTMLElement>(".phone-journey")!;
     const finale = page.querySelector<HTMLElement>(".mountain-finale")!;
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const clamp = (value: number) => Math.min(1, Math.max(0, value));
@@ -30,8 +30,8 @@ export function LandingBackdrop() {
         (innerHeight - finale.getBoundingClientRect().top) / innerHeight,
       );
       const immersiveBounds = immersive.getBoundingClientRect();
-      const closeGraph = ease((innerHeight - immersiveBounds.top) / (innerHeight * .5)) * ease(immersiveBounds.bottom / (innerHeight * .5));
-      const quiet = Math.max(closeGraph, ending);
+      const phoneInView = ease((innerHeight - immersiveBounds.top) / (innerHeight * .5)) * ease(immersiveBounds.bottom / (innerHeight * .5));
+      const quiet = Math.max(phoneInView, ending);
       node.style.setProperty("--backdrop-progress", String(progress));
       node.style.setProperty("--backdrop-pigment", String(.42 - quiet * .39));
       node.style.setProperty("--backdrop-grain", String(.065 - quiet * .035));

@@ -107,15 +107,15 @@ test("a full month distinguishes goals and opens complete Adler event details on
   await expect(page.getByRole("gridcell")).toHaveCount(42);
   const colors = await page.locator(".calendar-legend span i").evaluateAll(els => els.slice(0, 3).map(el => getComputedStyle(el).backgroundColor));
   expect(new Set(colors).size).toBe(3);
-  const event = page.locator(".month-entry button").filter({ hasText: "25 minutes on my chosen draft" }).first();
+  const event = page.locator(".month-entry button").filter({ hasText: "Spend 25 minutes drafting your next case study after breakfast." }).first();
   await event.click();
-  await expect(page.getByRole("dialog")).toContainText("25 minutes on my chosen draft");
+  await expect(page.getByRole("dialog")).toContainText("Spend 25 minutes drafting your next case study after breakfast.");
   await expect(page.getByRole("dialog")).toContainText("Adler plan");
   await page.keyboard.press("Escape");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await event.click();
-  await expect(page.getByRole("dialog").getByRole("heading")).toHaveText("25 minutes on my chosen draft");
+  await expect(page.getByRole("dialog").getByRole("heading")).toHaveText("Spend 25 minutes drafting your next case study after breakfast.");
   await page.keyboard.press("Escape");
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

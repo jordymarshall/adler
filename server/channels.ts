@@ -109,6 +109,17 @@ export function nextReview(data: Data, now = Date.now()) {
   }
   throw new Error("Could not find the next review in this timezone.");
 }
+export function nextEndOfDay(data: Data, now = Date.now(), afterDate = "") {
+  // Match wall-clock time in the person's zone, including DST transitions.
+  for (let t = Math.ceil((now + 1) / 60000) * 60000; t < now + 3 * 86400000; t += 60000) {
+    const p = localParts(data.timeZone, new Date(t));
+    if (p.date > afterDate && p.time === data.automation.checkInTime) return t;
+  }
+  throw new Error("Could not find the next daily check-in in this timezone.");
+}
+const scheduledKinds = ["check-in", "end-of-day", "weekly-review"];
+const dailyRule = (data: Data) => JSON.stringify([data.timeZone, data.automation.checkInTime]);
+const dailyEnabled = (data: Data) => data.automation.checkInMode === "end-of-day" && data.goals.some(goal => goal.status === "Active");
 export const inQuietHours = (data: Data, now = new Date()) => {
   const time = localParts(data.timeZone, now).time;
   const { quietStart: start, quietEnd: end } = data.automation;
@@ -245,7 +256,7 @@ export class Channels {
         .run(userId);
       this.db.sql
         .prepare(
-          "UPDATE jobs SET status='cancelled' WHERE user_id=? AND kind IN ('check-in','weekly-review') AND status='pending'",
+          "UPDATE jobs SET status='cancelled' WHERE user_id=? AND kind IN ('check-in','end-of-day','weekly-review') AND status='pending'",
         )
         .run(userId);
     });
@@ -617,7 +628,7 @@ export class Channels {
     ) {
       this.db.sql
         .prepare(
-          "UPDATE jobs SET status='cancelled' WHERE user_id=? AND kind IN ('check-in','weekly-review') AND status='pending'",
+          "UPDATE jobs SET status='cancelled' WHERE user_id=? AND kind IN ('check-in','end-of-day','weekly-review') AND status='pending'",
         )
         .run(userId);
       return;
@@ -657,6 +668,7 @@ export class Channels {
       const goal = data.goals.find((g) => g.id === block.goalId);
       const action = data.actions.find((a) => a.id === block.id);
       if (
+        data.automation.checkInMode !== "after-session" ||
         !goal ||
         goal.status !== "Active" ||
         action?.outcome ||
@@ -687,6 +699,28 @@ export class Channels {
         this.db.sql
           .prepare("UPDATE jobs SET status='cancelled' WHERE id=?")
           .run(row.id);
+    this.ensureDailyCheckIn(userId, data);
+  }
+  private ensureDailyCheckIn(userId: string, data: Data) {
+    let id = "";
+    if (dailyEnabled(data)) {
+      const rule = dailyRule(data);
+      const pending = this.db.sql.prepare("SELECT id,json FROM jobs WHERE user_id=? AND kind='end-of-day' AND status='pending' ORDER BY due LIMIT 1").get(userId) as { id: string; json: string } | undefined;
+      const saved = pending ? JSON.parse(pending.json) : undefined;
+      if (pending && saved.rule === rule && Date.now() - saved.scheduledFor < 86400000) {
+        // Keep a due or quiet-hours-deferred job when unrelated state changes.
+        id = pending.id;
+      } else {
+        const last = this.db.sql.prepare("SELECT json FROM jobs WHERE user_id=? AND kind='end-of-day' AND status IN ('done','failed') ORDER BY due DESC LIMIT 1").get(userId) as { json: string } | undefined;
+        const due = nextEndOfDay(data, Date.now(), last ? JSON.parse(last.json).date : "");
+        const date = dayInZone(data, new Date(due));
+        id = `end-of-day:${userId}:${date}`;
+        const payload = { date, rule, scheduledFor: due };
+        this.db.enqueue(id, userId, "end-of-day", payload, due);
+        this.db.sql.prepare("UPDATE jobs SET json=?,due=?,status='pending' WHERE id=? AND status IN ('pending','cancelled')").run(JSON.stringify(payload), due, id);
+      }
+    }
+    this.db.sql.prepare("UPDATE jobs SET status='cancelled' WHERE user_id=? AND kind='end-of-day' AND id!=? AND status='pending'").run(userId, id);
   }
   callback(form: Record<string, string>, deliveryId: string) {
     this.recordDelivery(
@@ -760,8 +794,10 @@ export class Channels {
               (!link ||
                 link.opted_out ||
                 !this.usesCurrentSender(job.user_id))) ||
-            (["check-in", "weekly-review"].includes(job.kind) &&
+            (scheduledKinds.includes(job.kind) &&
               (!snapshot.data.automation.enabled ||
+                (job.kind === "end-of-day" && (!dailyEnabled(snapshot.data) || payload.rule !== dailyRule(snapshot.data) || Date.now() - payload.scheduledFor > 86400000)) ||
+                (job.kind === "check-in" && snapshot.data.automation.checkInMode !== "after-session") ||
                 !link ||
                 link.opted_out ||
                 !this.usesCurrentSender(job.user_id) ||
@@ -771,7 +807,7 @@ export class Channels {
               .prepare("UPDATE jobs SET status='cancelled' WHERE id=?")
               .run(job.id);
           } else if (
-            ["check-in", "weekly-review"].includes(job.kind) &&
+            scheduledKinds.includes(job.kind) &&
             inQuietHours(snapshot.data)
           ) {
             this.db.sql
@@ -847,6 +883,9 @@ export class Channels {
               );
               if (action && !action.outcome && goal?.status === "Active")
                 text = `How did “${action.title}” go? Reply done, partly, or didn’t happen, and add what changed or got in the way. Goal: ${goal.title}.`;
+            } else if (job.kind === "end-of-day") {
+              const day = new Date(`${payload.date}T12:00:00Z`).toLocaleDateString("en", { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" });
+              text = `How did ${day} go? What did you work on, and what got in the way? Reply here and we’ll work out your next step.`;
             } else if (
               job.kind === "weekly-review" &&
               !snapshot.data.reviews.some(
@@ -927,6 +966,8 @@ export class Channels {
           if (job.kind === "inbound" && !retry)
             this.queueText(job.user_id, `error:${job.id}`, message);
           this.db.changed(job.user_id);
+        } finally {
+          if (job.kind === "end-of-day") this.ensureJobs(job.user_id);
         }
       }
       const row = this.db.sql
@@ -1004,7 +1045,7 @@ export class Channels {
       .prepare("SELECT kind,json,due FROM jobs WHERE id=? AND user_id=?")
       .get(jobId, userId) as
       { kind: string; json: string; due: number } | undefined;
-    if (!job || !["check-in", "weekly-review"].includes(job.kind)) return false;
+    if (!job || !scheduledKinds.includes(job.kind)) return false;
     const { data } = this.db.snapshot(userId),
       payload = JSON.parse(job.json);
     const action = data.actions.find((a) => a.id === payload.actionId),
@@ -1012,8 +1053,9 @@ export class Channels {
     if (
       !data.automation.enabled ||
       Date.now() - job.due > 86400000 ||
+      (job.kind === "end-of-day" && (!dailyEnabled(data) || payload.rule !== dailyRule(data) || Date.now() - payload.scheduledFor > 86400000)) ||
       (job.kind === "check-in" &&
-        (!action || action.outcome || goal?.status !== "Active")) ||
+        (data.automation.checkInMode !== "after-session" || !action || action.outcome || goal?.status !== "Active")) ||
       (job.kind === "weekly-review" &&
         data.reviews.some(
           (r) =>

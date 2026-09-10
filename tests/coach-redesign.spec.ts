@@ -161,27 +161,23 @@ test("legacy Coach and context links preserve their focus and source anchor", as
   await expect(page.locator("#record-remember")).toBeInViewport();
 });
 
-test("the landing keeps one coherent goal and connected coaching on desktop and mobile", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
-  await expect(page.locator(".hero-intro-v2 > p").first()).toContainText("behavioural science and your check-ins");
-  await expect(page.locator(".story-phone")).toHaveCount(1);
-  await expect(page.locator(".hero-objects, .first-coaching-loop, .focus-chapter")).toHaveCount(0);
-  await expect(page.locator(".phone-story-dots button")).toHaveCount(6);
-  await page.locator("summary").filter({ hasText: "See the check-in become a calendar booking" }).click();
-  const connections = page.locator(".connections-showcase");
-  await expect(connections.locator(".connection-phone")).toHaveCount(3);
-  const phone = await connections.locator(".adler-phone").boundingBox();
-  expect(phone!.height / phone!.width).toBeLessThan(2);
-  await connections.getByRole("button", { name: "Try the example text check-in" }).click();
-  await expect(connections.locator(".phone-messages")).toContainText("review whether the window helped");
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".connection-orbits ellipse").first()).toHaveCSS("animation-name", "none");
-  await page.getByRole("region", { name: "Example calendar schedule" }).focus();
-  await page.keyboard.press("End");
-  await expect.poll(() => page.locator(".phone-calendar-day").evaluate(el => el.scrollTop)).toBeGreaterThan(0);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+test("the landing keeps one phone and readable coaching at desktop and mobile sizes", async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/");
+    await expect(page.locator("h1")).toHaveText("Know what to do next to reach your goals.");
+    await expect(page.locator(".story-phone")).toHaveCount(1);
+    await expect(page.locator("main > section")).toHaveCount(3);
+    await expect(page.locator(".phone-journey + .mountain-finale")).toHaveCount(1);
+    for (const index of [0, 3, 4, 5, 6]) {
+      await page.locator(".phone-story-dots button").nth(index).click();
+      await expect(page.locator(".phone-story-dots button").nth(index)).toHaveAttribute("aria-current", "step");
+      await expect(page.locator(".phone-story h2")).toBeInViewport();
+      await expect(page.locator(".story-phone")).toBeInViewport({ ratio: 1 });
+      await expect(page.locator('.story-phone-frame:not([inert])')).toHaveCount(1);
+      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+  }
 });

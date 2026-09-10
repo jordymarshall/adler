@@ -92,6 +92,8 @@ Every write respects current revisions and stable request identity. Equivalent r
 
 9 September implementation: contextual plan/milestone/action editing calls the shared service, with progress, failure recovery, actual proposal status and an in-place acceptance flow for recommendations. Requested edits are reviewed without a blanket second confirmation for adaptive plans. The shared derived tentative calendar exposes feasible blocks and unplaced work to the harness and week UI; it is not a second planning agent or a general schedule optimizer. The coach still chooses the inputs, date constraints and useful learning design. See [verification](../evaluation/plan-inputs-and-edits.md) for the delivered bounds.
 
+10 September implementation: user ID scopes persisted workspace state, encrypted credentials, phone routing and durable jobs. Connections now selects after-session or end-of-day check-ins. Deterministic invitations respect local time, quiet hours, current routing and opt-out/settings changes; they do not infer performed work. Replies return to the shared service with the same account context. This supplies a persistent environment for connected coaching within a shared process. A dedicated OS/container sandbox per user is not implemented; it would require a separate design if the coach gains arbitrary code or filesystem execution.
+
 ## 4. Choose action size, cycles and learning for the actual goal
 
 ### 4.1 Work backward without inventing expertise

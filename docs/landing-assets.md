@@ -1,6 +1,33 @@
 # Landing page assets
 
-The active landing page uses V2 artwork and the locally hosted Adler Warm font. After the opening, one centred phone shows concise summaries of the saved reading goal, first plan, check-in, revised test, calendar block and reported progress. The summaries use the same fictional values as `scripts/landing-workspace.ts`. Scrolling gently blends the contents inside a fixed phone frame; six faint SVG backgrounds and pastel tints change with the scene. Buttons and keyboard controls also navigate; there is no automatic playback, and reduced motion disables transitions. Opening the phone shows the actual mobile app capture and exposes saved reasoning or projection assumptions where relevant. The connected-phone example is available on demand, followed by the immersive chart. The video assets below belong to the earlier landing page and are retained as source assets; the active landing does not load them.
+The active landing leads with “Know what to do next to reach your goals.” After the hero, one centred phone contains the entire story. The original mountain ending follows immediately, with its original copy, styling and scroll animation.
+
+## Current page and visual assets
+
+- `LandingHero.tsx` retains the opening bloom, outcome-led promise, web entry and clearly identified coming-soon store buttons.
+- `LandingJourney.tsx` and `LandingAppCapture.tsx` show seven chapters across seven positions in one persistent phone: goals, Today’s next action, progress, a saved experiment, its pending learning follow-up, texting through one iMessage mockup, and connections. Only the texting chapter uses conversation bubbles. The heading mentions texting and in-app chat; one iMessage mockup demonstrates the conversation, without channel buttons or a duplicate chat stop. The phone stays in place while scrolling changes its content and quiet background artwork. Direct selection, arrow keys and skip controls remain available; reduced motion removes blending. Short viewports allow the phone’s contents to scroll so its text need not shrink indefinitely.
+- The illustrations use HTML/CSS/SVG summaries of existing app views. Each opens an actual mobile app capture. The learning view also opens the saved reasoning. Connections, the coaching method and setup details are available from the phone footer; they do not add sections to the page.
+- `MountainFinale.tsx` retains the original “Your someday.” → “Let’s give it a start.” ending.
+
+All data is fictional. The portfolio story preserves its order: the first plan and Today view precede the October 12 stopping-point test. Progress shows six reported sessions through October 8 (two done, two partial, two reported as not happening) and the first case study published October 11. The displayed learning chapter stops on October 18, with the test awaiting a check-in and no review result. The underlying fixture also retains later history: the person reports using the change on October 13 and 15 and asks to keep it on October 19. That later review preserves the original prediction, attributed feedback, competing explanations and a next review, without appearing in the earlier chapter. Finishing a section does not imply another published case study. A booking changes neither reported work nor the learning result.
+
+The short explanation and saved record share `src/landing-story.ts`. The `writing-finish` record uses `claim:goal-specific-challenging` and P29. Specific, difficult goals generally outperform “do your best” in the cited review; specificity alone is insufficient. Applying this to repeated editing remains tentative. P29 supplies task-fit and transfer boundaries, not a separate efficacy grade. Full claims and limitations remain inspectable.
+
+Scheduled session and end-of-day check-ins use the existing per-user workspace, connections and durable jobs. They require a linked phone and enabled check-ins. The landing is illustrative and sends no messages or calendar writes. The runtime sends a factual invitation; interpreting a reply and changing a plan use the shared coach.
+
+## Refresh the app captures
+
+With the local development server running:
+
+```sh
+LANDING_CAPTURE_URL=http://127.0.0.1:5173 npx tsx scripts/capture-landing.ts
+```
+
+The script renders `scripts/landing-workspace.ts` in the real app at 390 CSS pixels and 2× resolution, with fixed dates, an idle event stream and mocked read-only API responses. Historical portfolio snapshots exclude later plans, feedback and bookings. All Goals is captured September 21, Today October 8, progress October 11, the experiment in the goal view October 12, and pending learning and reasoning October 18. The calendar uses October 20 at 08:00, before that day’s sessions. The fictional calendar block and booking response refer to the same Tuesday session. The connections capture renders the actual public catalog, including its availability labels. Surrounding navigation is hidden for framing. Unexpected API requests fail the capture.
+
+Active WebP captures in `public/media/app`: `goals-mobile`, `plan-mobile`, `hero-progress-mobile`, `portfolio-experiment-mobile`, `portfolio-learning-mobile`, `portfolio-reasoning-mobile`, `calendar-mobile`, `connections-mobile`. PNG originals are in `.context/app-captures`. Older reading/desktop captures, hotspot coordinates and videos remain source material; the landing does not load them.
+
+## Earlier video assets
 
 The background video is generated footage, not a recording of Adler users. Generated September 6, 2026 using the Gemini API, `veo-3.1-fast-generate-preview`, two 6-second, 720p, 16:9 clips. The clips are joined with a 1-second dissolve, muted, desaturated slightly, and encoded as H.264 for the browser. No API keys or provider URLs are sent to the browser.
 
@@ -30,4 +57,4 @@ Aspirational cinematic campaign about personal ambition and dedication, photorea
 
 The integrations catalog distinguishes planned connections from existing setup paths. It does not show any account as connected without an actual connection. AI model API support is distinct from planned ChatGPT, Claude, and Gemini chat-app connections.
 
-The phone example is rendered in HTML/CSS so its message, delivery format, and corresponding app check-in can change together. iMessage and SMS are visual examples, not messages sent by the landing page.
+The current iMessage view and calendar entry are rendered in HTML/CSS, using existing Adler and service brand artwork. The entry follows the explicit booking request; there is no example-confirmation control. It is an illustrative conversation, not a message sent or calendar booking made by the landing page.

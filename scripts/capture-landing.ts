@@ -1,6 +1,6 @@
 import { chromium, expect } from '@playwright/test';
 import { mkdir, writeFile } from 'node:fs/promises';
-import { captureDate, landingProposals, landingWorkspace } from './landing-workspace.ts';
+import { captureDate, landingProposals, landingWorkspace, portfolioSnapshot } from './landing-workspace.ts';
 
 const baseURL = process.env.LANDING_CAPTURE_URL ?? 'http://127.0.0.1:5173';
 const directory = 'public/media/app';
@@ -19,7 +19,6 @@ await context.addInitScript({ content: `
   };
 ` });
 const data = landingWorkspace();
-const firstPlanData = landingWorkspace('first-plan');
 const responses: Record<string, unknown> = {
   auth: { user: { id: 'example', username: 'Example workspace' }, data, revision: 1 },
   workspace: { data, revision: 1 },
@@ -40,15 +39,6 @@ await context.route('**/api/**', route => {
 const page = await context.newPage();
 page.on('pageerror', error => { errors.push(error.message); console.error(error.message); });
 await page.clock.setFixedTime(new Date(captureDate));
-const screens = [
-  { name: 'goals', route: '/app/goals', ready: '.goal-table-row' },
-  { name: 'plan', route: '/app/goals/reading', ready: '#goal-plan' },
-  { name: 'checkin', route: '/app/check-in', ready: '.live-message.coach' },
-  { name: 'calendar', route: '/app/calendar', ready: '.week-calendar' },
-  { name: 'progress', route: '/app/goals/reading', ready: '.goal-projection' },
-  { name: 'insights', route: '/app/insights', ready: '.learning-record' },
-];
-const points: Record<string, Record<string, { x: number; y: number }>> = {};
 async function capture(name: string, selector?: string) {
   const screenshot = selector ? await page.locator(selector).screenshot() : await page.screenshot();
   await writeFile(`.context/app-captures/${name}.png`, screenshot);
@@ -64,67 +54,54 @@ async function capture(name: string, selector?: string) {
   }, screenshot.toString('base64'));
   await writeFile(`${directory}/${name}.webp`, Buffer.from(webp, 'base64'));
 }
-for (const size of [{ name: 'desktop', width: 1000, height: 900 }, { name: 'mobile', width: 390, height: 1050 }]) {
-  for (const screen of screens) {
-    const viewport = { ...size, width: size.name === 'desktop' && ['progress', 'insights', 'plan', 'checkin'].includes(screen.name) ? 840 : size.width };
-    const snapshot = screen.name === 'plan' ? firstPlanData : data;
-    responses.auth = { user: { id: 'example', username: 'Example workspace' }, data: snapshot, revision: 1 };
-    responses.workspace = { data: snapshot, revision: 1 };
-    await page.clock.setFixedTime(new Date(screen.name === 'plan' ? '2026-10-12T10:00:00-04:00' : captureDate));
-    await page.setViewportSize(viewport);
-    await page.goto(new URL(screen.route, baseURL).href);
-    await page.locator(screen.ready).first().waitFor({ timeout: 10000 }).catch(async error => { console.error((await page.locator("body").innerText()).slice(0, 2000)); await page.screenshot({ path: ".context/capture-error.png" }); await browser.close(); throw error; });
-    // Present the real content area without the app's surrounding navigation.
-    await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
-    await page.evaluate(() => document.fonts.ready);
-    await page.waitForTimeout(150);
-    await expect(page.locator('.save-error, [role="alert"]')).toHaveCount(0);
-    const focus = screen.name === 'plan' ? '#goal-plan' : screen.name === 'checkin' ? '.coach-thread' : screen.name === 'progress' ? '.projection-heading' : screen.name === 'calendar' ? '.full-calendar' : screen.name === 'insights' ? '.learning-dashboard' : null;
-    if (focus) await page.locator(focus).first().evaluate(element => {
-      window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' });
-    });
-    await capture(`${screen.name}-${size.name}`);
-    const target = screen.name === 'plan' ? page.locator('.plan-approach > summary') : screen.name === 'checkin' ? page.locator('.live-message.coach').getByRole('link', { name: 'Insights', exact: true }) : screen.name === 'calendar' ? page.locator('.month-entry button').filter({ hasText: 'Read 20 pages' }).first()
-      : screen.name === 'insights' ? page.locator('.learning-record > summary').first()
-      : screen.name === 'progress' ? page.locator('.projection-evidence > summary')
-      : page.getByRole('link', { name: 'Read 30 books' });
-    const box = (await target.boundingBox())!;
-    if (box.y < 0 || box.y + box.height > size.height) throw new Error(`Interaction outside capture: ${screen.name}`);
-    (points[screen.name] ??= {})[size.name] = { x: Number(((box.x + box.width / 2) / viewport.width * 100).toFixed(2)), y: Number(((box.y + box.height / 2) / size.height * 100).toFixed(2)) };
-    await target.click();
-    if (screen.name === 'goals') {
-      await page.locator('.goal-projection').waitFor();
-      await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
-      await page.locator('.goal-projection').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
-    }
-    if (screen.name === 'progress') await page.locator('.projection-evidence').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
-    if (screen.name === 'checkin') await page.locator('#record-reading-lunch').waitFor();
-    if (screen.name === 'insights') await page.locator('.learning-record[open] .learning-journey').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
-    await page.waitForTimeout(150);
-    await capture(`${screen.name}-${size.name}-detail`);
-    if (screen.name === 'insights') {
-      await page.locator('.learning-record[open] .current-test-reasoning > summary').click();
-      await page.locator('.learning-record[open] .reasoning-path').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 16, behavior: 'instant' }));
-      await capture(`${screen.name}-${size.name}-followup`);
-      await capture(`${screen.name}-${size.name}-reasoning`, '.learning-record[open]');
-    }
-    console.log(`Captured ${screen.name} and its interaction at ${viewport.width}×${viewport.height}`);
-  }
-}
-// The hero uses the actual narrow app at a phone's proportions, without shrinking a desktop page.
-await page.setViewportSize({ width: 390, height: 780 });
-for (const screen of [
-  { name: 'progress', route: '/app/goals/reading', ready: '.goal-projection' },
-  { name: 'check-in', route: '/app/check-in', ready: '.live-message.coach' },
-  { name: 'insights', route: '/app/insights', ready: '.learning-record' },
-]) {
-  await page.goto(new URL(screen.route, baseURL).href);
-  await page.locator(screen.ready).first().waitFor();
+// Capture only the app views opened by the active landing page. Navigation is
+// hidden for framing; the app content and saved evidence are left intact.
+async function open(path: string, ready: string, date?: string) {
+  const at = date ? `${date}T${date === '2026-10-12' ? '09:00' : '08:00'}:00-04:00` : captureDate;
+  const snapshot = date ? portfolioSnapshot(at) : data;
+  responses.auth = { user: { id: 'example', username: 'Example workspace' }, data: snapshot, revision: 1 };
+  responses.workspace = { data: snapshot, revision: 1 };
+  await page.clock.setFixedTime(new Date(at));
+  await page.goto(new URL(path, baseURL).href);
+  await page.locator(ready).first().waitFor();
   await page.addStyleTag({ content: '.app-sidebar, .app-topbar, .mobile-nav { display: none !important; } .app-body { margin-left: 0 !important; }' });
   await page.evaluate(() => document.fonts.ready);
-  if (screen.name === 'progress') await page.locator('.goal-projection').evaluate(element => window.scrollTo({ top: element.getBoundingClientRect().top + scrollY - 24, behavior: 'instant' }));
-  await capture(`hero-${screen.name}-mobile`);
+  await expect(page.locator('.save-error, [role="alert"]')).toHaveCount(0);
 }
+await page.setViewportSize({ width: 390, height: 1050 });
+await open('/app/goals', '.goal-table-row', '2026-09-21');
+await expect(page.locator('.goal-table-row')).toHaveCount(1);
+await capture('goals-mobile', '.goal-table-scroll');
+await open('/app/today?goal=demo-portfolio', '.today-do', '2026-10-08');
+await capture('plan-mobile', '.today-do');
+await open('/app/calendar', '.week-calendar');
+await page.getByRole('button', { name: 'Week', exact: true }).click();
+await capture('calendar-mobile', '.week-calendar');
+await open('/app/today?goal=demo-portfolio&card=progress', '#today-progress', '2026-10-11');
+await capture('hero-progress-mobile', '#today-progress');
+// Give the goal's disclosure enough height to capture its whole saved record.
+await page.setViewportSize({ width: 390, height: 2400 });
+await open('/app/goals/demo-portfolio', '.experiment-strip', '2026-10-12');
+await page.locator('.experiment-strip').getByRole('button', { name: 'Review' }).click();
+await capture('portfolio-experiment-mobile', '.modal');
+await page.setViewportSize({ width: 390, height: 1050 });
+await open('/app/insights', '.learning-record', '2026-10-18');
+{
+  const record = page.locator('#record-writing-finish');
+  await record.locator(':scope > summary').click();
+  await expect(record.locator('.learning-stage-awaiting')).toContainText('Check in on the current test');
+  await expect(record.locator('.learning-stage-review')).toHaveCount(0);
+  await capture('portfolio-learning-mobile', '#record-writing-finish');
+  await record.locator('.current-test-reasoning > summary').click();
+  // Include the research claim and its limits in the inspectable capture.
+  for (const detail of await record.locator('.current-test-reasoning details').all()) {
+    await detail.evaluate(element => { (element as HTMLDetailsElement).open = true; });
+  }
+  await capture('portfolio-reasoning-mobile', '#record-writing-finish');
+  await record.locator(':scope > summary').click();
+}
+await open('/integrations', '.integration-catalog');
+await capture('connections-mobile', '.integration-catalog');
 await browser.close();
 if (errors.length) throw new Error(errors.join('\n'));
-await writeFile('src/landing-capture-points.json', JSON.stringify(points, null, 2) + '\n');
+console.log('Captured All Goals, Today, progress, the goal experiment, pending learning and reasoning, calendar, and connections.');

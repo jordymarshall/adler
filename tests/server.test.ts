@@ -18,6 +18,7 @@ import { applyChanges, type Change } from "../server/commands.ts";
 import {
   Channels,
   nextReview,
+  nextEndOfDay,
   inQuietHours,
   validateTwilio,
   describeChanges,
@@ -496,6 +497,112 @@ test("durable jobs recover on restart and timezone rules respect quiet hours and
   const second = new Database(directory);
   db.sql = second.sql;
   assert.equal(second.claim()?.id, "durable");
+});
+
+test("daily check-ins follow local time through DST and do not repeat a completed local day", (t) => {
+  const { db, user } = fixture(t);
+  const data = db.snapshot(user.id).data;
+  data.automation.checkInTime = "19:00";
+  assert.equal(new Date(nextEndOfDay(data, Date.parse("2026-10-31T23:01:00Z"))).toISOString(), "2026-11-02T00:00:00.000Z");
+  data.automation.checkInTime = "01:30";
+  assert.equal(new Date(nextEndOfDay(data, Date.parse("2026-11-01T05:31:00Z"), "2026-11-01")).toISOString(), "2026-11-02T06:30:00.000Z");
+  data.automation.checkInTime = "02:30";
+  assert.equal(new Date(nextEndOfDay(data, Date.parse("2026-03-08T05:00:00Z"))).toISOString(), "2026-03-09T06:30:00.000Z", "A nonexistent wall-clock time waits for the next available day");
+});
+
+test("each user's daily check-in survives restart, sends once, and stays in their own conversation", async (t) => {
+  twilioEnvironment(t);
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-10-20T16:00:00Z") });
+  const { db, user, service, directory } = fixture(t);
+  const other = db.createUser("other-writer", "a-different-long-password", "Asia/Tokyo");
+  for (const [account, address] of [[user, "+14165550111"], [other, "+14165550222"]] as const) {
+    const state = db.snapshot(account.id);
+    createGoal(state.data, goalInput, dayInZone(state.data), `goal-${account.id}`);
+    state.data.goals[0].status = "Active";
+    state.data.automation.enabled = true;
+    state.data.automation.checkInMode = "end-of-day";
+    db.save(account.id, state.data, state.revision, "web", "Choose daily check-ins");
+    db.sql.prepare("INSERT INTO phone_links VALUES(?,?,0,?)").run(address, account.id, Date.now());
+  }
+  const sent: { address: string; body: string }[] = [];
+  const channels = new Channels(db, service, async (address, body) => {
+    sent.push({ address, body });
+    return { sid: "SM" + "3".repeat(32), status: "queued" };
+  });
+  channels.ensureJobs(user.id);
+  channels.ensureJobs(other.id);
+  channels.ensureJobs(user.id);
+  const jobs = db.sql.prepare("SELECT * FROM jobs WHERE kind='end-of-day' AND status='pending' ORDER BY due").all() as { id: string; user_id: string; due: number }[];
+  assert.equal(jobs.length, 2);
+  assert.equal(jobs[0].user_id, user.id);
+  assert.equal(new Date(jobs[0].due).toISOString(), "2026-10-20T23:00:00.000Z");
+  assert.equal(new Date(jobs[1].due).toISOString(), "2026-10-21T10:00:00.000Z");
+  db.close();
+  db.sql = new Database(directory).sql;
+  t.mock.timers.setTime(jobs[0].due + 1000);
+  channels.ensureJobs(user.id);
+  assert.equal((db.sql.prepare("SELECT status FROM jobs WHERE id=?").get(jobs[0].id) as { status: string }).status, "pending", "Saving state after the due time must not cancel today's check-in");
+  await channels.tick();
+  await channels.tick();
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].address, "+14165550111");
+  assert.match(sent[0].body, /What did you work on/);
+  assert.equal(db.snapshot(user.id).data.messages.at(-1)?.text, sent[0].body);
+  assert.equal(db.snapshot(other.id).data.messages.length, 0);
+  assert.equal(db.snapshot(user.id).data.actions[0].outcome, undefined, "A check-in never fabricates completion");
+  const next = db.sql.prepare("SELECT due FROM jobs WHERE user_id=? AND kind='end-of-day' AND status='pending'").get(user.id) as { due: number };
+  assert.equal(new Date(next.due).toISOString(), "2026-10-21T23:00:00.000Z");
+});
+
+test("daily check-ins defer in quiet hours and cancel when timing, mode, active goals or consent changes", async (t) => {
+  twilioEnvironment(t);
+  t.mock.timers.enable({ apis: ["Date"], now: Date.parse("2026-10-20T22:00:00Z") });
+  const { db, user, service } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, goalInput, dayInZone(state.data), "daily-goal");
+  state.data.goals[0].status = "Active";
+  Object.assign(state.data.automation, { enabled: true, checkInMode: "end-of-day", checkInTime: "19:00", quietStart: "18:00", quietEnd: "20:00" });
+  db.save(user.id, state.data, state.revision, "web", "Choose evening check-in");
+  db.sql.prepare("INSERT INTO phone_links VALUES(?,?,0,?)").run("+14165550111", user.id, Date.now());
+  let sends = 0;
+  const channels = new Channels(db, service, async () => { sends++; return { sid: "SM" + "4".repeat(32), status: "queued" }; });
+  channels.ensureJobs(user.id);
+  const id = `end-of-day:${user.id}:2026-10-20`;
+  t.mock.timers.setTime(Date.parse("2026-10-20T23:00:01Z"));
+  await channels.tick();
+  const deferred = db.sql.prepare("SELECT due,status FROM jobs WHERE id=?").get(id) as { due: number; status: string };
+  assert.equal(deferred.status, "pending");
+  assert.equal(deferred.due, Date.now() + 15 * 60000);
+  channels.ensureJobs(user.id);
+  assert.equal((db.sql.prepare("SELECT due FROM jobs WHERE id=?").get(id) as { due: number }).due, deferred.due);
+  assert.equal(sends, 0);
+  // Recheck queued deliveries too: a settings change can happen after generation.
+  const original = db.snapshot(user.id).data;
+  for (const [index, change] of [
+    (data: typeof original) => { data.automation.checkInTime = "20:00"; },
+    (data: typeof original) => { data.automation.checkInMode = "after-session"; },
+    (data: typeof original) => { data.goals[0].status = "Paused"; },
+    (data: typeof original) => { data.automation.enabled = false; },
+  ].entries()) {
+    const data = structuredClone(original);
+    change(data);
+    db.save(user.id, data, db.snapshot(user.id).revision, "web", "Change check-in settings");
+    const deliveryId = `${id}:queued-${index}:0`;
+    const jobId = `${id}:queued-${index}`;
+    db.enqueue(jobId, user.id, "end-of-day", { date: "2026-10-20", rule: JSON.stringify([original.timeZone, original.automation.checkInTime]), scheduledFor: Date.now() });
+    channels.queueText(user.id, jobId, "How did your day go?");
+    assert.equal(channels.deferOrCancel(deliveryId, user.id), true);
+    assert.equal((db.sql.prepare("SELECT status FROM deliveries WHERE id=?").get(deliveryId) as { status: string }).status, "cancelled");
+  }
+  channels.ensureJobs(user.id);
+  assert.equal(db.sql.prepare("SELECT id FROM jobs WHERE user_id=? AND kind='end-of-day' AND status='pending'").all(user.id).length, 0);
+  db.save(user.id, original, db.snapshot(user.id).revision, "web", "Restore daily check-ins");
+  t.mock.timers.setTime(Date.parse("2026-10-22T22:00:00Z"));
+  db.sql.prepare("UPDATE jobs SET status='pending',due=? WHERE id=?").run(Date.now(), id);
+  await channels.tick();
+  assert.equal((db.sql.prepare("SELECT status FROM jobs WHERE id=?").get(id) as { status: string }).status, "cancelled", "Repeated deferral cannot keep an old day's invitation alive indefinitely");
+  assert.equal(db.snapshot(user.id).data.messages.length, 0);
+  assert.equal(sends, 0);
 });
 test("provider adapters enforce structured responses, use the chosen endpoint, and keep storage disabled", async (t) => {
   const old = globalThis.fetch;

@@ -7,8 +7,10 @@ import { RESEARCH_CLAIMS } from "../shared/research-claims.ts";
 import { evidenceRevision } from "../server/learning.ts";
 import type { BehavioralReasoning } from "../shared/behavioral-reasoning.ts";
 import { methodSources } from '../server/research.ts';
+import { portfolioStory } from '../src/landing-story.ts';
 
-export const captureDate = '2026-10-17T16:00:00-04:00';
+export const captureDate = '2026-10-20T08:00:00-04:00';
+const portfolioBookingAt = '2026-10-20T11:59:00Z';
 export function landingWorkspace(stage: "current" | "first-plan" = "current"): Data {
   const data = initialData();
   data.timeZone = 'America/Toronto';
@@ -23,7 +25,7 @@ export function landingWorkspace(stage: "current" | "first-plan" = "current"): D
   Object.assign(reading, { title: 'Read 30 books', success: 'Read 30 books I want to make time for.', target: 30, targetDate: '2028-01-01', measure: { label: 'Books finished', unit: 'books', target: 30, baseline: 0, aggregation: 'cumulative' } });
   reading.milestones = [{ id: 'book-1', title: 'Finish the first book', criterion: 'Report finishing the book and one idea to keep.', done: true, completedAt: '2026-10-10' }];
   const routines = [
-    { title: '25 minutes on my chosen draft', cue: 'After breakfast', minutes: 25, days: [2, 4], hour: '08:30', approach: 'Open the draft after breakfast. Choose one finish line, work for 25 minutes, then leave a note for next time.' },
+    { title: 'Spend 25 minutes drafting your next case study after breakfast.', cue: 'After breakfast', minutes: 25, days: [2, 4], hour: '08:30', approach: 'Open the chosen draft after breakfast. Work for 25 minutes, then note where you stopped.' },
     { title: 'Read 20 pages', cue: 'After lunch', minutes: 20, days: [0, 1, 2, 3, 4, 5, 6], hour: '12:30', approach: 'Try 20 pages after lunch. Check whether that window was available before changing the reading target again.' },
     { title: 'One next step toward my next role', cue: 'After my morning coffee', minutes: 20, days: [1, 5], hour: '09:30', approach: 'Choose one next step the evening before. Use a short morning block and note what helped me start.' },
   ];
@@ -49,16 +51,27 @@ export function landingWorkspace(stage: "current" | "first-plan" = "current"): D
       const id = `${goal.id}-${date}`;
       data.actions.push({ id, goalId: goal.id, stepId: step.id, occurrence: `${step.id}:${date}`, title: routine.title, criterion: plan.criterion, timing: routine.cue, date, planVersion: 1, outcome, note: outcome === 'Done' ? 'The cue helped me start. I left a note for next time.' : outcome === 'Didn’t happen' ? 'The day got busy before I made a start.' : outcome === 'Partly' ? 'I started, but kept revisiting the same part.' : undefined, history: [] });
       if (goal.id === 'reading' && outcome) data.actions.at(-1)!.amount = outcome === 'Done' ? 20 : outcome === 'Partly' ? 5 : 0;
-      if (date >= '2026-10-12' && date <= '2026-10-25') {
+      if ((date >= '2026-10-12' || goal.id === portfolio.id) && date <= '2026-10-25') {
         const start = `${date}T${routine.hour}:00-04:00`;
         data.workBlocks.push({ id, goalId: goal.id, action: routine.title, start, end: new Date(Date.parse(start) + routine.minutes * 60000).toISOString(), provider: 'local', status: outcome ?? 'Scheduled' });
       }
     }
   });
+  // The reading story starts with the October 12 test. Its only reported
+  // attempts are October 13 and 15; other sessions remain unreported.
+  data.actions = data.actions.filter(action => action.goalId !== 'reading' || action.date >= '2026-10-12');
+  for (const action of data.actions.filter(action => action.goalId === 'reading' && !['2026-10-13', '2026-10-15'].includes(action.date))) {
+    delete action.outcome;
+    delete action.amount;
+    delete action.note;
+  }
+  for (const block of data.workBlocks.filter(block => block.goalId === 'reading')) {
+    block.status = data.actions.find(action => action.id === block.id)?.outcome ?? 'Scheduled';
+  }
   Object.assign(data.programs[0], { date: '2026-09-20', focusGoalId: portfolio.id, sprintStart: '2026-10-12', sprintEnd: '2026-10-25', weeklyMinutes: 250, workStart: '08:00', workEnd: '18:00', workDays: [1, 2, 3, 4, 5], sprintResult: 'Find a rhythm that fits all three goals.' });
   data.memories = [
     { id: 'breakfast-cue', date: '2026-10-15', text: 'Starting after breakfast works better for me than leaving it until the evening.' },
-    { id: 'polishing', date: '2026-10-15', text: 'I keep editing the same paragraph when I have no clear stopping point.' },
+    { id: 'polishing', date: '2026-10-15', text: portfolioStory.observation },
     { id: 'reading-window', date: '2026-10-16', text: 'Even ten pages did not happen at night. Work ran late, but I had time at lunch.' },
   ];
   data.memories.find(memory => memory.id === 'reading-window')!.text = 'Even ten pages did not happen at night. Work ran late, but I had time at lunch.';
@@ -70,7 +83,7 @@ export function landingWorkspace(stage: "current" | "first-plan" = "current"): D
   const claims = RESEARCH_CLAIMS.filter(claim => ['claim:com-b-opportunity', 'claim:goal-specific-challenging'].includes(claim.id));
   const learningExamples = [
     { id: 'reading-lunch', goalId: 'reading', observationId: 'reading-window', method: 'barriers', principle: 'P24', claim: claims.find(claim => claim.id === 'claim:com-b-opportunity')!, hypothesis: 'An available lunch window may make it easier to begin than evenings interrupted by work.', change: 'Try your 20 pages after lunch.', mechanism: 'COM-B distinguishes external opportunity from motivation and capability. Your report of late work suggests checking the available window before reducing the target again; the timing change is a practical hypothesis, not a proven effect.', prediction: 'When lunch provides a usable window, you begin reading and report the pages you read.', reviewAfter: '2026-10-16' },
-    { id: 'writing-finish', goalId: portfolio.id, observationId: 'polishing', method: 'goal-definition', principle: 'P3', claim: claims.find(claim => claim.id === 'claim:goal-specific-challenging')!, hypothesis: 'A chosen stopping point may help you move beyond repeated polishing.', change: 'Choose one finish line before opening the draft.', mechanism: 'Specific goals can direct attention and make feedback clearer. A stopping criterion is a tentative application to the repeated polishing you described.', prediction: 'You can stop at your chosen criterion and leave a next step.', reviewAfter: '2026-10-20' },
+    { id: 'writing-finish', goalId: portfolio.id, observationId: 'polishing', method: 'goal-definition', principle: 'P29', claim: claims.find(claim => claim.id === 'claim:goal-specific-challenging')!, hypothesis: portfolioStory.rationale, change: portfolioStory.suggestion, mechanism: 'Specific goals can direct attention and make feedback clearer. A stopping criterion is a tentative application to the repeated polishing you described.', prediction: 'You can stop at your chosen criterion and leave a next step.', reviewAfter: '2026-10-20' },
   ];
   data.decisions = [];
   data.learning = learningExamples.map((example, index) => {
@@ -156,6 +169,97 @@ export function landingWorkspace(stage: "current" | "first-plan" = "current"): D
     { id: 'reading-message-user', conversationId: 'reading-conversation', goalId: 'general', role: 'user', text: officeReport.text, origin: 'user', channel: 'web' },
     { id: 'reading-message-coach', conversationId: 'reading-conversation', goalId: 'general', role: 'coach', text: 'Keep lunch reading on home days.\n\nBefore adding an office-day session, let’s check whether there’s a realistic window. If there isn’t, we can revisit the goal’s timing.\n\nI’ve saved the updated hypothesis with your earlier reports in Insights. Let’s review the next reports on Oct 22.', decisionId: next.decisionId, references: [{ text: 'Insights', recordId: record.id }], links: [{ goalId: 'reading', tab: 'plan' }], channel: 'web' },
   ];
+  completePortfolioExample(data);
+  return data;
+}
+
+function completePortfolioExample(data: Data) {
+  const goal = data.goals[0], original = goal.plans[0];
+  original.adaptive!.window.start = '2026-09-21';
+  original.adaptive!.window.end = '2026-10-11';
+  original.adaptive!.window.capacityMinutes = 150;
+  original.adaptive!.window.rationale = 'Three weeks of the chosen Tuesday and Thursday sessions, then review what happened.';
+  original.adaptive!.steps[0].scheduledDate = '2026-09-22';
+  original.adaptive!.steps[0].recurrence!.until = '2026-10-11';
+  original.adaptive!.assessment.question = 'Did you work on the chosen draft, and where did you stop?';
+  original.adaptive!.assessment.at = '2026-10-11T18:00:00Z';
+  original.adaptive!.projectionUnavailableReason = 'A writing session does not establish when a case study will be published.';
+  const record = data.learning!.find(item => item.id === 'writing-finish')!;
+  const version = record.versions[0];
+  const plan = structuredClone(original);
+  plan.version = 2;
+  plan.date = '2026-10-12';
+  plan.criterion = 'Choose what to finish before opening the draft; work for 25 minutes and note where you stopped.';
+  plan.adaptive!.approach = portfolioStory.suggestion;
+  plan.adaptive!.reasoning = structuredClone(version.reasoning);
+  plan.adaptive!.window = { start: '2026-10-12', end: '2026-10-25', label: 'Try a stopping point', rationale: 'Try choosing a stopping point in the next sessions, then review whether you used it and what happened.', capacityMinutes: 100, capacityStatus: 'confirmed' };
+  Object.assign(plan.adaptive!.steps[0], { criterion: plan.criterion, reason: version.hypothesis, scheduledDate: '2026-10-13', recurrence: { everyDays: 1, weekdays: [2, 4], until: '2026-10-25' } });
+  plan.adaptive!.assessment.question = 'Did you choose a stopping point, use it, and leave a next step?';
+  plan.adaptive!.assessment.at = '2026-10-25T18:00:00Z';
+  goal.plans.push(plan);
+  data.decisions.find(decision => decision.id === version.decisionId)!.planVersion = plan.version;
+  for (const action of data.actions.filter(action => action.goalId === goal.id && action.date >= plan.date)) {
+    action.planVersion = 2;
+    action.criterion = plan.criterion;
+    if (['2026-10-13', '2026-10-15'].includes(action.date)) {
+      action.note = 'I chose a section before opening the draft, finished it, and left a next step. The case study is not published yet.';
+    }
+  }
+  const feedback = { id: 'portfolio-stopping-feedback', date: '2026-10-19', text: portfolioStory.feedback };
+  data.memories.push(feedback);
+  const decision = { ...structuredClone(data.decisions.find(item => item.id === version.decisionId)!), id: 'portfolio-keep-stopping-point', date: feedback.date, planVersion: 2, summary: portfolioStory.implication };
+  data.decisions.push(decision);
+  record.state = 'reviewed';
+  record.standing = 'consistent';
+  record.reviews.push({ id: 'portfolio-stopping-review', version: 1, decisionId: decision.id, at: '2026-10-19T18:00:00Z', sources: [evidenceRevision(data, feedback.id)!, ...['2026-10-13', '2026-10-15'].map(date => evidenceRevision(data, `${goal.id}-${date}`)!)], summary: 'You reported choosing a stopping point, finishing the selected section and leaving a next step in two sessions.', exposure: 'used', mechanism: 'You reported choosing the section before opening the draft on both occasions.', behavior: 'You reported finishing the chosen section and leaving a next step both times.', outcome: 'No additional published case study reported.', confounds: ['The selected sections and available time may differ from earlier sessions.'], decision: 'keep', standing: 'consistent', nextReviewAfter: '2026-10-25', implication: portfolioStory.implication, nextQuestion: 'Does choosing a stopping point still help as the work changes, and has another case study been published?' });
+  record.events.push({ at: '2026-10-19T18:00:00Z', state: 'reviewed', reason: 'Reviewed your report of using the change in two sessions. You asked to keep it in the plan.' });
+  data.conversations.push({ id: 'portfolio-conversation', title: 'A stopping point for my draft', goalId: goal.id, createdAt: '2026-10-08T12:55:00Z' });
+  const message = { conversationId: 'portfolio-conversation', goalId: goal.id };
+  data.messages.push(
+    { ...message, id: 'portfolio-session-checkin', role: 'coach', text: 'How did your portfolio session go? Reply done, partly, or didn’t happen, and add what changed or got in the way. Goal: Publish my portfolio.', at: '2026-10-08T12:55:00Z', channel: 'job' },
+    { ...message, id: 'portfolio-editing-report', role: 'user', text: portfolioStory.observation, at: '2026-10-10T14:00:00Z', origin: 'user', channel: 'sms' },
+    { ...message, id: 'portfolio-suggestion', role: 'coach', text: `${portfolioStory.suggestion}\n\n${portfolioStory.rationale} Shall we try it in your next two sessions?`, at: '2026-10-12T12:00:00Z', decisionId: version.decisionId, channel: 'sms' },
+    { ...message, id: 'portfolio-agreement', role: 'user', text: 'Yes, let’s try it.', at: '2026-10-12T12:01:00Z', origin: 'user', channel: 'sms' },
+    { ...message, id: 'portfolio-review-question', role: 'coach', text: portfolioStory.followUp, at: '2026-10-19T17:00:00Z', channel: 'sms' },
+    { ...message, id: 'portfolio-review-report', role: 'user', text: portfolioStory.feedback, at: '2026-10-19T17:05:00Z', origin: 'user', channel: 'sms' },
+    { ...message, id: 'portfolio-kept-plan', role: 'coach', text: portfolioStory.implication, at: '2026-10-19T18:00:00Z', decisionId: decision.id, channel: 'sms' },
+  );
+  // A fictional authorized booking, captured in the last part of the story.
+  data.conversations.push({ id: 'portfolio-booking', title: 'My next portfolio session', goalId: goal.id, createdAt: portfolioBookingAt });
+  data.messages.push(
+    { conversationId: 'portfolio-booking', goalId: goal.id, id: 'portfolio-booking-request', role: 'user', origin: 'user', text: 'Book my next portfolio session.', at: portfolioBookingAt, channel: 'web' },
+    { conversationId: 'portfolio-booking', goalId: goal.id, id: 'portfolio-booking-reply', role: 'coach', text: 'Booked for Tuesday, 8:30–8:55.', at: portfolioBookingAt, channel: 'web' },
+  );
+  Object.assign(data.workBlocks.find(block => block.id === 'demo-portfolio-2026-10-20')!, { provider: 'google', eventId: 'illustrative-portfolio-booking' });
+}
+
+// Earlier portfolio views exclude later reports, recommendations and reviews.
+export function portfolioSnapshot(at: string): Data {
+  const date = at.slice(0, 10);
+  const data = landingWorkspace();
+  const goal = data.goals[0];
+  data.goals = [goal];
+  goal.plans = goal.plans.filter(plan => plan.date <= date);
+  goal.results = goal.results.filter(result => result.date <= date);
+  goal.outcomeUpdatedAt = goal.results.at(-1)?.date;
+  for (const milestone of goal.milestones) if (milestone.completedAt && milestone.completedAt > date) { milestone.done = false; delete milestone.completedAt; }
+  data.actions = data.actions.filter(action => action.goalId === goal.id && goal.plans.some(plan => plan.version === action.planVersion));
+  for (const action of data.actions) if (action.date >= date) { delete action.outcome; delete action.note; delete action.amount; }
+  data.workBlocks = data.workBlocks.filter(block => data.actions.some(action => action.id === block.id));
+  for (const block of data.workBlocks) {
+    block.status = data.actions.find(action => action.id === block.id)?.outcome ?? 'Scheduled';
+    if (block.eventId === 'illustrative-portfolio-booking' && Date.parse(at) < Date.parse(portfolioBookingAt)) { block.provider = 'local'; delete block.eventId; }
+  }
+  data.memories = data.memories.filter(memory => memory.date <= date);
+  data.decisions = data.decisions.filter(decision => decision.goalId === goal.id && decision.date <= date);
+  data.learning = data.learning!.filter(record => record.goalIds.includes(goal.id) && record.versions[0].at.slice(0, 10) <= date);
+  for (const record of data.learning) {
+    record.reviews = record.reviews.filter(review => review.at.slice(0, 10) <= date);
+    record.events = record.events.filter(event => event.at.slice(0, 10) <= date);
+    if (!record.reviews.length) { record.state = 'agreed'; record.standing = 'untested'; }
+  }
+  data.conversations = data.conversations.filter(conversation => conversation.goalId === goal.id && Date.parse(conversation.createdAt) <= Date.parse(at));
+  data.messages = data.messages.filter(message => message.goalId === goal.id && Date.parse(message.at!) <= Date.parse(at));
   return data;
 }
 export const landingProposals: Proposal[] = [{ id: 'rhythm-change', summary: 'Keep the helpful cues and test a clear finish line.', status: 'applied', expires: Date.parse('2026-11-01'), channel: 'web', goalId: 'demo-portfolio', decisionId: 'learned-rhythm', changes: [

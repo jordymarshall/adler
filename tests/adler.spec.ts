@@ -8,10 +8,10 @@ test("landing demonstrates goal progress and opens an empty signed-in workspace"
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Reach your goals with a system that understands you.");
-  await expect(page.locator(".story-phone-frame")).toHaveCount(6);
-  await expect(page.locator(".phone-story-caption")).toContainText("Reading example");
-  await expect(page.locator(".journey-connections")).toContainText("Coming soon");
+  await expect(page.locator("h1")).toHaveText("Know what to do next to reach your goals.");
+  await expect(page.locator(".story-phone-frame")).toHaveCount(7);
+  await expect(page.locator(".story-app-capture figcaption")).toContainText("Illustrative example");
+  await expect(page.locator("#mobile-availability")).toContainText("iOS and Android apps are coming soon");
   await page
     .getByRole("link", { name: "Explore the app", exact: true })
     .first()

@@ -2,6 +2,18 @@
 
 7 September 2026. Implements the user's latest direction: explain the journey from setting a goal to reaching it, and make Adler's ongoing, hypothesis-driven coaching the reason to use it. This supersedes the separate introductory example followed by five feature chapters.
 
+## 10 September: the complete story stays in the phone
+
+The latest accepted revision supersedes the layouts below. Keep the approved hero, then one continuous phone section, then the original mountain ending. Seven chapters cover goal clarity, a next action in Today, reported progress, a practical experiment, its pending learning follow-up, texting/calendar continuity, and connections. Texting has one scroll position: an iMessage mockup under “Text Adler or chat in-app. It already knows what you’re working on.” The copy communicates both channels without a separate app-chat view or toggle. The other chapters use goal, progress, experiment and learning views, with no chat bubbles. All seven positions retain the same phone size and position. Method, connections and setup details remain available from the phone footer.
+
+Restore the user's approved headings and paragraphs, including the repeated-editing report, stopping-point suggestion and full follow-up question. The later learning result waits for the person's check-in. “Why this suggestion?” opens the saved personal evidence and research behind the same recommendation. The final text request directly illustrates the authorized Tuesday 8:30–8:55 booking; there is no “Confirm example booking” or replay control.
+
+The new connections copy is “Bring Adler into the apps you already use.” It explains planning around a connected calendar and continuing with the same goals, plan and check-ins in compatible assistants. Calendar and MCP setup are available; ChatGPT, Claude and Gemini chat-app connections and Apple Health remain labelled planned, consistent with the existing catalog. See [copywriting sources and application](research/landing-journey-copywriting.md).
+
+The fictional portfolio fixture retains its later reported trial and keep decision, while the displayed learning chapter captures October 18 before that review. Earlier snapshots exclude later messages and bookings. The experiment binds to the matching plan version, and the original prediction stays saved. The reported goal outcome remains one published case study. Quiet geometric backgrounds, real captures and saved reasoning remain. The original mountain component and styling are unchanged. See [current assets and provenance](landing-assets.md).
+
+End-of-day check-ins are also available in Connections, alongside the existing after-session mode, using each user's saved workspace, connections and durable queue. This is account-scoped persistence on a shared server; separate OS containers are not implemented.
+
 ## 9 September: one phone scene at a time
 
 The latest user direction replaces both the three-phone overview and the numbered walkthrough with one pinned phone story immediately after the opening. Scrolling advances through goals → the earlier lunch plan → the later check-in → saved learning → calendar → progress. The follow-up correction uses Moretapay’s centred phone treatment as a visual reference: the phone stays fixed while its contents gently blend and move by at most eight pixels. Each scene has a short, literal heading, one brief sentence and a quiet background tint. The phone shows concise summaries of the existing reading fixture rather than shrinking a full page; opening it reveals the actual mobile app capture.

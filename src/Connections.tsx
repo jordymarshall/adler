@@ -399,9 +399,24 @@ export function Connections() {
               })
             }
           />
-          Send me a check-in after scheduled work and a weekly review invitation
+          Send me scheduled check-ins and a weekly review invitation
         </label>
         <div className="connection-grid">
+          <label>
+            When to check in
+            <select value={data.automation.checkInMode} onChange={(e) => commit((d) => {
+              d.automation.checkInMode = e.target.value as "after-session" | "end-of-day";
+            })}>
+              <option value="after-session">After scheduled work</option>
+              <option value="end-of-day">At the end of my day</option>
+            </select>
+          </label>
+          {data.automation.checkInMode === "end-of-day" && <label>
+            Daily check-in time
+            <input type="time" value={data.automation.checkInTime} onChange={(e) => commit((d) => {
+              d.automation.checkInTime = e.target.value;
+            })} />
+          </label>}
           <label>
             Time zone
             <input
@@ -452,8 +467,9 @@ export function Connections() {
         </div>
         <p className="field-hint">
           Requires a linked phone. Scheduled messages wait during quiet hours.
-          Completed actions and paused goals are excluded. Change your review
-          day in Settings.
+          Session check-ins skip completed actions and paused goals. Daily
+          check-ins ask about your day while you have active goals. Change your
+          review day in Settings.
         </p>
         <details>
           <summary>Scheduled work and delivery status</summary>
