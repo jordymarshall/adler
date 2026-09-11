@@ -311,39 +311,6 @@
 .v2-landing .menu-toggle {
   display: none;
 }
-.v2-landing .landing-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  overflow: hidden;
-  background: var(--paper);
-  --backdrop-progress: 0;
-  --backdrop-pigment: .42;
-  --backdrop-grain: .065;
-}
-.v2-landing .landing-backdrop::before {
-  content: "";
-  position: absolute;
-  inset: -20vmax;
-  background: var(--texture-pigment) center / cover;
-  mask-image: radial-gradient(ellipse at 50% 35%, transparent 5%, #0008 55%, #000 85%);
-  transform: translate3d(calc((.5 - var(--backdrop-progress)) * 18vw), calc((var(--backdrop-progress) - .5) * 16vh), 0) rotate(calc((var(--backdrop-progress) - .5) * 18deg));
-  opacity: var(--backdrop-pigment);
-  will-change: transform, opacity;
-}
-.v2-landing .landing-backdrop::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--texture-grit) repeat;
-  background-size: 320px 320px;
-  mix-blend-mode: multiply;
-  opacity: var(--backdrop-grain);
-}
-@media (prefers-reduced-motion: reduce) {
-  .v2-landing .landing-backdrop::before { transform: none; will-change: auto; }
-}
 .v2-landing .hero-buttons {
   display: flex;
   gap: 24px;
@@ -1706,33 +1673,6 @@
 .v2-landing .canada-note { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
 .v2-landing .canada-note > span { font-size: 16px; line-height: 1; }
 
-/* A mountain-shaped chart converges to one starting point. */
-.v2-landing .mountain-finale { position: relative; border-block: 1px solid var(--line); }
-.v2-landing .mountain-start-point { color: #677e48; }
-.v2-landing .mountain-stage { position: relative; isolation: isolate; overflow: hidden; }
-.v2-landing .mountain-graph { display: block; width: 100%; height: auto; }
-.v2-landing .mountain-grid { opacity: .7; }
-.v2-landing .mountain-summit-copy { position: relative; padding: 65px 24px 0; text-align: center; z-index: 1; }
-.v2-landing .mountain-summit-copy .section-kicker { justify-content: center; font-size: 11px; letter-spacing: .13em; }
-.v2-landing .mountain-summit-copy h2 { font-size: clamp(58px, 8vw, 108px); line-height: 1.05; letter-spacing: -.065em; margin: 20px 0; }
-.v2-landing .mountain-scroll-hint { display: inline-flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
-.v2-landing .mountain-start-copy { position: relative; padding: 0 24px 75px; text-align: center; }
-.v2-landing .mountain-start-copy h2 { font-size: clamp(45px, 6vw, 86px); line-height: 1.06; letter-spacing: -.045em; margin-bottom: 18px; }
-.v2-landing .mountain-start-copy p { color: var(--muted); font-size: 14px; margin-bottom: 25px; }
-@media (min-width: 900px) and (min-height: 700px) and (prefers-reduced-motion: no-preference) {
-  .v2-landing .mountain-finale { height: 400svh; }
-  .v2-landing .mountain-stage { position: sticky; top: 0; height: 100svh; }
-  .v2-landing .mountain-graph { position: absolute; inset: 0; height: 100%; }
-  .v2-landing .mountain-grid { opacity: calc(.7 - var(--convergence, 0) * .5); }
-  .v2-landing .mountain-origin-guide { opacity: calc(1 - var(--convergence, 0)); }
-  .v2-landing .mountain-summit-copy { position: absolute; left: 24px; right: 24px; top: 7svh; padding: 0; opacity: clamp(0, calc(1.5 - var(--convergence, 0) * 5), 1); }
-  .v2-landing .mountain-start-copy { position: absolute; left: 24px; right: 24px; top: 62svh; padding: 0; opacity: clamp(0, calc((var(--convergence, 0) - .82) * 12), 1); }
-}
 @media (max-width: 650px) {
   .v2-landing .footer-bottom .canada-note { flex-basis: 100%; justify-content: flex-end; font-size: 9px; }
-  .v2-landing .mountain-summit-copy { padding-top: 45px; }
-  .v2-landing .mountain-summit-copy h2 { font-size: 56px; }
-  .v2-landing .mountain-summit-copy .section-kicker { font-size: 9px; }
-  .v2-landing .mountain-scroll-hint { font-size: 10px; }
-  .v2-landing .mountain-start-copy { padding-bottom: 55px; }
 }

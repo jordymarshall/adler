@@ -294,146 +294,17 @@ test("the simplified journey works on a phone with accessible disclosure control
 
 test("the landing uses Adler Warm throughout its connected goal journey", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator(".journey-introduction h1")).toHaveText("Know what to do next to reach your goals.");
-  const typography = await page.locator(".journey-introduction h1, .phone-story h2, .mountain-finale h2").evaluateAll(elements =>
+  await expect(page.locator(".journey-introduction h1")).toHaveText("Follow through on the goal that keeps slipping.");
+  const typography = await page.locator(".journey-introduction h1, .phone-story h2, .landing-closing h2").evaluateAll(elements =>
     elements.map(el => ({ family: getComputedStyle(el).fontFamily, weight: getComputedStyle(el).fontWeight })),
   );
   expect(typography.every(font => font.family.includes("Adler Warm") && font.weight === "550")).toBeTruthy();
   await expect(page.locator(".hero-intro-v2 > p").first()).toHaveCSS("font-weight", "500");
   await expect(page.locator(".story-phone")).toHaveCount(1);
-  await expect(page.locator(".phone-story-dots button")).toHaveCount(7);
-  await expect(page.locator(".phone-journey + .mountain-finale")).toHaveCount(1);
+  await expect(page.locator(".phone-journey + .landing-closing")).toHaveCount(1);
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-});
-
-test("landing keeps one concise phone preview centered at desktop and phone sizes", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  const scenes = [
-    ["Turn a rough idea into a clear goal.", "Publish my portfolio"],
-    ["Know what to work on next.", "Spend 25 minutes drafting your next case study after breakfast."],
-    ["See your progress toward the goal.", "case studies published"],
-    ["Know what to try when your plan isn’t working.", "Your next experiment"],
-    ["Get advice that builds on what you’ve already tried.", "Waiting for your check-in"],
-    ["Text Adler or chat in-app. It already knows what you’re working on.", "Booked for Tuesday, 8:30–8:55."],
-    ["Bring Adler into the apps you already use.", "PLANNED CONNECTIONS"],
-  ];
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 844 });
-    await page.goto("/");
-    const controls = page.locator(".phone-story-dots button");
-    const phone = page.locator(".story-phone");
-    let firstBounds: { y: number; height: number } | undefined;
-    for (const [index, [heading, content]] of scenes.entries()) {
-      await controls.nth(index).click();
-      await expect(controls.nth(index)).toHaveAttribute("aria-current", "step");
-      await expect(page.locator(".phone-story-copy h2")).toHaveText(heading);
-      const preview = page.locator('.story-phone-frame[aria-hidden="false"]');
-      await expect(preview).toHaveCount(1);
-      await expect(preview).toContainText(content);
-      expect((await preview.innerText()).split(/\s+/).length).toBeLessThan(110);
-      const fits = await preview.locator('.story-preview-content').evaluate(element => element.lastElementChild!.getBoundingClientRect().bottom <= element.getBoundingClientRect().bottom);
-      expect(fits, `${heading} should fit inside the phone`).toBe(true);
-      expect((await page.locator(".phone-story-copy").innerText()).split(/\s+/).length).toBeLessThan(45);
-      const bounds = (await phone.boundingBox())!;
-      firstBounds ??= bounds;
-      expect(Math.abs(bounds.x + bounds.width / 2 - width / 2)).toBeLessThan(1);
-      expect(Math.abs(bounds.y - firstBounds.y)).toBeLessThan(1);
-      expect(Math.abs(bounds.height - firstBounds.height)).toBeLessThan(1);
-      expect(bounds.width).toBeGreaterThan(220);
-      expect(bounds.y).toBeGreaterThan(100);
-      expect(bounds.y + bounds.height).toBeLessThan(780);
-    }
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  }
-});
-
-test("scroll blends the phone contents without moving the phone, and reduced motion removes the blend", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await page.getByRole("button", { name: "Show your goal", exact: true }).click();
-  const phone = page.locator(".story-phone");
-  const before = (await phone.boundingBox())!;
-  await page.locator(".phone-journey").evaluate(el => window.scrollTo({ top: scrollY + el.getBoundingClientRect().top + innerHeight * .85, behavior: "instant" }));
-  const first = page.locator('[data-preview="goals"]');
-  const next = page.locator('[data-preview="plan"]');
-  await expect.poll(async () => Number(await next.evaluate(el => getComputedStyle(el).opacity))).toBeGreaterThan(.2);
-  expect(Number(await first.evaluate(el => getComputedStyle(el).opacity))).toBeGreaterThan(.2);
-  expect(Number(await next.evaluate(el => getComputedStyle(el).opacity))).toBeLessThan(.8);
-  expect((await phone.boundingBox())!.x).toBe(before.x);
-  expect((await phone.boundingBox())!.y).toBe(before.y);
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(first).toHaveCSS("opacity", "1");
-  await expect(next).toHaveCSS("opacity", "0");
-  await expect(first).toHaveCSS("transform", "none");
-  await expect(page.locator(".phone-story")).toHaveCSS("transition-duration", "0s");
-});
-
-test("scrolling advances one pinned phone scene and its background at a time, in both directions", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  await page.evaluate(() => { document.documentElement.style.scrollBehavior = "auto"; });
-  await page.getByRole("link", { name: "A look inside Adler" }).click();
-  const story = page.locator(".phone-story");
-  const colors = new Set<string>();
-  for (const screen of ["goals", "plan", "progress", "checkin", "insights", "imessage", "connections"]) {
-    await expect(story).toHaveAttribute("data-screen", screen);
-    await expect(page.locator('.story-phone-frame[aria-hidden="false"]')).toHaveCount(1);
-    await expect.poll(async () => Math.abs((await story.boundingBox())!.y)).toBeLessThan(2);
-    expect((await story.boundingBox())!.height).toBe(1000);
-    colors.add(await story.evaluate(el => getComputedStyle(el).getPropertyValue("--story-bg")));
-    if (screen !== "connections") await page.mouse.wheel(0, 1001);
-  }
-  expect(colors.size).toBe(7);
-  await page.mouse.wheel(0, -1001);
-  await expect(story).toHaveAttribute("data-screen", "imessage");
-  await page.getByRole("button", { name: "Show your connections", exact: true }).click();
-  await page.getByRole("button", { name: "Continue past the story" }).click();
-  await expect(page.locator(".mountain-summit-copy h2")).toBeInViewport();
-});
-
-test("landing phone screenshots enlarge with the keyboard and restore focus", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 1050 });
-    await page.goto("/");
-    await page.getByRole("button", { name: "Show your progress", exact: true }).click();
-    const opener = page.getByRole("button", { name: "Open full Goal progress screen" });
-    await opener.focus();
-    await page.keyboard.press("Enter");
-    const dialog = page.getByRole("dialog", { name: "Goal progress" });
-    await expect(dialog).toBeVisible();
-    await expect.poll(() => dialog.locator("img").evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    await expect(dialog.locator("img")).toHaveAttribute("src", /hero-progress-mobile.webp/);
-    expect((await dialog.boundingBox())!.width).toBeGreaterThan(340);
-    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-    await page.keyboard.press("Escape");
-    await expect(dialog).toHaveCount(0);
-    await expect(opener).toBeFocused();
-  }
-});
-
-test("saved learning and its research remain inspectable without motion", async ({ page }) => {
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 1050 });
-    await page.goto("/");
-    await page.getByRole("button", { name: "Show your learning", exact: true }).click();
-    await expect(page.locator(".phone-story")).toHaveCSS("transition-duration", "0s");
-    await expect(page.locator('.story-phone-frame[aria-hidden="false"]')).toContainText("Waiting for your check-in");
-    await page.getByRole("button", { name: "Open full Insights screen" }).click();
-    const dialog = page.getByRole("dialog");
-    await expect(dialog.locator("img")).toHaveAttribute("src", /portfolio-learning-mobile.webp/);
-    await dialog.getByRole("button", { name: "Why this test?" }).click();
-    await expect(dialog.locator("img")).toHaveAttribute("src", /portfolio-reasoning-mobile.webp/);
-    await expect.poll(() => dialog.locator("img").evaluate((el: HTMLImageElement) => el.complete && el.naturalWidth > 0)).toBe(true);
-    await expect(dialog).toContainText("The result is waiting for your check-in");
-    await dialog.getByRole("button", { name: "The learning journey" }).click();
-    await expect(dialog.locator("img")).toHaveAttribute("src", /portfolio-learning-mobile.webp/);
-    await page.keyboard.press("Escape");
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  }
 });
 
 test("onboarding submits once, clarifies in place, then opens the researched draft", async ({
@@ -768,74 +639,4 @@ test("latest action observations use the last check-in when records share a date
   await expect(page.locator(".action-observations")).toContainText(
     "4 points recorded",
   );
-});
-
-test("the phone story supports direct selection and keyboard navigation", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto("/");
-  const dots = page.locator(".phone-story-dots button");
-  for (let i = 0; i < 7; i++) {
-    await dots.nth(i).click();
-    await expect(dots.nth(i)).toHaveAttribute("aria-current", "step");
-    await expect(page.locator(".phone-story h2")).toBeInViewport();
-  }
-  await page.locator(".phone-story").focus();
-  await page.keyboard.press("Home");
-  await expect(dots.nth(0)).toHaveAttribute("aria-current", "step");
-  await page.keyboard.press("ArrowRight");
-  await expect(dots.nth(1)).toHaveAttribute("aria-current", "step");
-  await page.keyboard.press("ArrowLeft");
-  await expect(dots.nth(0)).toHaveAttribute("aria-current", "step");
-  await page.keyboard.press("End");
-  await expect(dots.nth(6)).toHaveAttribute("aria-current", "step");
-});
-
-test("the opening leads into the phone story and lets the reader skip ahead", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 960 });
-  await page.goto("/");
-  await page.getByRole("link", { name: "A look inside Adler" }).click();
-  await expect(page.locator(".phone-story h2")).toBeInViewport();
-  await expect(page.locator(".phone-story-copy")).toContainText("I want to finish my portfolio");
-  await expect(page.locator(".journey-index, .journey-step, .hero-mobile-screens")).toHaveCount(0);
-  await page.getByRole("button", { name: "Skip the story" }).click();
-  await expect(page.locator(".mountain-summit-copy h2")).toBeInViewport();
-});
-
-test("the phone story and store availability lead into an accessible coaching journey", async ({ page }) => {
-  await page.setViewportSize({ width: 1440, height: 1000 });
-  await page.goto("/");
-  const hero = page.getByRole("region", { name: "Know what to do next to reach your goals" });
-  await expect(page.locator(".story-phone")).toHaveCount(1);
-  await hero.getByRole("button", { name: "Download on the App Store" }).click();
-  await expect(hero.getByRole("status")).toContainText("App Store version is coming soon");
-  await hero.getByRole("button", { name: "Get it on Google Play" }).click();
-  await expect(hero.getByRole("status")).toContainText("Google Play version is coming soon");
-  await expect(hero.getByRole("link", { name: "Start with a goal" })).toHaveAttribute("href", "/app/goals/new");
-  await page.getByRole("button", { name: "Show your experiment", exact: true }).click();
-  const opener = page.getByRole("button", { name: "Open full Your experiment screen" });
-  await opener.focus();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("dialog", { name: "Your experiment" })).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(opener).toBeFocused();
-  await page.getByRole("button", { name: "Show your learning", exact: true }).click();
-  await expect(page.locator('.story-phone-frame[aria-hidden="false"]')).toContainText("Waiting for your check-in");
-  const stage = page.locator(".phone-story");
-  await stage.focus();
-  await page.keyboard.press("End");
-  await expect(stage).toHaveAttribute("data-screen", "connections");
-  const setup = page.getByRole("button", { name: "Before you start", exact: true });
-  await setup.click();
-  const dialog = page.getByRole("dialog", { name: "Before you start" });
-  await dialog.locator("summary").filter({ hasText: "How do I get started?" }).click();
-  await expect(dialog).toContainText("your own API key");
-  await page.keyboard.press("Home");
-  await expect(stage).toHaveAttribute("data-screen", "connections");
-  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-  await page.keyboard.press("Escape");
-  await expect(setup).toBeFocused();
-  await expect(page.getByRole("link", { name: "Explore connections", exact: true })).toHaveAttribute("href", "/integrations");
-  await expect(page.getByRole("link", { name: "Read the coaching method", exact: true })).toHaveAttribute("href", "/method");
-  await page.getByRole("button", { name: "Continue past the story" }).click();
-  await expect(page.locator(".mountain-summit-copy h2")).toBeInViewport();
 });

@@ -4,36 +4,36 @@ import { register, save, snapshot, synced, coachReply } from "./fixtures";
 import { localDate } from "../shared/workspace";
 import { createGoal } from "../shared/validation";
 
-test("landing demonstrates goal progress and opens an empty signed-in workspace", async ({
-  page,
-}) => {
+test("starting a goal preserves the draft through signup without inventing a saved plan", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("h1")).toHaveText("Know what to do next to reach your goals.");
-  await expect(page.locator(".story-phone-frame")).toHaveCount(7);
-  await expect(page.locator(".story-app-capture figcaption")).toContainText("Illustrative example");
-  await expect(page.locator("#mobile-availability")).toContainText("iOS and Android apps are coming soon");
-  await page
-    .getByRole("link", { name: "Explore the app", exact: true })
-    .first()
-    .click();
-  await page.getByLabel("Username", { exact: true }).fill(`new-${Date.now()}`);
-  await page
-    .getByLabel("Password", { exact: true })
-    .fill("a-long-new-password");
-  await page.getByRole("button", { name: "Create my workspace" }).click();
-  await expect(page.locator("h1")).toContainText(
-    "What would you like to achieve?",
-  );
-  expect((await snapshot(page)).data.goals).toHaveLength(0);
-  const navigation = page.getByRole("navigation", {
-    name: "App navigation",
-    exact: true,
-  });
-  await expect(navigation.getByRole("link")).toHaveCount(5);
-  await expect(
-    navigation.getByRole("link", { name: "Today", exact: true }),
-  ).toBeVisible();
+  await page.getByRole("link", { name: "Start with a goal", exact: true }).first().click();
+  await expect(page.getByRole("heading", { name: "What would you like to achieve?" })).toBeVisible();
+  await expect(page.getByLabel("Password", { exact: true })).toHaveCount(0);
+  await page.getByRole("textbox", { name: "What do you want to achieve?" }).fill("Publish three case studies by November 15");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page.getByRole("heading", { name: "Create an account to save your goal." })).toBeVisible();
   await page.reload();
+  await page.getByLabel("Username", { exact: true }).fill(`new-${Date.now()}`);
+  await page.getByLabel("Password", { exact: true }).fill("a-long-new-password");
+  await page.locator("form").getByRole("button", { name: "Create account", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/check-in\?intent=new-goal/);
+  await expect(page.getByLabel("Message Adler")).toHaveValue("Help me develop this goal and a plan around how I work: Publish three case studies by November 15");
+  expect((await snapshot(page)).data.goals).toHaveLength(0);
+  await page.reload();
+  await expect(page.getByLabel("Message Adler")).toHaveValue(/Publish three case studies/);
+  expect((await snapshot(page)).data.goals).toHaveLength(0);
+});
+
+test("the landing sign-in link opens login and clears its mode flag after authentication", async ({ page }) => {
+  const credentials = await register(page);
+  await page.context().clearCookies();
+  await page.goto("/");
+  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Sign in", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Welcome back." })).toBeVisible();
+  await page.getByLabel("Username", { exact: true }).fill(credentials.username);
+  await page.getByLabel("Password", { exact: true }).fill(credentials.password);
+  await page.locator("form").getByRole("button", { name: "Sign in", exact: true }).click();
+  await expect(page).toHaveURL(/\/app\/today$/);
   expect((await snapshot(page)).data.goals).toHaveLength(0);
 });
 

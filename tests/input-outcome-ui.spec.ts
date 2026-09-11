@@ -100,22 +100,23 @@ test("tracking follows the projection driver and remains visible without a numer
 });
 
 test("a full month distinguishes goals and opens complete Adler event details on desktop and mobile", async ({ page }) => {
-  await example(page);
+  const data = await example(page);
+  const actionTitle = data.goals[0].plans.at(-1)!.action;
   await page.goto("/app/calendar");
   await page.getByRole("button", { name: "Month", exact: true }).click();
   await expect(page.getByRole("grid")).toBeVisible();
   await expect(page.getByRole("gridcell")).toHaveCount(42);
   const colors = await page.locator(".calendar-legend span i").evaluateAll(els => els.slice(0, 3).map(el => getComputedStyle(el).backgroundColor));
   expect(new Set(colors).size).toBe(3);
-  const event = page.locator(".month-entry button").filter({ hasText: "Spend 25 minutes drafting your next case study after breakfast." }).first();
+  const event = page.locator(".month-entry button").filter({ hasText: actionTitle }).first();
   await event.click();
-  await expect(page.getByRole("dialog")).toContainText("Spend 25 minutes drafting your next case study after breakfast.");
+  await expect(page.getByRole("dialog")).toContainText(actionTitle);
   await expect(page.getByRole("dialog")).toContainText("Adler plan");
   await page.keyboard.press("Escape");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   await event.click();
-  await expect(page.getByRole("dialog").getByRole("heading")).toHaveText("Spend 25 minutes drafting your next case study after breakfast.");
+  await expect(page.getByRole("dialog").getByRole("heading")).toHaveText(actionTitle);
   await page.keyboard.press("Escape");
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
 });

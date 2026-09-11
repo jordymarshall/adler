@@ -5,7 +5,7 @@ import { Logo } from "./components";
 export function SignIn() {
   const { authenticate } = useStore(),
     navigate = useNavigate(), location = useLocation();
-  const [mode, setMode] = useState<"login" | "register">("register"),
+  const [mode, setMode] = useState<"login" | "register">(() => new URLSearchParams(location.search).get("auth") === "login" ? "login" : "register"),
     [username, setUsername] = useState(""),
     [password, setPassword] = useState(""),
     [busy, setBusy] = useState(false),
@@ -16,7 +16,9 @@ export function SignIn() {
     setError("");
     try {
       await authenticate(mode, username, password);
-      navigate(location.pathname.startsWith("/app/") ? `${location.pathname}${location.search}${location.hash}` : "/app/today");
+      const query = new URLSearchParams(location.search);
+      query.delete("auth");
+      navigate(location.pathname.startsWith("/app/") ? `${location.pathname}${query.size ? "?" + query : ""}${location.hash}` : "/app/today");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not sign in.");
     } finally {
@@ -27,22 +29,21 @@ export function SignIn() {
     <div className="auth-page">
       <Logo />
       <main>
-        <span className="section-kicker">YOUR ADLER WORKSPACE</span>
+        <span className="section-kicker">YOUR ADLER ACCOUNT</span>
         <h1>
           {mode === "register"
-            ? "Start with a goal of your own."
+            ? "Create an account to save your goal."
             : "Welcome back."}
         </h1>
         <p>
-          Your goals, conversations, and check-ins stay together across the app
-          and your connected phone.
+          Save your goal, plan and conversations in one place.
         </p>
         <div className="auth-tabs">
           <button
             className={mode === "register" ? "selected" : ""}
             onClick={() => setMode("register")}
           >
-            Create workspace
+            Create account
           </button>
           <button
             className={mode === "login" ? "selected" : ""}
@@ -91,7 +92,7 @@ export function SignIn() {
             {busy
               ? "Opening…"
               : mode === "register"
-                ? "Create my workspace"
+                ? "Create account"
                 : "Sign in"}
           </button>
         </form>

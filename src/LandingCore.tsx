@@ -8,16 +8,14 @@ import {
 import { Logo } from "./LandingArt";
 
 import { LandingHero } from "./LandingHero";
-import { LandingBackdrop } from "./LandingBackdrop";
 import { LandingJourney } from "./LandingJourney";
-import { MountainFinale } from "./MountainFinale";
+import { LandingClosing } from "./LandingClosing";
 import "./landing-core.css";
 
 export function Landing() {
   const [menu, setMenu] = useState(false);
   return (
     <div className="v2-landing">
-      <LandingBackdrop />
       <header className="landing-nav">
         <Logo />
         <nav aria-label="Main navigation" className={menu ? "menu-open" : ""}>
@@ -25,10 +23,10 @@ export function Landing() {
             How it works
           </a>
           <Link to="/method" onClick={() => setMenu(false)}>
-            Our approach
+            The method
           </Link>
-          <Link to="/app/today">
-            Explore the app <ArrowUpRight size={12} />
+          <Link to="/app/today?auth=login">
+            Sign in
           </Link>
         </nav>
         <Link className="btn dark nav-cta" to="/app/goals/new">
@@ -46,15 +44,15 @@ export function Landing() {
       <main id="main-content">
         <LandingHero />
         <LandingJourney />
-        <MountainFinale />
+        <LandingClosing />
       </main>
       <footer className="landing-footer section-wrap">
         <Logo />
         <div>
           <a href="#the-path">How it works</a>
-          <Link to="/method">Our approach</Link>
-          <Link to="/app/today">
-            Explore the app <ArrowUpRight size={12} />
+          <Link to="/method">The method</Link>
+          <Link to="/app/today?auth=login">
+            Sign in
           </Link>
         </div>
         <div className="footer-bottom">

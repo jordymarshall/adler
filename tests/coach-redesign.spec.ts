@@ -160,24 +160,3 @@ test("legacy Coach and context links preserve their focus and source anchor", as
   await expect(page).toHaveURL(/\/app\/insights\?goal=essays#record-remember/);
   await expect(page.locator("#record-remember")).toBeInViewport();
 });
-
-test("the landing keeps one phone and readable coaching at desktop and mobile sizes", async ({ page }) => {
-  for (const width of [1440, 390]) {
-    await page.setViewportSize({ width, height: 844 });
-    await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/");
-    await expect(page.locator("h1")).toHaveText("Know what to do next to reach your goals.");
-    await expect(page.locator(".story-phone")).toHaveCount(1);
-    await expect(page.locator("main > section")).toHaveCount(3);
-    await expect(page.locator(".phone-journey + .mountain-finale")).toHaveCount(1);
-    for (const index of [0, 3, 4, 5, 6]) {
-      await page.locator(".phone-story-dots button").nth(index).click();
-      await expect(page.locator(".phone-story-dots button").nth(index)).toHaveAttribute("aria-current", "step");
-      await expect(page.locator(".phone-story h2")).toBeInViewport();
-      await expect(page.locator(".story-phone")).toBeInViewport({ ratio: 1 });
-      await expect(page.locator('.story-phone-frame:not([inert])')).toHaveCount(1);
-      expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
-    }
-    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
-  }
-});

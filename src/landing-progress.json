@@ -1,0 +1,308 @@
+{
+  "asOf": "2026-10-11",
+  "current": 1,
+  "target": 3,
+  "observations": [
+    {
+      "date": "2026-10-01",
+      "value": 0
+    },
+    {
+      "date": "2026-10-11",
+      "value": 1
+    }
+  ],
+  "reportedMinutes": 87,
+  "pairedIntervals": 1,
+  "paceMinutesPerWeek": 29,
+  "projection": {
+    "origin": "2026-10-11",
+    "horizon": "2026-11-25",
+    "points": [
+      {
+        "date": "2026-10-11",
+        "low": 1,
+        "expected": 1,
+        "high": 1
+      },
+      {
+        "date": "2026-10-12",
+        "low": 1,
+        "expected": 1.082857142857143,
+        "high": 1.2857142857142856
+      },
+      {
+        "date": "2026-10-13",
+        "low": 1,
+        "expected": 1.1657142857142857,
+        "high": 1.5714285714285714
+      },
+      {
+        "date": "2026-10-14",
+        "low": 1,
+        "expected": 1.2485714285714287,
+        "high": 1.8571428571428572
+      },
+      {
+        "date": "2026-10-16",
+        "low": 1,
+        "expected": 1.4142857142857144,
+        "high": 2.4285714285714284
+      },
+      {
+        "date": "2026-10-17",
+        "low": 1,
+        "expected": 1.4971428571428573,
+        "high": 2.7142857142857144
+      },
+      {
+        "date": "2026-10-18",
+        "low": 1,
+        "expected": 1.58,
+        "high": 3
+      },
+      {
+        "date": "2026-10-19",
+        "low": 1,
+        "expected": 1.6628571428571428,
+        "high": 3
+      },
+      {
+        "date": "2026-10-20",
+        "low": 1,
+        "expected": 1.7457142857142858,
+        "high": 3
+      },
+      {
+        "date": "2026-10-21",
+        "low": 1,
+        "expected": 1.8285714285714287,
+        "high": 3
+      },
+      {
+        "date": "2026-10-22",
+        "low": 1,
+        "expected": 1.9114285714285715,
+        "high": 3
+      },
+      {
+        "date": "2026-10-23",
+        "low": 1,
+        "expected": 1.9942857142857144,
+        "high": 3
+      },
+      {
+        "date": "2026-10-25",
+        "low": 1,
+        "expected": 2.16,
+        "high": 3
+      },
+      {
+        "date": "2026-10-26",
+        "low": 1,
+        "expected": 2.242857142857143,
+        "high": 3
+      },
+      {
+        "date": "2026-10-27",
+        "low": 1,
+        "expected": 2.3257142857142856,
+        "high": 3
+      },
+      {
+        "date": "2026-10-28",
+        "low": 1,
+        "expected": 2.408571428571429,
+        "high": 3
+      },
+      {
+        "date": "2026-10-29",
+        "low": 1,
+        "expected": 2.4914285714285715,
+        "high": 3
+      },
+      {
+        "date": "2026-10-30",
+        "low": 1,
+        "expected": 2.5742857142857147,
+        "high": 3
+      },
+      {
+        "date": "2026-10-31",
+        "low": 1,
+        "expected": 2.6571428571428575,
+        "high": 3
+      },
+      {
+        "date": "2026-11-01",
+        "low": 1,
+        "expected": 2.74,
+        "high": 3
+      },
+      {
+        "date": "2026-11-03",
+        "low": 1,
+        "expected": 2.9057142857142857,
+        "high": 3
+      },
+      {
+        "date": "2026-11-04",
+        "low": 1,
+        "expected": 2.988571428571429,
+        "high": 3
+      },
+      {
+        "date": "2026-11-05",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-06",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-07",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-08",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-09",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-10",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-12",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-13",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-14",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-15",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-16",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-17",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-18",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-19",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-21",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-22",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-23",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-24",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      },
+      {
+        "date": "2026-11-25",
+        "low": 1,
+        "expected": 3,
+        "high": 3
+      }
+    ],
+    "expectedDate": "2026-11-05",
+    "earliestDate": "2026-10-18",
+    "latestDate": null,
+    "yieldRange": {
+      "low": 0,
+      "expected": 1.2,
+      "high": 2.4
+    },
+    "assumptions": [
+      {
+        "label": "How this estimate works",
+        "text": "Explore what happens if recorded writing pace and the early observed relationship continue. Case studies differ in size; earlier work and other influences may explain publication. Zero additional return remains in the scenario range."
+      },
+      {
+        "label": "Starting from your last report",
+        "text": "The scenario starts today. Last reported published case studies: 1 (2026-10-11). Changes since that report are unknown; update it to revise this estimate."
+      },
+      {
+        "label": "Future work",
+        "text": "The scenario uses complete weeks of recorded scheduled work. Identical weeks use a provisional half-to-one-and-a-half range instead of implying certainty. Unscheduled work is not estimated."
+      },
+      {
+        "label": "Gaps in the record",
+        "text": "Missing expected records and unanswered quantities are unknown and exclude a week or matched period. Days without planned work are labelled separately, not recorded as failed or zero-activity days."
+      },
+      {
+        "label": "How work relates to the result",
+        "text": "Future return is explored from zero to twice the observed average, or the largest observed return if higher. This is a provisional sensitivity range; association does not establish cause."
+      },
+      {
+        "label": "Feedback delay",
+        "text": "The scenario continues the observed input pipeline. Feedback delay aligns past inputs with outcomes; it does not restart at each outcome report."
+      },
+      {
+        "label": "What the range means",
+        "text": "The shaded fan is a conditional scenario range, not a confidence interval or a guarantee. Future cycles are not bookings."
+      }
+    ]
+  }
+}

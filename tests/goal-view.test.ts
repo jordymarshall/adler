@@ -51,6 +51,20 @@ test("on-plan streak includes planned rest, preserves today pending, and never s
   assert.equal(goalStreak(data, goal, "2026-09-12").count, 0, "Streaks do not silently grow beyond the concrete plan");
 });
 
+test("four scheduled completions preserve a seven-day streak without crediting rest as work", () => {
+  const data = adaptiveWorkspace(adaptiveFixture("2026-09-07", "2026-09-13"));
+  const goal = data.goals[0], plan = goal.plans[0];
+  assert.equal(data.actions.length, 4);
+  for (const action of data.actions) recordAction(data, action.id, "Done", "Five outline points written", 5);
+  const streak = goalStreak(data, goal, "2026-09-13");
+  assert.equal(streak.count, 7);
+  assert.equal(streak.days.filter(day => day.status === "on").length, 4);
+  assert.equal(streak.days.filter(day => day.status === "off").length, 3);
+  const work = actionSeries(data, goal, plan, "outline", "2026-09-07", "2026-09-13", "2026-09-14");
+  assert.equal(work.reported, 20);
+  assert.equal(work.points.filter(point => point.off).length, 3);
+});
+
 test("capacity uses booked date and duration once, preserves other goals and includes draft commitments", () => {
   const data = adaptiveWorkspace(), action = data.actions[0];
   data.workBlocks.push({ id: action.id, goalId: action.goalId, action: action.title, start: "2026-09-08T10:00:00Z", end: "2026-09-08T10:40:00Z", provider: "local", status: "Scheduled" });
@@ -166,6 +180,6 @@ test("a declined intermediate learning revision does not become an earlier plan'
   record.versions[1].version = 3;
   record.activeVersion = 3;
   record.versions.splice(1, 0, declined);
-  assert.equal(planExperiment(data, goal, goal.plans[0], "reading-session", [])?.version.version, 1);
-  assert.equal(planExperiment(data, goal, goal.plans[1], "reading-session", [])?.version.version, 3);
+  assert.equal(planExperiment(data, goal, goal.plans.at(-2)!, "reading-session", [])?.version.version, 1);
+  assert.equal(planExperiment(data, goal, goal.plans.at(-1)!, "reading-session", [])?.version.version, 3);
 });

@@ -10,7 +10,7 @@ test("authentication preserves the intended goal and Check-in draft", async ({
     `/app/check-in?intent=new-goal&prompt=${encodeURIComponent(prompt)}`,
   );
   await expect(
-    page.getByRole("heading", { name: "Start with a goal of your own." }),
+    page.getByRole("heading", { name: "Create an account to save your goal." }),
   ).toBeVisible();
   await page
     .getByLabel("Username", { exact: true })
@@ -19,7 +19,7 @@ test("authentication preserves the intended goal and Check-in draft", async ({
     .getByLabel("Password", { exact: true })
     .fill("a-fictional-test-password");
   await page
-    .getByRole("button", { name: "Create my workspace", exact: true })
+    .locator("form").getByRole("button", { name: "Create account", exact: true })
     .click();
   await expect(page).toHaveURL(/\/app\/check-in\?intent=new-goal/);
   await expect(page.getByLabel("Message Adler")).toHaveValue(prompt);

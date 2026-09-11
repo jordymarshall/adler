@@ -98,7 +98,9 @@ function AppShell() {
     { to: "/app/insights", label: "Insights", Icon: Lightbulb },
   ];
   if (loading) return <div className="auth-page">Opening your workspace…</div>;
-  if (!user) return <SignIn />;
+  if (!user) return location.pathname === "/app/goals/new"
+    ? <div className="public-goal-entry"><header><Logo /><Link to="/app/today?auth=login">Sign in</Link></header><main><Onboarding /></main></div>
+    : <SignIn />;
   return (
     <div className={`app-shell${sidebarCollapsed ? " sidebar-collapsed" : ""}`}>
       <a className="skip-link" href="#app-main">

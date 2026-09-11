@@ -1,12 +1,12 @@
 # Initial claim registry: source curation
 
-Research date: 7 September 2026. Source curation for the implementation described in [Engineering the Adler Method](../method/coaching-engineering.md), following [the product principles](../product-principles.md). The twelve records are implemented in [the claim registry](../../shared/research-claims.ts); [release verification](../evaluation/shared-coaching-v2.md) records checks and limitations separately.
+Research date: 7 September 2026. Source curation for the implementation described in [Engineering the Adler Method](../method/coaching-engineering.md), following [the product principles](../product-principles.md). The initial twelve records and the 10 September situation-modification addition are implemented in [the claim registry](../../shared/research-claims.ts); [release verification](../evaluation/shared-coaching-v2.md) records checks and limitations separately.
 
 ## Provenance and use
 
 The initial curation labels below use `-v1`; runtime IDs use `claim:<name>` with version `2026-09-07.1`. External claims were **source-checked by this implementation research, not expert-certified**. Verification used the named original publication or its publisher/author/institutional copy; the access level is stated. Abstract verification supports only the scoped abstract claim. No independent replication, comprehensive systematic update, or expert appraisal is implied. There are no verbatim source excerpts below: the claim text is a paraphrase with a retrieval locator. Store that distinction in code; do not call paraphrases quotations.
 
-The registry contains twelve records covering all seven current `METHODS`. Method and P IDs are routing links, not evidence by themselves. A P link means that the record informs that part of Adler's framework; it does **not** establish every assertion or product rule in that principle. In particular, dated milestones, check-in interfaces, review timing and personal decision thresholds need separate treatment from technique effects.
+The registry contains thirteen records covering all seven current `METHODS`. Method and P IDs are routing links, not evidence by themselves. A P link means that the record informs that part of Adler's framework; it does **not** establish every assertion or product rule in that principle. In particular, dated milestones, check-in interfaces, review timing and personal decision thresholds need separate treatment from technique effects.
 
 Retain two separate fields for evidence: **source design/grade** and **repository corpus grade**. The [synthesis](behavioural-science-synthesis.md) grades a body of evidence; an individual experiment does not inherit its entire domain's A grade. Where the source has no explicit repository grade, say so. The `EMP` label below comes from the idiographic deep dive and must not silently become an A/B grade.
 
@@ -122,6 +122,18 @@ Each runtime application should retain the claim ID/version, source locator, mat
 - **Source / locator:** [Engineering the Adler Method](../method/coaching-engineering.md), §4.3 “Select the least burdensome adequate learning design” and §6 “Review with a disciplined method.” Local policy checked; **not an external empirical finding**.
 - **Applicability / limits:** Can justify an explained practical review condition or a reversible change followed by feedback. Cannot justify a fixed optimal dose, causal confirmation after two successes, randomization without an appropriate design, or an efficacy claim for Adler. The chosen timing and information sought must be recorded for the particular case.
 - **Grade:** **Heuristic, not efficacy-graded.** Preserve the synthesis's separation between supported ingredients and heuristic numbers; do not borrow P3's A grade.
+
+### 13. `claim:situational-modification-student-trials`
+
+Added 10 September 2026; runtime version `2026-09-10.1`.
+
+- **Method / principle:** `barriers`; P7, linked to the synthesis and [self-regulation deep dive](deep/self-regulation-theory.md).
+- **Role:** empirical; two randomized field experiments within a three-study paper.
+- **Claim:** Students assigned to modify their surroundings reported better attainment of study goals over the following week than comparison groups assigned response modulation or no particular strategy.
+- **Source / locator:** [Duckworth, White, Matteucci, Shearer & Gross (2016), *A Stitch in Time: Strategic Self-Control in High School and College Students*](https://pmc.ncbi.nlm.nih.gov/articles/PMC4856169/), abstract; Study 2 Method; Study 3 Method and Discussion; General Discussion limitations. DOI: `10.1037/edu0000062`. AI-assisted verification used indexed PMC full-text excerpts and the [PubMed abstract](https://pubmed.ncbi.nlm.nih.gov/27158155/); direct PMC access returned a challenge. No independent expert certification or comprehensive full-paper appraisal is implied.
+- **Applicability / limits:** Motivates a prospective setup change after the person identifies a relevant distraction and confirms changing it is practical. One-week student self-reports, with substantial attrition in Study 2, do not establish sustained adult writing improvement or Adler effectiveness. Participants could choose different environmental strategies; no isolated phone-in-another-room effect or universal superiority over cognitive strategies follows. COM-B separately defines opportunity; it does not supply efficacy evidence.
+- **Grade:** B / moderate for these short student experiments. P7's broader A grade belongs to its corpus, not this paper alone.
+- **Landing application:** The fictional user reports losing writing time to phone scrolling and says the phone is unnecessary for work or being reachable. Two prospective sessions keep it in the kitchen during the same 25 minutes at 8:30. The original hypothesis predicts fewer phone checks and more writing; later reports capture actual setup use, checks and minutes. Publications remain a separate outcome. The choice of two sessions and review dates is a practical trial, not a scientific threshold for causal inference.
 
 ## Catalog wording and deployment boundaries
 
