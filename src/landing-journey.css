@@ -1,7 +1,7 @@
 /* Original campaign artwork, followed by the goal's dated history. */
-.v2-landing .journey-introduction { height: auto; min-height: 0; padding: 100px 0 0; }
-.v2-landing .hero-cover { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(360px, 1fr); align-items: center; gap: clamp(40px, 6vw, 90px); padding: 65px max(32px, calc((100vw - 1200px) / 2)) 75px; background: #ddf578; color: #203e32; }
-.v2-landing .hero-cover .hero-intro-v2 { position: static; transform: none; opacity: 1; padding: 0; text-align: left; }
+.v2-landing .journey-introduction { position: relative; height: auto; min-height: 0; padding: 100px 0 0; z-index: 1; overflow-x: clip; overflow-y: visible; background: #f6f7ef; }
+.v2-landing .hero-cover { position: relative; isolation: isolate; min-height: 730px; padding: 80px max(32px, calc((100vw - 1200px) / 2)) 180px; background: linear-gradient(#f6f7ef 55%, #eff3e8); color: #203e32; }
+.v2-landing .hero-cover .hero-intro-v2 { position: relative; inset: auto; z-index: 2; max-width: 620px; transform: none; opacity: 1; padding: 0; text-align: left; }
 .v2-landing .hero-category { display: block; margin-bottom: 22px; font-size: 13px; font-weight: 500; letter-spacing: .07em; }
 .v2-landing .hero-cover .hero-intro-v2 h1 { margin: 0; font-size: clamp(46px, 5.4vw, 78px); line-height: 1.04; letter-spacing: -.055em; color: inherit; text-wrap: balance; }
 .v2-landing .hero-cover .hero-intro-v2 > p { margin: 24px 0 0; max-width: 490px; font-size: 18px; line-height: 1.6; text-wrap: pretty; }
@@ -11,11 +11,13 @@
 .v2-landing .hero-actions .btn:hover, .v2-landing .landing-closing .btn:hover { background: #203d2a; }
 .v2-landing .hero-cover .hero-intro-v2 > .hero-availability { margin-top: 13px; font-size: 13px; color: #46583b; }
 
-/* Discrete pictures and held poses: scrolling unfolds them, reversing rewinds. */
-.v2-landing .hero-art { position: relative; width: 100%; aspect-ratio: 1; overflow: hidden; border-radius: 28px; background: #173b2f; isolation: isolate; }
-.v2-landing .hero-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.01); }
-.v2-landing .hero-art img[data-active="true"] { opacity: 1; }
-.v2-landing .hero-art:is([data-frame="1"], [data-frame="3"], [data-frame="5"]) img { transform: scale(1.07); }
+/* Transparent forms share the page canvas and settle toward the app below. */
+.v2-landing .hero-art { position: absolute; inset: 0; pointer-events: none; }
+.v2-landing .hero-flow { position: absolute; inset: 0; width: 100%; height: 100%; opacity: calc(.85 - var(--hero-progress) * .35); mask-image: linear-gradient(transparent, #000 15%, #000 65%, transparent); }
+.v2-landing .hero-sculpture { position: absolute; left: calc(80% - 30% * var(--hero-progress)); top: calc(330px + (100% - 380px) * var(--hero-progress)); width: min(65vw, 940px); aspect-ratio: 1; transform: translate(-50%, -50%) rotate(calc(-10deg + var(--hero-progress) * 85deg)) scale(calc(1 - var(--hero-progress) * .88)); }
+.v2-landing .hero-sculpture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
+.v2-landing .hero-sculpture img[data-active="true"] { opacity: 1; }
+.v2-landing .hero-orbit { position: absolute; width: 92px; aspect-ratio: 1; left: calc(59% - var(--hero-progress) * 13%); top: calc(72% + var(--hero-progress) * 19%); border-radius: 50%; background: radial-gradient(circle at 32% 27%, #ffd4ac, #eeae87 55%, #ce835f); transform: scale(calc(1 - var(--hero-progress) * .9)); opacity: calc(1 - var(--hero-progress)); }
 
 /* Shared app evidence: the report, the change, and an inspectable reason. */
 .v2-landing .story-card-label { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.4; letter-spacing: .035em; color: #52634c; font-weight: 500; }
@@ -213,7 +215,13 @@ html:has(.phone-journey) { scroll-padding-top: 0; }
 .public-goal-entry .onboarding-page { margin: 24px 0; }
 
 @media (max-width: 1000px) {
-  .v2-landing .hero-cover { gap: 30px; padding-inline: 28px; }
+  .v2-landing .hero-cover { padding: 50px 28px 500px; }
+  .v2-landing .hero-cover .hero-intro-v2 { max-width: 600px; margin: 0 auto; text-align: center; }
+  .v2-landing .hero-cover .hero-intro-v2 > p { margin-inline: auto; }
+  .v2-landing .hero-actions { justify-content: center; }
+  .v2-landing .hero-sculpture { width: 700px; left: calc(65% - 15% * var(--hero-progress)); top: calc(100% - 250px + 200px * var(--hero-progress)); }
+  .v2-landing .hero-flow { top: 34%; height: 66%; }
+  .v2-landing .hero-orbit { left: 16%; top: 78%; }
   .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: 50px; }
   .v2-landing .phone-story-content { grid-template-columns: minmax(0, 1fr) minmax(230px, .8fr); grid-template-rows: auto minmax(0, 1fr); gap: 22px; }
   .v2-landing .phone-story-copy { grid-column: 1 / -1; text-align: center; }
@@ -221,7 +229,11 @@ html:has(.phone-journey) { scroll-padding-top: 0; }
 }
 @media (max-width: 650px) {
   .v2-landing .journey-introduction { padding-top: 90px; }
-  .v2-landing .hero-cover { grid-template-columns: 1fr; gap: 36px; padding: 30px 22px 42px; }
+  .v2-landing .hero-cover { padding: 30px 22px 365px; min-height: 0; }
+  .v2-landing .hero-cover .hero-intro-v2 { margin: 0; text-align: left; }
+  .v2-landing .hero-sculpture { width: 560px; left: calc(72% - 22% * var(--hero-progress)); top: calc(100% - 205px + 170px * var(--hero-progress)); }
+  .v2-landing .hero-flow { top: 48%; height: 52%; width: 160%; left: -30%; }
+  .v2-landing .hero-orbit { width: 52px; left: 10%; top: 83%; }
   .v2-landing .hero-category { margin-bottom: 18px; font-size: 12px; }
   .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: clamp(39px, 10.7vw, 60px); }
   .v2-landing .hero-cover .hero-intro-v2 > p { font-size: 17px; margin-top: 20px; }

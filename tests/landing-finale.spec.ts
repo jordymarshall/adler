@@ -33,6 +33,18 @@ test('the opening pairs original artwork with a short route to starting', async 
   await expect(art).toBeInViewport();
   await expect.poll(() => art.locator('img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
   await expect(art.locator('img[data-active="true"]')).toHaveCount(1);
+  await expect(art).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(art).toHaveCSS('border-radius', '0px');
+  expect((await art.boundingBox())!.width).toBe(1440);
+  for (const image of await art.locator('img').all()) {
+    const alpha = await image.evaluate(el => {
+      const canvas = document.createElement('canvas'); canvas.width = 32; canvas.height = 32;
+      const ctx = canvas.getContext('2d')!; ctx.drawImage(el as HTMLImageElement, 0, 0, 32, 32);
+      return [ctx.getImageData(0, 0, 1, 1).data[3], ctx.getImageData(16, 16, 1, 1).data[3]];
+    });
+    expect(alpha[0]).toBe(0);
+    expect(alpha[1]).toBeGreaterThan(240);
+  }
   await expect(page.locator('.mountain-finale, .landing-backdrop, .store-download, .hero-bloom, .story-connection-group')).toHaveCount(0);
   await expect(page.locator('main > section')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(6000);
@@ -54,18 +66,21 @@ test('the artwork unfolds and rewinds with scroll, holds still, and respects mot
     await expect.poll(() => art.locator('img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
     const { start, travel } = await art.evaluate(el => {
       const rect = el.getBoundingClientRect();
-      return { start: Math.max(0, rect.top + scrollY - innerHeight * .25), travel: rect.height * .7 };
+      const top = rect.top + scrollY;
+      const entry = innerWidth <= 1000 ? Math.max(0, rect.height - 480) : 0;
+      const start = Math.max(0, top + entry - innerHeight * .35);
+      return { start, travel: Math.max(1, top + rect.height - innerHeight * .35 - start) };
     });
     const pictures = new Set<string>();
-    for (const frame of [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]) {
-      await page.evaluate(top => window.scrollTo({ top, behavior: 'instant' }), start + (frame + .2) * travel / 6);
+    for (const frame of [...Array.from({ length: 12 }, (_, i) => i), ...Array.from({ length: 12 }, (_, i) => 11 - i)]) {
+      await page.evaluate(top => window.scrollTo({ top, behavior: 'instant' }), start + (frame + .2) * travel / 12);
       await expect(art).toHaveAttribute('data-frame', String(frame));
       const active = art.locator('img[data-active="true"]');
       await expect(active).toHaveCSS('opacity', '1');
       pictures.add((await active.getAttribute('src'))!);
       expect(await active.evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     }
-    expect(pictures.size).toBe(3);
+    expect(pictures.size).toBe(2);
     await page.clock.runFor(60000);
     await expect(art).toHaveAttribute('data-frame', '0');
     expect(await art.evaluate(el => el.getAnimations({ subtree: true }).length)).toBe(0);
@@ -73,7 +88,12 @@ test('the artwork unfolds and rewinds with scroll, holds still, and respects mot
     await page.evaluate(top => window.scrollTo({ top, behavior: 'instant' }), start + travel);
     await expect(art).toHaveAttribute('data-frame', '0');
     await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await expect(art).toHaveAttribute('data-frame', '5');
+    await expect(art).toHaveAttribute('data-frame', '11');
+    const sculpture = (await page.locator('.hero-sculpture').boundingBox())!;
+    expect(Math.abs(sculpture.x + sculpture.width / 2 - viewport.width / 2)).toBeLessThan(2);
+    expect(sculpture.width).toBeLessThan(viewport.width * .25);
+    const next = (await page.locator('#the-path').boundingBox())!;
+    expect(Math.abs(sculpture.y + sculpture.height / 2 - next.y)).toBeLessThan(55);
   }
 });
 

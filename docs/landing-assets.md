@@ -4,7 +4,7 @@ The current page implements the [landing critique](research/landing-page-critiqu
 
 ## Current page and visual assets
 
-- `LandingHero.tsx` names the AI goal coach beside three original abstract pictures in six held scroll poses. Motion reverses with scroll, adds no extra section, waits for the pictures to load, and stays on the first pose with reduced motion. Responsive JPEGs are local in `public/media/hero`; [art direction and exact generation prompts](research/landing-hero-art-direction.md) record their provenance. `LandingEvidence.tsx` supplies the tour’s before/after plan comparison, reports and research disclosure.
+- `LandingHero.tsx` names the AI goal coach within an unframed page composition: two transparent abstract forms unfold, turn and settle toward the app in twelve held scroll poses. A ribbon and a shared background connect the sections; artwork may cross the boundary. Motion reverses with scroll, adds no extra section, waits for the pictures to load and decode, and stays on the first pose with reduced motion. Responsive WebPs are local in `public/media/hero`; [art direction and exact generation prompts](research/landing-hero-art-direction.md) record their provenance. `LandingEvidence.tsx` supplies the tour’s before/after plan comparison, reports and research disclosure.
 - `LandingJourney.tsx` uses eight parts and 19 scroll states: goal creation, today's actions, a barrier conversation, dated progress, an experiment, trial results, the accepted next plan and continuing in iMessage. Forward scroll advances, backward scroll rewinds, and stopping holds. No timer, playback control, in-phone click/input/focus, decorative app tab or screenshot expansion is present. These authored demonstrations make no account, coach, message or calendar writes.
 - Desktop preserves the centred 390 × 844 phone. Mobile panels use native-size text without a device bezel or scaling. At portrait heights of 620px or less, and wider viewports 600px high or less, the same eight parts appear in normal document flow so complete content stays readable. This fallback presents complete states and the full conversation. Reduced motion disables decorative motion and retains deliberate navigation.
 - One short explanation accompanies each part. The research disclosure uses the same saved personal observation, mechanism, prediction/feedback and limits as the fixture. A pre-test explanation excludes later reports. It is an authored account of the service's decision, not live agent activity or a reasoning transcript.
@@ -38,7 +38,7 @@ Browser regressions exercise all scroll frames forward and backward, matching ex
 
 ## Earlier generated artwork
 
-An earlier paper texture was generated with the built-in image tool on September 10 and is retained locally in `.context/landing-simplification/paper-texture-unused.jpg`. It and the original mountain/bloom are not loaded by the landing. The later hero-art direction adds the three abstract pictures listed above; the product’s plan, reports and graph remain the tour’s visual explanation.
+An earlier paper texture was generated with the built-in image tool on September 10 and is retained locally in `.context/landing-simplification/paper-texture-unused.jpg`. It and the original mountain/bloom are not loaded by the landing. The later hero-art direction uses the two transparent forms listed above; the product’s plan, reports and graph remain the tour’s visual explanation.
 
 ## Integration implementation boundaries
 

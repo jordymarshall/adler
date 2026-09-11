@@ -1,42 +1,40 @@
-# Landing hero: original abstract artwork
+# Landing hero: artwork within the page
 
-Direction approved 10 September 2026: Wrapped-inspired graphics in Adler's own palette, with scroll-controlled stop motion. The user explicitly rejected people and lifestyle photography. The approved headline, short goal story and start flow remain.
+Updated 11 September 2026. The user asked for an embedded visual flow, inspired by Apple's creative product pages. The hero now uses transparent artwork, a sweeping ribbon and a shared page background. The approved headline, goal example and app story remain.
 
-## Direction and sources
+## Composition and motion
 
-The artwork uses Adler's forest green, chartreuse, ivory and peach, a six-lobed flower, sweeping bands and fine print texture. Spotify's [2025 Wrapped campaign account](https://newsroom.spotify.com/2025-12-03/wrapped-marketing-campaign/) informed the limited palette, tactile digital treatment and bold graphic composition. These are original Adler campaign assets, not Spotify branding or interface replicas.
+[Apple's AirPods presentation](https://www.apple.com/airpods-pro/) informed the use of an isolated visual subject, generous surrounding space and a sequence that directs attention to the product. Our application keeps Adler's forest green, lime, ivory, peach and rounded typography.
 
-The three pictures show the same form folded, opening and expanded. Each has two held crop poses, giving six discrete frames. Scrolling reverses them; stopping holds the picture. No extra section, autoplay timer, video or animation dependency is added. Reduced motion keeps the first pose. Frame switching waits until all three pictures load; the first has high fetch priority. Intrinsic dimensions reserve the image area.
+The large folded form extends beyond the right edge of the viewport. As the visitor scrolls, it opens, turns, becomes smaller and settles at the center just above the app. Two generated pictures supply the folded and open shapes; position, rotation and scale advance in twelve held poses. The ribbon fades into the same background used by the next section, and artwork may cross the section boundary without a rectangular cutoff.
+
+The composition uses normal page scrolling and adds no extra section or sticky scroll distance. Reversing scroll rewinds the poses; stopping holds them. Reduced motion retains the first pose. Artwork is decorative, has no pointer interactions, and cannot capture clicks or keyboard focus. All pictures must load and decode before the sequence advances, preventing an empty picture during a swap.
 
 ## Saved assets
 
-Generated using the built-in `image_gen` tool. Final browser exports use macOS `sips` for size/format optimization only; the artwork is not redrawn by code. Original PNGs remain in the tool's generated-images directory.
+Generated and edited with the built-in `image_gen` tool. Browser canvas exports only resize and encode the generated PNGs as WebP, preserving their alpha; they do not redraw or remove image content. Final files have transparent outer pixels and substantial transparent area, not a painted checkerboard.
 
-| Pose | 1100px source | 640px source |
+| Pose | 1200px | 640px |
 | --- | --- | --- |
-| Folded | [adler-unfold-v1-01-1100.jpg](../../public/media/hero/adler-unfold-v1-01-1100.jpg) · 315,532 bytes | [adler-unfold-v1-01-640.jpg](../../public/media/hero/adler-unfold-v1-01-640.jpg) · 116,604 bytes |
-| Opening | [adler-unfold-v1-02-1100.jpg](../../public/media/hero/adler-unfold-v1-02-1100.jpg) · 358,447 bytes | [adler-unfold-v1-02-640.jpg](../../public/media/hero/adler-unfold-v1-02-640.jpg) · 128,385 bytes |
-| Expanded | [adler-unfold-v1-03-1100.jpg](../../public/media/hero/adler-unfold-v1-03-1100.jpg) · 337,823 bytes | [adler-unfold-v1-03-640.jpg](../../public/media/hero/adler-unfold-v1-03-640.jpg) · 126,108 bytes |
+| Folded | [adler-form-v2-01-1200.webp](../../public/media/hero/adler-form-v2-01-1200.webp) · 80,468 bytes | [adler-form-v2-01-640.webp](../../public/media/hero/adler-form-v2-01-640.webp) · 34,276 bytes |
+| Open | [adler-form-v2-02-1200.webp](../../public/media/hero/adler-form-v2-02-1200.webp) · 109,380 bytes | [adler-form-v2-02-640.webp](../../public/media/hero/adler-form-v2-02-640.webp) · 43,894 bytes |
 
-Responsive `srcset` lets the browser choose an appropriate size. The six exports total 1.38 MB on disk; a visitor downloads one size per pose, not both sets. Art is decorative and excluded from screen-reader narration; the product explanation remains live text.
+Responsive sources total about 190 KB for both larger pictures or 78 KB for both smaller pictures. Intrinsic dimensions reserve the artwork's proportions. The page-native SVG ribbon and CSS peach orb are separate decorative layers.
 
-## Exact prompt set
+The superseded framed JPEG assets were removed from the deployed files. Their source artwork and original prompts remain in [the previous revision](https://github.com/jordymarshall/adler/blob/e002d89/docs/research/landing-hero-art-direction.md). Original generated PNGs remain in the image tool's output directory.
 
-### Opening frame: generated from text
+## Exact final prompt set
 
-Use case: stylized-concept. Asset type: original abstract campaign artwork for the Adler website hero, square canvas.
-Create a striking abstract graphic artwork with the energy and artistic confidence of Spotify Wrapped, customized to Adler's warm, rounded, organic brand. Deep forest green #203e32, electric soft chartreuse #ddf578, warm ivory #f6f7ef and a restrained salmon-peach accent. Absolutely no people, photography, lifestyle scene, physical desk or literal real-world objects.
-The central composition is a large softly rounded six-lobed star/flower that unfolds into curving concentric bands and fan-like pleats, with a smaller contrasting orb and an unexpected offset arc. Asymmetrical, graphic, dynamic, expertly balanced. The forms mix crisp flat color with velvety airbrushed gradients, fine print grain, and tactile soft depth; feel like a beautifully art-directed digital campaign poster, not a rendering of an object in a room. Give the star a confident sculptural silhouette, generous curves, and a sense of expansion. High contrast, bold cropping near two edges, excellent negative-space control, huge simple shapes. The palette must read unmistakably green and lime, with peach limited to about 15 percent. Contemporary graphic-design-studio art, playful, editorial and highly polished, with an analog/digital mix.
-No text, lettering, logos, UI, numbers, diagrams, charts, watermark, photographic reflections, chrome, glass, metallic sheen, stock illustrations or generic SaaS blobs. Full-bleed finished artwork; not a website screenshot, not a presentation mockup.
+### Open form: edit of the original campaign image
 
-### Folded frame: edit of the opening image
+Use case: background-extraction / stylized-concept. Edit the supplied Adler artwork into an isolated transparent web-compositing asset. Keep the distinctive folded six-lobed flower in chartreuse/lime, soft ivory rims and deep forest-green folded interiors, fine tactile print grain and airbrushed sculptural depth. This is the SAME visual identity. Remove the entire surrounding poster background, all fan bands, arcs and the peach orb. Show just ONE complete six-lobed abstract folded flower, compact and slightly tilted, entirely inside the canvas with 10 percent transparent padding. Keep the ivory edges subtle so lime remains dominant. Organic paper/ribbon folds with lovely dimensionality, no photorealism. Output a genuinely transparent alpha background, with transparent holes if any, not a white background or a baked checkerboard. No frame, panel, container, border, ground plane, cast shadow, text, logo, numbers, people, metallic or glass surfaces. Intended as a large free-floating graphic directly on the page.
 
-Edit the supplied original abstract Adler campaign artwork into the PREVIOUS frame of a three-frame stop-motion sequence. Preserve its square canvas, exact forest green/chartreuse/ivory/peach palette, print grain, airbrushed soft depth, and graphic poster style. Keep the same central six-lobed flower and surrounding fan bands. The flower is now tightly folded, about 65% of its current size, its lobes gathered inward, rotated 15 degrees counterclockwise. Surrounding bands contract inward with it. The peach orb shifts only slightly along its arc. Keep a confident beautiful composition with large graphic shapes, intentional forest-green negative space and cropped edge bands. This is a consistent earlier pose of the SAME artwork, not a redesign. No text, logo, UI, people, photography, literal objects, chrome, metallic materials, glass, watermark, or new decorative elements.
+### Folded form: edit of the transparent open form
 
-### Expanded frame: edit of the opening image
+Edit this isolated Adler six-lobed sculptural flower into an earlier tightly folded stop-motion pose. Preserve the exact lime/ivory/forest-green palette, soft fine print texture, lighting, single-object composition and genuinely transparent alpha background. Bring all six lobes inward into a compact folded rosette, a little more irregular and tilted 15 degrees counterclockwise, with thicker ribbon curls. Keep the whole object centered and inside the canvas with 10 percent transparent margin; no cropped petals. Remove all stray pixels, white fringes and debris outside the silhouette; edges should be clean antialiased against transparency. No background, square, poster, cast shadow, border, text, logo, people, extra objects, chrome or glass. This is the first animation pose of the same recognizable object, not a different design.
 
-Edit the supplied original abstract Adler campaign artwork into the NEXT frame of a three-frame stop-motion sequence. Preserve its square canvas, exact forest green/chartreuse/ivory/peach palette, print grain, airbrushed soft depth, and graphic poster style. Keep the same central six-lobed flower and surrounding fan bands. The flower has now opened further, with its six rounded lobes stretching outward and rotating 15 degrees clockwise, almost filling the canvas, with the outermost petal edges beautifully cropped. Surrounding fan bands open with it into a broad rhythmic sweep. The peach orb shifts only slightly along its arc. This is a consistent later pose of the SAME artwork, not a redesign. No text, logo, UI, people, photography, literal objects, chrome, metallic materials, glass, watermark, or new decorative elements.
+## Verification and boundaries
 
-## Coaching example
+Browser coverage checks real alpha, a full-width borderless composition, all twelve poses forward and backward, the centered handoff above the app, idle behavior and live changes to reduced-motion preference. The existing 19-state app demonstration, its accessible disclosure and short-screen layouts remain covered.
 
-The new story concerns losing writing time to phone scrolling. After checking that the phone is unnecessary during the session, Adler proposes putting it in the kitchen during the same 25 minutes at 8:30. Two attributed trial reports inform the next accepted plan; publication progress remains separate. This is a tentative situation-modification application of P7, with COM-B used as theory and student field experiments as limited empirical motivation. See [source curation](claim-curation.md#13-claimsituational-modification-student-trials) and [the saved scenario, chronology and actual coaching-service review](../landing-assets.md).
+This revision changes presentation only. The phone-distraction example, personal evidence, research claims, conditional projection, trial history and coaching behavior remain as documented in [landing assets](../landing-assets.md).
