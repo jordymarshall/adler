@@ -45,7 +45,10 @@ test('the opening pairs original artwork with a short route to starting', async 
     expect(alpha[0]).toBe(0);
     expect(alpha[1]).toBeGreaterThan(240);
   }
-  await expect(page.locator('.mountain-finale, .landing-backdrop, .store-download, .hero-bloom, .story-connection-group')).toHaveCount(0);
+  await expect(page.locator('.mountain-finale, .landing-backdrop, .hero-bloom, .story-connection-group')).toHaveCount(0);
+  await expect(page.locator('.hero-cover').getByText('Start on the web.', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Download on the App Store' })).toBeDisabled();
+  await expect(page.locator('#app-store-availability')).toHaveText('Coming soon');
   await expect(page.locator('main > section')).toHaveCount(3);
   expect(await page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThan(6000);
   await page.getByRole('link', { name: 'See an example' }).click();

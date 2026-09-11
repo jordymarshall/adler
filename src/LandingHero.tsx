@@ -53,8 +53,14 @@ export function LandingHero() {
         <span className="hero-category">YOUR AI GOAL COACH</span>
         <h1>Follow through on the goal that keeps slipping.</h1>
         <p>Adler helps you plan the work, understand what gets in the way, and adjust your next steps using what you’ve tried.</p>
-        <div className="hero-actions"><Link className="btn dark" to="/app/goals/new">Start with a goal <ArrowUpRight size={17} /></Link><a href="#the-path">See an example <ArrowDown size={15} /></a></div>
-        <p className="hero-availability">Start on the web.</p>
+        <div className="hero-actions">
+          <Link className="btn dark" to="/app/goals/new">Start with a goal <ArrowUpRight size={17} /></Link>
+          <div className="hero-store">
+            <button className="store-download" disabled aria-describedby="app-store-availability"><img src="/brands/app-store-badge.svg" width="120" height="40" alt="Download on the App Store" /></button>
+            <span id="app-store-availability">Coming soon</span>
+          </div>
+          <a className="hero-example" href="#the-path">See an example <ArrowDown size={15} /></a>
+        </div>
       </div>
       <div className="hero-art" ref={art} data-frame={frame} aria-hidden="true">
         <svg className="hero-backdrop" viewBox="0 0 1440 900" preserveAspectRatio="none">
