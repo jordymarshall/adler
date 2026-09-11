@@ -57,14 +57,9 @@ export function LandingHero() {
         <p className="hero-availability">Start on the web.</p>
       </div>
       <div className="hero-art" ref={art} data-frame={frame} aria-hidden="true">
-        <svg className="hero-flow" viewBox="0 0 1440 900" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="hero-flow-color" x1="1" y1="0" x2=".4" y2="1"><stop stopColor="#d5ec87" /><stop offset=".65" stopColor="#e5efc6" /><stop offset="1" stopColor="#dce7ca" /></linearGradient>
-            <path id="hero-flow-path" d="M1580 -240 C1130 -250 1390 530 1040 530 C830 530 500 475 435 630 C355 815 720 800 720 950" />
-          </defs>
-          <use href="#hero-flow-path" fill="none" stroke="url(#hero-flow-color)" strokeWidth="190" />
-          <use href="#hero-flow-path" fill="none" stroke="#f5f7e8" strokeWidth="100" />
-          <use href="#hero-flow-path" fill="none" stroke="#d4e5b3" strokeWidth="2" />
+        <svg className="hero-backdrop" viewBox="0 0 1440 900" preserveAspectRatio="none">
+          <path d="M1100 -120H1660V950H500Z" fill="#91b436" />
+          <path d="M1440 -120H1760V950H860Z" fill="#c2e457" />
         </svg>
         <div className="hero-sculpture">
           {artwork.map((path, i) => <img key={path} src={`${path}-1200.webp`} srcSet={`${path}-640.webp 640w, ${path}-1200.webp 1200w`} sizes="(max-width: 650px) 560px, (max-width: 1000px) 700px, 940px" width="1200" height="1200" alt="" fetchPriority={i === 0 ? "high" : "low"} decoding="sync" data-active={Math.min(1, Math.floor(frame / 4)) === i} onLoad={prepareArtwork} />)}

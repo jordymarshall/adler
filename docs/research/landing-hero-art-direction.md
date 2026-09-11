@@ -1,12 +1,12 @@
 # Landing hero: artwork within the page
 
-Updated 11 September 2026. The user asked for an embedded visual flow, inspired by Apple's creative product pages. The hero now uses transparent artwork, a sweeping ribbon and a shared page background. The approved headline, goal example and app story remain.
+Updated 11 September 2026. The user asked for an embedded visual flow, inspired by Apple's creative product pages, then a more vibrant background without the winding stripe. The hero now uses transparent artwork, broad angled green shapes and a saturated lime page background. The approved headline, goal example and app story remain.
 
 ## Composition and motion
 
 [Apple's AirPods presentation](https://www.apple.com/airpods-pro/) informed the use of an isolated visual subject, generous surrounding space and a sequence that directs attention to the product. Our application keeps Adler's forest green, lime, ivory, peach and rounded typography.
 
-The large folded form extends beyond the right edge of the viewport. As the visitor scrolls, it opens, turns, becomes smaller and settles at the center just above the app. Two generated pictures supply the folded and open shapes; position, rotation and scale advance in twelve held poses. The ribbon fades into the same background used by the next section, and artwork may cross the section boundary without a rectangular cutoff.
+The large folded form extends beyond the right edge of the viewport. As the visitor scrolls, it opens, turns, becomes smaller and settles at the center just above the app. Two generated pictures supply the folded and open shapes; position, rotation and scale advance in twelve held poses. The lime background extends behind the navigation and fades into the same background used by the next section. Two oversized diagonal colour fields sit behind the artwork; they replace the winding ribbon. Artwork may cross the section boundary without a rectangular cutoff. Dark green copy retains contrast on the brighter background.
 
 The composition uses normal page scrolling and adds no extra section or sticky scroll distance. Reversing scroll rewinds the poses; stopping holds them. Reduced motion retains the first pose. Artwork is decorative, has no pointer interactions, and cannot capture clicks or keyboard focus. All pictures must load and decode before the sequence advances, preventing an empty picture during a swap.
 
@@ -19,7 +19,7 @@ Generated and edited with the built-in `image_gen` tool. Browser canvas exports 
 | Folded | [adler-form-v2-01-1200.webp](../../public/media/hero/adler-form-v2-01-1200.webp) · 80,468 bytes | [adler-form-v2-01-640.webp](../../public/media/hero/adler-form-v2-01-640.webp) · 34,276 bytes |
 | Open | [adler-form-v2-02-1200.webp](../../public/media/hero/adler-form-v2-02-1200.webp) · 109,380 bytes | [adler-form-v2-02-640.webp](../../public/media/hero/adler-form-v2-02-640.webp) · 43,894 bytes |
 
-Responsive sources total about 190 KB for both larger pictures or 78 KB for both smaller pictures. Intrinsic dimensions reserve the artwork's proportions. The page-native SVG ribbon is a separate decorative layer.
+Responsive sources total about 190 KB for both larger pictures or 78 KB for both smaller pictures. Intrinsic dimensions reserve the artwork's proportions. The page-native SVG colour fields are a separate decorative layer.
 
 The superseded framed JPEG assets were removed from the deployed files. Their source artwork and original prompts remain in [the previous revision](https://github.com/jordymarshall/adler/blob/e002d89/docs/research/landing-hero-art-direction.md). Original generated PNGs remain in the image tool's output directory.
 

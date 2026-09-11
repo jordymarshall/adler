@@ -282,7 +282,7 @@
   justify-content: space-between;
   gap: 25px;
   min-height: 100px;
-  background: var(--paper);
+  background: transparent;
 }
 .v2-landing .landing-nav nav {
   display: flex;
