@@ -1,0 +1,267 @@
+{
+  "request": "GET /api/app/insights/learning-breakfast-cue",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "row": {
+      "recordId": "learning-breakfast-cue",
+      "version": 1,
+      "activeVersion": 1,
+      "pendingVersion": null,
+      "state": "agreed",
+      "standing": "consistent",
+      "statusLabel": "Live experiment",
+      "standingLabel": "Consistent so far",
+      "timingLabel": "Review Sep 15",
+      "goals": [
+        {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        }
+      ],
+      "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+      "observation": "You reported that the writing hour disappears once the workday starts.",
+      "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+      "behaviorSignal": "Whether a section is drafted on the planned days.",
+      "mechanismSignal": "Whether starting felt easier on the days the cue was used.",
+      "outcomeSignal": null,
+      "prediction": "You report starting the session on more of the planned days.",
+      "reviewRule": "Review after four planned occurrences, or sooner if you report a blocker.",
+      "comparison": "Compared with the interrupted mornings you described before this trial.",
+      "design": "prospective",
+      "alternatives": [
+        "A quieter fortnight at work could explain the same change."
+      ],
+      "transfer": null,
+      "start": "2026-08-31",
+      "reviewAfter": "2026-09-13",
+      "nextReviewAfter": "2026-09-15",
+      "reports": 1,
+      "latestReview": {
+        "id": "review-breakfast-1",
+        "at": "2026-09-08T13:00:00.000Z",
+        "summary": "Two of three planned sessions happened, and you reported an easier start on those days.",
+        "implication": "Keep the after-breakfast cue for the rest of the trial window.",
+        "nextQuestion": "Does the cue still work on days with an early stand-up?",
+        "decision": "keep",
+        "standing": "consistent",
+        "standingLabel": "Consistent so far",
+        "exposure": "used",
+        "exposureLabel": "Reported as used"
+      },
+      "actionVersion": 1,
+      "controls": {
+        "agree": false,
+        "decline": false,
+        "pause": true,
+        "resume": false,
+        "close": true
+      },
+      "attempts": [
+        {
+          "date": "2026-09-01",
+          "outcome": "Done",
+          "actionId": "237e4a77-378e-4671-abac-39897a4ee2d9"
+        },
+        {
+          "date": "2026-09-03",
+          "outcome": "Didn’t happen",
+          "actionId": "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+        },
+        {
+          "date": "2026-09-08",
+          "outcome": "Done",
+          "actionId": "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+        },
+        {
+          "date": "2026-09-10",
+          "outcome": "Done",
+          "actionId": "64060973-4c42-46e5-86c8-0f85551c5206"
+        }
+      ],
+      "sources": [
+        {
+          "id": "memory-morning",
+          "kind": "context",
+          "label": "Saved context · Aug 22",
+          "text": "The writing hour disappears once the workday starts; breakfast is the quiet part of the morning.",
+          "deepLink": "adler://insights?memory=memory-morning"
+        }
+      ],
+      "prompt": "Let's discuss “Draft one case-study section right after breakfast on Tuesdays and Thursdays.” (learning-breakfast-cue, version 1) and whether it fits me."
+    },
+    "versions": [
+      {
+        "version": 1,
+        "at": "2026-08-31T13:00:00.000Z",
+        "decisionId": "decision-portfolio-cue",
+        "goalIds": [],
+        "observation": "You reported that the writing hour disappears once the workday starts.",
+        "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+        "transfer": null,
+        "proposalId": null,
+        "test": {
+          "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+          "design": "prospective",
+          "prediction": "You report starting the session on more of the planned days.",
+          "comparison": "Compared with the interrupted mornings you described before this trial.",
+          "start": "2026-08-31",
+          "reviewAfter": "2026-09-13",
+          "reviewRule": "Review after four planned occurrences, or sooner if you report a blocker.",
+          "mechanismSignal": "Whether starting felt easier on the days the cue was used.",
+          "behaviorSignal": "Whether a section is drafted on the planned days.",
+          "inputStepIds": [
+            "draft-section"
+          ],
+          "outcomeSignal": null,
+          "alternatives": [
+            "A quieter fortnight at work could explain the same change."
+          ]
+        },
+        "sources": [
+          {
+            "id": "memory-morning",
+            "version": "474f87785f1c970a7bbaa56fafd0692fb307cc14c9978ec80e2fae92c12fc96f",
+            "kind": "context",
+            "occurredAt": "2026-08-22",
+            "reportedAt": "2026-08-22"
+          }
+        ],
+        "reasoning": {
+          "grounding": [
+            {
+              "claimId": "claim:implementation-if-then",
+              "version": "2026-09-07.1",
+              "relation": "motivates",
+              "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested."
+            }
+          ],
+          "principleIds": [
+            "P2"
+          ],
+          "goalRoute": "session",
+          "ruleExceptions": [
+            "Use a short drafting trial rather than a daily automaticity target."
+          ],
+          "barrier": {
+            "domain": "opportunity",
+            "status": "reported",
+            "explanation": "You reported that the writing hour disappears once the workday starts.",
+            "sourceIds": [
+              "memory-morning"
+            ]
+          },
+          "methodId": "implementation",
+          "researchSourceIds": [
+            "curated:implementation-if-then"
+          ],
+          "mechanism": "A specific cue can connect the intention to a concrete start.",
+          "fit": "You described a quiet window right after breakfast on Tuesdays and Thursdays.",
+          "prediction": "You report starting the session on more of the planned days.",
+          "reviewRule": "Keep the cue if sessions start; otherwise ask what blocked the start before adding work.",
+          "limitation": "A cue cannot create time that is already taken by something else."
+        },
+        "grounding": [
+          {
+            "claimId": "claim:implementation-if-then",
+            "version": "2026-09-07.1",
+            "relation": "motivates",
+            "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested.",
+            "claim": {
+              "id": "claim:implementation-if-then",
+              "label": "Link a familiar moment to an action",
+              "version": "2026-09-07.1",
+              "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+              "role": "technique",
+              "construct": "Situation-to-response implementation intention",
+              "methodIds": [
+                "implementation"
+              ],
+              "principleIds": [
+                "P2"
+              ],
+              "source": {
+                "id": "curated:implementation-if-then",
+                "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                "year": "2006",
+                "doi": "10.1016/S0065-2601(06)38002-1",
+                "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                "access": "abstract",
+                "retrievedAt": "2026-09-07T22:54:41.000Z"
+              },
+              "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+              "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+              "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+              "limitations": [
+                "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+                "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+              ],
+              "review": {
+                "status": "source-checked",
+                "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+                "at": "2026-09-07"
+              }
+            }
+          }
+        ],
+        "researchSources": [
+          {
+            "id": "curated:implementation-if-then",
+            "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+            "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+            "year": "2006",
+            "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+            "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+            "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+            "access": "abstract",
+            "retrievedAt": "2026-09-07T22:54:41.000Z"
+          }
+        ]
+      }
+    ],
+    "reviews": [
+      {
+        "id": "review-breakfast-1",
+        "version": 1,
+        "decisionId": "decision-portfolio-cue",
+        "at": "2026-09-08T13:00:00.000Z",
+        "sources": [],
+        "exposure": "used",
+        "mechanism": "You reported that starting was easier on the days breakfast was unhurried.",
+        "behavior": "Two of the three planned sessions produced a drafted section.",
+        "outcome": null,
+        "confounds": [
+          "A quieter fortnight at work could explain the same change."
+        ],
+        "decision": "keep",
+        "standing": "consistent",
+        "nextReviewAfter": "2026-09-15",
+        "summary": "Two of three planned sessions happened, and you reported an easier start on those days.",
+        "implication": "Keep the after-breakfast cue for the rest of the trial window.",
+        "nextQuestion": "Does the cue still work on days with an early stand-up?",
+        "standingLabel": "Consistent so far",
+        "exposureLabel": "Reported as used"
+      }
+    ],
+    "events": [
+      {
+        "at": "2026-08-31T13:00:00.000Z",
+        "state": "agreed",
+        "reason": "You agreed to try the after-breakfast cue."
+      },
+      {
+        "at": "2026-09-08T13:00:00.000Z",
+        "state": "reviewed",
+        "reason": "First review saved from your check-in."
+      }
+    ],
+    "invalidations": [],
+    "pending": null
+  }
+}

@@ -1,0 +1,2132 @@
+{
+  "request": "POST /api/app/changes",
+  "status": 200,
+  "response": {
+    "revision": 2,
+    "today": {
+      "revision": 2,
+      "today": "2026-09-11",
+      "reviewDue": false,
+      "reviewDate": "2026-09-13",
+      "next": {
+        "goal": {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        },
+        "phase": "next",
+        "phaseLabel": "CHECK-IN SAVED",
+        "headline": "Ready for the next step?",
+        "planVersion": 1,
+        "planAction": "Draft one case-study section",
+        "planCriterion": "One section of the current case study is written end to end.",
+        "planTiming": "Right after breakfast",
+        "criterionLabel": null,
+        "timingLabel": null,
+        "durationMinutes": 25,
+        "needsPlanReview": false,
+        "canStartGoal": false,
+        "canStartAction": false,
+        "canReport": false,
+        "canSchedule": false,
+        "action": null,
+        "step": {
+          "id": "draft-section",
+          "type": "behavior",
+          "title": "Draft one case-study section",
+          "criterion": "One section of the current case study is written end to end.",
+          "reason": "A section is small enough to finish in the available window.",
+          "durationMinutes": 25,
+          "cue": "Right after breakfast",
+          "scheduledDate": "2026-08-31",
+          "recurrence": {
+            "everyDays": 1,
+            "weekdays": [
+              2,
+              4
+            ],
+            "until": "2026-09-13"
+          },
+          "dependsOn": [],
+          "milestoneId": "case-study-1",
+          "measure": {
+            "id": "sections",
+            "label": "Sections drafted",
+            "unit": "sections",
+            "target": 1
+          },
+          "fallback": "Write the section heading and one paragraph if time is short.",
+          "contextIds": [
+            "memory-morning"
+          ],
+          "dates": [
+            "2026-09-01",
+            "2026-09-03",
+            "2026-09-08",
+            "2026-09-10"
+          ]
+        },
+        "block": null,
+        "successLabel": "Three case studies are published with the problem, my contribution and the result.",
+        "decisionNote": null
+      },
+      "lineup": [
+        {
+          "action": {
+            "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+            "goalId": "guide",
+            "goalTitle": "Write the onboarding guide",
+            "title": "Write 400 words of the guide",
+            "criterion": "400 words are saved in the guide document.",
+            "timing": "Before the first meeting",
+            "date": "2026-09-11",
+            "planVersion": 1,
+            "stepId": "write-words",
+            "milestoneId": null,
+            "occurrence": "write-words:2026-09-11",
+            "outcome": "Done",
+            "amount": 400,
+            "actualMinutes": 20,
+            "note": "Finished the session before the first meeting.",
+            "startedAt": null,
+            "retiredAt": null,
+            "unplanned": false,
+            "ready": true,
+            "durationMinutes": 20,
+            "measure": {
+              "metric": "amount",
+              "label": "Words written",
+              "unit": "words",
+              "target": 400
+            },
+            "reported": 400,
+            "execution": "done",
+            "executionLabel": "Done",
+            "block": null,
+            "history": [
+              {
+                "outcome": null,
+                "amount": null,
+                "actualMinutes": null,
+                "note": null,
+                "at": "2026-09-11T15:46:31.721Z"
+              }
+            ]
+          },
+          "selected": false,
+          "state": "done",
+          "stateLabel": "Done"
+        }
+      ],
+      "doneCount": 1,
+      "plannedCount": 1,
+      "quietDay": false,
+      "nothingScheduled": false,
+      "progress": [
+        {
+          "goal": {
+            "id": "portfolio",
+            "title": "Publish three case studies",
+            "status": "Active",
+            "color": "hsl(184 28% 35%)"
+          },
+          "measured": false,
+          "actual": 0,
+          "target": 3,
+          "unit": "milestones",
+          "observedAt": "2026-08-31",
+          "observations": [
+            {
+              "date": "2026-08-31",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-08-31",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-11-10",
+              "value": 3,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-08-31",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-11-10",
+            "value": 3,
+            "label": "Target result"
+          },
+          "delta": 0,
+          "comparable": true,
+          "label": "At checkpoint",
+          "tone": "positive",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-31",
+          "prompt": "Help me review my progress on “Publish three case studies” and choose my next step.",
+          "actionLabel": "Review plan"
+        },
+        {
+          "goal": {
+            "id": "guide",
+            "title": "Write the onboarding guide",
+            "status": "Active",
+            "color": "hsl(316 28% 35%)"
+          },
+          "measured": true,
+          "actual": 2330,
+          "target": 20000,
+          "unit": "words",
+          "observedAt": "2026-09-04",
+          "observations": [
+            {
+              "date": "2026-08-21",
+              "value": 1200
+            },
+            {
+              "date": "2026-09-04",
+              "value": 2330
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-09-04",
+              "value": 2000,
+              "label": "Two-week pace check"
+            },
+            {
+              "date": "2026-10-11",
+              "value": 8000,
+              "label": "Six-week pace check"
+            },
+            {
+              "date": "2027-01-09",
+              "value": 20000,
+              "label": "Guide finished"
+            }
+          ],
+          "due": {
+            "date": "2026-09-04",
+            "value": 2000,
+            "label": "Two-week pace check"
+          },
+          "next": {
+            "date": "2026-10-11",
+            "value": 8000,
+            "label": "Six-week pace check"
+          },
+          "delta": 330,
+          "comparable": true,
+          "label": "Above checkpoint",
+          "tone": "positive",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-31",
+          "prompt": "Help me review my progress on “Write the onboarding guide” and choose my next step.",
+          "actionLabel": "Review plan"
+        },
+        {
+          "goal": {
+            "id": "running",
+            "title": "Run a 10k without stopping",
+            "status": "Draft",
+            "color": "hsl(55 28% 35%)"
+          },
+          "measured": false,
+          "actual": null,
+          "target": 0,
+          "unit": "milestones",
+          "observedAt": null,
+          "observations": [],
+          "checkpoints": [],
+          "due": null,
+          "next": null,
+          "delta": null,
+          "comparable": false,
+          "label": "Draft",
+          "tone": "quiet",
+          "openMilestones": [],
+          "hasOutcome": false,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-09-11",
+          "prompt": "Help me review my progress on “Run a 10k without stopping” and choose my next step.",
+          "actionLabel": "Shape the plan"
+        },
+        {
+          "goal": {
+            "id": "reading",
+            "title": "Read the four books on my shelf",
+            "status": "Draft",
+            "color": "hsl(196 28% 35%)"
+          },
+          "measured": false,
+          "actual": 0,
+          "target": 1,
+          "unit": "milestones",
+          "observedAt": "2026-09-11",
+          "observations": [
+            {
+              "date": "2026-09-11",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-09-11",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-12-10",
+              "value": 1,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-09-11",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-12-10",
+            "value": 1,
+            "label": "Target result"
+          },
+          "delta": 0,
+          "comparable": true,
+          "label": "Draft",
+          "tone": "quiet",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-09-11",
+          "prompt": "Help me review my progress on “Read the four books on my shelf” and choose my next step.",
+          "actionLabel": "Shape the plan"
+        },
+        {
+          "goal": {
+            "id": "cooking",
+            "title": "Cook one new recipe a week",
+            "status": "Paused",
+            "color": "hsl(290 28% 35%)"
+          },
+          "measured": false,
+          "actual": 1,
+          "target": 1,
+          "unit": "milestones",
+          "observedAt": "2026-08-17",
+          "observations": [
+            {
+              "date": "2026-08-17",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-08-17",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-11-06",
+              "value": 1,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-08-17",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-11-06",
+            "value": 1,
+            "label": "Target result"
+          },
+          "delta": 1,
+          "comparable": true,
+          "label": "Paused",
+          "tone": "quiet",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-17",
+          "prompt": "Help me review my progress on “Cook one new recipe a week” and choose my next step.",
+          "actionLabel": "Review plan"
+        }
+      ],
+      "learning": [
+        {
+          "recordId": "learning-word-count-check",
+          "version": 1,
+          "actionVersion": 1,
+          "controls": {
+            "agree": false,
+            "decline": false,
+            "pause": true,
+            "resume": false,
+            "close": true
+          },
+          "attempts": [
+            {
+              "date": "2026-09-02",
+              "outcome": "Partly",
+              "actionId": "38426313-a41b-42e8-bd2a-0375d13efcf0"
+            },
+            {
+              "date": "2026-09-04",
+              "outcome": "Done",
+              "actionId": "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+            },
+            {
+              "date": "2026-09-07",
+              "outcome": "Done",
+              "actionId": "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+            },
+            {
+              "date": "2026-09-09",
+              "outcome": "Didn’t happen",
+              "actionId": "84606506-afab-4510-bc24-fab924d4bec3"
+            },
+            {
+              "date": "2026-09-11",
+              "outcome": "Done",
+              "actionId": "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+            }
+          ],
+          "activeVersion": 1,
+          "pendingVersion": null,
+          "state": "agreed",
+          "standing": "insufficient",
+          "statusLabel": "Ready to review",
+          "standingLabel": "More context needed",
+          "goalIds": [
+            "guide"
+          ],
+          "goalTitles": [
+            "Write the onboarding guide"
+          ],
+          "change": "Check the word count against the week's target every Friday.",
+          "observation": "You are writing the guide in short weekday sessions without checking the word count against the plan.",
+          "hypothesis": "Checking the word count against the plan each week may show whether the current pace reaches 20,000 words on time.",
+          "watching": "Whether the word count is checked and compared with the plan each Friday.",
+          "watchingLabel": "WHAT WE’RE WATCHING",
+          "startDate": "2026-09-02",
+          "reviewDate": "2026-09-09",
+          "needsDecision": false,
+          "reviewCount": 0,
+          "footnote": "Review Sep 9 · Your experience will inform what comes next.",
+          "prompt": "Let’s discuss learning learning-word-count-check, test version 1: “Check the word count against the week's target every Friday.”. I’d like to report whether I tried it and what happened: "
+        },
+        {
+          "recordId": "learning-breakfast-cue",
+          "version": 1,
+          "actionVersion": 1,
+          "controls": {
+            "agree": false,
+            "decline": false,
+            "pause": true,
+            "resume": false,
+            "close": true
+          },
+          "attempts": [
+            {
+              "date": "2026-09-01",
+              "outcome": "Done",
+              "actionId": "237e4a77-378e-4671-abac-39897a4ee2d9"
+            },
+            {
+              "date": "2026-09-03",
+              "outcome": "Didn’t happen",
+              "actionId": "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+            },
+            {
+              "date": "2026-09-08",
+              "outcome": "Done",
+              "actionId": "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+            },
+            {
+              "date": "2026-09-10",
+              "outcome": "Done",
+              "actionId": "64060973-4c42-46e5-86c8-0f85551c5206"
+            }
+          ],
+          "activeVersion": 1,
+          "pendingVersion": null,
+          "state": "agreed",
+          "standing": "consistent",
+          "statusLabel": "Live experiment",
+          "standingLabel": "Consistent so far",
+          "goalIds": [
+            "portfolio"
+          ],
+          "goalTitles": [
+            "Publish three case studies"
+          ],
+          "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+          "observation": "You reported that the writing hour disappears once the workday starts.",
+          "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+          "watching": "Two of three planned sessions happened, and you reported an easier start on those days.",
+          "watchingLabel": "LATEST FEEDBACK",
+          "startDate": "2026-08-31",
+          "reviewDate": "2026-09-15",
+          "needsDecision": false,
+          "reviewCount": 1,
+          "footnote": "Review Sep 15 · Your experience will inform what comes next.",
+          "prompt": "Let’s discuss learning learning-breakfast-cue, test version 1: “Draft one case-study section right after breakfast on Tuesdays and Thursdays.”. I’d like to report whether I tried it and what happened: "
+        }
+      ],
+      "latestMemory": {
+        "id": "memory-editor",
+        "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening.",
+        "date": "2026-09-02"
+      },
+      "goals": [
+        {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        },
+        {
+          "id": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)"
+        },
+        {
+          "id": "running",
+          "title": "Run a 10k without stopping",
+          "status": "Draft",
+          "color": "hsl(55 28% 35%)"
+        },
+        {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Draft",
+          "color": "hsl(196 28% 35%)"
+        },
+        {
+          "id": "cooking",
+          "title": "Cook one new recipe a week",
+          "status": "Paused",
+          "color": "hsl(290 28% 35%)"
+        }
+      ]
+    },
+    "goal": {
+      "revision": 2,
+      "today": "2026-09-11",
+      "goal": {
+        "id": "guide",
+        "title": "Write the onboarding guide",
+        "status": "Active",
+        "color": "hsl(316 28% 35%)"
+      },
+      "kind": "practical",
+      "why": "New teammates keep asking the same questions.",
+      "success": "A 20,000-word onboarding guide is finished and shared.",
+      "area": "Career",
+      "tags": [
+        "Writing"
+      ],
+      "priority": "Maintain",
+      "targetDate": "2027-01-09",
+      "deadline": "preferred",
+      "startDate": "2026-08-31",
+      "measure": {
+        "label": "Words written",
+        "unit": "words",
+        "target": 20000,
+        "baseline": 1200,
+        "aggregation": "cumulative"
+      },
+      "target": 20000,
+      "unit": "words",
+      "resultLabel": "2330 words · Words written",
+      "results": [
+        {
+          "id": "808f4a29-4517-401c-98d0-b891784bc31c",
+          "date": "2026-08-21",
+          "value": 1200,
+          "source": "Starting result reported by you"
+        },
+        {
+          "id": "result-words-1",
+          "date": "2026-09-04",
+          "value": 2330,
+          "source": "Word count from the guide document."
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "checkpoint-2weeks",
+          "date": "2026-09-04",
+          "value": 2000,
+          "label": "Two-week pace check"
+        },
+        {
+          "id": "checkpoint-6weeks",
+          "date": "2026-10-11",
+          "value": 8000,
+          "label": "Six-week pace check"
+        },
+        {
+          "id": "checkpoint-target",
+          "date": "2027-01-09",
+          "value": 20000,
+          "label": "Guide finished"
+        }
+      ],
+      "measurementHistory": [],
+      "checkpointHistory": [],
+      "needsPlanReview": false,
+      "statusOptions": [
+        "Paused",
+        "Completed",
+        "Set aside"
+      ],
+      "selectedPlanVersion": 1,
+      "selectedStepId": "write-words",
+      "selectedMilestoneId": null,
+      "plans": [
+        {
+          "version": 1,
+          "date": "2026-08-31",
+          "current": true,
+          "action": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "durationMinutes": 20,
+          "approach": "Write in short weekday sessions and record the words written.",
+          "window": {
+            "start": "2026-08-31",
+            "end": "2026-09-13",
+            "label": "Two-week writing block",
+            "rationale": "A fortnight of weekday sessions gives a measurable input pace to review.",
+            "capacityMinutes": 400,
+            "capacityStatus": "provisional"
+          },
+          "assessment": {
+            "at": "2026-09-13T20:00:00.000Z",
+            "question": "Is the weekday writing pace sustainable?",
+            "adaptation": "Reduce the session target before dropping the cadence.",
+            "feedbackDelayDays": 0,
+            "triggers": [
+              "check-in",
+              "result",
+              "window-end"
+            ]
+          },
+          "experiment": null,
+          "steps": [
+            {
+              "id": "write-words",
+              "type": "behavior",
+              "title": "Write 400 words of the guide",
+              "criterion": "400 words are saved in the guide document.",
+              "reason": "A word count is an input you control and can report exactly.",
+              "durationMinutes": 20,
+              "cue": "Before the first meeting",
+              "scheduledDate": "2026-08-31",
+              "recurrence": {
+                "everyDays": 1,
+                "weekdays": [
+                  1,
+                  3,
+                  5
+                ],
+                "until": "2026-09-13"
+              },
+              "dependsOn": [],
+              "milestoneId": null,
+              "measure": {
+                "id": "words",
+                "label": "Words written",
+                "unit": "words",
+                "target": 400
+              },
+              "fallback": null,
+              "contextIds": [],
+              "dates": [
+                "2026-08-31",
+                "2026-09-02",
+                "2026-09-04",
+                "2026-09-07",
+                "2026-09-09",
+                "2026-09-11"
+              ]
+            }
+          ],
+          "projection": {
+            "kind": "direct",
+            "driverStepId": "write-words",
+            "inputMetric": "amount",
+            "outcomeUnit": "words",
+            "observationStart": "2026-08-31",
+            "horizonDays": 120,
+            "feedbackDelayDays": 0,
+            "inputPerOutcome": {
+              "low": 1,
+              "expected": 1,
+              "high": 1.25
+            },
+            "rationale": "Words written are the same unit as the goal, so the saved conversion is one to one, allowing for words that get cut in editing."
+          },
+          "projectionUnavailableReason": null,
+          "hasBasis": false,
+          "hasReasoning": false
+        }
+      ],
+      "milestones": [],
+      "actions": [
+        {
+          "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-11",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-11",
+          "outcome": "Done",
+          "amount": 400,
+          "actualMinutes": 20,
+          "note": "Finished the session before the first meeting.",
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 400,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-11T15:46:31.721Z"
+            }
+          ]
+        },
+        {
+          "id": "84606506-afab-4510-bc24-fab924d4bec3",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-09",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-09",
+          "outcome": "Didn’t happen",
+          "amount": 0,
+          "actualMinutes": 0,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 0,
+          "execution": "missed",
+          "executionLabel": "Didn’t happen",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-09T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "9cd44317-3764-47a2-8a5f-dd6c521d35c9",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-07",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-07",
+          "outcome": "Done",
+          "amount": 610,
+          "actualMinutes": 27,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 610,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-07T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "d1c3dcee-aaf6-4a81-b167-440fb23570e7",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-04",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-04",
+          "outcome": "Done",
+          "amount": 430,
+          "actualMinutes": 20,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 430,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-04T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "38426313-a41b-42e8-bd2a-0375d13efcf0",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-02",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-02",
+          "outcome": "Partly",
+          "amount": 180,
+          "actualMinutes": 12,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 180,
+          "execution": "partial",
+          "executionLabel": "Partly",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-02T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-08-31",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-08-31",
+          "outcome": "Done",
+          "amount": 520,
+          "actualMinutes": 24,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 520,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-08-31T14:00:00.000Z"
+            }
+          ]
+        }
+      ],
+      "planActions": [
+        {
+          "id": "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-08-31",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-08-31",
+          "outcome": "Done",
+          "amount": 520,
+          "actualMinutes": 24,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 520,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-08-31T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "38426313-a41b-42e8-bd2a-0375d13efcf0",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-02",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-02",
+          "outcome": "Partly",
+          "amount": 180,
+          "actualMinutes": 12,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 180,
+          "execution": "partial",
+          "executionLabel": "Partly",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-02T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "d1c3dcee-aaf6-4a81-b167-440fb23570e7",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-04",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-04",
+          "outcome": "Done",
+          "amount": 430,
+          "actualMinutes": 20,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 430,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-04T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "9cd44317-3764-47a2-8a5f-dd6c521d35c9",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-07",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-07",
+          "outcome": "Done",
+          "amount": 610,
+          "actualMinutes": 27,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 610,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-07T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "84606506-afab-4510-bc24-fab924d4bec3",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-09",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-09",
+          "outcome": "Didn’t happen",
+          "amount": 0,
+          "actualMinutes": 0,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 0,
+          "execution": "missed",
+          "executionLabel": "Didn’t happen",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-09T14:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-11",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-11",
+          "outcome": "Done",
+          "amount": 400,
+          "actualMinutes": 20,
+          "note": "Finished the session before the first meeting.",
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": 400,
+          "execution": "done",
+          "executionLabel": "Done",
+          "block": null,
+          "history": [
+            {
+              "outcome": null,
+              "amount": null,
+              "actualMinutes": null,
+              "note": null,
+              "at": "2026-09-11T15:46:31.721Z"
+            }
+          ]
+        }
+      ],
+      "series": {
+        "measure": {
+          "metric": "amount",
+          "label": "Words written",
+          "unit": "words",
+          "target": 400
+        },
+        "start": "2026-09-04",
+        "end": "2026-09-17",
+        "points": [
+          {
+            "date": "2026-09-04",
+            "amount": 430,
+            "planned": 400,
+            "retired": false,
+            "future": false,
+            "scheduled": true,
+            "off": false,
+            "actionIds": [
+              "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+            ]
+          },
+          {
+            "date": "2026-09-05",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-06",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-07",
+            "amount": 610,
+            "planned": 400,
+            "retired": false,
+            "future": false,
+            "scheduled": true,
+            "off": false,
+            "actionIds": [
+              "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+            ]
+          },
+          {
+            "date": "2026-09-08",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-09",
+            "amount": 0,
+            "planned": 400,
+            "retired": false,
+            "future": false,
+            "scheduled": true,
+            "off": false,
+            "actionIds": [
+              "84606506-afab-4510-bc24-fab924d4bec3"
+            ]
+          },
+          {
+            "date": "2026-09-10",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-11",
+            "amount": 400,
+            "planned": 400,
+            "retired": false,
+            "future": false,
+            "scheduled": true,
+            "off": false,
+            "actionIds": [
+              "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+            ]
+          },
+          {
+            "date": "2026-09-12",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-13",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": true,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-14",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-15",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-16",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-17",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          }
+        ],
+        "reported": 1040,
+        "plannedTotal": 1200,
+        "unknown": 0
+      },
+      "streak": {
+        "count": 1,
+        "completedCount": 1,
+        "days": [
+          {
+            "date": "2026-08-31",
+            "status": "on",
+            "streak": 1
+          },
+          {
+            "date": "2026-09-01",
+            "status": "off",
+            "streak": 2
+          },
+          {
+            "date": "2026-09-02",
+            "status": "short",
+            "streak": 0
+          },
+          {
+            "date": "2026-09-03",
+            "status": "off",
+            "streak": 0
+          },
+          {
+            "date": "2026-09-04",
+            "status": "on",
+            "streak": 1
+          },
+          {
+            "date": "2026-09-05",
+            "status": "off",
+            "streak": 2
+          },
+          {
+            "date": "2026-09-06",
+            "status": "off",
+            "streak": 3
+          },
+          {
+            "date": "2026-09-07",
+            "status": "on",
+            "streak": 4
+          },
+          {
+            "date": "2026-09-08",
+            "status": "off",
+            "streak": 5
+          },
+          {
+            "date": "2026-09-09",
+            "status": "short",
+            "streak": 0
+          },
+          {
+            "date": "2026-09-10",
+            "status": "off",
+            "streak": 0
+          },
+          {
+            "date": "2026-09-11",
+            "status": "on",
+            "streak": 1
+          }
+        ]
+      },
+      "progress": {
+        "goal": {
+          "id": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)"
+        },
+        "measured": true,
+        "actual": 2330,
+        "target": 20000,
+        "unit": "words",
+        "observedAt": "2026-09-04",
+        "observations": [
+          {
+            "date": "2026-08-21",
+            "value": 1200
+          },
+          {
+            "date": "2026-09-04",
+            "value": 2330
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-09-04",
+            "value": 2000,
+            "label": "Two-week pace check"
+          },
+          {
+            "date": "2026-10-11",
+            "value": 8000,
+            "label": "Six-week pace check"
+          },
+          {
+            "date": "2027-01-09",
+            "value": 20000,
+            "label": "Guide finished"
+          }
+        ],
+        "due": {
+          "date": "2026-09-04",
+          "value": 2000,
+          "label": "Two-week pace check"
+        },
+        "next": {
+          "date": "2026-10-11",
+          "value": 8000,
+          "label": "Six-week pace check"
+        },
+        "delta": 330,
+        "comparable": true,
+        "label": "Above checkpoint",
+        "tone": "positive",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-08-31",
+        "prompt": "Help me review my progress on “Write the onboarding guide” and choose my next step.",
+        "actionLabel": "Review plan"
+      },
+      "execution": {
+        "today": "2026-09-11",
+        "cycles": [
+          {
+            "start": "2026-08-31",
+            "end": "2026-09-13",
+            "label": "Two-week writing block",
+            "rationale": "A fortnight of weekday sessions gives a measurable input pace to review.",
+            "capacityMinutes": 400,
+            "capacityStatus": "provisional",
+            "version": 1,
+            "current": true
+          }
+        ],
+        "current": {
+          "start": "2026-08-31",
+          "end": "2026-09-13",
+          "label": "Two-week writing block",
+          "rationale": "A fortnight of weekday sessions gives a measurable input pace to review.",
+          "capacityMinutes": 400,
+          "capacityStatus": "provisional"
+        },
+        "markers": [
+          {
+            "id": "checkpoint-2weeks",
+            "label": "Two-week pace check",
+            "date": "2026-09-04",
+            "detail": "2000 words",
+            "done": false,
+            "kind": "Checkpoint"
+          },
+          {
+            "id": "review-1",
+            "label": "Review this plan",
+            "date": "2026-09-13",
+            "detail": "Is the weekday writing pace sustainable?",
+            "done": false,
+            "kind": "Review"
+          },
+          {
+            "id": "checkpoint-6weeks",
+            "label": "Six-week pace check",
+            "date": "2026-10-11",
+            "detail": "8000 words",
+            "done": false,
+            "kind": "Checkpoint"
+          }
+        ],
+        "summary": {
+          "done": 4,
+          "partial": 1,
+          "missed": 1,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 6,
+          "reported": 6,
+          "completion": 67
+        },
+        "start": "2026-08-31",
+        "end": "2027-01-09",
+        "actionIds": [
+          "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998",
+          "38426313-a41b-42e8-bd2a-0375d13efcf0",
+          "d1c3dcee-aaf6-4a81-b167-440fb23570e7",
+          "9cd44317-3764-47a2-8a5f-dd6c521d35c9",
+          "84606506-afab-4510-bc24-fab924d4bec3",
+          "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+        ],
+        "unscheduledIds": [],
+        "weeks": [
+          {
+            "start": "2026-08-17",
+            "end": "2026-08-23",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-08-24",
+            "end": "2026-08-30",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-08-31",
+            "end": "2026-09-06",
+            "done": 2,
+            "partial": 1,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 3,
+            "reported": 3,
+            "completion": 67,
+            "actionIds": [
+              "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998",
+              "38426313-a41b-42e8-bd2a-0375d13efcf0",
+              "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+            ]
+          },
+          {
+            "start": "2026-09-07",
+            "end": "2026-09-13",
+            "done": 2,
+            "partial": 0,
+            "missed": 1,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 3,
+            "reported": 3,
+            "completion": 67,
+            "actionIds": [
+              "9cd44317-3764-47a2-8a5f-dd6c521d35c9",
+              "84606506-afab-4510-bc24-fab924d4bec3",
+              "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+            ]
+          },
+          {
+            "start": "2026-09-14",
+            "end": "2026-09-20",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-21",
+            "end": "2026-09-27",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-28",
+            "end": "2026-10-04",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-10-05",
+            "end": "2026-10-11",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          }
+        ]
+      },
+      "projection": {
+        "status": "Input-based projection",
+        "current": 2330,
+        "target": 20000,
+        "progress": 11.65,
+        "observedAt": "2026-09-04",
+        "observations": [
+          {
+            "id": "808f4a29-4517-401c-98d0-b891784bc31c",
+            "date": "2026-08-21",
+            "value": 1200,
+            "source": "Starting result reported by you"
+          },
+          {
+            "id": "result-words-1",
+            "date": "2026-09-04",
+            "value": 2330,
+            "source": "Word count from the guide document."
+          }
+        ],
+        "unavailableReason": null,
+        "trackingLabel": "Words written",
+        "inputLabel": "Words written (words)",
+        "projection": {
+          "origin": "2026-09-11",
+          "horizon": "2027-01-09",
+          "expectedDate": "2026-12-24",
+          "earliestDate": "2026-11-19",
+          "latestDate": null,
+          "points": [
+            {
+              "date": "2026-09-11",
+              "low": 2330,
+              "expected": 2330,
+              "high": 2330
+            },
+            {
+              "date": "2026-09-14",
+              "low": 2535.714285714286,
+              "expected": 2844.285714285714,
+              "high": 3101.4285714285716
+            },
+            {
+              "date": "2026-09-17",
+              "low": 2741.4285714285716,
+              "expected": 3358.5714285714284,
+              "high": 3872.8571428571427
+            },
+            {
+              "date": "2026-09-20",
+              "low": 2947.142857142857,
+              "expected": 3872.8571428571427,
+              "high": 4644.285714285714
+            },
+            {
+              "date": "2026-09-23",
+              "low": 3152.857142857143,
+              "expected": 4387.142857142857,
+              "high": 5415.714285714285
+            },
+            {
+              "date": "2026-09-26",
+              "low": 3358.5714285714284,
+              "expected": 4901.428571428571,
+              "high": 6187.142857142857
+            },
+            {
+              "date": "2026-09-29",
+              "low": 3564.285714285714,
+              "expected": 5415.714285714285,
+              "high": 6958.5714285714275
+            },
+            {
+              "date": "2026-10-02",
+              "low": 3770,
+              "expected": 5930,
+              "high": 7729.999999999999
+            },
+            {
+              "date": "2026-10-05",
+              "low": 3975.714285714286,
+              "expected": 6444.285714285714,
+              "high": 8501.42857142857
+            },
+            {
+              "date": "2026-10-08",
+              "low": 4181.428571428572,
+              "expected": 6958.571428571428,
+              "high": 9272.857142857141
+            },
+            {
+              "date": "2026-10-11",
+              "low": 4387.142857142857,
+              "expected": 7472.857142857142,
+              "high": 10044.285714285714
+            },
+            {
+              "date": "2026-10-14",
+              "low": 4592.857142857143,
+              "expected": 7987.142857142857,
+              "high": 10815.714285714284
+            },
+            {
+              "date": "2026-10-17",
+              "low": 4798.571428571428,
+              "expected": 8501.42857142857,
+              "high": 11587.142857142855
+            },
+            {
+              "date": "2026-10-20",
+              "low": 5004.285714285714,
+              "expected": 9015.714285714286,
+              "high": 12358.571428571428
+            },
+            {
+              "date": "2026-10-23",
+              "low": 5210,
+              "expected": 9530,
+              "high": 13129.999999999998
+            },
+            {
+              "date": "2026-10-26",
+              "low": 5415.714285714286,
+              "expected": 10044.285714285714,
+              "high": 13901.42857142857
+            },
+            {
+              "date": "2026-10-29",
+              "low": 5621.428571428572,
+              "expected": 10558.571428571428,
+              "high": 14672.857142857141
+            },
+            {
+              "date": "2026-11-01",
+              "low": 5827.142857142857,
+              "expected": 11072.857142857143,
+              "high": 15444.285714285712
+            },
+            {
+              "date": "2026-11-04",
+              "low": 6032.857142857143,
+              "expected": 11587.142857142857,
+              "high": 16215.714285714284
+            },
+            {
+              "date": "2026-11-07",
+              "low": 6238.571428571428,
+              "expected": 12101.42857142857,
+              "high": 16987.142857142855
+            },
+            {
+              "date": "2026-11-10",
+              "low": 6444.285714285714,
+              "expected": 12615.714285714284,
+              "high": 17758.571428571428
+            },
+            {
+              "date": "2026-11-13",
+              "low": 6650,
+              "expected": 13130,
+              "high": 18530
+            },
+            {
+              "date": "2026-11-16",
+              "low": 6855.714285714285,
+              "expected": 13644.285714285714,
+              "high": 19301.42857142857
+            },
+            {
+              "date": "2026-11-19",
+              "low": 7061.428571428572,
+              "expected": 14158.571428571428,
+              "high": 20000
+            },
+            {
+              "date": "2026-11-22",
+              "low": 7267.142857142857,
+              "expected": 14672.857142857141,
+              "high": 20000
+            },
+            {
+              "date": "2026-11-25",
+              "low": 7472.857142857143,
+              "expected": 15187.142857142857,
+              "high": 20000
+            },
+            {
+              "date": "2026-11-28",
+              "low": 7678.571428571428,
+              "expected": 15701.42857142857,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-01",
+              "low": 7884.285714285714,
+              "expected": 16215.714285714284,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-04",
+              "low": 8090,
+              "expected": 16730,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-07",
+              "low": 8295.714285714286,
+              "expected": 17244.285714285714,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-10",
+              "low": 8501.428571428572,
+              "expected": 17758.571428571428,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-13",
+              "low": 8707.142857142857,
+              "expected": 18272.85714285714,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-16",
+              "low": 8912.857142857143,
+              "expected": 18787.142857142855,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-19",
+              "low": 9118.571428571428,
+              "expected": 19301.42857142857,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-22",
+              "low": 9324.285714285714,
+              "expected": 19815.714285714286,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-25",
+              "low": 9530,
+              "expected": 20000,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-28",
+              "low": 9735.714285714286,
+              "expected": 20000,
+              "high": 20000
+            },
+            {
+              "date": "2026-12-31",
+              "low": 9941.428571428572,
+              "expected": 20000,
+              "high": 20000
+            },
+            {
+              "date": "2027-01-03",
+              "low": 10147.142857142857,
+              "expected": 20000,
+              "high": 20000
+            },
+            {
+              "date": "2027-01-06",
+              "low": 10352.857142857141,
+              "expected": 20000,
+              "high": 20000
+            },
+            {
+              "date": "2027-01-09",
+              "low": 10558.571428571428,
+              "expected": 20000,
+              "high": 20000
+            }
+          ],
+          "yieldRange": {
+            "low": 0.8,
+            "expected": 1,
+            "high": 1
+          },
+          "assumptions": [
+            {
+              "label": "How this estimate works",
+              "text": "Words written are the same unit as the goal, so the saved conversion is one to one, allowing for words that get cut in editing."
+            },
+            {
+              "label": "Starting from your last report",
+              "text": "The scenario starts today. Last reported words written: 2330 (2026-09-04). Changes since that report are unknown; update it to revise this estimate."
+            },
+            {
+              "label": "Future work",
+              "text": "Until two complete weeks are measured, the saved input budget is a scenario, with half to one-and-a-half times that pace. This is a provisional sensitivity range."
+            },
+            {
+              "label": "Gaps in the record",
+              "text": "Missing expected records and unanswered quantities are unknown and exclude a week or matched period. Days without planned work are labelled separately, not recorded as failed or zero-activity days."
+            },
+            {
+              "label": "How work relates to the result",
+              "text": "The saved input-to-outcome conversion continues to apply."
+            },
+            {
+              "label": "Feedback delay",
+              "text": "No additional delay between input and outcome is assumed."
+            },
+            {
+              "label": "What the range means",
+              "text": "The shaded fan is a conditional scenario range, not a confidence interval or a guarantee. Future cycles are not bookings."
+            }
+          ]
+        },
+        "evidence": {
+          "unit": "words",
+          "paceSource": "Provisional input pace",
+          "pace": {
+            "low": 85.71428571428571,
+            "expected": 171.42857142857142,
+            "high": 257.1428571428571
+          },
+          "plannedDaily": 171.42857142857142,
+          "measured": 6,
+          "due": 6,
+          "daily": [
+            {
+              "date": "2026-08-31",
+              "amount": 520,
+              "status": "reported",
+              "sourceIds": [
+                "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998"
+              ]
+            },
+            {
+              "date": "2026-09-01",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-02",
+              "amount": 180,
+              "status": "reported",
+              "sourceIds": [
+                "38426313-a41b-42e8-bd2a-0375d13efcf0"
+              ]
+            },
+            {
+              "date": "2026-09-03",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-04",
+              "amount": 430,
+              "status": "reported",
+              "sourceIds": [
+                "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+              ]
+            },
+            {
+              "date": "2026-09-05",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-06",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-07",
+              "amount": 610,
+              "status": "reported",
+              "sourceIds": [
+                "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+              ]
+            },
+            {
+              "date": "2026-09-08",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-09",
+              "amount": 0,
+              "status": "reported",
+              "sourceIds": [
+                "84606506-afab-4510-bc24-fab924d4bec3"
+              ]
+            },
+            {
+              "date": "2026-09-10",
+              "amount": null,
+              "status": "not scheduled",
+              "sourceIds": []
+            },
+            {
+              "date": "2026-09-11",
+              "amount": 400,
+              "status": "reported",
+              "sourceIds": [
+                "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+              ]
+            }
+          ],
+          "pairs": [],
+          "excludedPeriods": [],
+          "sourceIds": [
+            "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998",
+            "38426313-a41b-42e8-bd2a-0375d13efcf0",
+            "d1c3dcee-aaf6-4a81-b167-440fb23570e7",
+            "9cd44317-3764-47a2-8a5f-dd6c521d35c9",
+            "84606506-afab-4510-bc24-fab924d4bec3",
+            "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+          ]
+        }
+      },
+      "rationale": {
+        "planVersion": 1,
+        "basis": null,
+        "reasoning": null,
+        "grounding": [],
+        "sources": [],
+        "recommendations": [],
+        "decisionId": "decision-guide-monitoring",
+        "windowRationale": "A fortnight of weekday sessions gives a measurable input pace to review.",
+        "assessmentQuestion": "Is the weekday writing pace sustainable?",
+        "note": "This plan records your chosen work. No behavioural interpretation is saved for this version."
+      },
+      "experiment": null,
+      "journey": [
+        {
+          "id": "plan-1",
+          "at": "2026-08-31",
+          "kind": "plan",
+          "label": "Starting plan",
+          "title": "Write in short weekday sessions and record the words written.",
+          "detail": "A fortnight of weekday sessions gives a measurable input pace to review.",
+          "planVersion": 1,
+          "recordId": null,
+          "decisionId": "decision-guide-monitoring"
+        },
+        {
+          "id": "learning-learning-word-count-check-v1",
+          "at": "2026-09-02",
+          "kind": "learning-version",
+          "label": "Test suggested",
+          "title": "Check the word count against the week's target every Friday.",
+          "detail": "Checking the word count against the plan each week may show whether the current pace reaches 20,000 words on time.",
+          "planVersion": null,
+          "recordId": "learning-word-count-check",
+          "decisionId": "decision-guide-monitoring"
+        }
+      ],
+      "conversations": [],
+      "tentative": [],
+      "pendingProposalIds": [],
+      "nextReviewAt": "2026-09-13T20:00:00.000Z"
+    }
+  }
+}

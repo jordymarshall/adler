@@ -9,7 +9,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "test": "playwright test",
     "start": "tsx server/main.ts",
-    "test:server": "tsx --test tests/*.test.ts"
+    "test:server": "tsx --test tests/*.test.ts",
+    "seed:demo": "tsx scripts/seed-demo-account.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.30.0",

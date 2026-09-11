@@ -1,0 +1,50 @@
+{
+  "request": "GET /api/app/session",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "user": {
+      "id": "09e8d9ed-63d4-4542-b794-de8f2e73c35c",
+      "username": "casey-example"
+    },
+    "preferences": {
+      "timeZone": "America/Toronto",
+      "theme": "light",
+      "reviewDay": "Sunday",
+      "automation": {
+        "enabled": false,
+        "checkInMode": "after-session",
+        "checkInTime": "19:00",
+        "reviewTime": "17:00",
+        "quietStart": "21:00",
+        "quietEnd": "08:00"
+      }
+    },
+    "status": {
+      "coach": {
+        "configured": true,
+        "provider": "gemini",
+        "model": "gemini-3.8-flash"
+      },
+      "calendars": {
+        "google": {
+          "configured": false,
+          "connected": false
+        },
+        "apple": {
+          "connected": false
+        }
+      },
+      "serverKeysAllowed": true
+    },
+    "counts": {
+      "goals": 5,
+      "activeGoals": 2,
+      "drafts": 2,
+      "conversations": 1
+    },
+    "reviewDue": false,
+    "hasGoals": true
+  }
+}

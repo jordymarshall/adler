@@ -1,0 +1,7 @@
+{
+  "request": "POST /api/app/goals/running/start on a draft with no chosen work",
+  "status": 400,
+  "response": {
+    "error": "Choose a first action before starting this goal’s plan."
+  }
+}

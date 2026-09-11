@@ -1,0 +1,488 @@
+{
+  "request": "GET /api/app/coach/chat-portfolio",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "conversations": [
+      {
+        "id": "chat-portfolio",
+        "title": "Protecting the writing hour",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "createdAt": "2026-08-31T12:55:00.000Z",
+        "messageCount": 3,
+        "lastMessageAt": "2026-09-08T12:40:00.000Z",
+        "lastMessage": "Two of the three sessions happened. Starting was easier when breakfast wasn’t rushed."
+      }
+    ],
+    "selectedConversationId": "chat-portfolio",
+    "messages": [
+      {
+        "id": "message-1",
+        "conversationId": "chat-portfolio",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "role": "user",
+        "origin": "user",
+        "channel": "web",
+        "text": "I had time to write this morning but the workday swallowed it again.",
+        "at": "2026-08-31T12:55:00.000Z",
+        "decisionId": null,
+        "links": [],
+        "references": [],
+        "reactions": [],
+        "authorLabel": "You",
+        "saved": false,
+        "recommendations": [],
+        "decisionSummary": null,
+        "decisionChecks": [],
+        "decisionMethods": []
+      },
+      {
+        "id": "message-2",
+        "conversationId": "chat-portfolio",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "role": "coach",
+        "origin": "system",
+        "channel": "web",
+        "text": "Let’s attach the session to the end of breakfast on Tuesdays and Thursdays and review it in two weeks.",
+        "at": "2026-08-31T12:56:00.000Z",
+        "decisionId": "decision-portfolio-cue",
+        "links": [
+          {
+            "goalId": "portfolio",
+            "tab": "plan",
+            "goalTitle": "Publish three case studies"
+          }
+        ],
+        "references": [
+          {
+            "text": "the writing hour",
+            "recordId": "memory-morning"
+          }
+        ],
+        "reactions": [
+          {
+            "actor": "user",
+            "type": "like",
+            "at": "2026-08-31T13:10:00.000Z"
+          }
+        ],
+        "authorLabel": "Adler",
+        "saved": true,
+        "recommendations": [
+          {
+            "action": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+            "observation": "You reported that the writing hour disappears once the workday starts.",
+            "interpretation": "Cue-based action planning links a familiar moment to a specific action, which can make starting less dependent on finding time later.",
+            "expectedEffect": "More of the planned drafting sessions start.",
+            "goalIds": [
+              "portfolio"
+            ],
+            "sourceIds": [
+              "memory-morning"
+            ],
+            "reasoning": {
+              "grounding": [
+                {
+                  "claimId": "claim:implementation-if-then",
+                  "version": "2026-09-07.1",
+                  "relation": "motivates",
+                  "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested."
+                }
+              ],
+              "principleIds": [
+                "P2"
+              ],
+              "goalRoute": "session",
+              "ruleExceptions": [
+                "Use a short drafting trial rather than a daily automaticity target."
+              ],
+              "barrier": {
+                "domain": "opportunity",
+                "status": "reported",
+                "explanation": "You reported that the writing hour disappears once the workday starts.",
+                "sourceIds": [
+                  "memory-morning"
+                ]
+              },
+              "methodId": "implementation",
+              "researchSourceIds": [
+                "curated:implementation-if-then"
+              ],
+              "mechanism": "A specific cue can connect the intention to a concrete start.",
+              "fit": "You described a quiet window right after breakfast on Tuesdays and Thursdays.",
+              "prediction": "You report starting the session on more of the planned days.",
+              "reviewRule": "Keep the cue if sessions start; otherwise ask what blocked the start before adding work.",
+              "limitation": "A cue cannot create time that is already taken by something else."
+            },
+            "grounding": [
+              {
+                "claimId": "claim:implementation-if-then",
+                "version": "2026-09-07.1",
+                "relation": "motivates",
+                "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested.",
+                "claim": {
+                  "id": "claim:implementation-if-then",
+                  "label": "Link a familiar moment to an action",
+                  "version": "2026-09-07.1",
+                  "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+                  "role": "technique",
+                  "construct": "Situation-to-response implementation intention",
+                  "methodIds": [
+                    "implementation"
+                  ],
+                  "principleIds": [
+                    "P2"
+                  ],
+                  "source": {
+                    "id": "curated:implementation-if-then",
+                    "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                    "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                    "year": "2006",
+                    "doi": "10.1016/S0065-2601(06)38002-1",
+                    "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                    "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                    "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                    "access": "abstract",
+                    "retrievedAt": "2026-09-07T22:54:41.000Z"
+                  },
+                  "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+                  "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+                  "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+                  "limitations": [
+                    "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+                    "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+                  ],
+                  "review": {
+                    "status": "source-checked",
+                    "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+                    "at": "2026-09-07"
+                  }
+                }
+              }
+            ],
+            "sources": [
+              {
+                "id": "curated:implementation-if-then",
+                "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                "year": "2006",
+                "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                "access": "abstract",
+                "retrievedAt": "2026-09-07T22:54:41.000Z"
+              }
+            ]
+          }
+        ],
+        "decisionSummary": "You reported losing the writing hour once the workday starts. We attached the drafting session to the end of breakfast and will review after two weeks.",
+        "decisionChecks": [
+          {
+            "id": "capacity",
+            "label": "Schedule & capacity",
+            "finding": "360 minutes are budgeted per week; the trial commits 100 minutes.",
+            "sources": [
+              "program-v2"
+            ]
+          }
+        ],
+        "decisionMethods": [
+          {
+            "id": "implementation",
+            "name": "Choose when and where",
+            "url": "https://www.socmot.uni-konstanz.de/publications/implementation-intentions-and-goal-achievement-meta-analysis-effects-and-processes"
+          }
+        ]
+      },
+      {
+        "id": "message-3",
+        "conversationId": "chat-portfolio",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "role": "user",
+        "origin": "user",
+        "channel": "sms",
+        "text": "Two of the three sessions happened. Starting was easier when breakfast wasn’t rushed.",
+        "at": "2026-09-08T12:40:00.000Z",
+        "decisionId": null,
+        "links": [],
+        "references": [],
+        "reactions": [],
+        "authorLabel": "You",
+        "saved": false,
+        "recommendations": [],
+        "decisionSummary": null,
+        "decisionChecks": [],
+        "decisionMethods": []
+      }
+    ],
+    "proposals": [
+      {
+        "id": "0BE9D0881A",
+        "summary": "Move the first case study target to the Thursday before your editor’s review.",
+        "headline": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+        "consequences": [],
+        "booking": null,
+        "affected": {
+          "actions": 0,
+          "milestones": 1,
+          "planVersions": 0
+        },
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "conversationId": "chat-portfolio",
+        "decisionId": "decision-portfolio-cue",
+        "status": "pending",
+        "channel": "web",
+        "expires": 1789227991562,
+        "expired": false,
+        "createdAt": "2026-09-11T15:46:31.563Z",
+        "changes": [
+          {
+            "entity": "milestone",
+            "operation": "update",
+            "id": "case-study-1",
+            "parentId": "portfolio",
+            "reason": "Your editor reviews drafts on Fridays, so Thursday is the useful target.",
+            "values": "{\"dueDate\":\"2026-09-24\"}"
+          }
+        ],
+        "before": [
+          {
+            "id": "case-study-1",
+            "title": "First case study published",
+            "criterion": "A published URL with the result.",
+            "done": false
+          }
+        ],
+        "recommendations": [
+          {
+            "action": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+            "observation": "You reported that the writing hour disappears once the workday starts.",
+            "interpretation": "Cue-based action planning links a familiar moment to a specific action, which can make starting less dependent on finding time later.",
+            "expectedEffect": "More of the planned drafting sessions start.",
+            "goalIds": [
+              "portfolio"
+            ],
+            "sourceIds": [
+              "memory-morning"
+            ],
+            "reasoning": {
+              "grounding": [
+                {
+                  "claimId": "claim:implementation-if-then",
+                  "version": "2026-09-07.1",
+                  "relation": "motivates",
+                  "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested."
+                }
+              ],
+              "principleIds": [
+                "P2"
+              ],
+              "goalRoute": "session",
+              "ruleExceptions": [
+                "Use a short drafting trial rather than a daily automaticity target."
+              ],
+              "barrier": {
+                "domain": "opportunity",
+                "status": "reported",
+                "explanation": "You reported that the writing hour disappears once the workday starts.",
+                "sourceIds": [
+                  "memory-morning"
+                ]
+              },
+              "methodId": "implementation",
+              "researchSourceIds": [
+                "curated:implementation-if-then"
+              ],
+              "mechanism": "A specific cue can connect the intention to a concrete start.",
+              "fit": "You described a quiet window right after breakfast on Tuesdays and Thursdays.",
+              "prediction": "You report starting the session on more of the planned days.",
+              "reviewRule": "Keep the cue if sessions start; otherwise ask what blocked the start before adding work.",
+              "limitation": "A cue cannot create time that is already taken by something else."
+            },
+            "grounding": [
+              {
+                "claimId": "claim:implementation-if-then",
+                "version": "2026-09-07.1",
+                "relation": "motivates",
+                "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested.",
+                "claim": {
+                  "id": "claim:implementation-if-then",
+                  "label": "Link a familiar moment to an action",
+                  "version": "2026-09-07.1",
+                  "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+                  "role": "technique",
+                  "construct": "Situation-to-response implementation intention",
+                  "methodIds": [
+                    "implementation"
+                  ],
+                  "principleIds": [
+                    "P2"
+                  ],
+                  "source": {
+                    "id": "curated:implementation-if-then",
+                    "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                    "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                    "year": "2006",
+                    "doi": "10.1016/S0065-2601(06)38002-1",
+                    "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                    "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                    "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                    "access": "abstract",
+                    "retrievedAt": "2026-09-07T22:54:41.000Z"
+                  },
+                  "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+                  "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+                  "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+                  "limitations": [
+                    "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+                    "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+                  ],
+                  "review": {
+                    "status": "source-checked",
+                    "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+                    "at": "2026-09-07"
+                  }
+                }
+              }
+            ],
+            "sources": [
+              {
+                "id": "curated:implementation-if-then",
+                "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                "year": "2006",
+                "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                "access": "abstract",
+                "retrievedAt": "2026-09-07T22:54:41.000Z"
+              }
+            ]
+          }
+        ],
+        "researchClaims": [
+          {
+            "id": "claim:implementation-if-then",
+            "label": "Link a familiar moment to an action",
+            "version": "2026-09-07.1",
+            "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+            "role": "technique",
+            "construct": "Situation-to-response implementation intention",
+            "methodIds": [
+              "implementation"
+            ],
+            "principleIds": [
+              "P2"
+            ],
+            "source": {
+              "id": "curated:implementation-if-then",
+              "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+              "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+              "year": "2006",
+              "doi": "10.1016/S0065-2601(06)38002-1",
+              "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+              "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+              "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+              "access": "abstract",
+              "retrievedAt": "2026-09-07T22:54:41.000Z"
+            },
+            "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+            "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+            "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+            "limitations": [
+              "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+              "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+            ],
+            "review": {
+              "status": "source-checked",
+              "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+              "at": "2026-09-07"
+            }
+          }
+        ],
+        "researchSources": [
+          {
+            "id": "curated:implementation-if-then",
+            "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+            "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+            "year": "2006",
+            "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+            "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+            "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+            "access": "abstract",
+            "retrievedAt": "2026-09-07T22:54:41.000Z"
+          }
+        ]
+      }
+    ],
+    "quickPrompts": [
+      {
+        "id": "action-3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+        "label": "Check in on today’s action",
+        "goalId": "guide",
+        "prompt": "I want to check in on Write 400 words of the guide (2026-09-11)."
+      },
+      {
+        "id": "plan-running",
+        "label": "Plan first action · Run a 10k without stopping",
+        "goalId": "running",
+        "prompt": "Help me choose the first useful work for this saved goal. Keep my outcome and deadline; ask only what changes the next useful action."
+      },
+      {
+        "id": "learning-learning-word-count-check",
+        "label": "Review with Adler",
+        "goalId": "guide",
+        "prompt": "Let’s discuss learning learning-word-count-check, test version 1: “Check the word count against the week's target every Friday.”. I’d like to report whether I tried it and what happened: "
+      },
+      {
+        "id": "learning-learning-breakfast-cue",
+        "label": "Share an update",
+        "goalId": "portfolio",
+        "prompt": "Let’s discuss learning learning-breakfast-cue, test version 1: “Draft one case-study section right after breakfast on Tuesdays and Thursdays.”. I’d like to report whether I tried it and what happened: "
+      }
+    ],
+    "model": {
+      "configured": true,
+      "provider": "gemini",
+      "model": "gemini-3.8-flash"
+    },
+    "goals": [
+      {
+        "id": "portfolio",
+        "title": "Publish three case studies",
+        "status": "Active",
+        "color": "hsl(184 28% 35%)"
+      },
+      {
+        "id": "guide",
+        "title": "Write the onboarding guide",
+        "status": "Active",
+        "color": "hsl(316 28% 35%)"
+      },
+      {
+        "id": "running",
+        "title": "Run a 10k without stopping",
+        "status": "Draft",
+        "color": "hsl(55 28% 35%)"
+      },
+      {
+        "id": "reading",
+        "title": "Read the four books on my shelf",
+        "status": "Draft",
+        "color": "hsl(196 28% 35%)"
+      },
+      {
+        "id": "cooking",
+        "title": "Cook one new recipe a week",
+        "status": "Paused",
+        "color": "hsl(290 28% 35%)"
+      }
+    ]
+  }
+}

@@ -11,3 +11,7 @@ playwright-report/
 !.env.example
 .data/
 .vercel/
+
+ios/.build/
+ios/.build-*/
+ios/Signing.xcconfig

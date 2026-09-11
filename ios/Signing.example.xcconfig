@@ -1,0 +1,10 @@
+// Template for local signing overrides.
+//
+// Copy this file to Signing.xcconfig (gitignored) in the same folder and
+// uncomment/fill in your team ID to build and run on a physical device:
+//
+// DEVELOPMENT_TEAM = ABCDE12345
+//
+// Leave Signing.xcconfig empty (or DEVELOPMENT_TEAM unset) for simulator
+// builds — no team is required since CODE_SIGNING_ALLOWED is NO by default
+// in project.yml.

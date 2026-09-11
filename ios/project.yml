@@ -1,0 +1,147 @@
+name: Adler
+options:
+  createIntermediateGroups: true
+  autogenerateSchemes: false
+  deploymentTarget:
+    iOS: "26.0"
+
+configFiles:
+  Debug: Signing.xcconfig
+  Release: Signing.xcconfig
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_APPROACHABLE_CONCURRENCY: YES
+    SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    CODE_SIGN_STYLE: Automatic
+    # Ad-hoc signing is scoped to the simulator SDK so a fresh checkout builds
+    # and tests with no developer certificate. Device builds and the archive
+    # action sign normally: set DEVELOPMENT_TEAM in ios/Signing.xcconfig
+    # (gitignored; see Signing.example.xcconfig). An unsigned archive cannot be
+    # installed on a device or sent to TestFlight, so it must never be the
+    # default for Release.
+    CODE_SIGN_IDENTITY[sdk=iphonesimulator*]: "-"
+    CODE_SIGNING_ALLOWED[sdk=iphonesimulator*]: NO
+    CODE_SIGNING_REQUIRED[sdk=iphonesimulator*]: NO
+    CODE_SIGN_IDENTITY[sdk=iphoneos*]: "Apple Development"
+
+targets:
+  Adler:
+    type: application
+    platform: iOS
+    sources:
+      - path: Adler
+        # Folder documentation (Core/README.md, DesignSystem/README.md, …) would otherwise be
+        # copied into the app bundle, where two files named README.md collide outright.
+        excludes:
+          - "**/*.md"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.withadler.app
+        PRODUCT_NAME: Adler
+        TARGETED_DEVICE_FAMILY: "1,2"
+        # XcodeGen's built-in default for `type: application` sets
+        # CODE_SIGN_IDENTITY to "iPhone Developer" at the target level, which
+        # would otherwise shadow the project-level override. Scoped by SDK for
+        # the same reason as the project-level values above.
+        CODE_SIGN_IDENTITY[sdk=iphonesimulator*]: "-"
+        CODE_SIGN_IDENTITY[sdk=iphoneos*]: "Apple Development"
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+    info:
+      path: Adler/Resources/Info.plist
+      properties:
+        CFBundleDisplayName: Adler
+        CFBundleShortVersionString: "1.0"
+        CFBundleVersion: "1"
+        ITSAppUsesNonExemptEncryption: false
+        UIUserInterfaceStyle: Automatic
+        UILaunchScreen:
+          UIColorName: LaunchBackground
+        # NSAllowsLocalNetworking alone covers every address the dev server is
+        # reachable at: loopback (http://127.0.0.1:8080, http://localhost:8080)
+        # and RFC1918 LAN literals (http://10.0.0.24:8080) both load. Verified
+        # on the simulator, both configurations — see docs/ios-app.md.
+        # NSAllowsArbitraryLoads is deliberately absent: a blanket cleartext
+        # exemption in a Release build lets anyone on the network downgrade or
+        # intercept a production https:// server URL.
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+        UIAppFonts:
+          - AdlerWarm-Regular.ttf
+          - AdlerWarm-Book.ttf
+          - AdlerWarm-Text.ttf
+          - AdlerWarm-Medium.ttf
+          - AdlerWarm-DemiBold.ttf
+          - AdlerWarm-SemiBold.ttf
+          - AdlerWarm-Bold.ttf
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        CFBundleURLTypes:
+          - CFBundleURLName: com.withadler.app
+            CFBundleURLSchemes:
+              - adler
+            CFBundleTypeRole: Editor
+
+  AdlerTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AdlerTests
+        excludes:
+          - Fixtures
+      # Verbatim copies of docs/ios-api-examples/*.json, kept in sync by
+      # ios/scripts/sync-fixtures.sh. A folder reference so new examples are
+      # picked up without regenerating the project.
+      - path: AdlerTests/Fixtures
+        type: folder
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.withadler.app.tests
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Adler.app/Adler"
+    dependencies:
+      - target: Adler
+
+  AdlerUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: AdlerUITests
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.withadler.app.uitests
+        TEST_TARGET_NAME: Adler
+    dependencies:
+      - target: Adler
+
+schemes:
+  Adler:
+    build:
+      targets:
+        Adler: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: false
+      targets:
+        - AdlerTests
+        - AdlerUITests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

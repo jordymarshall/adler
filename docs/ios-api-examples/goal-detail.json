@@ -1,0 +1,1293 @@
+{
+  "request": "GET /api/app/goals/portfolio",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "goal": {
+      "id": "portfolio",
+      "title": "Publish three case studies",
+      "status": "Active",
+      "color": "hsl(184 28% 35%)"
+    },
+    "kind": "project",
+    "why": "Show how I work so the right people can find me.",
+    "success": "Three case studies are published with the problem, my contribution and the result.",
+    "area": "Career",
+    "tags": [
+      "Writing",
+      "Portfolio"
+    ],
+    "priority": "Focus",
+    "targetDate": "2026-11-10",
+    "deadline": "preferred",
+    "startDate": "2026-08-31",
+    "measure": null,
+    "target": 3,
+    "unit": "milestones verified",
+    "resultLabel": "0 of 3 case studies published",
+    "results": [
+      {
+        "id": "f10fe02d-6b9c-4e03-9587-b54902e7bf69",
+        "date": "2026-08-31",
+        "value": 0,
+        "source": "Starting baseline: no milestones verified yet"
+      }
+    ],
+    "checkpoints": [
+      {
+        "id": "fd2e8ee9-d90a-44ce-97f6-09f4deb57815",
+        "date": "2026-08-31",
+        "value": 0,
+        "label": "Starting point"
+      },
+      {
+        "id": "aeb74e06-6138-43c1-94ed-7aa2c0efe768",
+        "date": "2026-11-10",
+        "value": 3,
+        "label": "Target result"
+      }
+    ],
+    "measurementHistory": [],
+    "checkpointHistory": [],
+    "needsPlanReview": false,
+    "statusOptions": [
+      "Paused",
+      "Completed",
+      "Set aside"
+    ],
+    "selectedPlanVersion": 1,
+    "selectedStepId": "draft-section",
+    "selectedMilestoneId": null,
+    "plans": [
+      {
+        "version": 1,
+        "date": "2026-08-31",
+        "current": true,
+        "action": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "durationMinutes": 25,
+        "approach": "Test whether a fixed after-breakfast cue makes the drafting session start.",
+        "window": {
+          "start": "2026-08-31",
+          "end": "2026-09-13",
+          "label": "Two-week drafting trial",
+          "rationale": "Two weeks give enough attempts to see whether the cue helps, without committing a month.",
+          "capacityMinutes": 240,
+          "capacityStatus": "confirmed"
+        },
+        "assessment": {
+          "at": "2026-09-13T20:00:00.000Z",
+          "question": "Did the after-breakfast cue make the drafting session start?",
+          "adaptation": "Inspect what blocked the start before increasing the commitment.",
+          "feedbackDelayDays": 0,
+          "triggers": [
+            "check-in",
+            "window-end"
+          ]
+        },
+        "experiment": {
+          "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+          "inputStepIds": [
+            "draft-section"
+          ],
+          "outcomeSignal": "Whether a section is drafted on the planned days.",
+          "comparison": "Compared with the interrupted mornings you described before this trial.",
+          "comparisonStatus": "reported",
+          "comparisonSourceIds": [
+            "memory-morning"
+          ],
+          "decisionRule": "If sessions still do not start, inspect the obstacle before changing the commitment.",
+          "alternativeExplanations": [
+            "A quieter fortnight at work could explain the same change."
+          ]
+        },
+        "steps": [
+          {
+            "id": "draft-section",
+            "type": "behavior",
+            "title": "Draft one case-study section",
+            "criterion": "One section of the current case study is written end to end.",
+            "reason": "A section is small enough to finish in the available window.",
+            "durationMinutes": 25,
+            "cue": "Right after breakfast",
+            "scheduledDate": "2026-08-31",
+            "recurrence": {
+              "everyDays": 1,
+              "weekdays": [
+                2,
+                4
+              ],
+              "until": "2026-09-13"
+            },
+            "dependsOn": [],
+            "milestoneId": "case-study-1",
+            "measure": {
+              "id": "sections",
+              "label": "Sections drafted",
+              "unit": "sections",
+              "target": 1
+            },
+            "fallback": "Write the section heading and one paragraph if time is short.",
+            "contextIds": [
+              "memory-morning"
+            ],
+            "dates": [
+              "2026-09-01",
+              "2026-09-03",
+              "2026-09-08",
+              "2026-09-10"
+            ]
+          }
+        ],
+        "projection": null,
+        "projectionUnavailableReason": "Drafted sections and a published case study are tracked separately. There is no established conversion from sections drafted to a publication date.",
+        "hasBasis": false,
+        "hasReasoning": true
+      }
+    ],
+    "milestones": [
+      {
+        "id": "case-study-1",
+        "title": "First case study published",
+        "criterion": "A published URL with the result.",
+        "done": false,
+        "dueDate": null,
+        "completedAt": null,
+        "stepIds": [
+          "draft-section"
+        ],
+        "actionIds": [
+          "237e4a77-378e-4671-abac-39897a4ee2d9",
+          "ad15196a-62c1-4d2b-bb83-4c4c364626e5",
+          "3e0ca549-75e5-41a1-b8c4-07ec26162f12",
+          "64060973-4c42-46e5-86c8-0f85551c5206"
+        ],
+        "statusLabel": "In progress"
+      },
+      {
+        "id": "case-study-2",
+        "title": "Second case study published",
+        "criterion": "A published URL with the result.",
+        "done": false,
+        "dueDate": null,
+        "completedAt": null,
+        "stepIds": [],
+        "actionIds": [],
+        "statusLabel": "Not started"
+      },
+      {
+        "id": "case-study-3",
+        "title": "Third case study published",
+        "criterion": "A published URL with the result.",
+        "done": false,
+        "dueDate": null,
+        "completedAt": null,
+        "stepIds": [],
+        "actionIds": [],
+        "statusLabel": "Not started"
+      }
+    ],
+    "actions": [
+      {
+        "id": "64060973-4c42-46e5-86c8-0f85551c5206",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-10",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-10",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-10T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "3e0ca549-75e5-41a1-b8c4-07ec26162f12",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-08",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-08",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-08T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "ad15196a-62c1-4d2b-bb83-4c4c364626e5",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-03",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-03",
+        "outcome": "Didn’t happen",
+        "amount": 0,
+        "actualMinutes": 0,
+        "note": "The stand-up moved to 8:30 that day.",
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 0,
+        "execution": "missed",
+        "executionLabel": "Didn’t happen",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-03T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "237e4a77-378e-4671-abac-39897a4ee2d9",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-01",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-01",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-01T13:05:00.000Z"
+          }
+        ]
+      }
+    ],
+    "planActions": [
+      {
+        "id": "237e4a77-378e-4671-abac-39897a4ee2d9",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-01",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-01",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-01T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "ad15196a-62c1-4d2b-bb83-4c4c364626e5",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-03",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-03",
+        "outcome": "Didn’t happen",
+        "amount": 0,
+        "actualMinutes": 0,
+        "note": "The stand-up moved to 8:30 that day.",
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 0,
+        "execution": "missed",
+        "executionLabel": "Didn’t happen",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-03T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "3e0ca549-75e5-41a1-b8c4-07ec26162f12",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-08",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-08",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-08T13:05:00.000Z"
+          }
+        ]
+      },
+      {
+        "id": "64060973-4c42-46e5-86c8-0f85551c5206",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "title": "Draft one case-study section",
+        "criterion": "One section of the current case study is written end to end.",
+        "timing": "Right after breakfast",
+        "date": "2026-09-10",
+        "planVersion": 1,
+        "stepId": "draft-section",
+        "milestoneId": "case-study-1",
+        "occurrence": "draft-section:2026-09-10",
+        "outcome": "Done",
+        "amount": 1,
+        "actualMinutes": 25,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 25,
+        "measure": {
+          "metric": "amount",
+          "label": "Sections drafted",
+          "unit": "sections",
+          "target": 1
+        },
+        "reported": 1,
+        "execution": "done",
+        "executionLabel": "Done",
+        "block": null,
+        "history": [
+          {
+            "outcome": null,
+            "amount": null,
+            "actualMinutes": null,
+            "note": null,
+            "at": "2026-09-10T13:05:00.000Z"
+          }
+        ]
+      }
+    ],
+    "series": {
+      "measure": {
+        "metric": "amount",
+        "label": "Sections drafted",
+        "unit": "sections",
+        "target": 1
+      },
+      "start": "2026-09-04",
+      "end": "2026-09-17",
+      "points": [
+        {
+          "date": "2026-09-04",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-05",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-06",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-07",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-08",
+          "amount": 1,
+          "planned": 1,
+          "retired": false,
+          "future": false,
+          "scheduled": true,
+          "off": false,
+          "actionIds": [
+            "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+          ]
+        },
+        {
+          "date": "2026-09-09",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-10",
+          "amount": 1,
+          "planned": 1,
+          "retired": false,
+          "future": false,
+          "scheduled": true,
+          "off": false,
+          "actionIds": [
+            "64060973-4c42-46e5-86c8-0f85551c5206"
+          ]
+        },
+        {
+          "date": "2026-09-11",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": false,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-12",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-13",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": true,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-14",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": false,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-15",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": false,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-16",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": false,
+          "actionIds": []
+        },
+        {
+          "date": "2026-09-17",
+          "amount": null,
+          "planned": null,
+          "retired": false,
+          "future": true,
+          "scheduled": false,
+          "off": false,
+          "actionIds": []
+        }
+      ],
+      "reported": 2,
+      "plannedTotal": 2,
+      "unknown": 0
+    },
+    "streak": {
+      "count": 4,
+      "completedCount": 2,
+      "days": [
+        {
+          "date": "2026-08-31",
+          "status": "off",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-01",
+          "status": "on",
+          "streak": 1
+        },
+        {
+          "date": "2026-09-02",
+          "status": "off",
+          "streak": 2
+        },
+        {
+          "date": "2026-09-03",
+          "status": "short",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-04",
+          "status": "off",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-05",
+          "status": "off",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-06",
+          "status": "off",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-07",
+          "status": "off",
+          "streak": 0
+        },
+        {
+          "date": "2026-09-08",
+          "status": "on",
+          "streak": 1
+        },
+        {
+          "date": "2026-09-09",
+          "status": "off",
+          "streak": 2
+        },
+        {
+          "date": "2026-09-10",
+          "status": "on",
+          "streak": 3
+        },
+        {
+          "date": "2026-09-11",
+          "status": "off",
+          "streak": 4
+        }
+      ]
+    },
+    "progress": {
+      "goal": {
+        "id": "portfolio",
+        "title": "Publish three case studies",
+        "status": "Active",
+        "color": "hsl(184 28% 35%)"
+      },
+      "measured": false,
+      "actual": 0,
+      "target": 3,
+      "unit": "milestones",
+      "observedAt": "2026-08-31",
+      "observations": [
+        {
+          "date": "2026-08-31",
+          "value": 0
+        }
+      ],
+      "checkpoints": [
+        {
+          "date": "2026-08-31",
+          "value": 0,
+          "label": "Starting point"
+        },
+        {
+          "date": "2026-11-10",
+          "value": 3,
+          "label": "Target result"
+        }
+      ],
+      "due": {
+        "date": "2026-08-31",
+        "value": 0,
+        "label": "Starting point"
+      },
+      "next": {
+        "date": "2026-11-10",
+        "value": 3,
+        "label": "Target result"
+      },
+      "delta": 0,
+      "comparable": true,
+      "label": "At checkpoint",
+      "tone": "positive",
+      "openMilestones": [],
+      "hasOutcome": true,
+      "needsUpdate": false,
+      "evidenceNote": null,
+      "startDate": "2026-08-31",
+      "prompt": "Help me review my progress on “Publish three case studies” and choose my next step.",
+      "actionLabel": "Review plan"
+    },
+    "execution": {
+      "today": "2026-09-11",
+      "cycles": [
+        {
+          "start": "2026-08-31",
+          "end": "2026-09-13",
+          "label": "Two-week drafting trial",
+          "rationale": "Two weeks give enough attempts to see whether the cue helps, without committing a month.",
+          "capacityMinutes": 240,
+          "capacityStatus": "confirmed",
+          "version": 1,
+          "current": true
+        }
+      ],
+      "current": {
+        "start": "2026-08-31",
+        "end": "2026-09-13",
+        "label": "Two-week drafting trial",
+        "rationale": "Two weeks give enough attempts to see whether the cue helps, without committing a month.",
+        "capacityMinutes": 240,
+        "capacityStatus": "confirmed"
+      },
+      "markers": [
+        {
+          "id": "fd2e8ee9-d90a-44ce-97f6-09f4deb57815",
+          "label": "Starting point",
+          "date": "2026-08-31",
+          "detail": "0 milestones verified",
+          "done": false,
+          "kind": "Checkpoint"
+        },
+        {
+          "id": "review-1",
+          "label": "Review this plan",
+          "date": "2026-09-13",
+          "detail": "Did the after-breakfast cue make the drafting session start?",
+          "done": false,
+          "kind": "Review"
+        },
+        {
+          "id": "case-study-1",
+          "label": "First case study published",
+          "detail": "A published URL with the result.",
+          "done": false,
+          "kind": "Milestone"
+        },
+        {
+          "id": "case-study-2",
+          "label": "Second case study published",
+          "detail": "A published URL with the result.",
+          "done": false,
+          "kind": "Milestone"
+        },
+        {
+          "id": "case-study-3",
+          "label": "Third case study published",
+          "detail": "A published URL with the result.",
+          "done": false,
+          "kind": "Milestone"
+        }
+      ],
+      "summary": {
+        "done": 3,
+        "partial": 0,
+        "missed": 1,
+        "unknown": 0,
+        "upcoming": 0,
+        "planned": 4,
+        "reported": 4,
+        "completion": 75
+      },
+      "start": "2026-08-31",
+      "end": "2026-11-10",
+      "actionIds": [
+        "237e4a77-378e-4671-abac-39897a4ee2d9",
+        "ad15196a-62c1-4d2b-bb83-4c4c364626e5",
+        "3e0ca549-75e5-41a1-b8c4-07ec26162f12",
+        "64060973-4c42-46e5-86c8-0f85551c5206"
+      ],
+      "unscheduledIds": [],
+      "weeks": [
+        {
+          "start": "2026-08-17",
+          "end": "2026-08-23",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        },
+        {
+          "start": "2026-08-24",
+          "end": "2026-08-30",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        },
+        {
+          "start": "2026-08-31",
+          "end": "2026-09-06",
+          "done": 1,
+          "partial": 0,
+          "missed": 1,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 2,
+          "reported": 2,
+          "completion": 50,
+          "actionIds": [
+            "237e4a77-378e-4671-abac-39897a4ee2d9",
+            "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+          ]
+        },
+        {
+          "start": "2026-09-07",
+          "end": "2026-09-13",
+          "done": 2,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 2,
+          "reported": 2,
+          "completion": 100,
+          "actionIds": [
+            "3e0ca549-75e5-41a1-b8c4-07ec26162f12",
+            "64060973-4c42-46e5-86c8-0f85551c5206"
+          ]
+        },
+        {
+          "start": "2026-09-14",
+          "end": "2026-09-20",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        },
+        {
+          "start": "2026-09-21",
+          "end": "2026-09-27",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        },
+        {
+          "start": "2026-09-28",
+          "end": "2026-10-04",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        },
+        {
+          "start": "2026-10-05",
+          "end": "2026-10-11",
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 0,
+          "planned": 0,
+          "reported": 0,
+          "completion": null,
+          "actionIds": []
+        }
+      ]
+    },
+    "projection": {
+      "status": "Tracking milestones",
+      "current": 0,
+      "target": 3,
+      "progress": 0,
+      "observedAt": "2026-08-31",
+      "observations": [
+        {
+          "id": "f10fe02d-6b9c-4e03-9587-b54902e7bf69",
+          "date": "2026-08-31",
+          "value": 0,
+          "source": "Starting baseline: no milestones verified yet"
+        }
+      ],
+      "unavailableReason": "Drafted sections and a published case study are tracked separately. There is no established conversion from sections drafted to a publication date.",
+      "trackingLabel": "Verified milestones",
+      "inputLabel": "Sections drafted (sections)",
+      "projection": null,
+      "evidence": null
+    },
+    "rationale": {
+      "planVersion": 1,
+      "basis": null,
+      "reasoning": {
+        "grounding": [
+          {
+            "claimId": "claim:implementation-if-then",
+            "version": "2026-09-07.1",
+            "relation": "motivates",
+            "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested."
+          }
+        ],
+        "principleIds": [
+          "P2"
+        ],
+        "goalRoute": "session",
+        "ruleExceptions": [
+          "Use a short drafting trial rather than a daily automaticity target."
+        ],
+        "barrier": {
+          "domain": "opportunity",
+          "status": "reported",
+          "explanation": "You reported that the writing hour disappears once the workday starts.",
+          "sourceIds": [
+            "memory-morning"
+          ]
+        },
+        "methodId": "implementation",
+        "researchSourceIds": [
+          "curated:implementation-if-then"
+        ],
+        "mechanism": "A specific cue can connect the intention to a concrete start.",
+        "fit": "You described a quiet window right after breakfast on Tuesdays and Thursdays.",
+        "prediction": "You report starting the session on more of the planned days.",
+        "reviewRule": "Keep the cue if sessions start; otherwise ask what blocked the start before adding work.",
+        "limitation": "A cue cannot create time that is already taken by something else."
+      },
+      "grounding": [
+        {
+          "claimId": "claim:implementation-if-then",
+          "version": "2026-09-07.1",
+          "relation": "motivates",
+          "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested.",
+          "claim": {
+            "id": "claim:implementation-if-then",
+            "label": "Link a familiar moment to an action",
+            "version": "2026-09-07.1",
+            "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+            "role": "technique",
+            "construct": "Situation-to-response implementation intention",
+            "methodIds": [
+              "implementation"
+            ],
+            "principleIds": [
+              "P2"
+            ],
+            "source": {
+              "id": "curated:implementation-if-then",
+              "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+              "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+              "year": "2006",
+              "doi": "10.1016/S0065-2601(06)38002-1",
+              "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+              "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+              "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+              "access": "abstract",
+              "retrievedAt": "2026-09-07T22:54:41.000Z"
+            },
+            "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+            "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+            "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+            "limitations": [
+              "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+              "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+            ],
+            "review": {
+              "status": "source-checked",
+              "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+              "at": "2026-09-07"
+            }
+          }
+        }
+      ],
+      "sources": [
+        {
+          "id": "curated:implementation-if-then",
+          "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+          "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+          "year": "2006",
+          "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+          "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+          "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+          "access": "abstract",
+          "retrievedAt": "2026-09-07T22:54:41.000Z"
+        }
+      ],
+      "recommendations": [
+        {
+          "action": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+          "observation": "You reported that the writing hour disappears once the workday starts.",
+          "interpretation": "Cue-based action planning links a familiar moment to a specific action, which can make starting less dependent on finding time later.",
+          "expectedEffect": "More of the planned drafting sessions start.",
+          "goalIds": [
+            "portfolio"
+          ],
+          "sourceIds": [
+            "memory-morning"
+          ],
+          "reasoning": {
+            "grounding": [
+              {
+                "claimId": "claim:implementation-if-then",
+                "version": "2026-09-07.1",
+                "relation": "motivates",
+                "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested."
+              }
+            ],
+            "principleIds": [
+              "P2"
+            ],
+            "goalRoute": "session",
+            "ruleExceptions": [
+              "Use a short drafting trial rather than a daily automaticity target."
+            ],
+            "barrier": {
+              "domain": "opportunity",
+              "status": "reported",
+              "explanation": "You reported that the writing hour disappears once the workday starts.",
+              "sourceIds": [
+                "memory-morning"
+              ]
+            },
+            "methodId": "implementation",
+            "researchSourceIds": [
+              "curated:implementation-if-then"
+            ],
+            "mechanism": "A specific cue can connect the intention to a concrete start.",
+            "fit": "You described a quiet window right after breakfast on Tuesdays and Thursdays.",
+            "prediction": "You report starting the session on more of the planned days.",
+            "reviewRule": "Keep the cue if sessions start; otherwise ask what blocked the start before adding work.",
+            "limitation": "A cue cannot create time that is already taken by something else."
+          },
+          "grounding": [
+            {
+              "claimId": "claim:implementation-if-then",
+              "version": "2026-09-07.1",
+              "relation": "motivates",
+              "application": "Attaching the drafting session to the end of breakfast gives it a familiar moment to start from. Whether that helps this person is still being tested.",
+              "claim": {
+                "id": "claim:implementation-if-then",
+                "label": "Link a familiar moment to an action",
+                "version": "2026-09-07.1",
+                "statement": "An implementation intention links a specified situation or cue to a concrete goal-directed response, spelling out when, where or how action will occur.",
+                "role": "technique",
+                "construct": "Situation-to-response implementation intention",
+                "methodIds": [
+                  "implementation"
+                ],
+                "principleIds": [
+                  "P2"
+                ],
+                "source": {
+                  "id": "curated:implementation-if-then",
+                  "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+                  "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+                  "year": "2006",
+                  "doi": "10.1016/S0065-2601(06)38002-1",
+                  "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+                  "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+                  "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+                  "access": "abstract",
+                  "retrievedAt": "2026-09-07T22:54:41.000Z"
+                },
+                "locator": "Abstract, opening definition of implementation intentions; publisher abstract/preview, with attribution checked against the authors' institutional publication record.",
+                "scope": "Design a cue-linked action when an identifiable cue and an executable, user-endorsed response are available.",
+                "grade": "Technique definition is not efficacy-graded. P2's A direction / moderate magnitude belongs to the empirical corpus, not the definition alone.",
+                "limitations": [
+                  "The person's actual availability and endorsement require personal evidence; writing or scheduling a plan does not create either.",
+                  "This definition does not establish a benefit, the best cue for this user, or that the planned action happened."
+                ],
+                "review": {
+                  "status": "source-checked",
+                  "by": "AI-assisted source check of publisher abstract/preview and author attribution; no expert certification",
+                  "at": "2026-09-07"
+                }
+              }
+            }
+          ],
+          "sources": [
+            {
+              "id": "curated:implementation-if-then",
+              "title": "Implementation Intentions and Goal Achievement: A Meta-analysis of Effects and Processes",
+              "authors": "Peter M. Gollwitzer; Paschal Sheeran",
+              "year": "2006",
+              "url": "https://doi.org/10.1016/S0065-2601%2806%2938002-1",
+              "summary": "Scoped paraphrase of the abstract's definition: implementation intentions specify a situation and a corresponding goal-directed action, including when, where or how it will be performed.",
+              "kind": "Technique definition within a meta-analysis; definition alone is not efficacy evidence",
+              "access": "abstract",
+              "retrievedAt": "2026-09-07T22:54:41.000Z"
+            }
+          ]
+        }
+      ],
+      "decisionId": "decision-portfolio-cue",
+      "windowRationale": "Two weeks give enough attempts to see whether the cue helps, without committing a month.",
+      "assessmentQuestion": "Did the after-breakfast cue make the drafting session start?",
+      "note": null
+    },
+    "experiment": {
+      "recordId": "learning-breakfast-cue",
+      "version": 1,
+      "current": true,
+      "statusLabel": "Live experiment"
+    },
+    "journey": [
+      {
+        "id": "learning-learning-breakfast-cue-v1",
+        "at": "2026-08-31",
+        "kind": "learning-version",
+        "label": "Test suggested",
+        "title": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+        "detail": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+        "planVersion": null,
+        "recordId": "learning-breakfast-cue",
+        "decisionId": "decision-portfolio-cue"
+      },
+      {
+        "id": "plan-1",
+        "at": "2026-08-31",
+        "kind": "plan",
+        "label": "Starting plan",
+        "title": "Test whether a fixed after-breakfast cue makes the drafting session start.",
+        "detail": "Two weeks give enough attempts to see whether the cue helps, without committing a month.",
+        "planVersion": 1,
+        "recordId": null,
+        "decisionId": "decision-portfolio-cue"
+      },
+      {
+        "id": "decision-decision-editor-friday",
+        "at": "2026-09-02",
+        "kind": "decision",
+        "label": "Reviewed",
+        "title": "You mentioned your editor's Friday review. Kept as context for the next milestone date; nothing is being tested.",
+        "detail": "You mentioned your editor's Friday review. Kept as context for the next milestone date; nothing is being tested.",
+        "planVersion": 1,
+        "recordId": null,
+        "decisionId": "decision-editor-friday"
+      },
+      {
+        "id": "review-breakfast-1",
+        "at": "2026-09-08",
+        "kind": "learning-review",
+        "label": "Review saved",
+        "title": "Keep the after-breakfast cue for the rest of the trial window.",
+        "detail": "Two of three planned sessions happened, and you reported an easier start on those days.",
+        "planVersion": null,
+        "recordId": "learning-breakfast-cue",
+        "decisionId": "decision-portfolio-cue"
+      }
+    ],
+    "conversations": [
+      {
+        "id": "chat-portfolio",
+        "title": "Protecting the writing hour",
+        "goalId": "portfolio",
+        "goalTitle": "Publish three case studies",
+        "createdAt": "2026-08-31T12:55:00.000Z",
+        "messageCount": 3,
+        "lastMessageAt": "2026-09-08T12:40:00.000Z",
+        "lastMessage": "Two of the three sessions happened. Starting was easier when breakfast wasn’t rushed."
+      }
+    ],
+    "tentative": [],
+    "pendingProposalIds": [
+      "79CC05AB30",
+      "0BE9D0881A"
+    ],
+    "nextReviewAt": "2026-09-13T20:00:00.000Z"
+  }
+}

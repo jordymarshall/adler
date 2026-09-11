@@ -18,7 +18,7 @@ const environmentKey = (provider: Provider) =>
   process.env[
     `${provider === "openai" ? "OPENAI" : provider === "gemini" ? "GEMINI" : "ANTHROPIC"}_API_KEY`
   ];
-const serverKeysAllowed = () =>
+export const serverKeysAllowed = () =>
   process.env.ADLER_ALLOW_SERVER_KEYS === "true" ||
   (process.env.NODE_ENV !== "production" && !process.env.PUBLIC_URL);
 export function configuration(db: Database, userId: string): ModelConfig {

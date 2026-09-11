@@ -1,0 +1,555 @@
+{
+  "request": "GET /api/app/today",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "reviewDue": false,
+    "reviewDate": "2026-09-13",
+    "next": {
+      "goal": {
+        "id": "guide",
+        "title": "Write the onboarding guide",
+        "status": "Active",
+        "color": "hsl(316 28% 35%)"
+      },
+      "phase": "ready",
+      "phaseLabel": "YOUR NEXT STEP",
+      "headline": "Write 400 words of the guide",
+      "planVersion": 1,
+      "planAction": "Write 400 words of the guide",
+      "planCriterion": "400 words are saved in the guide document.",
+      "planTiming": "Before the first meeting",
+      "criterionLabel": "Finished when 400 words are saved in the guide document.",
+      "timingLabel": "20 minutes · Suggested Sep 11 · Before the first meeting",
+      "durationMinutes": 20,
+      "needsPlanReview": false,
+      "canStartGoal": false,
+      "canStartAction": true,
+      "canReport": true,
+      "canSchedule": true,
+      "action": {
+        "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+        "goalId": "guide",
+        "goalTitle": "Write the onboarding guide",
+        "title": "Write 400 words of the guide",
+        "criterion": "400 words are saved in the guide document.",
+        "timing": "Before the first meeting",
+        "date": "2026-09-11",
+        "planVersion": 1,
+        "stepId": "write-words",
+        "milestoneId": null,
+        "occurrence": "write-words:2026-09-11",
+        "outcome": null,
+        "amount": null,
+        "actualMinutes": null,
+        "note": null,
+        "startedAt": null,
+        "retiredAt": null,
+        "unplanned": false,
+        "ready": true,
+        "durationMinutes": 20,
+        "measure": {
+          "metric": "amount",
+          "label": "Words written",
+          "unit": "words",
+          "target": 400
+        },
+        "reported": null,
+        "execution": "unknown",
+        "executionLabel": "Awaiting check-in",
+        "block": null,
+        "history": []
+      },
+      "step": {
+        "id": "write-words",
+        "type": "behavior",
+        "title": "Write 400 words of the guide",
+        "criterion": "400 words are saved in the guide document.",
+        "reason": "A word count is an input you control and can report exactly.",
+        "durationMinutes": 20,
+        "cue": "Before the first meeting",
+        "scheduledDate": "2026-08-31",
+        "recurrence": {
+          "everyDays": 1,
+          "weekdays": [
+            1,
+            3,
+            5
+          ],
+          "until": "2026-09-13"
+        },
+        "dependsOn": [],
+        "milestoneId": null,
+        "measure": {
+          "id": "words",
+          "label": "Words written",
+          "unit": "words",
+          "target": 400
+        },
+        "fallback": null,
+        "contextIds": [],
+        "dates": [
+          "2026-08-31",
+          "2026-09-02",
+          "2026-09-04",
+          "2026-09-07",
+          "2026-09-09",
+          "2026-09-11"
+        ]
+      },
+      "block": null,
+      "successLabel": "A 20,000-word onboarding guide is finished and shared.",
+      "decisionNote": null
+    },
+    "lineup": [
+      {
+        "action": {
+          "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+          "goalId": "guide",
+          "goalTitle": "Write the onboarding guide",
+          "title": "Write 400 words of the guide",
+          "criterion": "400 words are saved in the guide document.",
+          "timing": "Before the first meeting",
+          "date": "2026-09-11",
+          "planVersion": 1,
+          "stepId": "write-words",
+          "milestoneId": null,
+          "occurrence": "write-words:2026-09-11",
+          "outcome": null,
+          "amount": null,
+          "actualMinutes": null,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 20,
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "reported": null,
+          "execution": "unknown",
+          "executionLabel": "Awaiting check-in",
+          "block": null,
+          "history": []
+        },
+        "selected": true,
+        "state": "next",
+        "stateLabel": "Up next"
+      }
+    ],
+    "doneCount": 0,
+    "plannedCount": 1,
+    "quietDay": false,
+    "nothingScheduled": false,
+    "progress": [
+      {
+        "goal": {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        },
+        "measured": false,
+        "actual": 0,
+        "target": 3,
+        "unit": "milestones",
+        "observedAt": "2026-08-31",
+        "observations": [
+          {
+            "date": "2026-08-31",
+            "value": 0
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-08-31",
+            "value": 0,
+            "label": "Starting point"
+          },
+          {
+            "date": "2026-11-10",
+            "value": 3,
+            "label": "Target result"
+          }
+        ],
+        "due": {
+          "date": "2026-08-31",
+          "value": 0,
+          "label": "Starting point"
+        },
+        "next": {
+          "date": "2026-11-10",
+          "value": 3,
+          "label": "Target result"
+        },
+        "delta": 0,
+        "comparable": true,
+        "label": "At checkpoint",
+        "tone": "positive",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-08-31",
+        "prompt": "Help me review my progress on “Publish three case studies” and choose my next step.",
+        "actionLabel": "Review plan"
+      },
+      {
+        "goal": {
+          "id": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)"
+        },
+        "measured": true,
+        "actual": 2330,
+        "target": 20000,
+        "unit": "words",
+        "observedAt": "2026-09-04",
+        "observations": [
+          {
+            "date": "2026-08-21",
+            "value": 1200
+          },
+          {
+            "date": "2026-09-04",
+            "value": 2330
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-09-04",
+            "value": 2000,
+            "label": "Two-week pace check"
+          },
+          {
+            "date": "2026-10-11",
+            "value": 8000,
+            "label": "Six-week pace check"
+          },
+          {
+            "date": "2027-01-09",
+            "value": 20000,
+            "label": "Guide finished"
+          }
+        ],
+        "due": {
+          "date": "2026-09-04",
+          "value": 2000,
+          "label": "Two-week pace check"
+        },
+        "next": {
+          "date": "2026-10-11",
+          "value": 8000,
+          "label": "Six-week pace check"
+        },
+        "delta": 330,
+        "comparable": true,
+        "label": "Above checkpoint",
+        "tone": "positive",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-08-31",
+        "prompt": "Help me review my progress on “Write the onboarding guide” and choose my next step.",
+        "actionLabel": "Review plan"
+      },
+      {
+        "goal": {
+          "id": "running",
+          "title": "Run a 10k without stopping",
+          "status": "Draft",
+          "color": "hsl(55 28% 35%)"
+        },
+        "measured": false,
+        "actual": null,
+        "target": 0,
+        "unit": "milestones",
+        "observedAt": null,
+        "observations": [],
+        "checkpoints": [],
+        "due": null,
+        "next": null,
+        "delta": null,
+        "comparable": false,
+        "label": "Draft",
+        "tone": "quiet",
+        "openMilestones": [],
+        "hasOutcome": false,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-09-11",
+        "prompt": "Help me review my progress on “Run a 10k without stopping” and choose my next step.",
+        "actionLabel": "Shape the plan"
+      },
+      {
+        "goal": {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Draft",
+          "color": "hsl(196 28% 35%)"
+        },
+        "measured": false,
+        "actual": 0,
+        "target": 1,
+        "unit": "milestones",
+        "observedAt": "2026-09-11",
+        "observations": [
+          {
+            "date": "2026-09-11",
+            "value": 0
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-09-11",
+            "value": 0,
+            "label": "Starting point"
+          },
+          {
+            "date": "2026-12-10",
+            "value": 1,
+            "label": "Target result"
+          }
+        ],
+        "due": {
+          "date": "2026-09-11",
+          "value": 0,
+          "label": "Starting point"
+        },
+        "next": {
+          "date": "2026-12-10",
+          "value": 1,
+          "label": "Target result"
+        },
+        "delta": 0,
+        "comparable": true,
+        "label": "Draft",
+        "tone": "quiet",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-09-11",
+        "prompt": "Help me review my progress on “Read the four books on my shelf” and choose my next step.",
+        "actionLabel": "Shape the plan"
+      },
+      {
+        "goal": {
+          "id": "cooking",
+          "title": "Cook one new recipe a week",
+          "status": "Paused",
+          "color": "hsl(290 28% 35%)"
+        },
+        "measured": false,
+        "actual": 1,
+        "target": 1,
+        "unit": "milestones",
+        "observedAt": "2026-08-17",
+        "observations": [
+          {
+            "date": "2026-08-17",
+            "value": 0
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-08-17",
+            "value": 0,
+            "label": "Starting point"
+          },
+          {
+            "date": "2026-11-06",
+            "value": 1,
+            "label": "Target result"
+          }
+        ],
+        "due": {
+          "date": "2026-08-17",
+          "value": 0,
+          "label": "Starting point"
+        },
+        "next": {
+          "date": "2026-11-06",
+          "value": 1,
+          "label": "Target result"
+        },
+        "delta": 1,
+        "comparable": true,
+        "label": "Paused",
+        "tone": "quiet",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-08-17",
+        "prompt": "Help me review my progress on “Cook one new recipe a week” and choose my next step.",
+        "actionLabel": "Review plan"
+      }
+    ],
+    "learning": [
+      {
+        "recordId": "learning-word-count-check",
+        "version": 1,
+        "actionVersion": 1,
+        "controls": {
+          "agree": false,
+          "decline": false,
+          "pause": true,
+          "resume": false,
+          "close": true
+        },
+        "attempts": [
+          {
+            "date": "2026-09-02",
+            "outcome": "Partly",
+            "actionId": "38426313-a41b-42e8-bd2a-0375d13efcf0"
+          },
+          {
+            "date": "2026-09-04",
+            "outcome": "Done",
+            "actionId": "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+          },
+          {
+            "date": "2026-09-07",
+            "outcome": "Done",
+            "actionId": "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+          },
+          {
+            "date": "2026-09-09",
+            "outcome": "Didn’t happen",
+            "actionId": "84606506-afab-4510-bc24-fab924d4bec3"
+          },
+          {
+            "date": "2026-09-11",
+            "outcome": null,
+            "actionId": "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+          }
+        ],
+        "activeVersion": 1,
+        "pendingVersion": null,
+        "state": "agreed",
+        "standing": "insufficient",
+        "statusLabel": "Ready to review",
+        "standingLabel": "More context needed",
+        "goalIds": [
+          "guide"
+        ],
+        "goalTitles": [
+          "Write the onboarding guide"
+        ],
+        "change": "Check the word count against the week's target every Friday.",
+        "observation": "You are writing the guide in short weekday sessions without checking the word count against the plan.",
+        "hypothesis": "Checking the word count against the plan each week may show whether the current pace reaches 20,000 words on time.",
+        "watching": "Whether the word count is checked and compared with the plan each Friday.",
+        "watchingLabel": "WHAT WE’RE WATCHING",
+        "startDate": "2026-09-02",
+        "reviewDate": "2026-09-09",
+        "needsDecision": false,
+        "reviewCount": 0,
+        "footnote": "Review Sep 9 · Your experience will inform what comes next.",
+        "prompt": "Let’s discuss learning learning-word-count-check, test version 1: “Check the word count against the week's target every Friday.”. I’d like to report whether I tried it and what happened: "
+      },
+      {
+        "recordId": "learning-breakfast-cue",
+        "version": 1,
+        "actionVersion": 1,
+        "controls": {
+          "agree": false,
+          "decline": false,
+          "pause": true,
+          "resume": false,
+          "close": true
+        },
+        "attempts": [
+          {
+            "date": "2026-09-01",
+            "outcome": "Done",
+            "actionId": "237e4a77-378e-4671-abac-39897a4ee2d9"
+          },
+          {
+            "date": "2026-09-03",
+            "outcome": "Didn’t happen",
+            "actionId": "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+          },
+          {
+            "date": "2026-09-08",
+            "outcome": "Done",
+            "actionId": "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+          },
+          {
+            "date": "2026-09-10",
+            "outcome": "Done",
+            "actionId": "64060973-4c42-46e5-86c8-0f85551c5206"
+          }
+        ],
+        "activeVersion": 1,
+        "pendingVersion": null,
+        "state": "agreed",
+        "standing": "consistent",
+        "statusLabel": "Live experiment",
+        "standingLabel": "Consistent so far",
+        "goalIds": [
+          "portfolio"
+        ],
+        "goalTitles": [
+          "Publish three case studies"
+        ],
+        "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+        "observation": "You reported that the writing hour disappears once the workday starts.",
+        "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+        "watching": "Two of three planned sessions happened, and you reported an easier start on those days.",
+        "watchingLabel": "LATEST FEEDBACK",
+        "startDate": "2026-08-31",
+        "reviewDate": "2026-09-15",
+        "needsDecision": false,
+        "reviewCount": 1,
+        "footnote": "Review Sep 15 · Your experience will inform what comes next.",
+        "prompt": "Let’s discuss learning learning-breakfast-cue, test version 1: “Draft one case-study section right after breakfast on Tuesdays and Thursdays.”. I’d like to report whether I tried it and what happened: "
+      }
+    ],
+    "latestMemory": {
+      "id": "memory-editor",
+      "date": "2026-09-02",
+      "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening."
+    },
+    "goals": [
+      {
+        "id": "portfolio",
+        "title": "Publish three case studies",
+        "status": "Active",
+        "color": "hsl(184 28% 35%)"
+      },
+      {
+        "id": "guide",
+        "title": "Write the onboarding guide",
+        "status": "Active",
+        "color": "hsl(316 28% 35%)"
+      },
+      {
+        "id": "running",
+        "title": "Run a 10k without stopping",
+        "status": "Draft",
+        "color": "hsl(55 28% 35%)"
+      },
+      {
+        "id": "reading",
+        "title": "Read the four books on my shelf",
+        "status": "Draft",
+        "color": "hsl(196 28% 35%)"
+      },
+      {
+        "id": "cooking",
+        "title": "Cook one new recipe a week",
+        "status": "Paused",
+        "color": "hsl(290 28% 35%)"
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "request": "POST /api/app/changes with a stale revision",
+  "status": 409,
+  "response": {
+    "error": "This workspace changed in another channel. Review the latest records and retry.",
+    "revision": 2
+  }
+}

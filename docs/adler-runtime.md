@@ -11,6 +11,8 @@ npm run dev -- --port 55020
 
 Open `http://localhost:55020`, create a username and password, then describe a goal in Today. The first conversation and plan stay in one guided flow. Add a provider API key in **Settings → AI provider**, save/test it, and start a conversation. Coaching is available automatically once a provider is configured. Passwords use salted scrypt; HTTP-only session cookies identify the account. Email verification and password recovery are not configured.
 
+The API accepts requests only for a recognized `Host`. With `PUBLIC_URL` set, that is exactly the public host. Without it, the runtime accepts `localhost`, `127.0.0.1` and `[::1]`, and — only while `NODE_ENV` is not `production` — RFC1918 private IPv4 hosts (`10/8`, `172.16/12`, `192.168/16`), so a phone on the same Wi-Fi can reach a development Mac at `http://10.0.0.24:8080`. Any other host is refused with 403. Setting `PUBLIC_URL` or `NODE_ENV=production` restores the single-host rule. See [Adler for iOS](ios-app.md).
+
 For the production server, build and provide configuration through the process environment:
 
 ```sh

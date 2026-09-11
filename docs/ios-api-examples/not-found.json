@@ -1,0 +1,7 @@
+{
+  "request": "GET /api/app/goals/not-a-goal",
+  "status": 404,
+  "response": {
+    "error": "This goal isn’t here."
+  }
+}

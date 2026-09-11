@@ -476,3 +476,215 @@ for (const channel of ["web", "mcp", "sms"] as const) test(`an exact action-inpu
   assert.deepEqual(result.data.goals[0].milestones, state.data.goals[0].milestones);
   assert.deepEqual(result.data.goals[0].results, state.data.goals[0].results);
 });
+
+// A truncated or failed reviewer call is the reviewer's own failure. Sending it back as a
+// correction made the coach repair something it did not get wrong and exhausted the repair
+// budget, which failed ordinary turns such as creating a first goal or asking about progress.
+test("a truncated evidence review is retried on its own and never becomes a coaching correction", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  let coachTurns = 0, reviews = 0;
+  const corrections: string[] = [];
+  const service = new Service(db, async (_config, _instructions, context: any, schema, tokens) => {
+    if (context.task === "review-plan") {
+      reviews++;
+      assert.ok(tokens! >= 4000, "The reviewer's budget must cover provider reasoning tokens as well as its verdict");
+      if (reviews === 1) throw new Error("The model response was incomplete. Nothing was changed.");
+      assert.match(context.reviewRetry, /cut off/);
+      return schema.parse({ issues: [] });
+    }
+    coachTurns++;
+    if (context.validationError) corrections.push(context.validationError);
+    return schema.parse({ reply: "One session is recorded and nothing is published yet.", summary: "Report the saved records", methods: [], changes: [] });
+  }, literature);
+  const result = await service.chat(user.id, "Am I on track?", "essay", "web", "review-truncation");
+  assert.equal(coachTurns, 1, "A reviewer failure must not re-run the coach");
+  assert.equal(reviews, 2);
+  assert.deepEqual(corrections, [], "The coach must never be asked to correct the reviewer's own failure");
+  assert.match(result.reply, /nothing is published/);
+});
+
+test("a persistently failing evidence review reports its own failure and keeps the user's message", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  let coachTurns = 0, reviews = 0;
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") {
+      reviews++;
+      throw new Error("The model response was incomplete. Nothing was changed.");
+    }
+    coachTurns++;
+    assert.equal(context.validationError, undefined);
+    return schema.parse({ reply: "One session is recorded.", summary: "Report the saved records", methods: [], changes: [] });
+  }, literature);
+  await assert.rejects(
+    () => service.chat(user.id, "Am I on track?", "essay", "web", "review-unavailable"),
+    /could not complete its evidence review/,
+  );
+  assert.equal(coachTurns, 1);
+  assert.equal(reviews, 2, "The reviewer retries once, then stops");
+  assert.ok(db.snapshot(user.id).data.messages.some(message => message.text === "Am I on track?"));
+});
+
+// Repair feedback must name the eligible claims so a second attempt can converge.
+test("claim grounding feedback names the claims scoped to the selected method", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  let attempts = 0;
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") return schema.parse({ issues: [] });
+    attempts++;
+    if (attempts === 2) {
+      assert.match(context.validationError, /claim:spacing-retention-horizon does not apply to the selected method implementation/);
+      assert.match(context.validationError, /claim:implementation-if-then@2026-09-07\.1/);
+    }
+    const grounding = attempts === 1
+      ? [{ claimId: "claim:spacing-retention-horizon", version: "2026-09-07.1", relation: "supports" as const, application: "Spacing supports the writing cue." }]
+      : adaptive.reasoning!.grounding;
+    const reasoning = { ...adaptive.reasoning!, grounding,
+      barrier: { domain: "opportunity" as const, status: "reported" as const, explanation: "The chosen window was displaced.", sourceIds: [context.currentMessageId] } };
+    return schema.parse({ reply: "Here is a change worth trying.", summary: "Try a different cue", methods: ["implementation"], changes: [], insights: [{ finding: "The chosen window was displaced.", status: "Reported", sourceIds: [context.currentMessageId], changeIndexes: [], learning: {
+      goalIds: ["essay"], reasoning, hypothesis: "A different cue may fit the available window.", experiment: "Try the new cue for two weeks.", result: null, insight: null, nextHypothesis: null, previousInsightId: null, researchSourceIds: reasoning.researchSourceIds,
+    } }] });
+  }, literature);
+  await service.chat(user.id, "My writing window was taken by a meeting.", "essay", "web", "claim-scope-feedback");
+  assert.equal(attempts, 2);
+});
+
+// The app places a recommendation card on its goal, so an empty or invented goalIds list
+// left a saved recommendation that no screen could attach to a goal.
+test("a saved recommendation is linked to real goals from its own changes or the goal under discussion", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") return schema.parse({ issues: [] });
+    const reasoning = { ...adaptive.reasoning!, barrier: { domain: "opportunity" as const, status: "reported" as const, explanation: "The chosen window was displaced.", sourceIds: [context.currentMessageId] } };
+    return schema.parse({ reply: "Moving the session earlier is worth trying.", summary: "Try an earlier cue", methods: ["implementation"], changes: [],
+      recommendation: { action: "Write before the first meeting", observation: "Your window was displaced.", interpretation: "The opportunity, not the intention, is missing.", expectedEffect: "The session starts before the day fills up.",
+        goalIds: ["a-goal-that-does-not-exist"], sourceIds: [context.currentMessageId], changeIndexes: [], reasoning } });
+  }, literature);
+  const result = await service.chat(user.id, "My writing window was taken by a meeting.", "essay", "web", "recommendation-link");
+  const recommendation = result.data.decisions.at(-1)!.recommendations![0];
+  assert.deepEqual(recommendation.goalIds, ["essay"], "An invented goal link is dropped and the discussed goal is used");
+});
+
+test("a recommendation carrying plan changes is linked to the goals those changes touch", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    const reasoning = { ...adaptive.reasoning!, barrier: { domain: "opportunity" as const, status: "reported" as const, explanation: "The chosen window was displaced.", sourceIds: [context.currentMessageId] } };
+    return schema.parse({ reply: "Here is a revised plan to review.", summary: "Move the writing cue earlier", methods: ["implementation"], execution: "propose",
+      changes: [{ entity: "plan", operation: "update", id: null, parentId: "essay", reason: "Your window was displaced by a meeting.",
+        values: JSON.stringify({ action: adaptive.steps[0].title, criterion: adaptive.steps[0].criterion, timing: "Before the first meeting", basis: { ...basis, review: { ...basis.review, date: today } }, adaptive: { ...adaptive, reasoning } }) }],
+      recommendation: { action: "Write before the first meeting", observation: "Your window was displaced.", interpretation: "The opportunity, not the intention, is missing.", expectedEffect: "The session starts before the day fills up.",
+        goalIds: [], sourceIds: [context.currentMessageId], changeIndexes: [0], reasoning } });
+  }), literature);
+  const result = await service.chat(user.id, "My writing window was taken by a meeting.", "general", "web", "recommendation-change-link");
+  const recommendation = result.data.decisions.at(-1)!.recommendations![0];
+  assert.deepEqual(recommendation.goalIds, ["essay"], "The goal its own change targets supplies the link");
+});
+
+// Reviewing a saved test must not require re-deriving its rationale: the method keeps the
+// original prediction and reasoning as historical records. Requiring a fresh reasoning record
+// made evidence reports and reviews fail after three repair rounds.
+test("a review of an existing test inherits its saved rationale and preserves the original prediction", async t => {
+  const { db, user, today, input, adaptive } = fixture(t);
+  const saved = db.snapshot(user.id);
+  createGoal(saved.data, { ...input, adaptive }, today, "essay");
+  saved.data.actions[0].outcome = "Partly";
+  saved.data.actions[0].note = "I hesitated before starting.";
+  const actionId = saved.data.actions[0].id;
+  db.save(user.id, saved.data, saved.revision, "web", "Starting observation");
+  let recordId: string | undefined;
+  const source = (await literature(["monitoring"])).sources[0];
+  const sources = [...adaptive.reasoning!.researchSourceIds, source.id];
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    assert.equal(context.validationError, undefined, "A review must not need a repair round for a missing rationale");
+    return schema.parse({ reply: "Noted. What happens next will tell us more.", summary: "Learn from your report", methods: [], changes: [], insights: [{
+      finding: recordId ? "You reported starting after the outline." : "You reported hesitation before starting.", status: "Reported",
+      sourceIds: recordId ? [context.currentMessageId] : [actionId], changeIndexes: [],
+      learning: recordId
+        // The review omits reasoning entirely; the saved record supplies it.
+        ? { recordId, goalIds: ["essay"], hypothesis: "A visible starting point may reduce hesitation.", experiment: "Write the outline before drafting.",
+            result: { summary: "You started drafting after the outline.", sourceIds: [context.currentMessageId] },
+            review: { exposure: "used", mechanism: null, behavior: "You reported starting.", outcome: null, confounds: ["Task and available time may differ."], decision: "keep", standing: "consistent", nextReviewAfter: null },
+            insight: "The outline may make starting easier; further reports can change this interpretation.", nextHypothesis: null, previousInsightId: null, researchSourceIds: [] }
+        : { goalIds: ["essay"], reasoning: { ...adaptive.reasoning!, researchSourceIds: sources }, hypothesis: "A visible starting point may reduce hesitation.", experiment: "Write the outline before drafting.",
+            result: null, insight: null, nextHypothesis: null, previousInsightId: null, researchSourceIds: sources },
+    }] });
+  }), literature);
+  const proposed = await service.chat(user.id, "Help me try an outline before drafting", "essay", "web", "inherit-prepare");
+  recordId = proposed.data.learning[0].id;
+  await service.learningAction(user.id, recordId!, 1, "agree", "inherit-agree");
+  const prediction = proposed.data.learning[0].versions[0].test.prediction;
+  const reviewed = await service.chat(user.id, "I used the outline and started drafting", "essay", "web", "inherit-review");
+  const record = reviewed.data.learning[0];
+  assert.equal(record.reviews.length, 1);
+  assert.equal(record.reviews[0].exposure, "used");
+  assert.equal(record.versions.length, 1, "A review must not create a new version");
+  assert.equal(record.versions[0].test.prediction, prediction, "The original prediction is preserved");
+  assert.deepEqual(record.versions[0].reasoning, proposed.data.learning[0].versions[0].reasoning, "The saved rationale is unchanged");
+});
+
+test("a changed test on an existing record still needs its own rationale", async t => {
+  const { db, user, today, input, adaptive } = fixture(t);
+  const saved = db.snapshot(user.id);
+  createGoal(saved.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, saved.data, saved.revision, "web", "Chosen writing goal");
+  let recordId: string | undefined;
+  const sources = adaptive.reasoning!.researchSourceIds;
+  const service = new Service(db, researched(async (_config, _instructions, context: any, schema) => {
+    const revised = Boolean(recordId);
+    return schema.parse({ reply: "Here is a revised test.", summary: "Learn from your report", methods: [], changes: [], insights: [{
+      finding: "You reported hesitation before starting.", status: "Reported", sourceIds: [context.currentMessageId], changeIndexes: [],
+      learning: { ...(revised ? { recordId } : {}), goalIds: ["essay"],
+        ...(revised ? {} : { reasoning: { ...adaptive.reasoning!, researchSourceIds: sources } }),
+        hypothesis: "A visible starting point may reduce hesitation.", experiment: "Write the outline before drafting.",
+        ...(revised ? { test: { change: "Write a shorter outline first.", design: "prospective" as const, prediction: "You start drafting within five minutes.", comparison: "No comparable starting observations have been established.", start: today, reviewAfter: null, reviewRule: "Review after four sessions.", mechanismSignal: null, behaviorSignal: "You report starting.", outcomeSignal: null, alternatives: ["Task difficulty may differ."] } } : {}),
+        result: null, insight: null, nextHypothesis: null, previousInsightId: null, researchSourceIds: sources },
+    }] });
+  }), literature);
+  const proposed = await service.chat(user.id, "Help me try an outline before drafting", "essay", "web", "changed-prepare");
+  recordId = proposed.data.learning[0].id;
+  await service.learningAction(user.id, recordId!, 1, "agree", "changed-agree");
+  await assert.rejects(
+    () => service.chat(user.id, "Let's try a shorter outline instead", "essay", "web", "changed-test"),
+    /learning\.reasoning for .* needs reasoning/,
+  );
+});
+
+// One recommendation is one test. Separate reasoning copies in insights.learning and
+// recommendation.reasoning used to save two near-identical live experiments for one change.
+test("a recommendation and its matching insight save one learning record, not two", async t => {
+  const { db, user, input, adaptive, today } = fixture(t);
+  const state = db.snapshot(user.id);
+  createGoal(state.data, { ...input, adaptive }, today, "essay");
+  db.save(user.id, state.data, state.revision, "web", "Chosen writing goal");
+  const service = new Service(db, async (_config, _instructions, context: any, schema) => {
+    if (context.task === "review-plan") return schema.parse({ issues: [] });
+    const barrier = { domain: "opportunity" as const, status: "reported" as const, explanation: "Your window was displaced.", sourceIds: [context.currentMessageId] };
+    return schema.parse({ reply: "Moving the session earlier is worth trying.", summary: "Try an earlier cue", methods: ["implementation"], changes: [],
+      insights: [{ finding: "Your window was displaced.", status: "Reported", sourceIds: [context.currentMessageId], changeIndexes: [],
+        learning: { goalIds: ["essay"], reasoning: { ...adaptive.reasoning!, barrier, prediction: "You start before the first meeting." },
+          hypothesis: "The opportunity, not the intention, is missing.", experiment: "Write before the first meeting.",
+          result: null, insight: null, nextHypothesis: null, previousInsightId: null, researchSourceIds: adaptive.reasoning!.researchSourceIds } }],
+      // Same goal and method, different wording: the model's second copy of one rationale.
+      recommendation: { action: "Write before the first meeting", observation: "Your window was displaced.", interpretation: "The opportunity, not the intention, is missing.", expectedEffect: "The session starts before the day fills up.",
+        goalIds: ["essay"], sourceIds: [context.currentMessageId], changeIndexes: [],
+        reasoning: { ...adaptive.reasoning!, barrier, prediction: "Writing starts before the day fills up." } } });
+  }, literature);
+  const result = await service.chat(user.id, "My writing window was taken by a meeting.", "essay", "web", "one-test-per-recommendation");
+  assert.equal(result.data.learning.length, 1, "One change must not create two live experiments");
+  assert.equal(result.data.learning[0].state, "suggested");
+  assert.equal(result.data.decisions.at(-1)!.recommendations!.length, 1);
+});

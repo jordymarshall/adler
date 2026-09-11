@@ -38,14 +38,19 @@ Current product contract and research interpretation:
 New goal plans and recommended plan revisions must save adaptive.reasoning. Each new insights.learning must also save reasoning: barrier={domain,status,explanation,sourceIds}, methodId, researchSourceIds, mechanism, fit, prediction, reviewRule, limitation. Source barrier claims to actual user reports; unknown may use an empty list. Also save principleIds (1–4 actual P IDs), goalRoute, and ruleExceptions (empty when none). Cite each selected principle as adler:<P ID> in researchSourceIds, alongside the primary framework. researchSourceIds must include method:<methodId> from the enabled catalog plus any relevant retrieved sources. Include those IDs in learning.researchSourceIds too. The UI exposes the selected framework, mechanism, personal fit, expected observation and decision rule. Routine reporting and direct user edits do not need a new behavioral hypothesis. Save tentative personal explanations as insights.learning rather than as confirmed memory or an unsourced To test insight. If all methods are disabled, record reports or ask a clarification; do not fabricate a research-grounded recommendation.
 `;
 
+const eligibleClaims = (methodId: string, claims: readonly ResearchClaim[] = RESEARCH_CLAIMS) =>
+  claims.filter(claim => claim.review.status === "source-checked" && claim.methodIds.includes(methodId)).map(claim => `${claim.id}@${claim.version}`);
+
 export function validateBehavioralReasoning(value: unknown, context: {
   enabledMethods: readonly string[];
   reportedSourceIds: Set<string>;
   researchSourceIds: Set<string>;
   requireGrounding?: boolean;
   claims?: readonly ResearchClaim[];
+  subject?: string;
 }) {
-  if (!value) throw new Error("A behavioral recommendation needs reasoning: reported barrier, enabled framework, mechanism, personal fit, prediction, review rule and limitation.");
+  // Name the exact field: a generic "needs reasoning" left the model repairing the wrong record.
+  if (!value) throw new Error(`${context.subject ?? "A behavioral recommendation"} needs reasoning: reported barrier, enabled framework, mechanism, personal fit, prediction, review rule and limitation.`);
   const reasoning = behavioralReasoningSchema.parse(value);
   if (!reasoning.principleIds?.length || !reasoning.goalRoute || !reasoning.ruleExceptions || reasoning.principleIds.some(id => !principleIds.has(id)))
     throw new Error("Ground the rationale in actual synthesis principleIds, choose a goalRoute, and record ruleExceptions; do not apply habit defaults to every goal.");
@@ -65,12 +70,13 @@ export function validateBehavioralReasoning(value: unknown, context: {
     const claim = (context.claims ?? RESEARCH_CLAIMS).find(c => c.id === binding.claimId && c.version === binding.version);
     if (!claim || claim.review.status !== "source-checked") throw new Error("Use a current, source-checked research claim and its exact version; withdrawn or invented claims are ineligible.");
     if (binding.relation === "supports" && !claim.methodIds.includes(reasoning.methodId))
-      throw new Error("The research claim must apply to the selected method; explain any domain transfer and its limits.");
+      // Name the eligible claims so the repair round can choose one instead of guessing again.
+      throw new Error(`${binding.claimId} does not apply to the selected method ${reasoning.methodId}, so it cannot have relation "supports". Claims scoped to ${reasoning.methodId}: ${eligibleClaims(reasoning.methodId, context.claims).join(", ") || "none"}. Use one of those to support the method, or keep ${binding.claimId} with relation motivates/limits/defines/contradicts and explain the domain transfer and its limits.`);
     if (!reasoning.researchSourceIds.includes(claim.source.id)) throw new Error("Retain the primary source of each grounded claim in researchSourceIds.");
     if (claim.role === "heuristic" && binding.relation === "supports") throw new Error("A product heuristic can motivate a design choice; it cannot supply empirical support.");
   }
   if (context.requireGrounding && !reasoning.grounding?.some(binding => (context.claims ?? RESEARCH_CLAIMS).some(claim => claim.id === binding.claimId && claim.version === binding.version && claim.methodIds.includes(reasoning.methodId) && !["limits", "contradicts"].includes(binding.relation))))
-    throw new Error("Ground the primary method in at least one applicable claim. Other theories can inform the inference with their role and transfer limits explained.");
+    throw new Error(`Ground the primary method ${reasoning.methodId} in at least one applicable claim with relation supports, defines or motivates. Claims scoped to ${reasoning.methodId}: ${eligibleClaims(reasoning.methodId, context.claims).join(", ") || "none"}. Other theories can inform the inference with their role and transfer limits explained.`);
   return reasoning;
 }
 

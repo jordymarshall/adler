@@ -18,7 +18,21 @@ import {
 } from "./providers.ts";
 import { changeSchema } from "./commands.ts";
 import { handleMCP } from "./mcp.ts";
+import { handleAppApi } from "./app-api.ts";
 import { body, rawBody, json } from "./http.ts";
+const octet = "(?:25[0-5]|2[0-4]\\d|1\\d\\d|[1-9]?\\d)";
+const privateIPv4 = new RegExp(
+  `^(?:10\\.${octet}\\.${octet}\\.${octet}|172\\.(?:1[6-9]|2\\d|3[01])\\.${octet}\\.${octet}|192\\.168\\.${octet}\\.${octet})(?::\\d{1,5})?$`,
+);
+// A phone on the same Wi-Fi reaches a development Mac by its private address. Any
+// deployment sets PUBLIC_URL or NODE_ENV=production, so this never widens a real host check.
+// Local development (no PUBLIC_URL, not production) relaxes the per-IP auth limit so several
+// simulators, scripts and testers behind localhost are not locked out together.
+const developmentHost = !process.env.PUBLIC_URL && process.env.NODE_ENV !== "production";
+const developmentLan = (host: string) =>
+  !process.env.PUBLIC_URL &&
+  process.env.NODE_ENV !== "production" &&
+  privateIPv4.test(host);
 const credentials = z.object({
   username: z
     .string()
@@ -88,7 +102,8 @@ export function createRuntime(directory?: string) {
     if (
       publicOrigin
         ? host !== new URL(publicOrigin).host
-        : !/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host)
+        : !/^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(host) &&
+          !developmentLan(host)
     )
       return json(res, { error: "Unrecognized host." }, 403);
     const url = new URL(req.url, publicOrigin ?? `http://${host}`);
@@ -206,7 +221,7 @@ export function createRuntime(directory?: string) {
       ) {
         db.limit(
           `auth:${req.socket.remoteAddress}`,
-          process.env.NODE_ENV === "test" ? 1000 : 15,
+          process.env.NODE_ENV === "test" || developmentHost ? 1000 : 15,
           15 * 60000,
         );
         const input = credentials.parse(await body(req));
@@ -241,6 +256,13 @@ export function createRuntime(directory?: string) {
         return json(res, { signedOut: true });
       }
       const id = user.id;
+      if (url.pathname === "/api/app" || url.pathname.startsWith("/api/app/"))
+        return await handleAppApi(req, res, url, id, {
+          db,
+          service,
+          calendar,
+          channels,
+        });
       if (req.method === "POST" && /^\/api\/proposals\/[^/]+\/preview$/.test(url.pathname))
         return json(res, service.previewPlan(id, url.pathname.split("/")[3]));
       if (

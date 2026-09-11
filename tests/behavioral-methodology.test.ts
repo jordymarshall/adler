@@ -20,6 +20,8 @@ test("a recommendation must trace a real synthesis principle and framework to a 
   const reasoning = adaptiveFixture().reasoning!;
   assert.doesNotThrow(() => validateBehavioralReasoning(reasoning, evidence()));
   assert.throws(() => validateBehavioralReasoning(undefined, evidence()), /needs reasoning/);
+  // Repair feedback must name the record that is missing its rationale, not "a recommendation".
+  assert.throws(() => validateBehavioralReasoning(undefined, { ...evidence(), subject: "insights[0].learning.reasoning" }), /insights\[0\]\.learning\.reasoning needs reasoning/);
   assert.throws(() => validateBehavioralReasoning({ ...reasoning, principleIds: ["P99"] }, evidence()), /actual synthesis/);
   assert.throws(() => validateBehavioralReasoning({ ...reasoning, researchSourceIds: ["method:implementation"] }, evidence()), /adler:P/);
   assert.throws(() => validateBehavioralReasoning({ ...reasoning, methodId: "random-scientific-method" }, evidence()), /real, enabled method/);

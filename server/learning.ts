@@ -263,7 +263,8 @@ export function applyLearningAction(
     )
   )
     throw new Error(
-      "Review and accept the linked proposal so the actual plan and test stay together.",
+      // Name the two ways out: the model previously looped on this with no reachable option.
+      "Review and accept the linked proposal so the actual plan and test stay together. Confirm that pending proposal on its own with confirmProposalId and no new changes, or leave this learning decision out and let the person decide the test when the plan is accepted.",
     );
   if (action === "resume" && record.state !== "paused")
     throw new Error("Only a paused test can be resumed.");
@@ -414,6 +415,14 @@ export function saveLearning(
     });
   }
   for (const recommendation of recommendations) {
+    // One recommendation is one test. The model rarely returns byte-identical reasoning in both
+    // insights.learning and recommendation.reasoning, which used to save two near-identical live
+    // experiments for the same change; treat the same goals and method in one turn as the same test.
+    const sameTest = (loop: NonNullable<CoachInsight["learning"]>) =>
+      !loop.result &&
+      loop.reasoning?.methodId === recommendation.reasoning.methodId &&
+      (loop.goalIds ?? []).every((id) => recommendation.goalIds.includes(id)) &&
+      recommendation.goalIds.every((id) => (loop.goalIds ?? []).includes(id));
     if (
       !recommendation.goalIds.length ||
       candidates.some(
@@ -421,6 +430,7 @@ export function saveLearning(
           i.learning &&
           (JSON.stringify(i.learning.reasoning) ===
             JSON.stringify(recommendation.reasoning) ||
+            sameTest(i.learning) ||
             i.changeIndexes.some((index) =>
               recommendation.changeIndexes.includes(index),
             )),

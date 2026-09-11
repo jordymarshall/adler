@@ -1,0 +1,1106 @@
+{
+  "request": "POST /api/app/goals/reading/start",
+  "status": 200,
+  "response": {
+    "revision": 3,
+    "today": {
+      "revision": 3,
+      "today": "2026-09-11",
+      "reviewDue": false,
+      "reviewDate": "2026-09-13",
+      "next": {
+        "goal": {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Active",
+          "color": "hsl(196 28% 35%)"
+        },
+        "phase": "schedule",
+        "phaseLabel": "YOUR NEXT STEP",
+        "headline": "Read 20 pages",
+        "planVersion": 1,
+        "planAction": "Read 20 pages",
+        "planCriterion": "Twenty pages are read.",
+        "planTiming": "After dinner",
+        "criterionLabel": "Finished when twenty pages are read.",
+        "timingLabel": "25 minutes",
+        "durationMinutes": 25,
+        "needsPlanReview": false,
+        "canStartGoal": false,
+        "canStartAction": true,
+        "canReport": true,
+        "canSchedule": true,
+        "action": {
+          "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+          "goalId": "reading",
+          "goalTitle": "Read the four books on my shelf",
+          "title": "Read 20 pages",
+          "criterion": "Twenty pages are read.",
+          "timing": "After dinner",
+          "date": null,
+          "planVersion": 1,
+          "stepId": null,
+          "milestoneId": null,
+          "occurrence": null,
+          "outcome": null,
+          "amount": null,
+          "actualMinutes": null,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 25,
+          "measure": {
+            "metric": "completion",
+            "label": "Actions completed",
+            "unit": "actions",
+            "target": 1
+          },
+          "reported": null,
+          "execution": "upcoming",
+          "executionLabel": "Upcoming",
+          "block": null,
+          "history": []
+        },
+        "step": null,
+        "block": null,
+        "successLabel": "All four books are finished, with one idea kept from each.",
+        "decisionNote": null
+      },
+      "lineup": [
+        {
+          "action": {
+            "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+            "goalId": "guide",
+            "goalTitle": "Write the onboarding guide",
+            "title": "Write 400 words of the guide",
+            "criterion": "400 words are saved in the guide document.",
+            "timing": "Before the first meeting",
+            "date": "2026-09-11",
+            "planVersion": 1,
+            "stepId": "write-words",
+            "milestoneId": null,
+            "occurrence": "write-words:2026-09-11",
+            "outcome": "Done",
+            "amount": 400,
+            "actualMinutes": 20,
+            "note": "Finished the session before the first meeting.",
+            "startedAt": null,
+            "retiredAt": null,
+            "unplanned": false,
+            "ready": true,
+            "durationMinutes": 20,
+            "measure": {
+              "metric": "amount",
+              "label": "Words written",
+              "unit": "words",
+              "target": 400
+            },
+            "reported": 400,
+            "execution": "done",
+            "executionLabel": "Done",
+            "block": null,
+            "history": [
+              {
+                "outcome": null,
+                "amount": null,
+                "actualMinutes": null,
+                "note": null,
+                "at": "2026-09-11T15:46:31.721Z"
+              }
+            ]
+          },
+          "selected": false,
+          "state": "done",
+          "stateLabel": "Done"
+        }
+      ],
+      "doneCount": 1,
+      "plannedCount": 1,
+      "quietDay": false,
+      "nothingScheduled": false,
+      "progress": [
+        {
+          "goal": {
+            "id": "portfolio",
+            "title": "Publish three case studies",
+            "status": "Active",
+            "color": "hsl(184 28% 35%)"
+          },
+          "measured": false,
+          "actual": 0,
+          "target": 3,
+          "unit": "milestones",
+          "observedAt": "2026-08-31",
+          "observations": [
+            {
+              "date": "2026-08-31",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-08-31",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-11-10",
+              "value": 3,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-08-31",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-11-10",
+            "value": 3,
+            "label": "Target result"
+          },
+          "delta": 0,
+          "comparable": true,
+          "label": "At checkpoint",
+          "tone": "positive",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-31",
+          "prompt": "Help me review my progress on “Publish three case studies” and choose my next step.",
+          "actionLabel": "Review plan"
+        },
+        {
+          "goal": {
+            "id": "guide",
+            "title": "Write the onboarding guide",
+            "status": "Active",
+            "color": "hsl(316 28% 35%)"
+          },
+          "measured": true,
+          "actual": 2330,
+          "target": 20000,
+          "unit": "words",
+          "observedAt": "2026-09-04",
+          "observations": [
+            {
+              "date": "2026-08-21",
+              "value": 1200
+            },
+            {
+              "date": "2026-09-04",
+              "value": 2330
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-09-04",
+              "value": 2000,
+              "label": "Two-week pace check"
+            },
+            {
+              "date": "2026-10-11",
+              "value": 8000,
+              "label": "Six-week pace check"
+            },
+            {
+              "date": "2027-01-09",
+              "value": 20000,
+              "label": "Guide finished"
+            }
+          ],
+          "due": {
+            "date": "2026-09-04",
+            "value": 2000,
+            "label": "Two-week pace check"
+          },
+          "next": {
+            "date": "2026-10-11",
+            "value": 8000,
+            "label": "Six-week pace check"
+          },
+          "delta": 330,
+          "comparable": true,
+          "label": "Above checkpoint",
+          "tone": "positive",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-31",
+          "prompt": "Help me review my progress on “Write the onboarding guide” and choose my next step.",
+          "actionLabel": "Review plan"
+        },
+        {
+          "goal": {
+            "id": "running",
+            "title": "Run a 10k without stopping",
+            "status": "Draft",
+            "color": "hsl(55 28% 35%)"
+          },
+          "measured": false,
+          "actual": null,
+          "target": 0,
+          "unit": "milestones",
+          "observedAt": null,
+          "observations": [],
+          "checkpoints": [],
+          "due": null,
+          "next": null,
+          "delta": null,
+          "comparable": false,
+          "label": "Draft",
+          "tone": "quiet",
+          "openMilestones": [],
+          "hasOutcome": false,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-09-11",
+          "prompt": "Help me review my progress on “Run a 10k without stopping” and choose my next step.",
+          "actionLabel": "Shape the plan"
+        },
+        {
+          "goal": {
+            "id": "reading",
+            "title": "Read the four books on my shelf",
+            "status": "Active",
+            "color": "hsl(196 28% 35%)"
+          },
+          "measured": false,
+          "actual": 0,
+          "target": 1,
+          "unit": "milestones",
+          "observedAt": "2026-09-11",
+          "observations": [
+            {
+              "date": "2026-09-11",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-09-11",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-12-10",
+              "value": 1,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-09-11",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-12-10",
+            "value": 1,
+            "label": "Target result"
+          },
+          "delta": 0,
+          "comparable": true,
+          "label": "At checkpoint",
+          "tone": "positive",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-09-11",
+          "prompt": "Help me review my progress on “Read the four books on my shelf” and choose my next step.",
+          "actionLabel": "Review plan"
+        },
+        {
+          "goal": {
+            "id": "cooking",
+            "title": "Cook one new recipe a week",
+            "status": "Paused",
+            "color": "hsl(290 28% 35%)"
+          },
+          "measured": false,
+          "actual": 1,
+          "target": 1,
+          "unit": "milestones",
+          "observedAt": "2026-08-17",
+          "observations": [
+            {
+              "date": "2026-08-17",
+              "value": 0
+            }
+          ],
+          "checkpoints": [
+            {
+              "date": "2026-08-17",
+              "value": 0,
+              "label": "Starting point"
+            },
+            {
+              "date": "2026-11-06",
+              "value": 1,
+              "label": "Target result"
+            }
+          ],
+          "due": {
+            "date": "2026-08-17",
+            "value": 0,
+            "label": "Starting point"
+          },
+          "next": {
+            "date": "2026-11-06",
+            "value": 1,
+            "label": "Target result"
+          },
+          "delta": 1,
+          "comparable": true,
+          "label": "Paused",
+          "tone": "quiet",
+          "openMilestones": [],
+          "hasOutcome": true,
+          "needsUpdate": false,
+          "evidenceNote": null,
+          "startDate": "2026-08-17",
+          "prompt": "Help me review my progress on “Cook one new recipe a week” and choose my next step.",
+          "actionLabel": "Review plan"
+        }
+      ],
+      "learning": [
+        {
+          "recordId": "learning-word-count-check",
+          "version": 1,
+          "actionVersion": 1,
+          "controls": {
+            "agree": false,
+            "decline": false,
+            "pause": true,
+            "resume": false,
+            "close": true
+          },
+          "attempts": [
+            {
+              "date": "2026-09-02",
+              "outcome": "Partly",
+              "actionId": "38426313-a41b-42e8-bd2a-0375d13efcf0"
+            },
+            {
+              "date": "2026-09-04",
+              "outcome": "Done",
+              "actionId": "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+            },
+            {
+              "date": "2026-09-07",
+              "outcome": "Done",
+              "actionId": "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+            },
+            {
+              "date": "2026-09-09",
+              "outcome": "Didn’t happen",
+              "actionId": "84606506-afab-4510-bc24-fab924d4bec3"
+            },
+            {
+              "date": "2026-09-11",
+              "outcome": "Done",
+              "actionId": "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+            }
+          ],
+          "activeVersion": 1,
+          "pendingVersion": null,
+          "state": "agreed",
+          "standing": "insufficient",
+          "statusLabel": "Ready to review",
+          "standingLabel": "More context needed",
+          "goalIds": [
+            "guide"
+          ],
+          "goalTitles": [
+            "Write the onboarding guide"
+          ],
+          "change": "Check the word count against the week's target every Friday.",
+          "observation": "You are writing the guide in short weekday sessions without checking the word count against the plan.",
+          "hypothesis": "Checking the word count against the plan each week may show whether the current pace reaches 20,000 words on time.",
+          "watching": "Whether the word count is checked and compared with the plan each Friday.",
+          "watchingLabel": "WHAT WE’RE WATCHING",
+          "startDate": "2026-09-02",
+          "reviewDate": "2026-09-09",
+          "needsDecision": false,
+          "reviewCount": 0,
+          "footnote": "Review Sep 9 · Your experience will inform what comes next.",
+          "prompt": "Let’s discuss learning learning-word-count-check, test version 1: “Check the word count against the week's target every Friday.”. I’d like to report whether I tried it and what happened: "
+        },
+        {
+          "recordId": "learning-breakfast-cue",
+          "version": 1,
+          "actionVersion": 1,
+          "controls": {
+            "agree": false,
+            "decline": false,
+            "pause": true,
+            "resume": false,
+            "close": true
+          },
+          "attempts": [
+            {
+              "date": "2026-09-01",
+              "outcome": "Done",
+              "actionId": "237e4a77-378e-4671-abac-39897a4ee2d9"
+            },
+            {
+              "date": "2026-09-03",
+              "outcome": "Didn’t happen",
+              "actionId": "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+            },
+            {
+              "date": "2026-09-08",
+              "outcome": "Done",
+              "actionId": "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+            },
+            {
+              "date": "2026-09-10",
+              "outcome": "Done",
+              "actionId": "64060973-4c42-46e5-86c8-0f85551c5206"
+            }
+          ],
+          "activeVersion": 1,
+          "pendingVersion": null,
+          "state": "agreed",
+          "standing": "consistent",
+          "statusLabel": "Live experiment",
+          "standingLabel": "Consistent so far",
+          "goalIds": [
+            "portfolio"
+          ],
+          "goalTitles": [
+            "Publish three case studies"
+          ],
+          "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+          "observation": "You reported that the writing hour disappears once the workday starts.",
+          "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+          "watching": "Two of three planned sessions happened, and you reported an easier start on those days.",
+          "watchingLabel": "LATEST FEEDBACK",
+          "startDate": "2026-08-31",
+          "reviewDate": "2026-09-15",
+          "needsDecision": false,
+          "reviewCount": 1,
+          "footnote": "Review Sep 15 · Your experience will inform what comes next.",
+          "prompt": "Let’s discuss learning learning-breakfast-cue, test version 1: “Draft one case-study section right after breakfast on Tuesdays and Thursdays.”. I’d like to report whether I tried it and what happened: "
+        }
+      ],
+      "latestMemory": {
+        "id": "memory-editor",
+        "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening.",
+        "date": "2026-09-02"
+      },
+      "goals": [
+        {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        },
+        {
+          "id": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)"
+        },
+        {
+          "id": "running",
+          "title": "Run a 10k without stopping",
+          "status": "Draft",
+          "color": "hsl(55 28% 35%)"
+        },
+        {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Active",
+          "color": "hsl(196 28% 35%)"
+        },
+        {
+          "id": "cooking",
+          "title": "Cook one new recipe a week",
+          "status": "Paused",
+          "color": "hsl(290 28% 35%)"
+        }
+      ]
+    },
+    "goal": {
+      "revision": 3,
+      "today": "2026-09-11",
+      "goal": {
+        "id": "reading",
+        "title": "Read the four books on my shelf",
+        "status": "Active",
+        "color": "hsl(196 28% 35%)"
+      },
+      "kind": "practical",
+      "why": "I keep buying books and not reading them.",
+      "success": "All four books are finished, with one idea kept from each.",
+      "area": "Personal",
+      "tags": [
+        "Reading"
+      ],
+      "priority": "Maintain",
+      "targetDate": "2026-12-10",
+      "deadline": "preferred",
+      "startDate": "2026-09-11",
+      "measure": null,
+      "target": 1,
+      "unit": "milestones verified",
+      "resultLabel": "0 of 1 steps verified",
+      "results": [
+        {
+          "id": "404c3db3-2e44-4a3b-8db6-b92450ae6d4d",
+          "date": "2026-09-11",
+          "value": 0,
+          "source": "Starting baseline: no milestones verified yet"
+        }
+      ],
+      "checkpoints": [
+        {
+          "id": "9a2e2c7f-83ae-4fb9-bfb0-7b3670f68939",
+          "date": "2026-09-11",
+          "value": 0,
+          "label": "Starting point"
+        },
+        {
+          "id": "dfc68b9f-f83a-4a07-8580-792ef072d754",
+          "date": "2026-12-10",
+          "value": 1,
+          "label": "Target result"
+        }
+      ],
+      "measurementHistory": [],
+      "checkpointHistory": [],
+      "needsPlanReview": false,
+      "statusOptions": [
+        "Paused",
+        "Completed",
+        "Set aside"
+      ],
+      "selectedPlanVersion": 1,
+      "selectedStepId": null,
+      "selectedMilestoneId": null,
+      "plans": [
+        {
+          "version": 1,
+          "date": "2026-09-11",
+          "current": true,
+          "action": "Read 20 pages",
+          "criterion": "Twenty pages are read.",
+          "timing": "After dinner",
+          "durationMinutes": null,
+          "approach": null,
+          "window": null,
+          "assessment": null,
+          "experiment": null,
+          "steps": [],
+          "projection": null,
+          "projectionUnavailableReason": null,
+          "hasBasis": false,
+          "hasReasoning": false
+        }
+      ],
+      "milestones": [
+        {
+          "id": "book-1",
+          "title": "Finish the first book",
+          "criterion": "The last page is read and one idea is written down.",
+          "done": false,
+          "dueDate": null,
+          "completedAt": null,
+          "stepIds": [],
+          "actionIds": [],
+          "statusLabel": "In progress"
+        }
+      ],
+      "actions": [
+        {
+          "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+          "goalId": "reading",
+          "goalTitle": "Read the four books on my shelf",
+          "title": "Read 20 pages",
+          "criterion": "Twenty pages are read.",
+          "timing": "After dinner",
+          "date": null,
+          "planVersion": 1,
+          "stepId": null,
+          "milestoneId": null,
+          "occurrence": null,
+          "outcome": null,
+          "amount": null,
+          "actualMinutes": null,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 25,
+          "measure": {
+            "metric": "completion",
+            "label": "Actions completed",
+            "unit": "actions",
+            "target": 1
+          },
+          "reported": null,
+          "execution": "upcoming",
+          "executionLabel": "Upcoming",
+          "block": null,
+          "history": []
+        }
+      ],
+      "planActions": [
+        {
+          "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+          "goalId": "reading",
+          "goalTitle": "Read the four books on my shelf",
+          "title": "Read 20 pages",
+          "criterion": "Twenty pages are read.",
+          "timing": "After dinner",
+          "date": null,
+          "planVersion": 1,
+          "stepId": null,
+          "milestoneId": null,
+          "occurrence": null,
+          "outcome": null,
+          "amount": null,
+          "actualMinutes": null,
+          "note": null,
+          "startedAt": null,
+          "retiredAt": null,
+          "unplanned": false,
+          "ready": true,
+          "durationMinutes": 25,
+          "measure": {
+            "metric": "completion",
+            "label": "Actions completed",
+            "unit": "actions",
+            "target": 1
+          },
+          "reported": null,
+          "execution": "upcoming",
+          "executionLabel": "Upcoming",
+          "block": null,
+          "history": []
+        }
+      ],
+      "series": {
+        "measure": {
+          "metric": "completion",
+          "label": "Actions completed",
+          "unit": "actions",
+          "target": 1
+        },
+        "start": "2026-09-04",
+        "end": "2026-09-17",
+        "points": [
+          {
+            "date": "2026-09-04",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-05",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-06",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-07",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-08",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-09",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-10",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-11",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": false,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-12",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-13",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-14",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-15",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-16",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          },
+          {
+            "date": "2026-09-17",
+            "amount": null,
+            "planned": null,
+            "retired": false,
+            "future": true,
+            "scheduled": false,
+            "off": false,
+            "actionIds": []
+          }
+        ],
+        "reported": 0,
+        "plannedTotal": 0,
+        "unknown": 0
+      },
+      "streak": {
+        "count": 0,
+        "completedCount": 0,
+        "days": []
+      },
+      "progress": {
+        "goal": {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Active",
+          "color": "hsl(196 28% 35%)"
+        },
+        "measured": false,
+        "actual": 0,
+        "target": 1,
+        "unit": "milestones",
+        "observedAt": "2026-09-11",
+        "observations": [
+          {
+            "date": "2026-09-11",
+            "value": 0
+          }
+        ],
+        "checkpoints": [
+          {
+            "date": "2026-09-11",
+            "value": 0,
+            "label": "Starting point"
+          },
+          {
+            "date": "2026-12-10",
+            "value": 1,
+            "label": "Target result"
+          }
+        ],
+        "due": {
+          "date": "2026-09-11",
+          "value": 0,
+          "label": "Starting point"
+        },
+        "next": {
+          "date": "2026-12-10",
+          "value": 1,
+          "label": "Target result"
+        },
+        "delta": 0,
+        "comparable": true,
+        "label": "At checkpoint",
+        "tone": "positive",
+        "openMilestones": [],
+        "hasOutcome": true,
+        "needsUpdate": false,
+        "evidenceNote": null,
+        "startDate": "2026-09-11",
+        "prompt": "Help me review my progress on “Read the four books on my shelf” and choose my next step.",
+        "actionLabel": "Review plan"
+      },
+      "execution": {
+        "today": "2026-09-11",
+        "cycles": [],
+        "markers": [
+          {
+            "id": "9a2e2c7f-83ae-4fb9-bfb0-7b3670f68939",
+            "label": "Starting point",
+            "date": "2026-09-11",
+            "detail": "0 milestones verified",
+            "done": false,
+            "kind": "Checkpoint"
+          },
+          {
+            "id": "book-1",
+            "label": "Finish the first book",
+            "detail": "The last page is read and one idea is written down.",
+            "done": false,
+            "kind": "Milestone"
+          }
+        ],
+        "summary": {
+          "done": 0,
+          "partial": 0,
+          "missed": 0,
+          "unknown": 0,
+          "upcoming": 1,
+          "planned": 1,
+          "reported": 0,
+          "completion": null
+        },
+        "start": "2026-09-11",
+        "end": "2026-12-10",
+        "actionIds": [
+          "f8302b8b-a91f-4dea-a76f-bd494b68869b"
+        ],
+        "unscheduledIds": [
+          "f8302b8b-a91f-4dea-a76f-bd494b68869b"
+        ],
+        "weeks": [
+          {
+            "start": "2026-08-17",
+            "end": "2026-08-23",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-08-24",
+            "end": "2026-08-30",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-08-31",
+            "end": "2026-09-06",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-07",
+            "end": "2026-09-13",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-14",
+            "end": "2026-09-20",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-21",
+            "end": "2026-09-27",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-09-28",
+            "end": "2026-10-04",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          },
+          {
+            "start": "2026-10-05",
+            "end": "2026-10-11",
+            "done": 0,
+            "partial": 0,
+            "missed": 0,
+            "unknown": 0,
+            "upcoming": 0,
+            "planned": 0,
+            "reported": 0,
+            "completion": null,
+            "actionIds": []
+          }
+        ]
+      },
+      "projection": {
+        "status": "Tracking milestones",
+        "current": 0,
+        "target": 1,
+        "progress": 0,
+        "observedAt": "2026-09-11",
+        "observations": [
+          {
+            "id": "404c3db3-2e44-4a3b-8db6-b92450ae6d4d",
+            "date": "2026-09-11",
+            "value": 0,
+            "source": "Starting baseline: no milestones verified yet"
+          }
+        ],
+        "unavailableReason": "Your actions and verified results are tracked separately. Completing an action does not predict when the whole goal will be finished.",
+        "trackingLabel": "Verified milestones",
+        "inputLabel": "Action reports",
+        "projection": null,
+        "evidence": null
+      },
+      "rationale": {
+        "planVersion": 1,
+        "basis": null,
+        "reasoning": null,
+        "grounding": [],
+        "sources": [],
+        "recommendations": [],
+        "decisionId": null,
+        "windowRationale": null,
+        "assessmentQuestion": null,
+        "note": "This plan records your chosen work. No behavioural interpretation is saved for this version."
+      },
+      "experiment": null,
+      "journey": [
+        {
+          "id": "plan-1",
+          "at": "2026-09-11",
+          "kind": "plan",
+          "label": "Starting plan",
+          "title": "Read 20 pages",
+          "detail": null,
+          "planVersion": 1,
+          "recordId": null,
+          "decisionId": null
+        }
+      ],
+      "conversations": [],
+      "tentative": [
+        {
+          "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+          "goalId": "reading",
+          "title": "Read 20 pages",
+          "start": "2026-09-11T16:00:00.000Z",
+          "end": "2026-09-11T16:25:00.000Z"
+        }
+      ],
+      "pendingProposalIds": [],
+      "nextReviewAt": null
+    }
+  }
+}

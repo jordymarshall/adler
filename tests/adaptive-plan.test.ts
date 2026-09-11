@@ -7,6 +7,7 @@ import { maintainAdaptivePlans } from "../shared/adaptive-plan.ts";
 import { adaptiveFixture, adaptiveWorkspace } from "./adaptive-fixture.ts";
 import { applyChanges } from "../server/commands.ts";
 import { addDays, dateInZone } from "../shared/journey.ts";
+import { weekStart } from "../shared/goal-execution.ts";
 
 test("an accepted recurring plan exposes the next occurrence after a check-in without another chat", () => {
   const data = initialData();
@@ -46,8 +47,10 @@ test("decomposition supports a short task and rejects missing or circular prereq
 });
 
 test("competing goals cannot silently exceed shared capacity", () => {
-  const today = dateInZone("UTC");
-  const data = adaptiveWorkspace(adaptiveFixture(today, addDays(today, 4)));
+  // The budget is weekly, so the competing occurrences must sit inside one calendar week
+  // whatever weekday the suite runs on.
+  const week = weekStart(dateInZone("UTC"));
+  const data = adaptiveWorkspace(adaptiveFixture(week, addDays(week, 4)));
   const other = structuredClone(data.goals[0]);
   other.id = "another-goal";
   data.goals.push(other);
@@ -121,8 +124,9 @@ test("reduced capacity never prevents reporting what happened, but new work must
 });
 
 test("retained bookings count toward capacity after their original occurrences leave the plan", () => {
+  // The booking and the revised occurrence share one calendar week on any run day.
   const today = dateInZone("UTC");
-  const date = addDays(today, 1);
+  const date = weekStart(today);
   const data = adaptiveWorkspace(adaptiveFixture(date, date));
   data.programs.at(-1)!.weeklyMinutes = 40;
   const booked = data.actions[0];

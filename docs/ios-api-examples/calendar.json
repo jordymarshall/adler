@@ -1,0 +1,100 @@
+{
+  "request": "GET /api/app/calendar?start=2026-09-11",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "weekStart": "2026-09-07",
+    "weekEnd": "2026-09-13",
+    "days": [
+      {
+        "date": "2026-09-07",
+        "isToday": false,
+        "working": true
+      },
+      {
+        "date": "2026-09-08",
+        "isToday": false,
+        "working": true
+      },
+      {
+        "date": "2026-09-09",
+        "isToday": false,
+        "working": true
+      },
+      {
+        "date": "2026-09-10",
+        "isToday": false,
+        "working": true
+      },
+      {
+        "date": "2026-09-11",
+        "isToday": true,
+        "working": true
+      },
+      {
+        "date": "2026-09-12",
+        "isToday": false,
+        "working": false
+      },
+      {
+        "date": "2026-09-13",
+        "isToday": false,
+        "working": false
+      }
+    ],
+    "tentative": [
+      {
+        "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+        "goalId": "guide",
+        "goalTitle": "Write the onboarding guide",
+        "title": "Write 400 words of the guide",
+        "start": "2026-09-11T16:00:00.000Z",
+        "end": "2026-09-11T16:20:00.000Z"
+      },
+      {
+        "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+        "goalId": "reading",
+        "goalTitle": "Read the four books on my shelf",
+        "title": "Read 20 pages",
+        "start": "2026-09-11T16:30:00.000Z",
+        "end": "2026-09-11T16:55:00.000Z"
+      }
+    ],
+    "blocks": [],
+    "busy": [],
+    "availability": {
+      "coverage": "unknown",
+      "checkedAt": null,
+      "provider": null,
+      "start": null,
+      "end": null
+    },
+    "unplaced": [],
+    "overBudget": [],
+    "review": null,
+    "workingHours": {
+      "start": "09:00",
+      "end": "17:00",
+      "days": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessionMinutes": 25
+    },
+    "timeZone": "America/Toronto",
+    "basis": "Saved action dates and durations, working hours, weekly time budget and known busy time. Active work is placed before drafts; the focus goal is first when dates compete. Tentative placement is editable and is not a booking or an optimality claim.",
+    "calendars": {
+      "google": {
+        "configured": false,
+        "connected": false
+      },
+      "apple": {
+        "connected": false
+      }
+    }
+  }
+}

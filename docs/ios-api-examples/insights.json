@@ -1,0 +1,320 @@
+{
+  "request": "GET /api/app/insights",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "tryingNow": [
+      {
+        "recordId": "learning-breakfast-cue",
+        "version": 1,
+        "activeVersion": 1,
+        "pendingVersion": null,
+        "state": "agreed",
+        "standing": "consistent",
+        "statusLabel": "Live experiment",
+        "standingLabel": "Consistent so far",
+        "timingLabel": "Review Sep 15",
+        "goals": [
+          {
+            "id": "portfolio",
+            "title": "Publish three case studies",
+            "status": "Active",
+            "color": "hsl(184 28% 35%)"
+          }
+        ],
+        "change": "Draft one case-study section right after breakfast on Tuesdays and Thursdays.",
+        "observation": "You reported that the writing hour disappears once the workday starts.",
+        "hypothesis": "A fixed after-breakfast cue may make the drafting session start on planned days.",
+        "behaviorSignal": "Whether a section is drafted on the planned days.",
+        "mechanismSignal": "Whether starting felt easier on the days the cue was used.",
+        "outcomeSignal": null,
+        "prediction": "You report starting the session on more of the planned days.",
+        "reviewRule": "Review after four planned occurrences, or sooner if you report a blocker.",
+        "comparison": "Compared with the interrupted mornings you described before this trial.",
+        "design": "prospective",
+        "alternatives": [
+          "A quieter fortnight at work could explain the same change."
+        ],
+        "transfer": null,
+        "start": "2026-08-31",
+        "reviewAfter": "2026-09-13",
+        "nextReviewAfter": "2026-09-15",
+        "reports": 1,
+        "latestReview": {
+          "id": "review-breakfast-1",
+          "at": "2026-09-08T13:00:00.000Z",
+          "summary": "Two of three planned sessions happened, and you reported an easier start on those days.",
+          "implication": "Keep the after-breakfast cue for the rest of the trial window.",
+          "nextQuestion": "Does the cue still work on days with an early stand-up?",
+          "decision": "keep",
+          "standing": "consistent",
+          "standingLabel": "Consistent so far",
+          "exposure": "used",
+          "exposureLabel": "Reported as used"
+        },
+        "actionVersion": 1,
+        "controls": {
+          "agree": false,
+          "decline": false,
+          "pause": true,
+          "resume": false,
+          "close": true
+        },
+        "attempts": [
+          {
+            "date": "2026-09-01",
+            "outcome": "Done",
+            "actionId": "237e4a77-378e-4671-abac-39897a4ee2d9"
+          },
+          {
+            "date": "2026-09-03",
+            "outcome": "Didn’t happen",
+            "actionId": "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+          },
+          {
+            "date": "2026-09-08",
+            "outcome": "Done",
+            "actionId": "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+          },
+          {
+            "date": "2026-09-10",
+            "outcome": "Done",
+            "actionId": "64060973-4c42-46e5-86c8-0f85551c5206"
+          }
+        ],
+        "sources": [
+          {
+            "id": "memory-morning",
+            "kind": "context",
+            "label": "Saved context · Aug 22",
+            "text": "The writing hour disappears once the workday starts; breakfast is the quiet part of the morning.",
+            "deepLink": "adler://insights?memory=memory-morning"
+          }
+        ],
+        "prompt": "Let's discuss “Draft one case-study section right after breakfast on Tuesdays and Thursdays.” (learning-breakfast-cue, version 1) and whether it fits me."
+      },
+      {
+        "recordId": "learning-word-count-check",
+        "version": 1,
+        "activeVersion": 1,
+        "pendingVersion": null,
+        "state": "agreed",
+        "standing": "insufficient",
+        "statusLabel": "Ready to review",
+        "standingLabel": "More context needed",
+        "timingLabel": "Review Sep 9",
+        "goals": [
+          {
+            "id": "guide",
+            "title": "Write the onboarding guide",
+            "status": "Active",
+            "color": "hsl(316 28% 35%)"
+          }
+        ],
+        "change": "Check the word count against the week's target every Friday.",
+        "observation": "You are writing the guide in short weekday sessions without checking the word count against the plan.",
+        "hypothesis": "Checking the word count against the plan each week may show whether the current pace reaches 20,000 words on time.",
+        "behaviorSignal": "Whether the word count is checked and compared with the plan each Friday.",
+        "mechanismSignal": null,
+        "outcomeSignal": "Cumulative words written against the checkpoint pace.",
+        "prediction": "The weekly check shows whether the pace is on track before the deadline gets close.",
+        "reviewRule": "Review two weeks after the first check, or sooner if the pace looks off.",
+        "comparison": "Compared with not checking the pace until the guide is due.",
+        "design": "prospective",
+        "alternatives": [
+          "A busier or quieter week at work could change the pace independent of checking it."
+        ],
+        "transfer": null,
+        "start": "2026-09-02",
+        "reviewAfter": "2026-09-09",
+        "nextReviewAfter": null,
+        "reports": 0,
+        "latestReview": null,
+        "actionVersion": 1,
+        "controls": {
+          "agree": false,
+          "decline": false,
+          "pause": true,
+          "resume": false,
+          "close": true
+        },
+        "attempts": [
+          {
+            "date": "2026-09-02",
+            "outcome": "Partly",
+            "actionId": "38426313-a41b-42e8-bd2a-0375d13efcf0"
+          },
+          {
+            "date": "2026-09-04",
+            "outcome": "Done",
+            "actionId": "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+          },
+          {
+            "date": "2026-09-07",
+            "outcome": "Done",
+            "actionId": "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+          },
+          {
+            "date": "2026-09-09",
+            "outcome": "Didn’t happen",
+            "actionId": "84606506-afab-4510-bc24-fab924d4bec3"
+          },
+          {
+            "date": "2026-09-11",
+            "outcome": null,
+            "actionId": "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+          }
+        ],
+        "sources": [],
+        "prompt": "Let's discuss “Check the word count against the week's target every Friday.” (learning-word-count-check, version 1) and whether it fits me."
+      }
+    ],
+    "learned": [],
+    "history": [],
+    "observations": [
+      {
+        "id": "decision-editor-friday-0",
+        "decisionId": "decision-editor-friday",
+        "proposalId": "79CC05AB30",
+        "date": "2026-09-02",
+        "finding": "You reported that your editor reviews drafts on Fridays.",
+        "status": "Reported",
+        "kindLabel": "Your observation",
+        "headline": "You reported that your editor reviews drafts on Fridays.",
+        "statusLabel": "Reported by you",
+        "implication": "Keep this context in view when reviewing the next plan. No change is attached yet.",
+        "implicationLabel": "What to explore next",
+        "changeStatus": "Proposed",
+        "changes": [],
+        "goals": [
+          {
+            "id": "portfolio",
+            "title": "Publish three case studies",
+            "status": "Active",
+            "color": "hsl(184 28% 35%)"
+          }
+        ],
+        "goalIds": [
+          "portfolio"
+        ],
+        "goalTitle": "Publish three case studies",
+        "sources": [
+          {
+            "id": "memory-editor",
+            "kind": "context",
+            "label": "Saved context · Sep 2",
+            "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening.",
+            "deepLink": "adler://insights?memory=memory-editor"
+          }
+        ],
+        "resultSources": [],
+        "research": [],
+        "learning": null
+      },
+      {
+        "id": "decision-editor-friday-1",
+        "decisionId": "decision-editor-friday",
+        "proposalId": "79CC05AB30",
+        "date": "2026-09-02",
+        "finding": "A Thursday-evening buffer may be what protects the Friday review.",
+        "status": "To test",
+        "kindLabel": "Hypothesis",
+        "headline": "A Thursday-evening buffer may be what protects the Friday review.",
+        "statusLabel": "To test",
+        "implication": "Your editor reviews on Fridays, so Thursday evening is the hand-off.",
+        "implicationLabel": "Proposed adjustment",
+        "changeStatus": "Proposed",
+        "changes": [
+          {
+            "entity": "memory",
+            "operation": "create",
+            "id": "memory-thursday",
+            "parentId": null,
+            "reason": "Your editor reviews on Fridays, so Thursday evening is the hand-off.",
+            "values": "{\"text\":\"Keep Thursday evening free for the editor hand-off.\"}"
+          }
+        ],
+        "goals": [
+          {
+            "id": "portfolio",
+            "title": "Publish three case studies",
+            "status": "Active",
+            "color": "hsl(184 28% 35%)"
+          }
+        ],
+        "goalIds": [
+          "portfolio"
+        ],
+        "goalTitle": "Publish three case studies",
+        "sources": [
+          {
+            "id": "memory-editor",
+            "kind": "context",
+            "label": "Saved context · Sep 2",
+            "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening.",
+            "deepLink": "adler://insights?memory=memory-editor"
+          },
+          {
+            "id": "message-3",
+            "kind": "report",
+            "label": "You said · Sep 8",
+            "text": "Two of the three sessions happened. Starting was easier when breakfast wasn’t rushed.",
+            "deepLink": "adler://coach/chat-portfolio?message=message-3"
+          }
+        ],
+        "resultSources": [],
+        "research": [],
+        "learning": null
+      }
+    ],
+    "memories": [
+      {
+        "id": "memory-morning",
+        "text": "The writing hour disappears once the workday starts; breakfast is the quiet part of the morning.",
+        "date": "2026-08-22",
+        "corrected": false,
+        "corrections": []
+      },
+      {
+        "id": "memory-editor",
+        "text": "My editor reviews drafts on Fridays, so a section needs to be ready by Thursday evening.",
+        "date": "2026-09-02",
+        "corrected": false,
+        "corrections": []
+      }
+    ],
+    "goals": [
+      {
+        "id": "portfolio",
+        "title": "Publish three case studies",
+        "status": "Active",
+        "color": "hsl(184 28% 35%)"
+      },
+      {
+        "id": "guide",
+        "title": "Write the onboarding guide",
+        "status": "Active",
+        "color": "hsl(316 28% 35%)"
+      },
+      {
+        "id": "running",
+        "title": "Run a 10k without stopping",
+        "status": "Draft",
+        "color": "hsl(55 28% 35%)"
+      },
+      {
+        "id": "reading",
+        "title": "Read the four books on my shelf",
+        "status": "Draft",
+        "color": "hsl(196 28% 35%)"
+      },
+      {
+        "id": "cooking",
+        "title": "Cook one new recipe a week",
+        "status": "Paused",
+        "color": "hsl(290 28% 35%)"
+      }
+    ]
+  }
+}

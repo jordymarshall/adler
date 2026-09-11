@@ -1,0 +1,4808 @@
+{
+  "request": "GET /api/app/goals",
+  "status": 200,
+  "response": {
+    "revision": 1,
+    "today": "2026-09-11",
+    "budget": {
+      "weekStart": "2026-09-07",
+      "weekEnd": "2026-09-13",
+      "totalMinutes": 110,
+      "budgetMinutes": 360,
+      "overMinutes": 0,
+      "scaleMinutes": 360,
+      "goals": [
+        {
+          "goalId": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)",
+          "minutes": 50,
+          "proposed": false
+        },
+        {
+          "goalId": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)",
+          "minutes": 60,
+          "proposed": false
+        }
+      ],
+      "sourceNote": "Saved action durations across active goals and draft plans, using calendar bookings where present. A booking is counted once. Unscheduled actions are not included. This is your saved time budget, not a measurement of free calendar time.",
+      "programReason": "Set the first goal as the program focus."
+    },
+    "rows": [
+      {
+        "goal": {
+          "id": "portfolio",
+          "title": "Publish three case studies",
+          "status": "Active",
+          "color": "hsl(184 28% 35%)"
+        },
+        "kind": "project",
+        "priority": "Focus",
+        "area": "Career",
+        "tags": [
+          "Writing",
+          "Portfolio"
+        ],
+        "success": "Three case studies are published with the problem, my contribution and the result.",
+        "resultLabel": "0 of 3 case studies published",
+        "current": 0,
+        "target": 3,
+        "unit": "milestones verified",
+        "observedAt": "2026-08-31",
+        "activity": [
+          {
+            "date": "2026-06-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-01",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 1,
+            "unknown": 0,
+            "planned": 0,
+            "state": "missed",
+            "level": 0
+          },
+          {
+            "date": "2026-09-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-08",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-10",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          }
+        ],
+        "activitySummary": {
+          "reported": 4,
+          "done": 3,
+          "completion": 75,
+          "label": "75% completed"
+        },
+        "series": {
+          "measure": {
+            "metric": "amount",
+            "label": "Sections drafted",
+            "unit": "sections",
+            "target": 1
+          },
+          "start": "2026-08-29",
+          "end": "2026-09-11",
+          "points": [
+            {
+              "date": "2026-08-29",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": false,
+              "actionIds": []
+            },
+            {
+              "date": "2026-08-30",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": false,
+              "actionIds": []
+            },
+            {
+              "date": "2026-08-31",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-01",
+              "amount": 1,
+              "planned": 1,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "237e4a77-378e-4671-abac-39897a4ee2d9"
+              ]
+            },
+            {
+              "date": "2026-09-02",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-03",
+              "amount": 0,
+              "planned": 1,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "ad15196a-62c1-4d2b-bb83-4c4c364626e5"
+              ]
+            },
+            {
+              "date": "2026-09-04",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-05",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-06",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-07",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-08",
+              "amount": 1,
+              "planned": 1,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "3e0ca549-75e5-41a1-b8c4-07ec26162f12"
+              ]
+            },
+            {
+              "date": "2026-09-09",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-10",
+              "amount": 1,
+              "planned": 1,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "64060973-4c42-46e5-86c8-0f85551c5206"
+              ]
+            },
+            {
+              "date": "2026-09-11",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            }
+          ],
+          "reported": 3,
+          "plannedTotal": 4,
+          "unknown": 0
+        },
+        "stepTitle": "Draft one case-study section",
+        "nextAction": null,
+        "completedActions": 3,
+        "milestone": {
+          "id": "case-study-1",
+          "title": "First case study published",
+          "dueDate": null
+        },
+        "implication": "First case study published",
+        "outlook": "Goal finish not yet estimated",
+        "outlookNote": null,
+        "projectionStatus": "Tracking milestones"
+      },
+      {
+        "goal": {
+          "id": "guide",
+          "title": "Write the onboarding guide",
+          "status": "Active",
+          "color": "hsl(316 28% 35%)"
+        },
+        "kind": "practical",
+        "priority": "Maintain",
+        "area": "Career",
+        "tags": [
+          "Writing"
+        ],
+        "success": "A 20,000-word onboarding guide is finished and shared.",
+        "resultLabel": "2330 words · Words written",
+        "current": 2330,
+        "target": 20000,
+        "unit": "words",
+        "observedAt": "2026-09-04",
+        "activity": [
+          {
+            "date": "2026-06-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-31",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-02",
+            "done": 0,
+            "partly": 1,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "partly",
+            "level": 0
+          },
+          {
+            "date": "2026-09-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-04",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-07",
+            "done": 1,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "done",
+            "level": 1
+          },
+          {
+            "date": "2026-09-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 1,
+            "unknown": 0,
+            "planned": 0,
+            "state": "missed",
+            "level": 0
+          },
+          {
+            "date": "2026-09-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 1,
+            "planned": 0,
+            "state": "unknown",
+            "level": 0
+          },
+          {
+            "date": "2026-09-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          }
+        ],
+        "activitySummary": {
+          "reported": 5,
+          "done": 3,
+          "completion": 60,
+          "label": "60% completed"
+        },
+        "series": {
+          "measure": {
+            "metric": "amount",
+            "label": "Words written",
+            "unit": "words",
+            "target": 400
+          },
+          "start": "2026-08-29",
+          "end": "2026-09-11",
+          "points": [
+            {
+              "date": "2026-08-29",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": false,
+              "actionIds": []
+            },
+            {
+              "date": "2026-08-30",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": false,
+              "actionIds": []
+            },
+            {
+              "date": "2026-08-31",
+              "amount": 520,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "b417cf62-cfd1-44b5-b7ac-0ef0d37a0998"
+              ]
+            },
+            {
+              "date": "2026-09-01",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-02",
+              "amount": 180,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "38426313-a41b-42e8-bd2a-0375d13efcf0"
+              ]
+            },
+            {
+              "date": "2026-09-03",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-04",
+              "amount": 430,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "d1c3dcee-aaf6-4a81-b167-440fb23570e7"
+              ]
+            },
+            {
+              "date": "2026-09-05",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-06",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-07",
+              "amount": 610,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "9cd44317-3764-47a2-8a5f-dd6c521d35c9"
+              ]
+            },
+            {
+              "date": "2026-09-08",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-09",
+              "amount": 0,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "84606506-afab-4510-bc24-fab924d4bec3"
+              ]
+            },
+            {
+              "date": "2026-09-10",
+              "amount": null,
+              "planned": null,
+              "retired": false,
+              "future": false,
+              "scheduled": false,
+              "off": true,
+              "actionIds": []
+            },
+            {
+              "date": "2026-09-11",
+              "amount": null,
+              "planned": 400,
+              "retired": false,
+              "future": false,
+              "scheduled": true,
+              "off": false,
+              "actionIds": [
+                "3a82d09c-483a-4d7a-b325-6015da1a6c0f"
+              ]
+            }
+          ],
+          "reported": 1740,
+          "plannedTotal": 2000,
+          "unknown": 0
+        },
+        "stepTitle": "Write 400 words of the guide",
+        "nextAction": {
+          "id": "3a82d09c-483a-4d7a-b325-6015da1a6c0f",
+          "title": "Write 400 words of the guide",
+          "date": "2026-09-11",
+          "phase": "ready"
+        },
+        "completedActions": 3,
+        "milestone": null,
+        "implication": "A 20,000-word onboarding guide is finished and shared.",
+        "outlook": "Goal estimate · Dec 24, 2026",
+        "outlookNote": "Conditional on input pace",
+        "projectionStatus": "Input-based projection"
+      },
+      {
+        "goal": {
+          "id": "running",
+          "title": "Run a 10k without stopping",
+          "status": "Draft",
+          "color": "hsl(55 28% 35%)"
+        },
+        "kind": "practical",
+        "priority": "Maintain",
+        "area": "Personal",
+        "tags": [
+          "Health"
+        ],
+        "success": "Finish a 10k run without walking.",
+        "resultLabel": "0 of 0 steps verified",
+        "current": null,
+        "target": 0,
+        "unit": "milestones",
+        "observedAt": null,
+        "activity": [
+          {
+            "date": "2026-06-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          }
+        ],
+        "activitySummary": {
+          "reported": 0,
+          "done": 0,
+          "completion": null,
+          "label": "No check-ins yet"
+        },
+        "series": null,
+        "stepTitle": null,
+        "nextAction": null,
+        "completedActions": 0,
+        "milestone": null,
+        "implication": "Finish a 10k run without walking.",
+        "outlook": "Goal finish not yet estimated",
+        "outlookNote": null,
+        "projectionStatus": "Tracking your reported experience"
+      },
+      {
+        "goal": {
+          "id": "reading",
+          "title": "Read the four books on my shelf",
+          "status": "Draft",
+          "color": "hsl(196 28% 35%)"
+        },
+        "kind": "practical",
+        "priority": "Maintain",
+        "area": "Personal",
+        "tags": [
+          "Reading"
+        ],
+        "success": "All four books are finished, with one idea kept from each.",
+        "resultLabel": "0 of 1 steps verified",
+        "current": 0,
+        "target": 1,
+        "unit": "milestones verified",
+        "observedAt": "2026-09-11",
+        "activity": [
+          {
+            "date": "2026-06-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          }
+        ],
+        "activitySummary": {
+          "reported": 0,
+          "done": 0,
+          "completion": null,
+          "label": "No check-ins yet"
+        },
+        "series": null,
+        "stepTitle": "Read 20 pages",
+        "nextAction": {
+          "id": "f8302b8b-a91f-4dea-a76f-bd494b68869b",
+          "title": "Read 20 pages",
+          "date": null,
+          "phase": "draft"
+        },
+        "completedActions": 0,
+        "milestone": {
+          "id": "book-1",
+          "title": "Finish the first book",
+          "dueDate": null
+        },
+        "implication": "Finish the first book",
+        "outlook": "Goal finish not yet estimated",
+        "outlookNote": null,
+        "projectionStatus": "Tracking milestones"
+      },
+      {
+        "goal": {
+          "id": "cooking",
+          "title": "Cook one new recipe a week",
+          "status": "Paused",
+          "color": "hsl(290 28% 35%)"
+        },
+        "kind": "practical",
+        "priority": "Maintain",
+        "area": "Personal",
+        "tags": [
+          "Cooking"
+        ],
+        "success": "A new recipe is cooked and reviewed each week for eight weeks.",
+        "resultLabel": "1 of 1 steps verified",
+        "current": 0,
+        "target": 1,
+        "unit": "milestones verified",
+        "observedAt": "2026-08-17",
+        "activity": [
+          {
+            "date": "2026-06-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-06-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-07-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-14",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-15",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-16",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-17",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-18",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-19",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-20",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-21",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-22",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-23",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-24",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-25",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-26",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-27",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-28",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-29",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-30",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-08-31",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-01",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-02",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-03",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-04",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-05",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-06",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-07",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-08",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-09",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-10",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-11",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-12",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          },
+          {
+            "date": "2026-09-13",
+            "done": 0,
+            "partly": 0,
+            "missed": 0,
+            "unknown": 0,
+            "planned": 0,
+            "state": "rest",
+            "level": 0
+          }
+        ],
+        "activitySummary": {
+          "reported": 0,
+          "done": 0,
+          "completion": null,
+          "label": "No check-ins yet"
+        },
+        "series": null,
+        "stepTitle": "Cook a new recipe",
+        "nextAction": {
+          "id": "8bd1a00e-c6c7-4728-9974-32575a2f6135",
+          "title": "Cook a new recipe",
+          "date": null,
+          "phase": "inactive"
+        },
+        "completedActions": 0,
+        "milestone": null,
+        "implication": "A new recipe is cooked and reviewed each week for eight weeks.",
+        "outlook": "Goal finish not yet estimated",
+        "outlookNote": null,
+        "projectionStatus": "Tracking milestones"
+      }
+    ],
+    "groups": [
+      {
+        "status": "Active",
+        "goalIds": [
+          "portfolio",
+          "guide"
+        ]
+      },
+      {
+        "status": "Draft",
+        "goalIds": [
+          "running",
+          "reading"
+        ]
+      },
+      {
+        "status": "Paused",
+        "goalIds": [
+          "cooking"
+        ]
+      }
+    ],
+    "areas": [
+      "Career",
+      "Personal"
+    ],
+    "tags": [
+      "Cooking",
+      "Health",
+      "Portfolio",
+      "Reading",
+      "Writing"
+    ]
+  }
+}
