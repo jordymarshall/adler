@@ -66,7 +66,6 @@ export function LandingHero() {
           <use href="#hero-flow-path" fill="none" stroke="#f5f7e8" strokeWidth="100" />
           <use href="#hero-flow-path" fill="none" stroke="#d4e5b3" strokeWidth="2" />
         </svg>
-        <span className="hero-orbit" />
         <div className="hero-sculpture">
           {artwork.map((path, i) => <img key={path} src={`${path}-1200.webp`} srcSet={`${path}-640.webp 640w, ${path}-1200.webp 1200w`} sizes="(max-width: 650px) 560px, (max-width: 1000px) 700px, 940px" width="1200" height="1200" alt="" fetchPriority={i === 0 ? "high" : "low"} decoding="sync" data-active={Math.min(1, Math.floor(frame / 4)) === i} onLoad={prepareArtwork} />)}
         </div>

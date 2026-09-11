@@ -17,7 +17,6 @@
 .v2-landing .hero-sculpture { position: absolute; left: calc(80% - 30% * var(--hero-progress)); top: calc(330px + (100% - 380px) * var(--hero-progress)); width: min(65vw, 940px); aspect-ratio: 1; transform: translate(-50%, -50%) rotate(calc(-10deg + var(--hero-progress) * 85deg)) scale(calc(1 - var(--hero-progress) * .88)); }
 .v2-landing .hero-sculpture img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; }
 .v2-landing .hero-sculpture img[data-active="true"] { opacity: 1; }
-.v2-landing .hero-orbit { position: absolute; width: 92px; aspect-ratio: 1; left: calc(59% - var(--hero-progress) * 13%); top: calc(72% + var(--hero-progress) * 19%); border-radius: 50%; background: radial-gradient(circle at 32% 27%, #ffd4ac, #eeae87 55%, #ce835f); transform: scale(calc(1 - var(--hero-progress) * .9)); opacity: calc(1 - var(--hero-progress)); }
 
 /* Shared app evidence: the report, the change, and an inspectable reason. */
 .v2-landing .story-card-label { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.4; letter-spacing: .035em; color: #52634c; font-weight: 500; }
@@ -221,7 +220,6 @@ html:has(.phone-journey) { scroll-padding-top: 0; }
   .v2-landing .hero-actions { justify-content: center; }
   .v2-landing .hero-sculpture { width: 700px; left: calc(65% - 15% * var(--hero-progress)); top: calc(100% - 250px + 200px * var(--hero-progress)); }
   .v2-landing .hero-flow { top: 34%; height: 66%; }
-  .v2-landing .hero-orbit { left: 16%; top: 78%; }
   .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: 50px; }
   .v2-landing .phone-story-content { grid-template-columns: minmax(0, 1fr) minmax(230px, .8fr); grid-template-rows: auto minmax(0, 1fr); gap: 22px; }
   .v2-landing .phone-story-copy { grid-column: 1 / -1; text-align: center; }
@@ -233,7 +231,6 @@ html:has(.phone-journey) { scroll-padding-top: 0; }
   .v2-landing .hero-cover .hero-intro-v2 { margin: 0; text-align: left; }
   .v2-landing .hero-sculpture { width: 560px; left: calc(72% - 22% * var(--hero-progress)); top: calc(100% - 205px + 170px * var(--hero-progress)); }
   .v2-landing .hero-flow { top: 48%; height: 52%; width: 160%; left: -30%; }
-  .v2-landing .hero-orbit { width: 52px; left: 10%; top: 83%; }
   .v2-landing .hero-category { margin-bottom: 18px; font-size: 12px; }
   .v2-landing .hero-cover .hero-intro-v2 h1 { font-size: clamp(39px, 10.7vw, 60px); }
   .v2-landing .hero-cover .hero-intro-v2 > p { font-size: 17px; margin-top: 20px; }

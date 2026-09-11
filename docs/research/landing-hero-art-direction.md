@@ -19,7 +19,7 @@ Generated and edited with the built-in `image_gen` tool. Browser canvas exports 
 | Folded | [adler-form-v2-01-1200.webp](../../public/media/hero/adler-form-v2-01-1200.webp) · 80,468 bytes | [adler-form-v2-01-640.webp](../../public/media/hero/adler-form-v2-01-640.webp) · 34,276 bytes |
 | Open | [adler-form-v2-02-1200.webp](../../public/media/hero/adler-form-v2-02-1200.webp) · 109,380 bytes | [adler-form-v2-02-640.webp](../../public/media/hero/adler-form-v2-02-640.webp) · 43,894 bytes |
 
-Responsive sources total about 190 KB for both larger pictures or 78 KB for both smaller pictures. Intrinsic dimensions reserve the artwork's proportions. The page-native SVG ribbon and CSS peach orb are separate decorative layers.
+Responsive sources total about 190 KB for both larger pictures or 78 KB for both smaller pictures. Intrinsic dimensions reserve the artwork's proportions. The page-native SVG ribbon is a separate decorative layer.
 
 The superseded framed JPEG assets were removed from the deployed files. Their source artwork and original prompts remain in [the previous revision](https://github.com/jordymarshall/adler/blob/e002d89/docs/research/landing-hero-art-direction.md). Original generated PNGs remain in the image tool's output directory.
 
